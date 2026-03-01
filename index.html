@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TradeGrail</title>
+    
+    <!-- Google Fonts: Inter (UI) & JetBrains Mono (Numbers) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              mono: ['"JetBrains Mono"', 'monospace'],
+            },
+            colors: {
+              slate: {
+                850: '#1e293b',
+                900: '#0f172a',
+                950: '#020617', 
+              }
+            },
+            animation: {
+                'fade-in': 'fadeIn 0.5s ease-out',
+                'fade-in-up': 'fadeInUp 0.5s ease-out',
+                'fade-in-right': 'fadeInRight 0.3s ease-out',
+                'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                'scroll': 'scroll 30s linear infinite',
+            },
+            keyframes: {
+                fadeIn: {
+                    '0%': { opacity: '0' },
+                    '100%': { opacity: '1' },
+                },
+                fadeInUp: {
+                    '0%': { opacity: '0', transform: 'translateY(10px)' },
+                    '100%': { opacity: '1', transform: 'translateY(0)' },
+                },
+                fadeInRight: {
+                    '0%': { opacity: '0', transform: 'translateX(20px)' },
+                    '100%': { opacity: '1', transform: 'translateX(0)' },
+                },
+                scroll: {
+                    '0%': { transform: 'translateX(0)' },
+                    '100%': { transform: 'translateX(-50%)' },
+                }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom scrollbar for a sleek look */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #cbd5e1; 
+        border-radius: 3px;
+      }
+      .dark ::-webkit-scrollbar-thumb {
+        background: #334155; 
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8; 
+      }
+      .dark ::-webkit-scrollbar-thumb:hover {
+        background: #475569; 
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      /* Hide standard scrollbars but allow scrolling for cleaner UI in specific divs */
+      .no-scrollbar::-webkit-scrollbar {
+          display: none;
+      }
+      .no-scrollbar {
+          -ms-overflow-style: none;  /* IE and Edge */
+          scrollbar-width: none;  /* Firefox */
+      }
+      .hover-pause:hover {
+          animation-play-state: paused;
+      }
+
+      /* Hide browser native number spinners */
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+
+      /* --- Contenteditable Placeholder Support --- */
+      [contenteditable]:empty:before {
+        content: attr(data-placeholder);
+        color: #94a3b8; /* slate-400 */
+        pointer-events: none;
+        display: block;
+      }
+      .dark [contenteditable]:empty:before {
+        color: #475569; /* slate-600 */
+      }
+
+      /* --- Flatpickr 主题定制 --- */
+      .flatpickr-calendar {
+        background: #fff;
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        font-family: 'Inter', sans-serif;
+      }
+
+      .dark .flatpickr-calendar {
+        background: #1e293b; /* slate-800 */
+        border-color: #334155; /* slate-700 */
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+      }
+
+      .flatpickr-day.selected, .flatpickr-day.startRange, .flatpickr-day.endRange {
+        background: #6366f1 !important; /* indigo-500 */
+        border-color: #6366f1 !important;
+      }
+
+      .flatpickr-day:hover {
+        background: #f1f5f9;
+      }
+      .dark .flatpickr-day:hover {
+        background: #334155;
+      }
+
+      .dark .flatpickr-day {
+        color: #f8fafc;
+      }
+      .dark .flatpickr-months .flatpickr-month,
+      .dark .flatpickr-weekday,
+      .dark .flatpickr-current-month .flatpickr-monthDropdown-months {
+        color: #f8fafc;
+        fill: #f8fafc;
+      }
+      .dark .flatpickr-current-month input.cur-year {
+        color: inherit;
+      }
+      .dark .flatpickr-time input, .dark .flatpickr-time .flatpickr-time-separator, .dark .flatpickr-time .flatpickr-am-pm {
+        color: #f8fafc;
+      }
+      .dark .numInputWrapper span.arrowUp:after { border-bottom-color: #94a3b8; }
+      .dark .numInputWrapper span.arrowDown:after { border-top-color: #94a3b8; }
+      
+      /* 隐藏原生 datetime-local 的图标，以防未成功初始化 */
+      input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+        display: none;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.560.0",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "recharts": "https://esm.sh/recharts@^3.5.1",
+    "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
+    "flatpickr": "https://esm.sh/flatpickr@^4.6.13",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7"
+  }
+}
+</script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

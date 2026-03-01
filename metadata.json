@@ -1,0 +1,8 @@
+{
+  "name": "TradeGrail - AI Trading Journal",
+  "description": "A comprehensive trading journal and analytics platform inspired by TradeZella. Features include trade logging, performance dashboards, calendar views, and AI-powered trading coaching using Gemini.",
+  "requestFramePermissions": [
+    "microphone",
+    "display-capture"
+  ]
+}
