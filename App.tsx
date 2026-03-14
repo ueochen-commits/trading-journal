@@ -195,13 +195,15 @@ const MainApp: React.FC = () => {
   // Handlers
   // 保存交易到 Supabase
   const handleAddTrade = async (trade: Trade) => {
-    if (!currentUserId) return;
+    // 获取当前用户
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
     // 计算 pnl_percent
     const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
 
     const { data, error } = await supabase.from('trading_journals').insert({
-      user_id: currentUserId,
+      user_id: user.id,
       date: trade.entryDate,
       symbol: trade.symbol,
       direction: trade.direction,
@@ -220,7 +222,8 @@ const MainApp: React.FC = () => {
 
   // 更新交易到 Supabase
   const handleUpdateTrade = async (updated: Trade) => {
-    if (!currentUserId) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
     const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
 
@@ -234,7 +237,7 @@ const MainApp: React.FC = () => {
       pnl_percent: pnlPercent,
       setup: updated.setup,
       notes: updated.notes
-    }).eq('id', updated.id).eq('user_id', currentUserId);
+    }).eq('id', updated.id).eq('user_id', user.id);
 
     if (!error) {
       setTrades(trades.map(t => t.id === updated.id ? updated : t));
@@ -243,9 +246,10 @@ const MainApp: React.FC = () => {
 
   // 删除交易从 Supabase
   const handleDeleteTrade = async (id: string) => {
-    if (!currentUserId) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    const { error } = await supabase.from('trading_journals').delete().eq('id', id).eq('user_id', currentUserId);
+    const { error } = await supabase.from('trading_journals').delete().eq('id', id).eq('user_id', user.id);
 
     if (!error) {
       setTrades(trades.filter(t => t.id !== id));
@@ -254,12 +258,13 @@ const MainApp: React.FC = () => {
 
   // 导入交易到 Supabase
   const handleImportTrades = async (imported: Trade[]) => {
-    if (!currentUserId) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
     const data = imported.map(trade => {
       const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
       return {
-        user_id: currentUserId,
+        user_id: user.id,
         date: trade.entryDate,
         symbol: trade.symbol,
         direction: trade.direction,
