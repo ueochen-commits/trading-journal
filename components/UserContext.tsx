@@ -47,22 +47,23 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         exchangeConnections: []
     });
 
-    // Forced to true to bypass login screen
-    const [isAuthenticated, setIsAuthenticated] = useState(true);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Listen for Auth Changes (Disabled or made passive for bypass mode)
+    // Listen for Auth Changes
     useEffect(() => {
-        // We still keep the listener logic but it won't block the UI
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session) {
                 syncUser(session.user);
+                setIsAuthenticated(true);
             }
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session) {
                 syncUser(session.user);
-                // setIsAuthenticated(true); // Already true
+                setIsAuthenticated(true);
+            } else {
+                setIsAuthenticated(false);
             }
         });
 
@@ -86,8 +87,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const login = () => setIsAuthenticated(true);
     const logout = async () => {
-        // await supabase.auth.signOut(); // Keep session for bypass
-        // setIsAuthenticated(false);
+        await supabase.auth.signOut();
+        setIsAuthenticated(false);
     };
 
     const openPricing = () => setIsPricingOpen(true);

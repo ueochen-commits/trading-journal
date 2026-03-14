@@ -235,12 +235,9 @@ const MainApp: React.FC = () => {
       }
   ];
 
-  // Temporarily commented out to bypass login
-  /*
   if (!isAuthenticated) {
       return <AuthPage />;
   }
-  */
 
   const renderContent = () => {
       switch (activeTab) {
