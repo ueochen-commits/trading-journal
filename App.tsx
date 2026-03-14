@@ -216,10 +216,10 @@ const MainApp: React.FC = () => {
     console.log('Saving trade for user:', user.id);
     console.log('Trade direction:', trade.direction);
 
-    // 确保 direction 是 'long' 或 'short'
-    const direction = trade.direction === 'long' || trade.direction === 'short'
-      ? trade.direction
-      : 'long';
+    // Direction enum 是 '做多'/'做空'，需要转换为 'long'/'short'
+    const direction = trade.direction === '做多' || (trade.direction as any) === 'long'
+      ? 'long'
+      : 'short';
 
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: user.id,
