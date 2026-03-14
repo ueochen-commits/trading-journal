@@ -214,12 +214,18 @@ const MainApp: React.FC = () => {
     const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
 
     console.log('Saving trade for user:', user.id);
+    console.log('Trade direction:', trade.direction);
+
+    // 确保 direction 是 'long' 或 'short'
+    const direction = trade.direction === 'long' || trade.direction === 'short'
+      ? trade.direction
+      : 'long';
 
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: user.id,
       date: trade.entryDate,
       symbol: trade.symbol,
-      direction: trade.direction,
+      direction: direction,
       entry_price: trade.entryPrice,
       exit_price: trade.exitPrice,
       pnl: trade.pnl,
