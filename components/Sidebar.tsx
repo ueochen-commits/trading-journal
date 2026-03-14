@@ -21,7 +21,7 @@ interface SidebarProps {
 const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificationsCount = 0, isCollapsed, toggleCollapse, onAddTrade }: SidebarProps) => {
   const { t, language, setLanguage } = useLanguage();
   const { startTour } = useTour();
-  const { user, openPricing, openProfile, openReferral, openSettings } = useUser();
+  const { user, openPricing, openProfile, openReferral, openSettings, logout } = useUser();
   const { openFriendDrawer, totalUnreadCount } = useSocial(); 
   
   // Menu State
@@ -309,7 +309,8 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
 
                         <div className="h-px bg-slate-100 dark:bg-slate-800 mx-2 my-1"></div>
 
-                        <button 
+                        <button
+                            onClick={logout}
                             className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-rose-50 dark:hover:bg-rose-900/10 text-rose-500 text-sm font-medium transition-colors"
                         >
                             <LogOut className="w-4 h-4" />
