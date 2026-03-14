@@ -3,9 +3,14 @@ import React, { useState, useEffect } from 'react';
 // 上传图片到 Supabase Storage
 const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
   try {
+    console.log('Starting image upload...');
+    console.log('UserId:', userId);
+    console.log('ImageBase64 length:', imageBase64?.length);
+
     // 转换 base64 为 Blob
     const response = await fetch(imageBase64);
     const blob = await response.blob();
+    console.log('Blob created, size:', blob.size);
 
     // 生成唯一文件名
     const fileName = `${userId}/${Date.now()}.jpg`;
@@ -21,6 +26,8 @@ const uploadImage = async (userId: string, imageBase64: string): Promise<string 
       console.error('Error uploading image:', error);
       return null;
     }
+
+    console.log('Upload successful, data:', data);
 
     // 获取公开 URL
     const { data: urlData } = supabase.storage
@@ -258,8 +265,11 @@ const MainApp: React.FC = () => {
 
     // 上传图片（如果有）
     let screenshotUrl = null;
+    console.log('Trade images:', trade.images);
     if (trade.images && trade.images.length > 0) {
+      console.log('Uploading image...');
       screenshotUrl = await uploadImage(user.id, trade.images[0]);
+      console.log('Screenshot URL:', screenshotUrl);
     }
 
     const { data, error } = await supabase.from('trading_journals').insert({
