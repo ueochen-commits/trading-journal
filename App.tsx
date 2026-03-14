@@ -26,11 +26,12 @@ import TradeShareModal from './components/TradeShareModal';
 import { UserProvider, useUser } from './components/UserContext';
 import { LanguageProvider, useLanguage } from './LanguageContext';
 import { TourProvider } from './components/TourContext';
-import { SocialProvider } from './components/SocialContext'; 
+import { SocialProvider } from './components/SocialContext';
+import { supabase } from './supabaseClient';
 import { Plus, MessageSquare, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
-  MOCK_TRADES, MOCK_STRATEGIES, MOCK_PRE_TRADE_CHECKLIST, 
+  MOCK_STRATEGIES, MOCK_PRE_TRADE_CHECKLIST, 
   DEFAULT_TRACKER_RULES, MOCK_POSTS, MOCK_NOTIFICATIONS, 
   DEFAULT_DISCIPLINE_RULES 
 } from './constants';
@@ -80,16 +81,18 @@ const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // Data State with Persistence
-  const [trades, setTrades] = useStickyState<Trade[]>(MOCK_TRADES, 'tg_trades');
+  // Data State with Persistence - 使用空数组，从 Supabase 加载
+  const [trades, setTrades] = useState<Trade[]>([]);
   const [strategies, setStrategies] = useStickyState<Strategy[]>(MOCK_STRATEGIES, 'tg_strategies');
   const [checklist, setChecklist] = useStickyState<ChecklistItem[]>(MOCK_PRE_TRADE_CHECKLIST, 'tg_checklist');
   const [trackerRules, setTrackerRules] = useStickyState<TrackerRule[]>(DEFAULT_TRACKER_RULES, 'tg_trackerRules');
   const [plans, setPlans] = useStickyState<DailyPlan[]>([], 'tg_plans');
   const [posts, setPosts] = useStickyState<Post[]>(MOCK_POSTS, 'tg_posts');
   const [notifications, setNotifications] = useStickyState<Notification[]>(MOCK_NOTIFICATIONS, 'tg_notifications');
-  
+
   // Discipline & Goals Persistence
   const [disciplineRules, setDisciplineRules] = useStickyState<DisciplineRule[]>(DEFAULT_DISCIPLINE_RULES, 'tg_disciplineRules');
   const [disciplineHistory, setDisciplineHistory] = useStickyState<DailyDisciplineRecord[]>([], 'tg_disciplineHistory');
@@ -103,6 +106,57 @@ const MainApp: React.FC = () => {
     maxConsecutiveLosses: 3,
     maxOpenPositions: 2
   }, 'tg_riskSettings');
+
+  // 从 Supabase 加载用户交易数据
+  useEffect(() => {
+    const loadTrades = async () => {
+      if (!isAuthenticated) return;
+
+      setIsDataLoading(true);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        setCurrentUserId(user.id);
+
+        const { data, error } = await supabase
+          .from('trading_journals')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error loading trades:', error);
+          return;
+        }
+
+        // 转换数据格式
+        const formattedTrades = (data || []).map((trade: any) => ({
+          id: trade.id,
+          entryDate: trade.date,
+          exitDate: trade.date,
+          symbol: trade.symbol,
+          direction: trade.direction as 'long' | 'short',
+          entryPrice: trade.entry_price,
+          exitPrice: trade.exit_price || 0,
+          quantity: 1,
+          status: trade.exit_price ? 'closed' as const : 'open' as const,
+          pnl: trade.pnl || 0,
+          setup: trade.setup || '',
+          notes: trade.notes || '',
+          fees: 0
+        }));
+
+        setTrades(formattedTrades);
+      } catch (error) {
+        console.error('Error loading trades:', error);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+
+    loadTrades();
+  }, [isAuthenticated]);
 
   // UI State for Auto-Actions (Not persisted)
   const [journalAutoOpen, setJournalAutoOpen] = useState(false);
@@ -139,10 +193,91 @@ const MainApp: React.FC = () => {
   };
 
   // Handlers
-  const handleAddTrade = (trade: Trade) => setTrades([trade, ...trades]);
-  const handleUpdateTrade = (updated: Trade) => setTrades(trades.map(t => t.id === updated.id ? updated : t));
-  const handleDeleteTrade = (id: string) => setTrades(trades.filter(t => t.id !== id));
-  const handleImportTrades = (imported: Trade[]) => setTrades([...imported, ...trades]);
+  // 保存交易到 Supabase
+  const handleAddTrade = async (trade: Trade) => {
+    if (!currentUserId) return;
+
+    // 计算 pnl_percent
+    const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
+
+    const { data, error } = await supabase.from('trading_journals').insert({
+      user_id: currentUserId,
+      date: trade.entryDate,
+      symbol: trade.symbol,
+      direction: trade.direction,
+      entry_price: trade.entryPrice,
+      exit_price: trade.exitPrice,
+      pnl: trade.pnl,
+      pnl_percent: pnlPercent,
+      setup: trade.setup,
+      notes: trade.notes
+    }).select().single();
+
+    if (!error && data) {
+      setTrades([{ ...trade, id: data.id }, ...trades]);
+    }
+  };
+
+  // 更新交易到 Supabase
+  const handleUpdateTrade = async (updated: Trade) => {
+    if (!currentUserId) return;
+
+    const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
+
+    const { error } = await supabase.from('trading_journals').update({
+      date: updated.entryDate,
+      symbol: updated.symbol,
+      direction: updated.direction,
+      entry_price: updated.entryPrice,
+      exit_price: updated.exitPrice,
+      pnl: updated.pnl,
+      pnl_percent: pnlPercent,
+      setup: updated.setup,
+      notes: updated.notes
+    }).eq('id', updated.id).eq('user_id', currentUserId);
+
+    if (!error) {
+      setTrades(trades.map(t => t.id === updated.id ? updated : t));
+    }
+  };
+
+  // 删除交易从 Supabase
+  const handleDeleteTrade = async (id: string) => {
+    if (!currentUserId) return;
+
+    const { error } = await supabase.from('trading_journals').delete().eq('id', id).eq('user_id', currentUserId);
+
+    if (!error) {
+      setTrades(trades.filter(t => t.id !== id));
+    }
+  };
+
+  // 导入交易到 Supabase
+  const handleImportTrades = async (imported: Trade[]) => {
+    if (!currentUserId) return;
+
+    const data = imported.map(trade => {
+      const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
+      return {
+        user_id: currentUserId,
+        date: trade.entryDate,
+        symbol: trade.symbol,
+        direction: trade.direction,
+        entry_price: trade.entryPrice,
+        exit_price: trade.exitPrice,
+        pnl: trade.pnl,
+        pnl_percent: pnlPercent,
+        setup: trade.setup,
+        notes: trade.notes
+      };
+    });
+
+    const { error } = await supabase.from('trading_journals').insert(data);
+
+    if (!error) {
+      setTrades([...imported, ...trades]);
+    }
+  };
 
   const handleAddStrategy = (strategy: Strategy) => setStrategies([...strategies, strategy]);
   const handleUpdateStrategy = (updated: Strategy) => setStrategies(strategies.map(s => s.id === updated.id ? updated : s));
