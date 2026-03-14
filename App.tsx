@@ -1,4 +1,38 @@
 import React, { useState, useEffect } from 'react';
+
+// 上传图片到 Supabase Storage
+const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
+  try {
+    // 转换 base64 为 Blob
+    const response = await fetch(imageBase64);
+    const blob = await response.blob();
+
+    // 生成唯一文件名
+    const fileName = `${userId}/${Date.now()}.jpg`;
+
+    // 上传到 Supabase Storage
+    const { data, error } = await supabase.storage
+      .from('trade-images')
+      .upload(fileName, blob, {
+        contentType: 'image/jpeg'
+      });
+
+    if (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+
+    // 获取公开 URL
+    const { data: urlData } = supabase.storage
+      .from('trade-images')
+      .getPublicUrl(fileName);
+
+    return urlData.publicUrl;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    return null;
+  }
+};
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
 import Journal from './components/Journal';
@@ -152,7 +186,8 @@ const MainApp: React.FC = () => {
           pnl: trade.pnl || 0,
           setup: trade.setup || '',
           notes: trade.notes || '',
-          fees: 0
+          fees: 0,
+          images: trade.screenshot_url ? [trade.screenshot_url] : []
         }));
 
         setTrades(formattedTrades);
@@ -221,6 +256,12 @@ const MainApp: React.FC = () => {
       ? 'long'
       : 'short';
 
+    // 上传图片（如果有）
+    let screenshotUrl = null;
+    if (trade.images && trade.images.length > 0) {
+      screenshotUrl = await uploadImage(user.id, trade.images[0]);
+    }
+
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: user.id,
       date: trade.entryDate,
@@ -231,7 +272,8 @@ const MainApp: React.FC = () => {
       pnl: trade.pnl,
       pnl_percent: pnlPercent,
       setup: trade.setup,
-      notes: trade.notes
+      notes: trade.notes,
+      screenshot_url: screenshotUrl
     }).select().single();
 
     if (error) {
@@ -262,7 +304,8 @@ const MainApp: React.FC = () => {
         pnl: t.pnl || 0,
         setup: t.setup || '',
         notes: t.notes || '',
-        fees: 0
+        fees: 0,
+        images: t.screenshot_url ? [t.screenshot_url] : []
       }));
 
       setTrades(formattedTrades);
@@ -276,6 +319,17 @@ const MainApp: React.FC = () => {
 
     const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
 
+    // 检查是否有新图片需要上传
+    let screenshotUrl = null;
+    if (updated.images && updated.images.length > 0) {
+      // 检查是否已经是 URL（新上传的）还是 base64（需要上传的）
+      if (updated.images[0].startsWith('data:')) {
+        screenshotUrl = await uploadImage(user.id, updated.images[0]);
+      } else {
+        screenshotUrl = updated.images[0];
+      }
+    }
+
     const { error } = await supabase.from('trading_journals').update({
       date: updated.entryDate,
       symbol: updated.symbol,
@@ -285,7 +339,8 @@ const MainApp: React.FC = () => {
       pnl: updated.pnl,
       pnl_percent: pnlPercent,
       setup: updated.setup,
-      notes: updated.notes
+      notes: updated.notes,
+      screenshot_url: screenshotUrl
     }).eq('id', updated.id).eq('user_id', user.id);
 
     if (!error) {
