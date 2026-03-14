@@ -329,6 +329,11 @@ const MainApp: React.FC = () => {
 
     const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
 
+    // Direction enum 转换为字符串
+    const direction = updated.direction === '做多' || (updated.direction as any) === 'long'
+      ? 'long'
+      : 'short';
+
     // 检查是否有新图片需要上传
     let screenshotUrl = null;
     if (updated.images && updated.images.length > 0) {
@@ -343,7 +348,7 @@ const MainApp: React.FC = () => {
     const { error } = await supabase.from('trading_journals').update({
       date: updated.entryDate,
       symbol: updated.symbol,
-      direction: updated.direction,
+      direction: direction,
       entry_price: updated.entryPrice,
       exit_price: updated.exitPrice,
       pnl: updated.pnl,
