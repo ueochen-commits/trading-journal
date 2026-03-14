@@ -110,14 +110,20 @@ const MainApp: React.FC = () => {
   // 从 Supabase 加载用户交易数据
   useEffect(() => {
     const loadTrades = async () => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) {
+        console.log('Not authenticated, skipping load');
+        return;
+      }
 
       setIsDataLoading(true);
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          console.log('No user found');
+          return;
+        }
 
-        setCurrentUserId(user.id);
+        console.log('Loading trades for user:', user.id);
 
         const { data, error } = await supabase
           .from('trading_journals')
@@ -129,6 +135,8 @@ const MainApp: React.FC = () => {
           console.error('Error loading trades:', error);
           return;
         }
+
+        console.log('Loaded trades:', data?.length || 0);
 
         // 转换数据格式
         const formattedTrades = (data || []).map((trade: any) => ({
@@ -197,10 +205,15 @@ const MainApp: React.FC = () => {
   const handleAddTrade = async (trade: Trade) => {
     // 获取当前用户
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      console.error('No user logged in');
+      return;
+    }
 
     // 计算 pnl_percent
     const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
+
+    console.log('Saving trade for user:', user.id);
 
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: user.id,
@@ -215,8 +228,38 @@ const MainApp: React.FC = () => {
       notes: trade.notes
     }).select().single();
 
-    if (!error && data) {
-      setTrades([{ ...trade, id: data.id }, ...trades]);
+    if (error) {
+      console.error('Error saving trade:', error);
+      return;
+    }
+
+    console.log('Trade saved:', data);
+
+    if (data) {
+      // 重新加载所有交易
+      const { data: tradesData } = await supabase
+        .from('trading_journals')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      const formattedTrades = (tradesData || []).map((t: any) => ({
+        id: t.id,
+        entryDate: t.date,
+        exitDate: t.date,
+        symbol: t.symbol,
+        direction: t.direction as 'long' | 'short',
+        entryPrice: t.entry_price,
+        exitPrice: t.exit_price || 0,
+        quantity: 1,
+        status: t.exit_price ? 'closed' as const : 'open' as const,
+        pnl: t.pnl || 0,
+        setup: t.setup || '',
+        notes: t.notes || '',
+        fees: 0
+      }));
+
+      setTrades(formattedTrades);
     }
   };
 
