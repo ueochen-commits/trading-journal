@@ -530,7 +530,7 @@ const CreatePlaybookModal = ({
                                         {section.rules.map((rule) => (
                                             <div key={rule.id} className="flex gap-3 items-center group/rule">
                                                 <GripVertical className="w-4 h-4 text-slate-300 cursor-grab opacity-50 group-hover/rule:opacity-100" />
-                                                <input type="text" value={rule.text} onChange={(e) => handleRuleChange(section.id, rule.id, e.target.value)} placeholder="Type a rule..." className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-400" />
+                                                <input type="text" value={rule.text} onChange={(e) => handleRuleChange(section.id, rule.id, e.target.value)} placeholder="Type a rule..." className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-400" />
                                                 <button onClick={() => handleDeleteRule(section.id, rule.id)} className="text-slate-300 hover:text-rose-500 p-1 opacity-0 group-hover/rule:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
                                             </div>
                                         ))}
