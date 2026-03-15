@@ -15,14 +15,14 @@ export const userDataService = {
     if (!userId) return null;
 
     const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, weeklyGoalRes, settingsRes, profilesRes] = await Promise.all([
-      supabase.from('trading_journals').select('*').order('created_at', { ascending: false }),
-      supabase.from('strategies').select('*').order('created_at', { ascending: false }),
-      supabase.from('checklist_items').select('*').order('order_index'),
-      supabase.from('tracker_rules').select('*'),
-      supabase.from('daily_plans').select('*').order('date', { ascending: false }),
-      supabase.from('notifications').select('*').order('created_at', { ascending: false }),
-      supabase.from('discipline_rules').select('*'),
-      supabase.from('daily_discipline_records').select('*').order('date', { ascending: false }),
+      supabase.from('trading_journals').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('checklist_items').select('*').eq('user_id', userId).order('order_index'),
+      supabase.from('tracker_rules').select('*').eq('user_id', userId),
+      supabase.from('daily_plans').select('*').eq('user_id', userId).order('date', { ascending: false }),
+      supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('discipline_rules').select('*').eq('user_id', userId),
+      supabase.from('daily_discipline_records').select('*').eq('user_id', userId).order('date', { ascending: false }),
       supabase.from('user_settings').select('settings, risk_settings').eq('user_id', userId).single(),
       supabase.from('profiles').select('*').eq('id', userId).single()
     ]);
