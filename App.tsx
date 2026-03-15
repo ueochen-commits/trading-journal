@@ -183,17 +183,21 @@ const MainApp: React.FC = () => {
         const formattedTrades = (data || []).map((trade: any) => ({
           id: trade.id,
           entryDate: trade.date,
-          exitDate: trade.date,
+          exitDate: trade.exit_date || trade.date,
           symbol: trade.symbol,
           direction: trade.direction === 'long' ? Direction.LONG : Direction.SHORT,
           entryPrice: trade.entry_price,
           exitPrice: trade.exit_price || 0,
-          quantity: 1,
+          quantity: trade.quantity || 1,
+          leverage: trade.leverage || 1,
+          riskAmount: trade.risk_amount || 0,
           status: trade.exit_price ? 'closed' as const : 'open' as const,
           pnl: trade.pnl || 0,
           setup: trade.setup || '',
           notes: trade.notes || '',
-          fees: 0,
+          reviewNotes: trade.review_notes || '',
+          fees: trade.fees || 0,
+          mistakes: trade.mistakes ? (typeof trade.mistakes === 'string' ? JSON.parse(trade.mistakes) : trade.mistakes) : [],
           images: trade.screenshot_url ? [trade.screenshot_url] : []
         }));
 
@@ -275,14 +279,21 @@ const MainApp: React.FC = () => {
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: user.id,
       date: trade.entryDate,
+      exit_date: trade.exitDate || null,
       symbol: trade.symbol,
       direction: direction,
       entry_price: trade.entryPrice,
       exit_price: trade.exitPrice,
+      quantity: trade.quantity || 1,
+      leverage: trade.leverage || 1,
+      risk_amount: trade.riskAmount || 0,
+      fees: trade.fees || 0,
       pnl: trade.pnl,
       pnl_percent: pnlPercent,
       setup: trade.setup,
       notes: trade.notes,
+      review_notes: trade.reviewNotes || '',
+      mistakes: JSON.stringify(trade.mistakes || []),
       screenshot_url: screenshotUrl
     }).select().single();
 
@@ -304,17 +315,21 @@ const MainApp: React.FC = () => {
       const formattedTrades = (tradesData || []).map((t: any) => ({
         id: t.id,
         entryDate: t.date,
-        exitDate: t.date,
+        exitDate: t.exit_date || t.date,
         symbol: t.symbol,
         direction: t.direction === 'long' ? Direction.LONG : Direction.SHORT,
         entryPrice: t.entry_price,
         exitPrice: t.exit_price || 0,
-        quantity: 1,
+        quantity: t.quantity || 1,
+        leverage: t.leverage || 1,
+        riskAmount: t.risk_amount || 0,
         status: t.exit_price ? 'closed' as const : 'open' as const,
         pnl: t.pnl || 0,
         setup: t.setup || '',
         notes: t.notes || '',
-        fees: 0,
+        reviewNotes: t.review_notes || '',
+        fees: t.fees || 0,
+        mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
         images: t.screenshot_url ? [t.screenshot_url] : []
       }));
 
@@ -347,14 +362,21 @@ const MainApp: React.FC = () => {
 
     const { error } = await supabase.from('trading_journals').update({
       date: updated.entryDate,
+      exit_date: updated.exitDate || null,
       symbol: updated.symbol,
       direction: direction,
       entry_price: updated.entryPrice,
       exit_price: updated.exitPrice,
+      quantity: updated.quantity || 1,
+      leverage: updated.leverage || 1,
+      risk_amount: updated.riskAmount || 0,
+      fees: updated.fees || 0,
       pnl: updated.pnl,
       pnl_percent: pnlPercent,
       setup: updated.setup,
       notes: updated.notes,
+      review_notes: updated.reviewNotes || '',
+      mistakes: JSON.stringify(updated.mistakes || []),
       screenshot_url: screenshotUrl
     }).eq('id', updated.id).eq('user_id', user.id);
 
@@ -385,14 +407,21 @@ const MainApp: React.FC = () => {
       return {
         user_id: user.id,
         date: trade.entryDate,
+        exit_date: trade.exitDate || null,
         symbol: trade.symbol,
         direction: trade.direction,
         entry_price: trade.entryPrice,
         exit_price: trade.exitPrice,
+        quantity: trade.quantity || 1,
+        leverage: trade.leverage || 1,
+        risk_amount: trade.riskAmount || 0,
+        fees: trade.fees || 0,
         pnl: trade.pnl,
         pnl_percent: pnlPercent,
         setup: trade.setup,
-        notes: trade.notes
+        notes: trade.notes,
+        review_notes: trade.reviewNotes || '',
+        mistakes: JSON.stringify(trade.mistakes || [])
       };
     });
 

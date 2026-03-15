@@ -50,14 +50,21 @@ export const userDataService = {
     const { error } = await supabase.from('trading_journals').insert({
       user_id: userId,
       date: trade.date,
+      exit_date: trade.exitDate || null,
       symbol: trade.symbol,
       direction: trade.direction,
       entry_price: trade.entryPrice,
       exit_price: trade.exitPrice,
+      quantity: trade.quantity || 1,
+      leverage: trade.leverage || 1,
+      risk_amount: trade.riskAmount || 0,
+      fees: trade.fees || 0,
       pnl: trade.pnl,
       pnl_percent: trade.pnlPercent,
       setup: trade.setup,
       notes: trade.notes,
+      review_notes: trade.reviewNotes || '',
+      mistakes: JSON.stringify(trade.mistakes || []),
       emotions: trade.emotions
     });
 
@@ -71,14 +78,21 @@ export const userDataService = {
 
     const { error } = await supabase.from('trading_journals').update({
       date: trade.date,
+      exit_date: trade.exitDate || null,
       symbol: trade.symbol,
       direction: trade.direction,
       entry_price: trade.entryPrice,
       exit_price: trade.exitPrice,
+      quantity: trade.quantity || 1,
+      leverage: trade.leverage || 1,
+      risk_amount: trade.riskAmount || 0,
+      fees: trade.fees || 0,
       pnl: trade.pnl,
       pnl_percent: trade.pnlPercent,
       setup: trade.setup,
       notes: trade.notes,
+      review_notes: trade.reviewNotes || '',
+      mistakes: JSON.stringify(trade.mistakes || []),
       emotions: trade.emotions
     }).eq('id', id).eq('user_id', userId);
 
@@ -102,14 +116,21 @@ export const userDataService = {
     const data = trades.map(trade => ({
       user_id: userId,
       date: trade.date,
+      exit_date: trade.exitDate || null,
       symbol: trade.symbol,
       direction: trade.direction,
       entry_price: trade.entryPrice,
       exit_price: trade.exitPrice,
+      quantity: trade.quantity || 1,
+      leverage: trade.leverage || 1,
+      risk_amount: trade.riskAmount || 0,
+      fees: trade.fees || 0,
       pnl: trade.pnl,
       pnl_percent: trade.pnlPercent,
       setup: trade.setup,
       notes: trade.notes,
+      review_notes: trade.reviewNotes || '',
+      mistakes: JSON.stringify(trade.mistakes || []),
       emotions: trade.emotions
     }));
 
