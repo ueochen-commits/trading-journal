@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, Direction } from '../types';
+import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, Direction, TradeStatus } from '../types';
 import { userDataService } from '../services/userDataService';
 import { DEFAULT_TRACKER_RULES, DEFAULT_DISCIPLINE_RULES } from '../constants';
 
@@ -25,26 +25,40 @@ export function useUserData(userId: string | null) {
       if (!result) return;
 
       // 交易数据需要格式转换（raw DB rows）
-      const formattedTrades = (result.trades || []).map((t: any) => ({
-        id: t.id,
-        entryDate: t.date,
-        exitDate: t.exit_date || t.date,
-        symbol: t.symbol,
-        direction: t.direction === 'long' ? Direction.LONG : Direction.SHORT,
-        entryPrice: t.entry_price,
-        exitPrice: t.exit_price || 0,
-        quantity: t.quantity || 1,
-        leverage: t.leverage || 1,
-        riskAmount: t.risk_amount || 0,
-        status: t.exit_price ? 'closed' as const : 'open' as const,
-        pnl: t.pnl || 0,
-        setup: t.setup || '',
-        notes: t.notes || '',
-        reviewNotes: t.review_notes || '',
-        fees: t.fees || 0,
-        mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
-        images: t.screenshot_url ? [t.screenshot_url] : []
-      }));
+      const formattedTrades = (result.trades || []).map((t: any) => {
+        const pnl = t.pnl || 0;
+        const exitPrice = t.exit_price || 0;
+        let status: TradeStatus;
+        if (!exitPrice) {
+          status = TradeStatus.OPEN;
+        } else if (pnl > 0) {
+          status = TradeStatus.WIN;
+        } else if (pnl < 0) {
+          status = TradeStatus.LOSS;
+        } else {
+          status = TradeStatus.BE;
+        }
+        return {
+          id: t.id,
+          entryDate: t.date,
+          exitDate: t.exit_date || t.date,
+          symbol: t.symbol,
+          direction: t.direction === 'long' ? Direction.LONG : Direction.SHORT,
+          entryPrice: t.entry_price,
+          exitPrice,
+          quantity: t.quantity || 1,
+          leverage: t.leverage || 1,
+          riskAmount: t.risk_amount || 0,
+          status,
+          pnl,
+          setup: t.setup || '',
+          notes: t.notes || '',
+          reviewNotes: t.review_notes || '',
+          fees: t.fees || 0,
+          mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
+          images: t.screenshot_url ? [t.screenshot_url] : []
+        };
+      });
 
       setTrades(formattedTrades);
       // 其余数据已在 userDataService.loadUserData 中完成 DB→TS 映射

@@ -116,6 +116,42 @@ function useStickyState<T>(defaultValue: T, key: string): [T, React.Dispatch<Rea
   return [value, setValue];
 }
 
+// 工具函数：将 DB 行转换为前端 Trade 对象，正确计算 status
+const formatTradeFromDB = (trade: any): Trade => {
+  const pnl = trade.pnl || 0;
+  const exitPrice = trade.exit_price || 0;
+  let status: TradeStatus;
+  if (!exitPrice) {
+    status = TradeStatus.OPEN;
+  } else if (pnl > 0) {
+    status = TradeStatus.WIN;
+  } else if (pnl < 0) {
+    status = TradeStatus.LOSS;
+  } else {
+    status = TradeStatus.BE;
+  }
+  return {
+    id: trade.id,
+    entryDate: trade.date,
+    exitDate: trade.exit_date || trade.date,
+    symbol: trade.symbol,
+    direction: trade.direction === 'long' ? Direction.LONG : Direction.SHORT,
+    entryPrice: trade.entry_price,
+    exitPrice: exitPrice,
+    quantity: trade.quantity || 1,
+    leverage: trade.leverage || 1,
+    riskAmount: trade.risk_amount || 0,
+    status,
+    pnl,
+    setup: trade.setup || '',
+    notes: trade.notes || '',
+    reviewNotes: trade.review_notes || '',
+    fees: trade.fees || 0,
+    mistakes: trade.mistakes ? (typeof trade.mistakes === 'string' ? JSON.parse(trade.mistakes) : trade.mistakes) : [],
+    images: trade.screenshot_url ? [trade.screenshot_url] : []
+  };
+};
+
 // Wrapper to use context
 const MainApp: React.FC = () => {
   const { isAuthenticated, openProfile } = useUser();
@@ -160,26 +196,7 @@ const MainApp: React.FC = () => {
         if (!result) return;
 
         // 交易数据需要格式转换
-        const formattedTrades = (result.trades || []).map((trade: any) => ({
-          id: trade.id,
-          entryDate: trade.date,
-          exitDate: trade.exit_date || trade.date,
-          symbol: trade.symbol,
-          direction: trade.direction === 'long' ? Direction.LONG : Direction.SHORT,
-          entryPrice: trade.entry_price,
-          exitPrice: trade.exit_price || 0,
-          quantity: trade.quantity || 1,
-          leverage: trade.leverage || 1,
-          riskAmount: trade.risk_amount || 0,
-          status: trade.exit_price ? 'closed' as const : 'open' as const,
-          pnl: trade.pnl || 0,
-          setup: trade.setup || '',
-          notes: trade.notes || '',
-          reviewNotes: trade.review_notes || '',
-          fees: trade.fees || 0,
-          mistakes: trade.mistakes ? (typeof trade.mistakes === 'string' ? JSON.parse(trade.mistakes) : trade.mistakes) : [],
-          images: trade.screenshot_url ? [trade.screenshot_url] : []
-        }));
+        const formattedTrades = (result.trades || []).map(formatTradeFromDB);
 
         setTrades(formattedTrades);
         if (result.strategies.length > 0) setStrategies(result.strategies);
@@ -301,26 +318,7 @@ const MainApp: React.FC = () => {
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      const formattedTrades = (tradesData || []).map((t: any) => ({
-        id: t.id,
-        entryDate: t.date,
-        exitDate: t.exit_date || t.date,
-        symbol: t.symbol,
-        direction: t.direction === 'long' ? Direction.LONG : Direction.SHORT,
-        entryPrice: t.entry_price,
-        exitPrice: t.exit_price || 0,
-        quantity: t.quantity || 1,
-        leverage: t.leverage || 1,
-        riskAmount: t.risk_amount || 0,
-        status: t.exit_price ? 'closed' as const : 'open' as const,
-        pnl: t.pnl || 0,
-        setup: t.setup || '',
-        notes: t.notes || '',
-        reviewNotes: t.review_notes || '',
-        fees: t.fees || 0,
-        mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
-        images: t.screenshot_url ? [t.screenshot_url] : []
-      }));
+      const formattedTrades = (tradesData || []).map(formatTradeFromDB);
 
       setTrades(formattedTrades);
     }
