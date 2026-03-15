@@ -57,7 +57,9 @@ export function useUserData(userId: string | null) {
           fees: t.fees || 0,
           mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
           images: t.screenshot_url ? [t.screenshot_url] : [],
-          rating: t.rating || undefined
+          rating: t.rating || undefined,
+          compliance: t.compliance || undefined,
+          executionGrade: t.execution_grade || undefined
         };
       });
 
