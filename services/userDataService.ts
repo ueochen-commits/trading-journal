@@ -347,20 +347,33 @@ export const userDataService = {
   // 保存每日计划/笔记
   async savePlan(plan: DailyPlan) {
     const userId = await getCurrentUserId();
-    if (!userId) return { error: 'Not authenticated' };
+    if (!userId) return { data: null, error: 'Not authenticated' };
 
-    const { error } = await supabase.from('daily_plans').upsert({
+    // 判断 id 是否为合法 uuid（Supabase 表的 id 列是 uuid 类型）
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(plan.id);
+
+    const payload = {
       user_id: userId,
-      id: plan.id,
       date: plan.date,
       title: plan.title || '',
       folder: plan.folder || 'daily-journal',
       content: plan.content || '',
       linked_trade_ids: plan.linkedTradeIds || [],
       is_deleted: plan.isDeleted ?? false,
-    }, { onConflict: 'id' });
+    };
 
-    return { error };
+    if (isUuid) {
+      // 已有合法 uuid，用 upsert
+      const { data, error } = await supabase.from('daily_plans').upsert({
+        ...payload,
+        id: plan.id,
+      }, { onConflict: 'id' }).select().single();
+      return { data, error };
+    } else {
+      // 前端生成的临时 id，让 DB 自动生成 uuid
+      const { data, error } = await supabase.from('daily_plans').insert(payload).select().single();
+      return { data, error };
+    }
   },
 
   // 删除计划
@@ -409,21 +422,20 @@ export const userDataService = {
   // 保存纪律规则
   async saveDisciplineRules(rules: DisciplineRule[]) {
     const userId = await getCurrentUserId();
-    if (!userId) return { error: 'Not authenticated' };
+    if (!userId) return { data: null, error: 'Not authenticated' };
 
     await supabase.from('discipline_rules').delete().eq('user_id', userId);
 
-    if (rules.length === 0) return { error: null };
+    if (rules.length === 0) return { data: [], error: null };
 
     const data = rules.map(rule => ({
       user_id: userId,
-      id: rule.id,
       text: rule.text,
       xp_reward: rule.xpReward,
     }));
 
-    const { error } = await supabase.from('discipline_rules').insert(data);
-    return { error };
+    const { data: inserted, error } = await supabase.from('discipline_rules').insert(data).select();
+    return { data: inserted, error };
   },
 
   // 保存纪律记录

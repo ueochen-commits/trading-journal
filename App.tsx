@@ -440,12 +440,19 @@ const MainApp: React.FC = () => {
   };
 
   const handleSavePlan = async (plan: DailyPlan) => {
+      // 先乐观更新本地 state
       setPlans(prev => {
           const exists = prev.find(p => p.id === plan.id);
           if (exists) return prev.map(p => p.id === plan.id ? plan : p);
           return [plan, ...prev];
       });
-      await userDataService.savePlan(plan);
+
+      const { data, error } = await userDataService.savePlan(plan);
+
+      // 如果 DB 返回了新 id（前端临时 id 被替换），更新本地
+      if (!error && data && data.id !== plan.id) {
+        setPlans(prev => prev.map(p => p.id === plan.id ? { ...plan, id: data.id } : p));
+      }
   };
 
   const handleDeletePlan = async (id: string) => {
@@ -487,9 +494,18 @@ const MainApp: React.FC = () => {
     userDataService.saveRiskSettings(settings);
   };
 
-  const handleUpdateDisciplineRules = (rules: DisciplineRule[]) => {
+  const handleUpdateDisciplineRules = async (rules: DisciplineRule[]) => {
     setDisciplineRules(rules);
-    userDataService.saveDisciplineRules(rules);
+    const { data } = await userDataService.saveDisciplineRules(rules);
+    // 用 DB 返回的真实 uuid 替换前端临时 id
+    if (data && data.length > 0) {
+      const dbRules: DisciplineRule[] = data.map((r: any) => ({
+        id: r.id,
+        text: r.text,
+        xpReward: r.xp_reward ?? 10,
+      }));
+      setDisciplineRules(dbRules);
+    }
   };
 
   const handleUpdateStrategiesFromPlans = (strats: Strategy[]) => {
