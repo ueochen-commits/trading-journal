@@ -13,12 +13,25 @@ const AuthPage: React.FC = () => {
     // Form Fields
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [username, setUsername] = useState('');
 
     const handleAuth = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         setError(null);
+
+        if (isSignUp && password !== confirmPassword) {
+            setError(language === 'cn' ? '两次输入的密码不一致' : 'Passwords do not match');
+            setIsLoading(false);
+            return;
+        }
+
+        if (isSignUp && password.length < 6) {
+            setError(language === 'cn' ? '密码至少需要6个字符' : 'Password must be at least 6 characters');
+            setIsLoading(false);
+            return;
+        }
 
         try {
             if (isSignUp) {
@@ -66,13 +79,13 @@ const AuthPage: React.FC = () => {
                     {/* Toggle Tabs */}
                     <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl mb-8">
                         <button 
-                            onClick={() => { setIsSignUp(false); setError(null); }}
+                            onClick={() => { setIsSignUp(false); setError(null); setConfirmPassword(''); }}
                             className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${!isSignUp ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             {language === 'cn' ? '登录' : 'Sign In'}
                         </button>
                         <button 
-                            onClick={() => { setIsSignUp(true); setError(null); }}
+                            onClick={() => { setIsSignUp(true); setError(null); setConfirmPassword(''); }}
                             className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${isSignUp ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                         >
                             {language === 'cn' ? '注册' : 'Sign Up'}
@@ -145,6 +158,28 @@ const AuthPage: React.FC = () => {
                             </div>
                         </div>
 
+                        {isSignUp && (
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1 flex items-center justify-between">
+                                    {language === 'cn' ? '确认密码' : 'Confirm Password'}
+                                    {isSignUp && confirmPassword && password !== confirmPassword && (
+                                        <span className="text-rose-500 normal-case">{language === 'cn' ? '密码不一致' : 'Passwords do not match'}</span>
+                                    )}
+                                </label>
+                                <div className="relative group">
+                                    <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                                    <input
+                                        type="password"
+                                        required
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className={`w-full bg-slate-50 dark:bg-slate-950 border rounded-xl pl-11 pr-4 py-3.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-all ${confirmPassword && password !== confirmPassword ? 'border-rose-500 ring-2 ring-rose-500/20' : 'border-slate-200 dark:border-slate-800'}`}
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         <button 
                             type="submit" 
                             disabled={isLoading}
@@ -173,7 +208,7 @@ const AuthPage: React.FC = () => {
                             ? (language === 'cn' ? '已经有账户了？' : 'Already have an account? ') 
                             : (language === 'cn' ? '还没有账户？' : 'Don\'t have an account? ')}
                         <button 
-                            onClick={() => { setIsSignUp(!isSignUp); setError(null); }}
+                            onClick={() => { setIsSignUp(!isSignUp); setError(null); setConfirmPassword(''); }}
                             className="text-indigo-500 hover:underline font-bold ml-1"
                         >
                             {isSignUp ? (language === 'cn' ? '立即登录' : 'Sign In') : (language === 'cn' ? '免费注册' : 'Sign Up')}
