@@ -56,7 +56,8 @@ export function useUserData(userId: string | null) {
           reviewNotes: t.review_notes || '',
           fees: t.fees || 0,
           mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
-          images: t.screenshot_url ? [t.screenshot_url] : []
+          images: t.screenshot_url ? [t.screenshot_url] : [],
+          rating: t.rating || undefined
         };
       });
 

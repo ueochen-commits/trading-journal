@@ -148,7 +148,8 @@ const formatTradeFromDB = (trade: any): Trade => {
     reviewNotes: trade.review_notes || '',
     fees: trade.fees || 0,
     mistakes: trade.mistakes ? (typeof trade.mistakes === 'string' ? JSON.parse(trade.mistakes) : trade.mistakes) : [],
-    images: trade.screenshot_url ? [trade.screenshot_url] : []
+    images: trade.screenshot_url ? [trade.screenshot_url] : [],
+    rating: trade.rating || undefined
   };
 };
 
@@ -364,7 +365,8 @@ const MainApp: React.FC = () => {
       notes: updated.notes,
       review_notes: updated.reviewNotes || '',
       mistakes: JSON.stringify(updated.mistakes || []),
-      screenshot_url: screenshotUrl
+      screenshot_url: screenshotUrl,
+      rating: updated.rating || null
     }).eq('id', updated.id).eq('user_id', user.id);
 
     if (!error) {
