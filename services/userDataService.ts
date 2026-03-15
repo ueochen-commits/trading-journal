@@ -91,7 +91,7 @@ export const userDataService = {
       supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('checklist_items').select('*').eq('user_id', userId).order('order_index'),
       supabase.from('tracker_rules').select('*').eq('user_id', userId),
-      supabase.from('daily_plans').select('*').eq('user_id', userId).eq('is_deleted', false).order('date', { ascending: false }),
+      supabase.from('daily_plans').select('*').eq('user_id', userId).order('date', { ascending: false }),
       supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('discipline_rules').select('*').eq('user_id', userId),
       supabase.from('daily_discipline_records').select('*').eq('user_id', userId).order('date', { ascending: false }),
@@ -99,12 +99,19 @@ export const userDataService = {
       supabase.from('profiles').select('*').eq('id', userId).single()
     ]);
 
+    // 调试日志
+    console.log('[loadUserData] plans raw:', plansRes.data?.length, plansRes.error);
+    console.log('[loadUserData] strategies raw:', strategiesRes.data?.length, strategiesRes.error);
+
+    // 过滤软删除的笔记（在应用层处理，避免依赖 DB 列）
+    const activePlans = (plansRes.data || []).filter((p: any) => !p.is_deleted);
+
     return {
       trades: tradesRes.data || [],
       strategies: (strategiesRes.data || []).map(dbToStrategy),
       checklist: (checklistRes.data || []).map(dbToChecklist),
       trackerRules: (trackerRulesRes.data || []).map(dbToTrackerRule),
-      plans: (plansRes.data || []).map(dbToPlan),
+      plans: activePlans.map(dbToPlan),
       notifications: (notificationsRes.data || []).map(dbToNotification),
       disciplineRules: (disciplineRulesRes.data || []).map(dbToDisciplineRule),
       disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
@@ -368,10 +375,12 @@ export const userDataService = {
         ...payload,
         id: plan.id,
       }, { onConflict: 'id' }).select().single();
+      console.log('[savePlan] upsert result:', { data: data?.id, error });
       return { data, error };
     } else {
       // 前端生成的临时 id，让 DB 自动生成 uuid
       const { data, error } = await supabase.from('daily_plans').insert(payload).select().single();
+      console.log('[savePlan] insert result:', { data: data?.id, error });
       return { data, error };
     }
   },
