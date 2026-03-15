@@ -69,6 +69,7 @@ import { LanguageProvider, useLanguage } from './LanguageContext';
 import { TourProvider } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
+import { userDataService } from './services/userDataService';
 import { Plus, MessageSquare, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
@@ -125,62 +126,41 @@ const MainApp: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
 
-  // Data State with Persistence - 使用空数组，从 Supabase 加载
+  // Data State - 从 Supabase 加载，不再使用 localStorage
   const [trades, setTrades] = useState<Trade[]>([]);
-  const [strategies, setStrategies] = useStickyState<Strategy[]>(MOCK_STRATEGIES, 'tg_strategies');
-  const [checklist, setChecklist] = useStickyState<ChecklistItem[]>(MOCK_PRE_TRADE_CHECKLIST, 'tg_checklist');
-  const [trackerRules, setTrackerRules] = useStickyState<TrackerRule[]>(DEFAULT_TRACKER_RULES, 'tg_trackerRules');
-  const [plans, setPlans] = useStickyState<DailyPlan[]>([], 'tg_plans');
+  const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
+  const [trackerRules, setTrackerRules] = useState<TrackerRule[]>([]);
+  const [plans, setPlans] = useState<DailyPlan[]>([]);
   const [posts, setPosts] = useStickyState<Post[]>(MOCK_POSTS, 'tg_posts');
-  const [notifications, setNotifications] = useStickyState<Notification[]>(MOCK_NOTIFICATIONS, 'tg_notifications');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  // Discipline & Goals Persistence
-  const [disciplineRules, setDisciplineRules] = useStickyState<DisciplineRule[]>(DEFAULT_DISCIPLINE_RULES, 'tg_disciplineRules');
-  const [disciplineHistory, setDisciplineHistory] = useStickyState<DailyDisciplineRecord[]>([], 'tg_disciplineHistory');
-  const [weeklyGoal, setWeeklyGoal] = useStickyState<WeeklyGoal>({ type: 'amount', value: 1000, isActive: true }, 'tg_weeklyGoal');
+  // Discipline & Goals
+  const [disciplineRules, setDisciplineRules] = useState<DisciplineRule[]>([]);
+  const [disciplineHistory, setDisciplineHistory] = useState<DailyDisciplineRecord[]>([]);
+  const [weeklyGoal, setWeeklyGoal] = useState<WeeklyGoal>({ type: 'amount', value: 1000, isActive: true });
 
-  // Risk Settings Persistence
-  const [riskSettings, setRiskSettings] = useStickyState<RiskSettings>({
+  // Risk Settings
+  const [riskSettings, setRiskSettings] = useState<RiskSettings>({
     accountSize: 10000,
     maxDailyLoss: 500,
     maxTradeRisk: 100,
     maxConsecutiveLosses: 3,
     maxOpenPositions: 2
-  }, 'tg_riskSettings');
+  });
 
-  // 从 Supabase 加载用户交易数据
+  // 从 Supabase 加载所有用户数据
   useEffect(() => {
-    const loadTrades = async () => {
-      if (!isAuthenticated) {
-        console.log('Not authenticated, skipping load');
-        return;
-      }
+    const loadAllData = async () => {
+      if (!isAuthenticated) return;
 
       setIsDataLoading(true);
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('No user found');
-          return;
-        }
+        const result = await userDataService.loadUserData();
+        if (!result) return;
 
-        console.log('Loading trades for user:', user.id);
-
-        const { data, error } = await supabase
-          .from('trading_journals')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-
-        if (error) {
-          console.error('Error loading trades:', error);
-          return;
-        }
-
-        console.log('Loaded trades:', data?.length || 0);
-
-        // 转换数据格式
-        const formattedTrades = (data || []).map((trade: any) => ({
+        // 交易数据需要格式转换
+        const formattedTrades = (result.trades || []).map((trade: any) => ({
           id: trade.id,
           entryDate: trade.date,
           exitDate: trade.exit_date || trade.date,
@@ -202,14 +182,23 @@ const MainApp: React.FC = () => {
         }));
 
         setTrades(formattedTrades);
+        if (result.strategies.length > 0) setStrategies(result.strategies);
+        if (result.checklist.length > 0) setChecklist(result.checklist);
+        if (result.trackerRules.length > 0) setTrackerRules(result.trackerRules);
+        if (result.plans.length > 0) setPlans(result.plans);
+        if (result.notifications.length > 0) setNotifications(result.notifications);
+        if (result.disciplineRules.length > 0) setDisciplineRules(result.disciplineRules);
+        if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
+        if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
+        if (result.riskSettings) setRiskSettings(result.riskSettings);
       } catch (error) {
-        console.error('Error loading trades:', error);
+        console.error('Error loading user data:', error);
       } finally {
         setIsDataLoading(false);
       }
     };
 
-    loadTrades();
+    loadAllData();
   }, [isAuthenticated]);
 
   // UI State for Auto-Actions (Not persisted)
@@ -432,30 +421,124 @@ const MainApp: React.FC = () => {
     }
   };
 
-  const handleAddStrategy = (strategy: Strategy) => setStrategies([...strategies, strategy]);
-  const handleUpdateStrategy = (updated: Strategy) => setStrategies(strategies.map(s => s.id === updated.id ? updated : s));
-  const handleDeleteStrategy = (id: string) => setStrategies(strategies.filter(s => s.id !== id));
+  const handleAddStrategy = async (strategy: Strategy) => {
+    const { data, error } = await userDataService.saveStrategy(strategy);
+    if (!error && data) {
+      setStrategies(prev => [{ ...strategy, id: data.id }, ...prev]);
+    } else {
+      // fallback: 用本地 id
+      setStrategies(prev => [...prev, strategy]);
+    }
+  };
+  const handleUpdateStrategy = async (updated: Strategy) => {
+    setStrategies(strategies.map(s => s.id === updated.id ? updated : s));
+    await userDataService.updateStrategy(updated.id, updated);
+  };
+  const handleDeleteStrategy = async (id: string) => {
+    setStrategies(strategies.filter(s => s.id !== id));
+    await userDataService.deleteStrategy(id);
+  };
 
-  const handleSavePlan = (plan: DailyPlan) => {
+  const handleSavePlan = async (plan: DailyPlan) => {
       setPlans(prev => {
           const exists = prev.find(p => p.id === plan.id);
           if (exists) return prev.map(p => p.id === plan.id ? plan : p);
           return [plan, ...prev];
       });
+      await userDataService.savePlan(plan);
   };
-  
-  const handleDeletePlan = (id: string) => {
-      setPlans(prev => {
-          const plan = prev.find(p => p.id === id);
-          if (!plan) return prev;
-          if (plan.isDeleted) {
-              return prev.filter(p => p.id !== id);
-          }
-          return prev.map(p => p.id === id ? { ...p, isDeleted: true } : p);
-      });
+
+  const handleDeletePlan = async (id: string) => {
+      const plan = plans.find(p => p.id === id);
+      if (!plan) return;
+
+      if (plan.isDeleted) {
+          // 已经软删除过，真正删除
+          setPlans(prev => prev.filter(p => p.id !== id));
+          await userDataService.deletePlan(id);
+      } else {
+          // 软删除
+          const softDeleted = { ...plan, isDeleted: true };
+          setPlans(prev => prev.map(p => p.id === id ? softDeleted : p));
+          await userDataService.savePlan(softDeleted);
+      }
   };
 
   const onClearShareIntent = () => setShareIntent(null);
+
+  // --- Supabase 同步 wrapper ---
+  const handleUpdateTrackerRules = (rules: TrackerRule[]) => {
+    setTrackerRules(rules);
+    userDataService.saveTrackerRules(rules);
+  };
+
+  const handleUpdateChecklist = (items: ChecklistItem[]) => {
+    setChecklist(items);
+    userDataService.saveChecklist(items);
+  };
+
+  const handleSetWeeklyGoal = (goal: WeeklyGoal) => {
+    setWeeklyGoal(goal);
+    userDataService.saveWeeklyGoal(goal);
+  };
+
+  const handleSaveRiskSettings = (settings: RiskSettings) => {
+    setRiskSettings(settings);
+    userDataService.saveRiskSettings(settings);
+  };
+
+  const handleUpdateDisciplineRules = (rules: DisciplineRule[]) => {
+    setDisciplineRules(rules);
+    userDataService.saveDisciplineRules(rules);
+  };
+
+  const handleUpdateStrategiesFromPlans = (strats: Strategy[]) => {
+    setStrategies(strats);
+    // 逐个更新到 Supabase
+    strats.forEach(s => userDataService.updateStrategy(s.id, s));
+  };
+
+  const handlePushNotification = (n: Notification) => {
+    setNotifications(prev => [n, ...prev]);
+    userDataService.saveNotification(n);
+  };
+
+  const handleMarkAllNotificationsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    userDataService.markAllNotificationsRead();
+  };
+
+  const handleMarkOneNotificationRead = (id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+    userDataService.markNotificationRead(id);
+  };
+
+  const handleCheckDisciplineRule = (ruleId: string, isChecked: boolean) => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayRecord = disciplineHistory.find(r => r.date === todayStr);
+    let newHistory = [...disciplineHistory];
+    let updatedRecord: DailyDisciplineRecord;
+
+    if (todayRecord) {
+      const newCompletedIds = isChecked
+        ? [...todayRecord.completedRuleIds, ruleId]
+        : todayRecord.completedRuleIds.filter(id => id !== ruleId);
+      updatedRecord = { ...todayRecord, completedRuleIds: newCompletedIds };
+      newHistory = newHistory.map(r => r.date === todayStr ? updatedRecord : r);
+    } else {
+      updatedRecord = {
+        date: todayStr,
+        completedRuleIds: isChecked ? [ruleId] : [],
+        totalPossibleXp: disciplineRules.length * 10,
+        earnedXp: isChecked ? 10 : 0,
+        isSuccess: true,
+      };
+      newHistory.push(updatedRecord);
+    }
+
+    setDisciplineHistory(newHistory);
+    userDataService.saveDisciplineRecord(updatedRecord);
+  };
 
   const handleShare = (intent: ShareIntent) => {
       setShareIntent(intent);
@@ -532,44 +615,23 @@ const MainApp: React.FC = () => {
           case 'dashboard':
               return (
                   <PageContainer>
-                      <Dashboard 
+                      <Dashboard
                           trades={trades}
                           riskSettings={riskSettings}
                           trackerRules={trackerRules}
-                          onUpdateTrackerRules={setTrackerRules}
+                          onUpdateTrackerRules={handleUpdateTrackerRules}
                           plans={plans}
                           onSavePlan={handleSavePlan}
                           onQuickAddTrade={() => { setActiveTab('journal'); setJournalAutoOpen(true); }}
                           weeklyGoal={weeklyGoal}
-                          onSetWeeklyGoal={setWeeklyGoal}
+                          onSetWeeklyGoal={handleSetWeeklyGoal}
                           onViewGoals={() => {/* Navigate to goals detail if needed */}}
                           onViewLeaderboard={() => setActiveTab('leaderboard')}
                           userProfile={{ level: 5, currentXp: 450, nextLevelXp: 1000, totalLifetimeXp: 4500 }} // Mock
                           disciplineHistory={disciplineHistory}
                           disciplineRules={disciplineRules}
-                          onUpdateDisciplineRules={setDisciplineRules}
-                          onCheckDisciplineRule={(ruleId, isChecked) => {
-                              const todayStr = new Date().toISOString().split('T')[0];
-                              const todayRecord = disciplineHistory.find(r => r.date === todayStr);
-                              let newHistory = [...disciplineHistory];
-                              if (todayRecord) {
-                                  const newCompletedIds = isChecked 
-                                      ? [...todayRecord.completedRuleIds, ruleId]
-                                      : todayRecord.completedRuleIds.filter(id => id !== ruleId);
-                                  newHistory = newHistory.map(r => r.date === todayStr ? { ...r, completedRuleIds: newCompletedIds } : r);
-                              } else {
-                                  if (isChecked) {
-                                      newHistory.push({
-                                          date: todayStr,
-                                          completedRuleIds: [ruleId],
-                                          totalPossibleXp: disciplineRules.length * 10,
-                                          earnedXp: 10,
-                                          isSuccess: true
-                                      });
-                                  }
-                              }
-                              setDisciplineHistory(newHistory);
-                          }}
+                          onUpdateDisciplineRules={handleUpdateDisciplineRules}
+                          onCheckDisciplineRule={handleCheckDisciplineRule}
                       />
                   </PageContainer>
               );
@@ -587,7 +649,7 @@ const MainApp: React.FC = () => {
                           onUpdateTrade={handleUpdateTrade} 
                           onDeleteTrade={handleDeleteTrade}
                           checklist={checklist}
-                          onUpdateChecklist={setChecklist}
+                          onUpdateChecklist={handleUpdateChecklist}
                           onImportTrades={handleImportTrades}
                           onShare={(t) => handleShare({ type: 'trade', data: t })}
                           riskSettings={riskSettings}
@@ -640,7 +702,7 @@ const MainApp: React.FC = () => {
                           accountSize={riskSettings.accountSize}
                           plans={plans}
                           onSavePlan={handleSavePlan}
-                          onPushNotification={(n) => setNotifications([n, ...notifications])}
+                          onPushNotification={handlePushNotification}
                       />
                   </PageContainer>
               );
@@ -653,7 +715,7 @@ const MainApp: React.FC = () => {
                           strategies={strategies}
                           onSavePlan={handleSavePlan}
                           onDeletePlan={handleDeletePlan}
-                          onSaveStrategies={setStrategies}
+                          onSaveStrategies={handleUpdateStrategiesFromPlans}
                           onShare={(p) => handleShare({ type: 'plan', data: p })}
                           autoCreate={noteAutoCreate}
                           onResetAutoCreate={() => setNoteAutoCreate(false)}
@@ -669,7 +731,7 @@ const MainApp: React.FC = () => {
                   <PageContainer>
                       <Psychology 
                           riskSettings={riskSettings}
-                          onSaveSettings={setRiskSettings}
+                          onSaveSettings={handleSaveRiskSettings}
                           rules={[]} 
                           onToggleRule={() => {}}
                           onAddRule={() => {}}
@@ -712,10 +774,10 @@ const MainApp: React.FC = () => {
           case 'notifications':
               return (
                   <PageContainer>
-                      <NotificationCenter 
+                      <NotificationCenter
                           notifications={notifications}
-                          onMarkAllRead={() => setNotifications(prev => prev.map(n => ({...n, isRead: true})))}
-                          onMarkOneRead={(id) => setNotifications(prev => prev.map(n => n.id === id ? {...n, isRead: true} : n))}
+                          onMarkAllRead={handleMarkAllNotificationsRead}
+                          onMarkOneRead={handleMarkOneNotificationRead}
                       />
                   </PageContainer>
               );

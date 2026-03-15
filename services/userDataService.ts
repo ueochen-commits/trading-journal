@@ -7,19 +7,91 @@ async function getCurrentUserId(): Promise<string | null> {
   return user?.id || null;
 }
 
-// 用户数据服务
+// ============ DB ↔ TS 映射工具 ============
+
+function dbToStrategy(row: any): Strategy {
+  return {
+    id: row.id,
+    name: row.name || '',
+    description: row.description || '',
+    checklist: row.checklist || [],
+    color: row.color || '',
+    notes: row.notes || [],
+  };
+}
+
+function dbToChecklist(row: any): ChecklistItem {
+  return {
+    id: row.id,
+    text: row.title || '',
+    isCompleted: row.is_enabled ?? false,
+  };
+}
+
+function dbToTrackerRule(row: any): TrackerRule {
+  return {
+    id: row.id,
+    type: row.type,
+    name: row.name || '',
+    value: row.value,
+    isActive: row.is_enabled ?? true,
+  };
+}
+
+function dbToPlan(row: any): DailyPlan {
+  return {
+    id: row.id,
+    date: row.date || '',
+    title: row.title || '',
+    folder: row.folder || 'daily-journal',
+    content: row.content || '',
+    focusTickers: [],
+    linkedTradeIds: row.linked_trade_ids || [],
+    isDeleted: row.is_deleted ?? false,
+  };
+}
+function dbToNotification(row: any): Notification {
+  return {
+    id: row.id,
+    type: row.type || 'system',
+    title: row.title || '',
+    content: row.message || '',
+    timestamp: row.created_at || new Date().toISOString(),
+    isRead: row.is_read ?? false,
+  };
+}
+
+function dbToDisciplineRule(row: any): DisciplineRule {
+  return {
+    id: row.id,
+    text: row.text || '',
+    xpReward: row.xp_reward ?? 10,
+  };
+}
+
+function dbToDisciplineRecord(row: any): DailyDisciplineRecord {
+  return {
+    date: row.date,
+    completedRuleIds: row.completed_rule_ids || [],
+    totalPossibleXp: row.total_possible_xp ?? 0,
+    earnedXp: row.earned_xp ?? 0,
+    isSuccess: row.is_success ?? false,
+  };
+}
+
+// ============ 用户数据服务 ============
 export const userDataService = {
   // 加载用户数据
   async loadUserData() {
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
-    const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, weeklyGoalRes, settingsRes, profilesRes] = await Promise.all([
+    const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, settingsRes, profilesRes] = await Promise.all([
       supabase.from('trading_journals').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('checklist_items').select('*').eq('user_id', userId).order('order_index'),
       supabase.from('tracker_rules').select('*').eq('user_id', userId),
-      supabase.from('daily_plans').select('*').eq('user_id', userId).order('date', { ascending: false }),
+      supabase.from('daily_plans').select('*').eq('user_id', userId).eq('is_deleted', false).order('date', { ascending: false }),
       supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('discipline_rules').select('*').eq('user_id', userId),
       supabase.from('daily_discipline_records').select('*').eq('user_id', userId).order('date', { ascending: false }),
@@ -29,14 +101,14 @@ export const userDataService = {
 
     return {
       trades: tradesRes.data || [],
-      strategies: strategiesRes.data || [],
-      checklist: checklistRes.data || [],
-      trackerRules: trackerRulesRes.data || [],
-      plans: plansRes.data || [],
-      notifications: notificationsRes.data || [],
-      disciplineRules: disciplineRulesRes.data || [],
-      disciplineHistory: disciplineHistoryRes.data || [],
-      weeklyGoal: weeklyGoalRes.data?.settings?.weeklyGoal || null,
+      strategies: (strategiesRes.data || []).map(dbToStrategy),
+      checklist: (checklistRes.data || []).map(dbToChecklist),
+      trackerRules: (trackerRulesRes.data || []).map(dbToTrackerRule),
+      plans: (plansRes.data || []).map(dbToPlan),
+      notifications: (notificationsRes.data || []).map(dbToNotification),
+      disciplineRules: (disciplineRulesRes.data || []).map(dbToDisciplineRule),
+      disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
+      weeklyGoal: settingsRes.data?.settings?.weeklyGoal || null,
       riskSettings: settingsRes.data?.risk_settings || null,
       profile: profilesRes?.data || null
     };
@@ -139,31 +211,33 @@ export const userDataService = {
   },
 
   // 保存策略
-  async saveStrategy(strategy: any) {
+  async saveStrategy(strategy: Strategy) {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
-    const { error } = await supabase.from('strategies').insert({
+    const { data, error } = await supabase.from('strategies').insert({
       user_id: userId,
       name: strategy.name,
-      description: strategy.description,
-      rules: strategy.rules,
-      is_active: strategy.isActive
-    });
+      description: strategy.description || '',
+      checklist: strategy.checklist || [],
+      color: strategy.color || '',
+      notes: strategy.notes || [],
+    }).select().single();
 
-    return { error };
+    return { data, error };
   },
 
   // 更新策略
-  async updateStrategy(id: string, strategy: any) {
+  async updateStrategy(id: string, strategy: Strategy) {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
     const { error } = await supabase.from('strategies').update({
       name: strategy.name,
-      description: strategy.description,
-      rules: strategy.rules,
-      is_active: strategy.isActive
+      description: strategy.description || '',
+      checklist: strategy.checklist || [],
+      color: strategy.color || '',
+      notes: strategy.notes || [],
     }).eq('id', id).eq('user_id', userId);
 
     return { error };
@@ -197,7 +271,6 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
-    // 先获取现有设置
     const { data: existing } = await supabase.from('user_settings').select('settings').eq('user_id', userId).single();
 
     const { error } = await supabase.from('user_settings').upsert({
@@ -234,15 +307,16 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
-    // 删除旧的，插入新的
     await supabase.from('tracker_rules').delete().eq('user_id', userId);
+
+    if (rules.length === 0) return { error: null };
 
     const data = rules.map(rule => ({
       user_id: userId,
       type: rule.type,
       name: rule.name,
       value: rule.value,
-      is_enabled: rule.isEnabled
+      is_enabled: rule.isActive,
     }));
 
     const { error } = await supabase.from('tracker_rules').insert(data);
@@ -256,20 +330,21 @@ export const userDataService = {
 
     await supabase.from('checklist_items').delete().eq('user_id', userId);
 
+    if (checklist.length === 0) return { error: null };
+
     const data = checklist.map((item, index) => ({
       user_id: userId,
       checklist_type: 'pre_trade',
-      title: item.title,
-      description: item.description,
-      is_enabled: item.isEnabled,
-      order_index: index
+      title: item.text,
+      is_enabled: item.isCompleted,
+      order_index: index,
     }));
 
     const { error } = await supabase.from('checklist_items').insert(data);
     return { error };
   },
 
-  // 保存每日计划
+  // 保存每日计划/笔记
   async savePlan(plan: DailyPlan) {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
@@ -278,14 +353,22 @@ export const userDataService = {
       user_id: userId,
       id: plan.id,
       date: plan.date,
-      focus_symbols: plan.focusSymbols,
-      trade_ideas: plan.tradeIdeas,
-      key_levels: plan.keyLevels,
-      risk_percentage: plan.riskPercentage,
-      is_completed: plan.isDeleted ? true : plan.isCompleted,
-      updated_at: new Date().toISOString()
+      title: plan.title || '',
+      folder: plan.folder || 'daily-journal',
+      content: plan.content || '',
+      linked_trade_ids: plan.linkedTradeIds || [],
+      is_deleted: plan.isDeleted ?? false,
     }, { onConflict: 'id' });
 
+    return { error };
+  },
+
+  // 删除计划
+  async deletePlan(id: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const { error } = await supabase.from('daily_plans').delete().eq('id', id).eq('user_id', userId);
     return { error };
   },
 
@@ -298,8 +381,8 @@ export const userDataService = {
       user_id: userId,
       type: notification.type,
       title: notification.title,
-      message: notification.message,
-      is_read: notification.isRead
+      message: notification.content,
+      is_read: notification.isRead,
     });
 
     return { error };
@@ -314,6 +397,15 @@ export const userDataService = {
     return { error };
   },
 
+  // 批量标记通知已读
+  async markAllNotificationsRead() {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const { error } = await supabase.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
+    return { error };
+  },
+
   // 保存纪律规则
   async saveDisciplineRules(rules: DisciplineRule[]) {
     const userId = await getCurrentUserId();
@@ -321,11 +413,13 @@ export const userDataService = {
 
     await supabase.from('discipline_rules').delete().eq('user_id', userId);
 
+    if (rules.length === 0) return { error: null };
+
     const data = rules.map(rule => ({
       user_id: userId,
-      rule_type: rule.type,
-      description: rule.description,
-      is_enabled: rule.isEnabled
+      id: rule.id,
+      text: rule.text,
+      xp_reward: rule.xpReward,
     }));
 
     const { error } = await supabase.from('discipline_rules').insert(data);
@@ -339,12 +433,12 @@ export const userDataService = {
 
     const { error } = await supabase.from('daily_discipline_records').upsert({
       user_id: userId,
-      id: record.id,
       date: record.date,
-      rule_id: record.ruleId,
-      is_completed: record.isCompleted,
-      notes: record.notes
-    }, { onConflict: 'id' });
+      completed_rule_ids: record.completedRuleIds,
+      total_possible_xp: record.totalPossibleXp,
+      earned_xp: record.earnedXp,
+      is_success: record.isSuccess,
+    }, { onConflict: 'user_id,date' });
 
     return { error };
   },
