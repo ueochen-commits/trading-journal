@@ -41,16 +41,27 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
 
   const isLocked = !!localSettings.lockedAt;
 
-  // Compute reset eligibility
-  const resetCooldownDays = 7;
-  const { canReset, daysUntilReset } = useMemo(() => {
-    if (!localSettings.lastResetAt) return { canReset: true, daysUntilReset: 0 };
-    const last = new Date(localSettings.lastResetAt).getTime();
-    const now = Date.now();
-    const diffDays = (now - last) / (1000 * 60 * 60 * 24);
-    if (diffDays >= resetCooldownDays) return { canReset: true, daysUntilReset: 0 };
-    return { canReset: false, daysUntilReset: Math.ceil(resetCooldownDays - diffDays) };
-  }, [localSettings.lastResetAt]);
+  // Live countdown ticker
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!isLocked) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [isLocked]);
+
+  // Compute reset eligibility + countdown string
+  const resetCooldownMs = 7 * 24 * 60 * 60 * 1000;
+  const { canReset, countdownStr } = useMemo(() => {
+    if (!localSettings.lastResetAt) return { canReset: true, countdownStr: '' };
+    const unlockAt = new Date(localSettings.lastResetAt).getTime() + resetCooldownMs;
+    const remaining = unlockAt - now;
+    if (remaining <= 0) return { canReset: true, countdownStr: '' };
+    const h = Math.floor(remaining / 3600000);
+    const m = Math.floor((remaining % 3600000) / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return { canReset: false, countdownStr: `${h}小时 ${pad(m)}分 ${pad(s)}秒` };
+  }, [localSettings.lastResetAt, now]);
 
   // Update local settings if props change (e.g. from the assessment modal)
   useEffect(() => {
@@ -197,24 +208,33 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                 )}
             </h3>
             {isLocked && (
-                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
-                        <Lock className="w-3.5 h-3.5 shrink-0" />
-                        <span>锁定于 {new Date(localSettings.lockedAt!).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+                            <Lock className="w-3.5 h-3.5 shrink-0" />
+                            <span>锁定于 {new Date(localSettings.lockedAt!).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                        <button
+                            onClick={() => canReset ? setShowResetConfirm(true) : undefined}
+                            disabled={!canReset}
+                            title={!canReset ? `冷却中` : '重置设置'}
+                            className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                                canReset
+                                    ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                            }`}
+                        >
+                            <RotateCcw className="w-3 h-3" />
+                            重置
+                        </button>
                     </div>
-                    <button
-                        onClick={() => canReset ? setShowResetConfirm(true) : undefined}
-                        disabled={!canReset}
-                        title={!canReset ? `还需等待 ${daysUntilReset} 天` : '重置设置'}
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
-                            canReset
-                                ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                                : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                        }`}
-                    >
-                        <RotateCcw className="w-3 h-3" />
-                        {canReset ? '重置' : `${daysUntilReset} 天后可重置`}
-                    </button>
+                    {!canReset && (
+                        <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+                            <Clock className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                            <span>距下次可重置还剩：</span>
+                            <span className="font-mono font-bold text-amber-600 dark:text-amber-400 tabular-nums">{countdownStr}</span>
+                        </div>
+                    )}
                 </div>
             )}
             
