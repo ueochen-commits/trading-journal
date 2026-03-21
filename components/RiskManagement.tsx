@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { RiskSettings, TradingRule, ReviewStatus } from '../types';
-import { Shield, AlertTriangle, Save, CheckCircle2, Clock, CalendarCheck, TrendingUp, RefreshCw, Sliders, AlertOctagon, Target, Layers, HelpCircle } from 'lucide-react';
+import { Shield, AlertTriangle, Save, CheckCircle2, Clock, CalendarCheck, TrendingUp, RefreshCw, Sliders, AlertOctagon, Target, Layers, HelpCircle, Lock, Unlock, RotateCcw } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -37,6 +37,20 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
   const [localSettings, setLocalSettings] = useState(settings);
   const [newRuleText, setNewRuleText] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
+  const isLocked = !!localSettings.lockedAt;
+
+  // Compute reset eligibility
+  const resetCooldownDays = 7;
+  const { canReset, daysUntilReset } = useMemo(() => {
+    if (!localSettings.lastResetAt) return { canReset: true, daysUntilReset: 0 };
+    const last = new Date(localSettings.lastResetAt).getTime();
+    const now = Date.now();
+    const diffDays = (now - last) / (1000 * 60 * 60 * 24);
+    if (diffDays >= resetCooldownDays) return { canReset: true, daysUntilReset: 0 };
+    return { canReset: false, daysUntilReset: Math.ceil(resetCooldownDays - diffDays) };
+  }, [localSettings.lastResetAt]);
 
   // Update local settings if props change (e.g. from the assessment modal)
   useEffect(() => {
@@ -111,14 +125,55 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
   const gainPct = simBalance > 0 ? (totalGain / simBalance) * 100 : 0;
 
   const handleSave = () => {
-      onSaveSettings(localSettings);
+      const now = new Date().toISOString();
+      const updated = { ...localSettings, lockedAt: now };
+      setLocalSettings(updated);
+      onSaveSettings(updated);
       setShowToast(true);
       setTimeout(() => setShowToast(false), 3000);
   };
 
+  const handleReset = () => {
+      const now = new Date().toISOString();
+      const updated = { ...localSettings, lockedAt: undefined, lastResetAt: now };
+      setLocalSettings(updated);
+      onSaveSettings(updated);
+      setShowResetConfirm(false);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in pb-12 relative">
-      
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 max-w-sm w-full mx-4">
+                  <div className="flex items-center gap-3 mb-3">
+                      <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
+                          <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <h4 className="font-bold text-slate-900 dark:text-white text-lg">确认重置风控设置？</h4>
+                  </div>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
+                      重置后您可以重新编辑风控金额。下次重置需等待 <span className="font-bold text-amber-600">7 天</span>冷却期。
+                  </p>
+                  <div className="flex gap-3">
+                      <button
+                          onClick={() => setShowResetConfirm(false)}
+                          className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium"
+                      >
+                          取消
+                      </button>
+                      <button
+                          onClick={handleReset}
+                          className="flex-1 py-2 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-bold transition-colors"
+                      >
+                          确认重置
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
       {/* Toast Notification */}
       {showToast && (
           <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-fade-in-up">
@@ -135,7 +190,33 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Shield className="w-6 h-6 text-indigo-500" />
                 {t.risk.settingsTitle}
+                {isLocked && (
+                    <span className="ml-auto flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-2.5 py-1 rounded-full">
+                        <Lock className="w-3 h-3" /> 已锁定
+                    </span>
+                )}
             </h3>
+            {isLocked && (
+                <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
+                        <Lock className="w-3.5 h-3.5 shrink-0" />
+                        <span>锁定于 {new Date(localSettings.lockedAt!).toLocaleString('zh-CN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                    </div>
+                    <button
+                        onClick={() => canReset ? setShowResetConfirm(true) : undefined}
+                        disabled={!canReset}
+                        title={!canReset ? `还需等待 ${daysUntilReset} 天` : '重置设置'}
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
+                            canReset
+                                ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                                : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                        }`}
+                    >
+                        <RotateCcw className="w-3 h-3" />
+                        {canReset ? '重置' : `${daysUntilReset} 天后可重置`}
+                    </button>
+                </div>
+            )}
             
             {/* Hard Limits Section */}
             <div className="space-y-4">
@@ -146,15 +227,16 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         </label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 value={localSettings.accountSize}
+                                disabled={isLocked}
                                 onChange={e => {
                                     const val = Number(e.target.value);
                                     setLocalSettings({...localSettings, accountSize: val});
-                                    setSimBalance(val); 
+                                    setSimBalance(val);
                                 }}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -164,11 +246,12 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         </label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 value={localSettings.maxDailyLoss}
+                                disabled={isLocked}
                                 onChange={e => setLocalSettings({...localSettings,maxDailyLoss: Number(e.target.value)})}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-rose-200 dark:border-rose-900 rounded p-2 pl-6 text-rose-600 dark:text-rose-400 font-bold outline-none focus:border-rose-500"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-rose-200 dark:border-rose-900 rounded p-2 pl-6 text-rose-600 dark:text-rose-400 font-bold outline-none focus:border-rose-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -181,11 +264,12 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         </label>
                         <div className="relative">
                             <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 value={localSettings.maxTradeRisk}
+                                disabled={isLocked}
                                 onChange={e => setLocalSettings({...localSettings, maxTradeRisk: Number(e.target.value)})}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -193,13 +277,14 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         <label className="flex items-center text-xs text-slate-500 dark:text-slate-400 font-bold uppercase mb-1">
                             {t.risk.maxConsecutiveLosses} <InfoTooltip text={t.risk.tooltips.maxConsecutiveLosses} />
                         </label>
-                        <input 
-                            type="number" 
+                        <input
+                            type="number"
                             min="1"
                             max="10"
                             value={localSettings.maxConsecutiveLosses || 4}
+                            disabled={isLocked}
                             onChange={e => setLocalSettings({...localSettings, maxConsecutiveLosses: Number(e.target.value)})}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                     </div>
                 </div>
@@ -212,12 +297,13 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             <label className="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-1 gap-1">
                                 <Layers className="w-3 h-3" /> Max Open Pos. <InfoTooltip text={t.risk.tooltips.maxOpenPositions} />
                             </label>
-                            <input 
-                                type="number" 
+                            <input
+                                type="number"
                                 min="1"
                                 value={localSettings.maxOpenPositions || 1}
+                                disabled={isLocked}
                                 onChange={e => setLocalSettings({...localSettings, maxOpenPositions: Number(e.target.value)})}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                         <div>
@@ -226,11 +312,12 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             </label>
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
-                                <input 
-                                    type="number" 
+                                <input
+                                    type="number"
                                     value={localSettings.dailyProfitTarget || ''}
+                                    disabled={isLocked}
                                     onChange={e => setLocalSettings({...localSettings, dailyProfitTarget: Number(e.target.value)})}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/50 rounded p-2 pl-6 text-emerald-600 dark:text-emerald-400 font-bold outline-none focus:border-emerald-500 placeholder-slate-400"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-emerald-200 dark:border-emerald-900/50 rounded p-2 pl-6 text-emerald-600 dark:text-emerald-400 font-bold outline-none focus:border-emerald-500 placeholder-slate-400 disabled:opacity-60 disabled:cursor-not-allowed"
                                     placeholder="Optional"
                                 />
                             </div>
@@ -238,12 +325,14 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                     </div>
                 </div>
 
-                <button 
+                {!isLocked && (
+                <button
                     onClick={handleSave}
                     className="w-full mt-4 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-lg flex items-center justify-center gap-2 font-bold transition-all shadow-lg shadow-indigo-500/20"
                 >
-                    <Save className="w-4 h-4" /> {t.risk.saveSettings}
+                    <Lock className="w-4 h-4" /> 确认并锁定
                 </button>
+                )}
             </div>
         </div>
 

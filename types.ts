@@ -63,6 +63,8 @@ export interface RiskSettings {
   maxConsecutiveLosses?: number; // Added: Max consecutive losses before stop
   maxOpenPositions?: number; // NEW: Max simultaneous open trades
   dailyProfitTarget?: number; // NEW: Walk away profit target
+  lockedAt?: string; // ISO timestamp when settings were locked
+  lastResetAt?: string; // ISO timestamp of last reset
 }
 
 export interface TradingRule {
