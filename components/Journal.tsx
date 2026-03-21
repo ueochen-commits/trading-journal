@@ -127,6 +127,9 @@ const Journal: React.FC<JournalProps> = ({
   const { t, language } = useLanguage();
   const { user, openPricing } = useUser();
 
+  // Remembered fee rate from last trade
+  const [lastFeeRate, setLastFeeRate] = useState<string>(() => localStorage.getItem('tg_last_fee_rate') || '');
+
   // Basic States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalStep, setModalStep] = useState<'checklist' | 'form'>('checklist');
@@ -381,7 +384,7 @@ const Journal: React.FC<JournalProps> = ({
               }
           }
       }
-      setFormData({ ...initialFormState, entryDate: getLocalNowStr() });
+      setFormData({ ...initialFormState, entryDate: getLocalNowStr(), fees: lastFeeRate });
       setEditingTradeId(null);
       setSessionChecklist(checklist.map(i => ({...i, isCompleted: false})));
       const isChecklistEnabled = localStorage.getItem('tg_enable_checklist') !== 'false';
@@ -569,11 +572,18 @@ const Journal: React.FC<JournalProps> = ({
         setFormErrors({});
         const isOpenTrade = !formData.exitDate && !formData.pnl;
         const finalPnl = Number(formData.pnl) || 0;
+        const feeRate = Number(formData.fees) || 0;
+        const feesAmount = Math.abs(finalPnl) * (feeRate / 100);
+        // Remember fee rate for next trade
+        if (feeRate > 0) {
+            localStorage.setItem('tg_last_fee_rate', String(feeRate));
+            setLastFeeRate(String(feeRate));
+        }
         let status = TradeStatus.WIN;
         if (isOpenTrade) status = TradeStatus.OPEN;
         else status = finalPnl > 0 ? TradeStatus.WIN : (finalPnl < 0 ? TradeStatus.LOSS : TradeStatus.BE);
         const tradeId = editingTradeId || Date.now().toString();
-        const tradeData: Trade = { id: tradeId, symbol: formData.symbol!.toUpperCase(), entryDate: formData.entryDate!, exitDate: formData.exitDate || '', entryPrice: Number(formData.entryPrice) || 0, exitPrice: Number(formData.exitPrice) || 0, quantity: Number(formData.quantity) || 0, direction: formData.direction!, status: status, pnl: finalPnl, leverage: Number(formData.leverage) || 1, riskAmount: Number(formData.riskAmount) || 0, setup: formData.setup || '', notes: formData.notes || '', reviewNotes: formData.reviewNotes || '', fees: Number(formData.fees) || 0, images: formData.images || [], mistakes: formData.mistakes || [], rating: formData.rating, compliance: formData.compliance, executionGrade: formData.executionGrade };
+        const tradeData: Trade = { id: tradeId, symbol: formData.symbol!.toUpperCase(), entryDate: formData.entryDate!, exitDate: formData.exitDate || '', entryPrice: Number(formData.entryPrice) || 0, exitPrice: Number(formData.exitPrice) || 0, quantity: Number(formData.quantity) || 0, direction: formData.direction!, status: status, pnl: finalPnl, leverage: Number(formData.leverage) || 1, riskAmount: Number(formData.riskAmount) || 0, setup: formData.setup || '', notes: formData.notes || '', reviewNotes: formData.reviewNotes || '', fees: feesAmount, images: formData.images || [], mistakes: formData.mistakes || [], rating: formData.rating, compliance: formData.compliance, executionGrade: formData.executionGrade };
         if (editingTradeId) onUpdateTrade(tradeData);
         else onAddTrade(tradeData);
         if (formData.reviewNotes && onSavePlan && tradeData.entryDate) {
