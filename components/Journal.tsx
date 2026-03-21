@@ -381,7 +381,7 @@ const Journal: React.FC<JournalProps> = ({
               }
           }
       }
-      setFormData({ ...initialFormState, entryDate: new Date().toISOString().slice(0, 16).replace('T', ' '), });
+      setFormData({ ...initialFormState, entryDate: getLocalNowStr() });
       setEditingTradeId(null);
       setSessionChecklist(checklist.map(i => ({...i, isCompleted: false})));
       const isChecklistEnabled = localStorage.getItem('tg_enable_checklist') !== 'false';
@@ -511,7 +511,8 @@ const Journal: React.FC<JournalProps> = ({
       setIsModalOpen(true);
   };
 
-  const handleSetTimeNow = (field: 'entryDate' | 'exitDate') => { const nowStr = new Date().toISOString().slice(0, 16).replace('T', ' '); setFormData((prev: any) => ({ ...prev, [field]: nowStr })); };
+  const getLocalNowStr = () => { const now = new Date(); const pad = (n: number) => String(n).padStart(2, '0'); return `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`; };
+  const handleSetTimeNow = (field: 'entryDate' | 'exitDate') => { setFormData((prev: any) => ({ ...prev, [field]: getLocalNowStr() })); };
 
   const handleQuickClose = (e: React.MouseEvent, trade: Trade) => {
       e.stopPropagation();
