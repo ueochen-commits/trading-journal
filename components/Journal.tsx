@@ -756,6 +756,43 @@ const Journal: React.FC<JournalProps> = ({
           </div>
       )}
 
+      {highRiskConfirmation && highRiskConfirmation.show && (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in">
+              <div className="relative max-w-md w-full bg-white dark:bg-slate-900 border border-amber-200 dark:border-amber-800/50 rounded-2xl p-8 text-center shadow-2xl">
+                  <div className="flex justify-center mb-4">
+                      <div className="bg-amber-100 dark:bg-amber-900/30 w-16 h-16 rounded-2xl flex items-center justify-center">
+                          <AlertTriangle className="w-8 h-8 text-amber-500" />
+                      </div>
+                  </div>
+                  <h2 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+                      {language === 'cn' ? '风险超出限额' : 'Risk Exceeds Limit'}
+                  </h2>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm mb-1">
+                      {language === 'cn'
+                          ? `您输入的风险金额 $${highRiskConfirmation.amount} 超过了您在"心态风控"中设定的单笔最大风险 $${riskSettings?.maxTradeRisk}。`
+                          : `The risk amount $${highRiskConfirmation.amount} exceeds your max trade risk limit of $${riskSettings?.maxTradeRisk} set in Risk Management.`}
+                  </p>
+                  <p className="text-amber-500 font-semibold text-sm mb-6">
+                      {language === 'cn' ? '确定要继续记录这笔交易吗？' : 'Are you sure you want to proceed?'}
+                  </p>
+                  <div className="flex gap-3">
+                      <button
+                          onClick={() => setHighRiskConfirmation(null)}
+                          className="flex-1 py-3 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      >
+                          {language === 'cn' ? '取消' : 'Cancel'}
+                      </button>
+                      <button
+                          onClick={confirmHighRiskSave}
+                          className="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-white font-bold rounded-xl shadow-lg shadow-amber-500/20 transition-all"
+                      >
+                          {language === 'cn' ? '仍然记录' : 'Proceed Anyway'}
+                      </button>
+                  </div>
+              </div>
+          </div>
+      )}
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.journal.title}</h2>
         <div className="flex items-center gap-3">
