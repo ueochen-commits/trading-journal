@@ -566,8 +566,8 @@ const Journal: React.FC<JournalProps> = ({
             return;
         }
         setFormErrors({});
-        const isOpenTrade = !formData.exitDate;
-        const finalPnl = isOpenTrade ? 0 : Number(formData.pnl);
+        const isOpenTrade = !formData.exitDate && !formData.pnl;
+        const finalPnl = Number(formData.pnl) || 0;
         let status = TradeStatus.WIN;
         if (isOpenTrade) status = TradeStatus.OPEN;
         else status = finalPnl > 0 ? TradeStatus.WIN : (finalPnl < 0 ? TradeStatus.LOSS : TradeStatus.BE);
