@@ -231,6 +231,24 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
                </div>
             </button>
 
+             {/* Feedback */}
+            <a
+              href="https://tally.so/r/7RZGA2"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-between'} p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all ${!isCollapsed ? 'mb-1' : ''}`}
+              title={isCollapsed ? (language === 'cn' ? '用户反馈' : 'Feedback') : undefined}
+            >
+               <div className="flex items-center">
+                   <MessageSquare className="w-4 h-4 text-indigo-500" />
+                   {!isCollapsed && (
+                       <span className="ml-2 text-xs font-medium hidden md:block">
+                         {language === 'cn' ? '用户反馈' : 'Feedback'}
+                       </span>
+                   )}
+               </div>
+            </a>
+
              {/* Language Toggle */}
             <button 
               onClick={toggleLanguage}
