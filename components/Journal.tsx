@@ -72,7 +72,7 @@ interface JournalProps {
   trades: Trade[];
   plans: DailyPlan[];
   onAddTrade: (trade: Trade) => void;
-  onUpdateTrade: (trade: Trade) => void;
+  onUpdateTrade: (trade: Trade) => Promise<void>;
   onDeleteTrade: (id: string) => void;
   checklist: ChecklistItem[];
   onUpdateChecklist: (checklist: ChecklistItem[]) => void;
@@ -573,7 +573,7 @@ const Journal: React.FC<JournalProps> = ({
   const addMistakeTag = (tag: string) => { if (!formData.mistakes?.includes(tag)) { setFormData((prev: any) => ({ ...prev, mistakes: [...(prev.mistakes || []), tag] })); } };
   const removeMistake = (idx: number) => { setFormData((prev: any) => ({ ...prev, mistakes: prev.mistakes?.filter((_: any, i: number) => i !== idx) })); };
 
-  const saveTradeToState = () => {
+  const saveTradeToState = async () => {
         // Validate required fields
         const errors: Record<string, boolean> = {};
         if (!formData.symbol?.trim()) errors.symbol = true;
@@ -597,7 +597,7 @@ const Journal: React.FC<JournalProps> = ({
         else status = finalPnl > 0 ? TradeStatus.WIN : (finalPnl < 0 ? TradeStatus.LOSS : TradeStatus.BE);
         const tradeId = editingTradeId || Date.now().toString();
         const tradeData: Trade = { id: tradeId, symbol: formData.symbol!.toUpperCase(), entryDate: formData.entryDate!, exitDate: formData.exitDate || '', entryPrice: Number(formData.entryPrice) || 0, exitPrice: Number(formData.exitPrice) || 0, quantity: Number(formData.quantity) || 0, direction: formData.direction!, status: status, pnl: finalPnl, leverage: Number(formData.leverage) || 1, riskAmount: Number(formData.riskAmount) || 0, setup: formData.setup || '', notes: formData.notes || '', reviewNotes: formData.reviewNotes || '', fees: feesAmount, images: formData.images || [], mistakes: formData.mistakes || [], rating: formData.rating, compliance: formData.compliance, executionGrade: formData.executionGrade };
-        if (editingTradeId) onUpdateTrade(tradeData);
+        if (editingTradeId) await onUpdateTrade(tradeData);
         else onAddTrade(tradeData);
         if (formData.reviewNotes && onSavePlan && tradeData.entryDate) {
             const planId = `review-${tradeId}`;
@@ -608,8 +608,8 @@ const Journal: React.FC<JournalProps> = ({
         handleCloseModal(); setFormData(initialFormState); setEditingTradeId(null); setToastType('success'); setToastMessage(isOpenTrade ? "Trade saved as OPEN position!" : t.journal.saveSuccess); setShowToast(true); setTimeout(() => setShowToast(false), 3000);
   }
 
-  const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); const risk = Number(formData.riskAmount || 0); const maxRisk = riskSettings?.maxTradeRisk || Infinity; if (risk > maxRisk && !editingTradeId && !highRiskConfirmation) { setHighRiskConfirmation({ show: true, amount: risk }); return; } saveTradeToState(); };
-  const confirmHighRiskSave = () => { setHighRiskConfirmation(null); saveTradeToState(); };
+  const handleSubmit = async (e: React.FormEvent) => { e.preventDefault(); const risk = Number(formData.riskAmount || 0); const maxRisk = riskSettings?.maxTradeRisk || Infinity; if (risk > maxRisk && !editingTradeId && !highRiskConfirmation) { setHighRiskConfirmation({ show: true, amount: risk }); return; } await saveTradeToState(); };
+  const confirmHighRiskSave = async () => { setHighRiskConfirmation(null); await saveTradeToState(); };
 
   const completedCount = sessionChecklist.filter(i => i.isCompleted).length;
   const totalCount = sessionChecklist.length;

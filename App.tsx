@@ -364,7 +364,7 @@ const MainApp: React.FC = () => {
     }).eq('id', updated.id).eq('user_id', user.id);
 
     if (!error) {
-      setTrades(trades.map(t => t.id === updated.id ? updated : t));
+      setTrades(prev => prev.map(t => t.id === updated.id ? updated : t));
     }
   };
 
