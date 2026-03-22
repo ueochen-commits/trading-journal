@@ -1205,7 +1205,6 @@ const cn = {
         trades: "交易数"
     },
     calendar: {
-        title: "交易日历",
         totalPnl: "总盈亏",
         winRate: "胜率",
         activeDays: "活跃交易日",
@@ -1435,6 +1434,11 @@ const cn = {
           commissions: "手续费",
           grossPnl: "毛利润"
       }
+  },
+  calendar: {
+      ...en.calendar,
+      title: "交易日历",
+      weekdays: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
   }
 };
 
