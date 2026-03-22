@@ -853,7 +853,7 @@ const Journal: React.FC<JournalProps> = ({
             
             <button onClick={() => setShowDuration(!showDuration)} className={`p-2.5 flex items-center gap-2 rounded-xl transition-colors ${showDuration ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`} title={t.journal.showDuration}><Clock className="w-5 h-5" /><span className="text-sm font-medium hidden lg:inline">{t.journal.showDuration}</span></button>
 
-            <button onClick={() => setShowFilterPanel(!showFilterPanel)} className={`p-2.5 flex items-center gap-2 rounded-xl transition-colors ${showFilterPanel || filterRules.length > 0 ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><ListFilter className="w-5 h-5" /><span className="text-sm font-medium hidden lg:inline">Filters</span>{filterRules.length > 0 && <span className="bg-indigo-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full ml-1">{filterRules.length}</span>}</button>
+            <button onClick={() => setShowFilterPanel(!showFilterPanel)} className={`p-2.5 flex items-center gap-2 rounded-xl transition-colors ${showFilterPanel || filterRules.length > 0 ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><ListFilter className="w-5 h-5" /><span className="text-sm font-medium hidden lg:inline">{language === 'cn' ? '过滤' : 'Filters'}</span>{filterRules.length > 0 && <span className="bg-indigo-600 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full ml-1">{filterRules.length}</span>}</button>
             
             <div className="flex-1"></div>
 
@@ -933,7 +933,7 @@ const Journal: React.FC<JournalProps> = ({
                 </div>
             </div>
 
-            {(filterRules.length > 0 || searchTerm) && <button onClick={clearFilters} className="text-xs text-slate-400 hover:text-rose-500 underline decoration-dashed whitespace-nowrap">Clear</button>}
+            {(filterRules.length > 0 || searchTerm) && <button onClick={clearFilters} className="text-xs text-slate-400 hover:text-rose-500 underline decoration-dashed whitespace-nowrap">{language === 'cn' ? '清除' : 'Clear'}</button>}
           </div>
 
           {showFilterPanel && (
