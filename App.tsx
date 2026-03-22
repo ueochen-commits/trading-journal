@@ -835,13 +835,15 @@ const MainApp: React.FC = () => {
                   </div>
                   <div className="pointer-events-auto flex gap-3 items-end">
                       {!isFabOpen && (
-                          <button 
-                              onClick={() => setIsChatOpen(true)}
-                              className="w-10 h-10 bg-slate-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-slate-700 transition-all hover:scale-110 animate-fade-in"
-                              title={t.fab?.chat || "AI Chat"}
+                          <a
+                              href="https://tally.so/r/7RZGA2"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-10 h-10 bg-slate-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-600 transition-all hover:scale-110 animate-fade-in"
+                              title={language === 'cn' ? '反馈建议' : 'Feedback'}
                           >
                               <MessageSquare className="w-5 h-5" />
-                          </button>
+                          </a>
                       )}
                       <button 
                           onClick={() => setIsFabOpen(!isFabOpen)}
