@@ -834,7 +834,7 @@ const Journal: React.FC<JournalProps> = ({
       </div>
 
        {showToast && (
-          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-100 animate-fade-in-up">
+          <div className="fixed top-6 left-1/2 -translate-x-1/2 z-100 animate-fade-in">
               <div className={`${toastType === 'error' ? 'bg-rose-600 border-rose-500/50' : 'bg-emerald-600 border-emerald-500/50'} text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 border backdrop-blur-md`}>
                   {toastType === 'error' ? <AlertTriangle className="w-4 h-4" /> : <Check className="w-4 h-4" />}
                   <span className="font-medium text-sm shadow-sm">{toastMessage}</span>
