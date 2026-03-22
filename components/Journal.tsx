@@ -110,12 +110,19 @@ interface FilterRule {
     value: string;
 }
 
-const FIELD_LABELS: Record<FilterField, string> = {
+const FIELD_LABELS_EN: Record<FilterField, string> = {
     symbol: 'Symbol',
     setup: 'Strategy',
     status: 'Result',
     pnl: 'PnL ($)',
     direction: 'Direction'
+};
+const FIELD_LABELS_CN: Record<FilterField, string> = {
+    symbol: '交易对',
+    setup: '策略',
+    status: '结果',
+    pnl: '盈亏 ($)',
+    direction: '方向'
 };
 
 const Journal: React.FC<JournalProps> = ({ 
@@ -930,20 +937,21 @@ const Journal: React.FC<JournalProps> = ({
           </div>
 
           {showFilterPanel && (
-              <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 shadow-xl animate-fade-in-up">
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 shadow-xl animate-fade-in-up">
                   <div className="flex justify-between items-center mb-6">
-                       <div className="flex items-center gap-3"><span className="bg-slate-800 text-slate-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">AND</span><div className="h-px w-12 bg-slate-700"></div><span className="text-slate-400 text-sm italic">All conditions must be met</span></div>
-                       <button onClick={addFilterRule} className="text-indigo-400 hover:text-indigo-300 text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> Add Rule</button>
+                       <div className="flex items-center gap-3"><span className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider">{language === 'cn' ? '且' : 'AND'}</span><div className="h-px w-12 bg-slate-200 dark:bg-slate-700"></div><span className="text-slate-400 text-sm italic">{language === 'cn' ? '所有条件都必须满足' : 'All conditions must be met'}</span></div>
+                       <button onClick={addFilterRule} className="text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-sm font-medium flex items-center gap-1"><Plus className="w-4 h-4" /> {language === 'cn' ? '添加条件' : 'Add Rule'}</button>
                   </div>
                   <div className="space-y-3">
                       {filterRules.map((rule) => (
                           <div key={rule.id} className="flex flex-col md:flex-row gap-3 items-center group">
-                              <div className="w-full md:w-32"><select className="w-full text-sm rounded-lg px-3 py-2.5 outline-none border transition-colors cursor-pointer font-medium bg-slate-800 border-slate-700 text-slate-200" value={rule.field} onChange={(e) => updateFilterRule(rule.id, { field: e.target.value as FilterField, value: '' })}>{Object.entries(FIELD_LABELS).map(([key, label]) => (<option key={key} value={key} className="bg-slate-800 text-slate-300">{label}</option>))}</select></div>
-                              <div className="w-full md:w-32"><select className="w-full text-sm rounded-lg px-3 py-2.5 outline-none border transition-colors cursor-pointer font-medium bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-200" value={rule.operator} onChange={(e) => updateFilterRule(rule.id, { operator: e.target.value as FilterOperator })}><option value="is" className="bg-slate-800 text-slate-300">Is</option><option value="isNot" className="bg-slate-800 text-slate-300">Is Not</option><option value="contains" className="bg-slate-800 text-slate-300">Contains</option></select></div>
-                              <div className="flex-1 w-full"><select className="w-full text-sm rounded-lg px-3 py-2.5 outline-none border transition-colors cursor-pointer font-medium bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-200" value={rule.value} onChange={(e) => updateFilterRule(rule.id, { value: e.target.value })}><option value="" className="bg-slate-800 text-slate-300">Select Value...</option>{getOptionsForField(rule.field).map(opt => (<option key={opt} value={opt} className="bg-slate-800 text-slate-300">{opt}</option>))}</select></div>
-                              <button onClick={() => removeFilterRule(rule.id)} className="p-2 text-slate-600 hover:text-rose-500 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                              <div className="w-full md:w-32"><select className="w-full text-sm rounded-lg px-3 py-2.5 outline-none border transition-colors cursor-pointer font-medium bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200" value={rule.field} onChange={(e) => updateFilterRule(rule.id, { field: e.target.value as FilterField, value: '' })}>{Object.entries(language === 'cn' ? FIELD_LABELS_CN : FIELD_LABELS_EN).map(([key, label]) => (<option key={key} value={key}>{label}</option>))}</select></div>
+                              <div className="w-full md:w-36"><select className="w-full text-sm rounded-lg px-3 py-2.5 outline-none border transition-colors cursor-pointer font-medium bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200" value={rule.operator} onChange={(e) => updateFilterRule(rule.id, { operator: e.target.value as FilterOperator })}><option value="is">{language === 'cn' ? '等于' : 'Is'}</option><option value="isNot">{language === 'cn' ? '不等于' : 'Is Not'}</option><option value="contains">{language === 'cn' ? '包含' : 'Contains'}</option><option value="gt">{language === 'cn' ? '大于' : 'Greater than'}</option><option value="lt">{language === 'cn' ? '小于' : 'Less than'}</option></select></div>
+                              <div className="flex-1 w-full"><select className="w-full text-sm rounded-lg px-3 py-2.5 outline-none border transition-colors cursor-pointer font-medium bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200" value={rule.value} onChange={(e) => updateFilterRule(rule.id, { value: e.target.value })}><option value="">{language === 'cn' ? '选择值...' : 'Select Value...'}</option>{getOptionsForField(rule.field).map(opt => (<option key={opt} value={opt}>{opt}</option>))}</select></div>
+                              <button onClick={() => removeFilterRule(rule.id)} className="p-2 text-slate-400 hover:text-rose-500 rounded-lg transition-colors"><Trash2 className="w-4 h-4" /></button>
                           </div>
                       ))}
+                      {filterRules.length === 0 && <p className="text-slate-400 dark:text-slate-500 text-sm text-center py-2">{language === 'cn' ? '点击"添加条件"开始过滤' : 'Click "Add Rule" to start filtering'}</p>}
                   </div>
               </div>
           )}
