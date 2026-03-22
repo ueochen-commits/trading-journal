@@ -70,7 +70,7 @@ import { TourProvider } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
-import { Plus, MessageSquare, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
+import { Plus, MessageSquare, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
   MOCK_STRATEGIES, MOCK_PRE_TRADE_CHECKLIST, 
@@ -842,7 +842,7 @@ const MainApp: React.FC = () => {
                               className="w-10 h-10 bg-slate-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-600 transition-all hover:scale-110 animate-fade-in"
                               title={language === 'cn' ? '反馈建议' : 'Feedback'}
                           >
-                              <MessageSquare className="w-5 h-5" />
+                              <MessageSquarePlus className="w-5 h-5" />
                           </a>
                       )}
                       <button 
