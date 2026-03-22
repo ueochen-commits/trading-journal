@@ -311,19 +311,9 @@ const MainApp: React.FC = () => {
       return;
     }
 
-    console.log('Trade saved:', data);
-
     if (data) {
-      // 重新加载所有交易
-      const { data: tradesData } = await supabase
-        .from('trading_journals')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      const formattedTrades = (tradesData || []).map(formatTradeFromDB);
-
-      setTrades(formattedTrades);
+      // 直接将新交易追加到本地列表，无需重新拉取
+      setTrades(prev => [formatTradeFromDB(data), ...prev]);
     }
   };
 
