@@ -144,10 +144,30 @@ const en = {
         unreviewed: "Unreviewed Trades",
         completed: "Completed",
         pending: "Pending",
-        start: "Start"
+        start: "Start",
+        system: "System",
+        manual: "Manual"
     },
     tracker: {
         save: "Save Goal"
+    },
+    discipline: {
+        streak: "Discipline Streak",
+        rituals: "Daily Rituals (+10XP)",
+        success: "Success",
+        fail: "Fail",
+        empty: "Empty",
+        addRule: "Add new rule...",
+        done: "Done",
+        active: "Active"
+    },
+    level: {
+        current: "Current Level",
+        lifetimeXp: "Total Lifetime XP:"
+    },
+    equityChart: {
+        current: "Current:",
+        initial: "Initial:"
     }
   },
   leaderboard: {
@@ -942,10 +962,30 @@ const cn = {
           unreviewed: "未复盘交易",
           completed: "已完成",
           pending: "待处理",
-          start: "开始"
+          start: "开始",
+          system: "系统",
+          manual: "手动"
       },
       tracker: {
           save: "保存目标"
+      },
+      discipline: {
+          streak: "纪律打卡",
+          rituals: "每日仪式 (+10XP)",
+          success: "成功",
+          fail: "失败",
+          empty: "空",
+          addRule: "添加新规则...",
+          done: "完成",
+          active: "启用"
+      },
+      level: {
+          current: "当前等级",
+          lifetimeXp: "累计总经验值："
+      },
+      equityChart: {
+          current: "当前：",
+          initial: "初始："
       }
   },
   leaderboard: {
