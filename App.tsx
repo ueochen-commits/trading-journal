@@ -70,7 +70,7 @@ import { TourProvider } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
-import { Plus, MessageSquare, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
+import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
   MOCK_STRATEGIES, MOCK_PRE_TRADE_CHECKLIST, 
