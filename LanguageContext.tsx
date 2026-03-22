@@ -1205,6 +1205,7 @@ const cn = {
         trades: "交易数"
     },
     calendar: {
+        title: "交易日历",
         totalPnl: "总盈亏",
         winRate: "胜率",
         activeDays: "活跃交易日",
