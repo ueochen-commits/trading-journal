@@ -319,6 +319,9 @@ const MainApp: React.FC = () => {
 
   // 更新交易到 Supabase
   const handleUpdateTrade = async (updated: Trade) => {
+    // 乐观更新：立刻反映到 UI
+    setTrades(prev => prev.map((t: Trade) => t.id === updated.id ? updated : t));
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 

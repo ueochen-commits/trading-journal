@@ -597,7 +597,7 @@ const Journal: React.FC<JournalProps> = ({
         else status = finalPnl > 0 ? TradeStatus.WIN : (finalPnl < 0 ? TradeStatus.LOSS : TradeStatus.BE);
         const tradeId = editingTradeId || Date.now().toString();
         const tradeData: Trade = { id: tradeId, symbol: formData.symbol!.toUpperCase(), entryDate: formData.entryDate!, exitDate: formData.exitDate || '', entryPrice: Number(formData.entryPrice) || 0, exitPrice: Number(formData.exitPrice) || 0, quantity: Number(formData.quantity) || 0, direction: formData.direction!, status: status, pnl: finalPnl, leverage: Number(formData.leverage) || 1, riskAmount: Number(formData.riskAmount) || 0, setup: formData.setup || '', notes: formData.notes || '', reviewNotes: formData.reviewNotes || '', fees: feesAmount, images: formData.images || [], mistakes: formData.mistakes || [], rating: formData.rating, compliance: formData.compliance, executionGrade: formData.executionGrade };
-        if (editingTradeId) await onUpdateTrade(tradeData);
+        if (editingTradeId) onUpdateTrade(tradeData);
         else onAddTrade(tradeData);
         if (formData.reviewNotes && onSavePlan && tradeData.entryDate) {
             const planId = `review-${tradeId}`;
