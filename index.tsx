@@ -1,6 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import posthog from 'posthog-js';
+
+posthog.init('phc_Bue0oaCzWqHfduKWkCejiDFljJIU0ehvImdGVGMwZdr0', {
+  api_host: 'https://us.i.posthog.com',
+  person_profiles: 'identified_only',
+});
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
