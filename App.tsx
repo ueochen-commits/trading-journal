@@ -160,7 +160,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
   const { isAuthenticated, openProfile } = useUser();
   const { t, language } = useLanguage();
-  const { startTour } = useTour();
+  const { startInitialTour } = useTour();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
@@ -913,7 +913,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           <UserProfileModal />
           <ReferralModal />
           {showOnboarding && (
-              <OnboardingModal onComplete={() => { setShowOnboarding(false); startTour(); }} />
+              <OnboardingModal onComplete={() => { setShowOnboarding(false); startInitialTour(); }} />
           )}
           <TourOverlay />
           {isShareModalOpen && shareIntent?.type === 'trade' && (

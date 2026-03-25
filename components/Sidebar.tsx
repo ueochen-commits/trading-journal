@@ -20,7 +20,7 @@ interface SidebarProps {
 
 const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificationsCount = 0, isCollapsed, toggleCollapse, onAddTrade }: SidebarProps) => {
   const { t, language, setLanguage } = useLanguage();
-  const { startTour } = useTour();
+  const { startTourForTab, onUserNavigateToTab } = useTour();
   const { user, openPricing, openProfile, openReferral, openSettings, logout } = useUser();
   const { openFriendDrawer, totalUnreadCount } = useSocial(); 
   
@@ -125,7 +125,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
             <button
               key={item.id}
               id={item.tourId} 
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => { setActiveTab(item.id); onUserNavigateToTab(item.id); }}
               className={`relative w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-4'} py-3 transition-all duration-300 group rounded-xl outline-none
                 ${isActive 
                   ? 'bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white shadow-sm' 
@@ -216,8 +216,8 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
 
         <div className={`bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl p-3 border border-slate-100 dark:border-slate-800/50 ${isCollapsed ? 'space-y-2' : ''}`}>
              {/* Guide Mode Toggle */}
-             <button 
-              onClick={startTour}
+             <button
+              onClick={() => startTourForTab(activeTab)}
               className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-between'} p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-all ${!isCollapsed ? 'mb-1' : ''}`}
               title={isCollapsed ? t.sidebar.guide : undefined}
             >

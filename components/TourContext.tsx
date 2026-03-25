@@ -20,16 +20,17 @@ interface TourContextType {
     totalSteps: number;
     registerStepAction: (titleKey: string, fn: () => void) => void;
     unregisterStepAction: (titleKey: string) => void;
+    startTourForTab: (tabId: string) => void;
+    startInitialTour: () => void;
+    onUserNavigateToTab: (tabId: string) => void;
 }
 
 const TourContext = createContext<TourContextType | undefined>(undefined);
 
-export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode, setActiveTab: (tab: string) => void }) => {
-    const [isTourOpen, setIsTourOpen] = useState(false);
-    const [currentStepIndex, setCurrentStepIndex] = useState(0);
-    const stepActionsRef = useRef<Map<string, () => void>>(new Map());
+const INITIAL_TOUR_TABS = ['dashboard', 'journal'];
 
-    const steps: TourStep[] = [
+const stepsByTab: Record<string, TourStep[]> = {
+    dashboard: [
         { targetId: 'sidebar-nav', titleKey: 'sidebar', contentKey: 'sidebarDesc', position: 'right', tabId: 'dashboard' },
         { targetId: 'dashboard-timezone', titleKey: 'dashboardTimezone', contentKey: 'dashboardTimezoneDesc', position: 'bottom', tabId: 'dashboard' },
         { targetId: 'dashboard-rank', titleKey: 'dashboardRank', contentKey: 'dashboardRankDesc', position: 'bottom', tabId: 'dashboard' },
@@ -40,9 +41,13 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         { targetId: 'dashboard-calendar', titleKey: 'dashboardCalendar', contentKey: 'dashboardCalendarDesc', position: 'top', tabId: 'dashboard' },
         { targetId: 'dashboard-level', titleKey: 'dashboardLevel', contentKey: 'dashboardLevelDesc', position: 'left', tabId: 'dashboard' },
         { targetId: 'dashboard-goal', titleKey: 'weeklyGoal', contentKey: 'weeklyGoalDesc', position: 'left', tabId: 'dashboard' },
+    ],
+    charts: [
         { targetId: 'chart-toolbar', titleKey: 'chartSymbol', contentKey: 'chartSymbolDesc', position: 'bottom', tabId: 'charts' },
         { targetId: 'chart-layout-toggle', titleKey: 'chartLayout', contentKey: 'chartLayoutDesc', position: 'bottom', tabId: 'charts' },
         { targetId: 'chart-notes', titleKey: 'chartNotes', contentKey: 'chartNotesDesc', position: 'left', tabId: 'charts' },
+    ],
+    journal: [
         { targetId: 'journal-add-btn', titleKey: 'journalAddBtn', contentKey: 'journalAddBtnDesc', position: 'bottom', tabId: 'journal' },
         { targetId: 'tour-checklist-modal', titleKey: 'journalChecklist', contentKey: 'journalChecklistDesc', position: 'right', tabId: 'journal' },
         { targetId: 'tour-form-modal', titleKey: 'journalForm', contentKey: 'journalFormDesc', position: 'bottom', tabId: 'journal' },
@@ -53,17 +58,43 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         { targetId: 'journal-view-toggle', titleKey: 'journalViewModes', contentKey: 'journalViewModesDesc', position: 'bottom', tabId: 'journal' },
         { targetId: 'journal-toolbar', titleKey: 'journalToolbar', contentKey: 'journalToolbarDesc', position: 'bottom', tabId: 'journal' },
         { targetId: 'journal-list', titleKey: 'journalActions', contentKey: 'journalActionsDesc', position: 'top', tabId: 'journal' },
+    ],
+    reports: [
         { targetId: 'reports-container', titleKey: 'reports', contentKey: 'reportsDesc', position: 'center', tabId: 'reports' },
+    ],
+    playbook: [
         { targetId: 'playbook-create-btn', titleKey: 'playbookCreate', contentKey: 'playbookCreateDesc', position: 'bottom', tabId: 'playbook' },
         { targetId: 'playbook-create-modal', titleKey: 'playbookModal', contentKey: 'playbookModalDesc', position: 'right', tabId: 'playbook' },
         { targetId: 'playbook-grid', titleKey: 'playbookCards', contentKey: 'playbookCardsDesc', position: 'right', tabId: 'playbook' },
+    ],
+    psychology: [
         { targetId: 'risk-settings', titleKey: 'riskSettings', contentKey: 'riskSettingsDesc', position: 'right', tabId: 'psychology' },
         { targetId: 'risk-simulator', titleKey: 'riskSimulator', contentKey: 'riskSimulatorDesc', position: 'top', tabId: 'psychology' },
-    ];
+    ],
+};
+
+const getTouredTabs = (): Set<string> => {
+    try {
+        const raw = localStorage.getItem('tg_toured_tabs');
+        return new Set(raw ? JSON.parse(raw) : []);
+    } catch { return new Set(); }
+};
+
+const markTabAsToured = (tabId: string) => {
+    const toured = getTouredTabs();
+    toured.add(tabId);
+    localStorage.setItem('tg_toured_tabs', JSON.stringify([...toured]));
+};
+
+export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode, setActiveTab: (tab: string) => void }) => {
+    const [isTourOpen, setIsTourOpen] = useState(false);
+    const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const [activeSteps, setActiveSteps] = useState<TourStep[]>([]);
+    const stepActionsRef = useRef<Map<string, () => void>>(new Map());
 
     useEffect(() => {
         if (isTourOpen) {
-            const step = steps[currentStepIndex];
+            const step = activeSteps[currentStepIndex];
             if (step) {
                 // Auto switch tab if needed
                 setActiveTab(step.tabId);
@@ -80,10 +111,39 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         }
     }, [currentStepIndex, isTourOpen]);
 
-    const startTour = () => {
+    const startTourForTab = (tabId: string) => {
+        const tabSteps = stepsByTab[tabId];
+        if (!tabSteps || tabSteps.length === 0) return;
+        setActiveSteps(tabSteps);
         setCurrentStepIndex(0);
         setIsTourOpen(true);
     };
+
+    const startInitialTour = () => {
+        const steps = [
+            ...(stepsByTab['dashboard'] || []),
+            ...(stepsByTab['journal'] || []),
+        ];
+        INITIAL_TOUR_TABS.forEach(markTabAsToured);
+        setActiveSteps(steps);
+        setCurrentStepIndex(0);
+        setIsTourOpen(true);
+    };
+
+    const onUserNavigateToTab = (tabId: string) => {
+        if (isTourOpen) return;
+        const toured = getTouredTabs();
+        if (toured.has(tabId)) return;
+        const tabSteps = stepsByTab[tabId];
+        if (!tabSteps || tabSteps.length === 0) return;
+        markTabAsToured(tabId);
+        setActiveSteps(tabSteps);
+        setCurrentStepIndex(0);
+        setIsTourOpen(true);
+    };
+
+    // Legacy — kept for any residual internal callers
+    const startTour = startInitialTour;
 
     const closeTour = () => {
         const closeAction = stepActionsRef.current.get('__close__');
@@ -93,7 +153,7 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
     };
 
     const nextStep = () => {
-        if (currentStepIndex < steps.length - 1) {
+        if (currentStepIndex < activeSteps.length - 1) {
             setCurrentStepIndex(prev => prev + 1);
         } else {
             closeTour();
@@ -122,10 +182,13 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
             closeTour,
             nextStep,
             prevStep,
-            currentStep: steps[currentStepIndex] || null,
-            totalSteps: steps.length,
+            currentStep: activeSteps[currentStepIndex] || null,
+            totalSteps: activeSteps.length,
             registerStepAction,
             unregisterStepAction,
+            startTourForTab,
+            startInitialTour,
+            onUserNavigateToTab,
         }}>
             {children}
         </TourContext.Provider>
