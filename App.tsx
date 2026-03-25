@@ -60,13 +60,14 @@ import ChatAssistant from './components/ChatAssistant';
 import ChatWindow from './components/ChatWindow';
 import FriendListDrawer from './components/FriendListDrawer';
 import TourOverlay from './components/TourOverlay';
+import OnboardingModal from './components/OnboardingModal';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
 
 import { UserProvider, useUser } from './components/UserContext';
 import { LanguageProvider, useLanguage } from './LanguageContext';
-import { TourProvider } from './components/TourContext';
+import { TourProvider, useTour } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
@@ -156,14 +157,25 @@ const formatTradeFromDB = (trade: any): Trade => {
 };
 
 // Wrapper to use context
-const MainApp: React.FC = () => {
+const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
   const { isAuthenticated, openProfile } = useUser();
   const { t, language } = useLanguage();
+  const { startTour } = useTour();
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  // Register setActiveTab with TourProvider so Tour can switch tabs
+  const handleSetActiveTab = React.useCallback((tab: string) => {
+    setActiveTab(tab);
+  }, []);
+
+  React.useEffect(() => {
+    onSetActiveTabReady(handleSetActiveTab);
+  }, [handleSetActiveTab, onSetActiveTabReady]);
 
   // Data State - 从 Supabase 加载，不再使用 localStorage
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -219,6 +231,13 @@ const MainApp: React.FC = () => {
     };
 
     loadAllData();
+  }, [isAuthenticated]);
+
+  // First-login detection: show onboarding survey if not done yet
+  useEffect(() => {
+    if (isAuthenticated && !localStorage.getItem('tg_onboarding_done')) {
+      setShowOnboarding(true);
+    }
   }, [isAuthenticated]);
 
   // UI State for Auto-Actions (Not persisted)
@@ -558,7 +577,7 @@ const MainApp: React.FC = () => {
       if (intent.type === 'trade') {
           setIsShareModalOpen(true);
       } else {
-          setActiveTab('plaza');
+          handleSetActiveTab('plaza');
       }
   };
 
@@ -570,7 +589,7 @@ const MainApp: React.FC = () => {
           icon: TrendingUp,
           color: 'bg-emerald-500',
           onClick: () => {
-              setActiveTab('journal');
+              handleSetActiveTab('journal');
               setJournalAutoOpen(true);
               setIsFabOpen(false);
           }
@@ -581,7 +600,7 @@ const MainApp: React.FC = () => {
           icon: FileText,
           color: 'bg-indigo-500',
           onClick: () => {
-              setActiveTab('plans');
+              handleSetActiveTab('plans');
               setNoteAutoCreate(true);
               setIsFabOpen(false);
           }
@@ -592,7 +611,7 @@ const MainApp: React.FC = () => {
           icon: BookOpen,
           color: 'bg-purple-500',
           onClick: () => {
-              setActiveTab('playbook');
+              handleSetActiveTab('playbook');
               setPlaybookAutoCreate(true);
               setIsFabOpen(false);
           }
@@ -603,7 +622,7 @@ const MainApp: React.FC = () => {
           icon: Globe,
           color: 'bg-sky-500',
           onClick: () => {
-              setActiveTab('plaza');
+              handleSetActiveTab('plaza');
               setIsFabOpen(false);
           }
       },
@@ -635,11 +654,11 @@ const MainApp: React.FC = () => {
                           onUpdateTrackerRules={handleUpdateTrackerRules}
                           plans={plans}
                           onSavePlan={handleSavePlan}
-                          onQuickAddTrade={() => { setActiveTab('journal'); setJournalAutoOpen(true); }}
+                          onQuickAddTrade={() => { handleSetActiveTab('journal'); setJournalAutoOpen(true); }}
                           weeklyGoal={weeklyGoal}
                           onSetWeeklyGoal={handleSetWeeklyGoal}
                           onViewGoals={() => {/* Navigate to goals detail if needed */}}
-                          onViewLeaderboard={() => setActiveTab('leaderboard')}
+                          onViewLeaderboard={() => handleSetActiveTab('leaderboard')}
                           userProfile={{ level: 5, currentXp: 450, nextLevelXp: 1000, totalLifetimeXp: 4500 }} // Mock
                           disciplineHistory={disciplineHistory}
                           disciplineRules={disciplineRules}
@@ -650,7 +669,7 @@ const MainApp: React.FC = () => {
               );
           case 'leaderboard':
               return (
-                  <LeaderboardPage onBack={() => setActiveTab('dashboard')} />
+                  <LeaderboardPage onBack={() => handleSetActiveTab('dashboard')} />
               );
           case 'journal':
               return (
@@ -672,11 +691,11 @@ const MainApp: React.FC = () => {
                           strategies={strategies}
                           onNavigateToNote={(id) => {
                               setNoteSelectionIntent(id);
-                              setActiveTab('plans');
+                              handleSetActiveTab('plans');
                           }}
                           onCreateNoteIntent={(date, tradeIds) => {
                               setNoteCreationIntent({ date, linkedTradeIds: tradeIds });
-                              setActiveTab('plans');
+                              handleSetActiveTab('plans');
                           }}
                       />
                   </PageContainer>
@@ -703,7 +722,7 @@ const MainApp: React.FC = () => {
                   <div className="h-full overflow-hidden">
                       <ChartPage 
                           onSavePlan={handleSavePlan}
-                          onNavigateToNotebook={() => setActiveTab('plans')}
+                          onNavigateToNotebook={() => handleSetActiveTab('plans')}
                       />
                   </div>
               );
@@ -803,13 +822,13 @@ const MainApp: React.FC = () => {
       <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:white font-sans transition-colors duration-300">
           <Sidebar 
               activeTab={activeTab} 
-              setActiveTab={setActiveTab} 
+              setActiveTab={handleSetActiveTab}
               theme={theme}
               toggleTheme={toggleTheme}
               unreadNotificationsCount={notifications.filter(n => !n.isRead).length}
               isCollapsed={isSidebarCollapsed}
               toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              onAddTrade={() => { setActiveTab('journal'); setJournalAutoOpen(true); }}
+              onAddTrade={() => { handleSetActiveTab('journal'); setJournalAutoOpen(true); }}
           />
           <main className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-300 ${isSidebarCollapsed ? 'ml-20' : 'ml-0 md:ml-64'}`}>
               {renderContent()}
@@ -885,7 +904,7 @@ const MainApp: React.FC = () => {
                   handleAddTrade(newTrade);
                   return newTrade;
               }}
-              onViewTrade={(id) => { setActiveTab('journal'); }}
+              onViewTrade={(id) => { handleSetActiveTab('journal'); }}
           />
           <ChatWindow />
           <FriendListDrawer />
@@ -893,6 +912,9 @@ const MainApp: React.FC = () => {
           <PricingModal />
           <UserProfileModal />
           <ReferralModal />
+          {showOnboarding && (
+              <OnboardingModal onComplete={() => { setShowOnboarding(false); startTour(); }} />
+          )}
           <TourOverlay />
           {isShareModalOpen && shareIntent?.type === 'trade' && (
               <TradeShareModal 
@@ -911,14 +933,25 @@ const MainApp: React.FC = () => {
   );
 };
 
+// MainApp wraps MainAppInner with TourProvider so setActiveTab is accessible
+const MainApp: React.FC = () => {
+  const setActiveTabRef = React.useRef<(tab: string) => void>(() => {});
+  const onSetActiveTabReady = React.useCallback((fn: (tab: string) => void) => {
+    setActiveTabRef.current = fn;
+  }, []);
+  return (
+    <TourProvider setActiveTab={(tab) => setActiveTabRef.current(tab)}>
+      <MainAppInner onSetActiveTabReady={onSetActiveTabReady} />
+    </TourProvider>
+  );
+};
+
 const App: React.FC = () => {
   return (
     <LanguageProvider>
       <UserProvider>
         <SocialProvider>
-          <TourProvider setActiveTab={(_: string) => {}}>
-             <MainApp />
-          </TourProvider>
+          <MainApp />
         </SocialProvider>
       </UserProvider>
     </LanguageProvider>

@@ -134,13 +134,13 @@ const TourOverlay = () => {
                         disabled={currentStepIndex === 0}
                         className="text-sm text-slate-500 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
                     >
-                        <ChevronLeft className="w-4 h-4" /> Back
+                        <ChevronLeft className="w-4 h-4" /> {getTourText('back')}
                     </button>
                     <button 
                         onClick={nextStep}
                         className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-indigo-500/20 flex items-center gap-2"
                     >
-                        {currentStepIndex === totalSteps - 1 ? "Finish" : "Next"} <ChevronRight className="w-4 h-4" />
+                        {currentStepIndex === totalSteps - 1 ? getTourText('finish') : getTourText('next')} <ChevronRight className="w-4 h-4" />
                     </button>
                 </div>
             </div>

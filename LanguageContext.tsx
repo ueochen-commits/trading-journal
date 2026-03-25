@@ -712,7 +712,24 @@ const en = {
       plaza: "Social Plaza",
       plazaDesc: "Connect with other traders.",
       academy: "Academy",
-      academyDesc: "Learn new skills."
+      academyDesc: "Learn new skills.",
+      back: "Back",
+      next: "Next",
+      finish: "Finish"
+  },
+  onboarding: {
+      title: "Welcome to TradeGrail!",
+      subtitle: "Let's get you set up in just a moment.",
+      question: "How did you find us?",
+      options: {
+          bilibili: "Bilibili (B站)",
+          douyin: "Douyin (抖音)",
+          xiaohongshu: "Xiaohongshu (小红书)",
+          wechat: "WeChat (微信)",
+          friend: "Friend Referral",
+          other: "Other"
+      },
+      startBtn: "Start Tour"
   },
   landing: {
       heroTitle: "Master Your Edge.\nScale Your Success.",
@@ -1439,6 +1456,50 @@ const cn = {
       ...en.calendar,
       title: "交易日历",
       weekdays: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
+  },
+  tour: {
+      ...en.tour,
+      sidebar: "导航栏",
+      sidebarDesc: "在这里访问所有功能模块。",
+      dashboardStats: "核心数据",
+      dashboardStatsDesc: "快速查看您的交易表现。",
+      weeklyGoal: "每周目标",
+      weeklyGoalDesc: "在这里追踪您的目标进度。",
+      charts: "图表分析",
+      chartsDesc: "分析图表并记录笔记。",
+      journal: "交易日志",
+      journalDesc: "记录并复盘您的交易。",
+      reports: "报表统计",
+      reportsDesc: "深度数据分析。",
+      notebook: "笔记本",
+      notebookDesc: "规划交易并记录策略。",
+      risk: "风险与心态",
+      riskDesc: "管理风险和交易心态。",
+      calendar: "日历视图",
+      calendarDesc: "按日期查看交易记录。",
+      aiCoach: "AI 教练",
+      aiCoachDesc: "获取自动化交易洞察。",
+      plaza: "交易广场",
+      plazaDesc: "与其他交易员互动交流。",
+      academy: "学院",
+      academyDesc: "学习新的交易技能。",
+      back: "上一步",
+      next: "下一步",
+      finish: "完成"
+  },
+  onboarding: {
+      title: "欢迎使用 TradeGrail！",
+      subtitle: "只需片刻，让我们帮您快速上手。",
+      question: "您是从哪里了解到我们的？",
+      options: {
+          bilibili: "B站",
+          douyin: "抖音",
+          xiaohongshu: "小红书",
+          wechat: "微信",
+          friend: "朋友推荐",
+          other: "其他"
+      },
+      startBtn: "开始引导"
   }
 };
 
