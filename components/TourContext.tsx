@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback, ReactNode } from 'react';
 import { useLanguage } from '../LanguageContext';
 
 export interface TourStep {
@@ -18,6 +18,8 @@ interface TourContextType {
     prevStep: () => void;
     currentStep: TourStep | null;
     totalSteps: number;
+    registerStepAction: (titleKey: string, fn: () => void) => void;
+    unregisterStepAction: (titleKey: string) => void;
 }
 
 const TourContext = createContext<TourContextType | undefined>(undefined);
@@ -25,6 +27,7 @@ const TourContext = createContext<TourContextType | undefined>(undefined);
 export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode, setActiveTab: (tab: string) => void }) => {
     const [isTourOpen, setIsTourOpen] = useState(false);
     const [currentStepIndex, setCurrentStepIndex] = useState(0);
+    const stepActionsRef = useRef<Map<string, () => void>>(new Map());
 
     const steps: TourStep[] = [
         { targetId: 'sidebar-nav', titleKey: 'sidebar', contentKey: 'sidebarDesc', position: 'right', tabId: 'dashboard' },
@@ -32,12 +35,12 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         { targetId: 'dashboard-goal', titleKey: 'weeklyGoal', contentKey: 'weeklyGoalDesc', position: 'left', tabId: 'dashboard' },
         { targetId: 'chart-nav-item', titleKey: 'charts', contentKey: 'chartsDesc', position: 'right', tabId: 'charts' },
         { targetId: 'journal-add-btn', titleKey: 'journalAddBtn', contentKey: 'journalAddBtnDesc', position: 'bottom', tabId: 'journal' },
-        { targetId: 'journal-add-btn', titleKey: 'journalChecklist', contentKey: 'journalChecklistDesc', position: 'center', tabId: 'journal' },
-        { targetId: 'journal-add-btn', titleKey: 'journalForm', contentKey: 'journalFormDesc', position: 'center', tabId: 'journal' },
-        { targetId: 'journal-add-btn', titleKey: 'journalRequired', contentKey: 'journalRequiredDesc', position: 'center', tabId: 'journal' },
-        { targetId: 'journal-add-btn', titleKey: 'journalStrategy', contentKey: 'journalStrategyDesc', position: 'center', tabId: 'journal' },
-        { targetId: 'journal-add-btn', titleKey: 'journalReview', contentKey: 'journalReviewDesc', position: 'center', tabId: 'journal' },
-        { targetId: 'journal-add-btn', titleKey: 'journalMistakes', contentKey: 'journalMistakesDesc', position: 'center', tabId: 'journal' },
+        { targetId: 'tour-checklist-modal', titleKey: 'journalChecklist', contentKey: 'journalChecklistDesc', position: 'right', tabId: 'journal' },
+        { targetId: 'tour-form-modal', titleKey: 'journalForm', contentKey: 'journalFormDesc', position: 'bottom', tabId: 'journal' },
+        { targetId: 'tour-form-modal', titleKey: 'journalRequired', contentKey: 'journalRequiredDesc', position: 'bottom', tabId: 'journal' },
+        { targetId: 'tour-strategy-select', titleKey: 'journalStrategy', contentKey: 'journalStrategyDesc', position: 'top', tabId: 'journal' },
+        { targetId: 'tour-review-panel', titleKey: 'journalReview', contentKey: 'journalReviewDesc', position: 'left', tabId: 'journal' },
+        { targetId: 'tour-mistakes-section', titleKey: 'journalMistakes', contentKey: 'journalMistakesDesc', position: 'left', tabId: 'journal' },
         { targetId: 'reports-container', titleKey: 'reports', contentKey: 'reportsDesc', position: 'center', tabId: 'reports' },
         { targetId: 'plans-container', titleKey: 'notebook', contentKey: 'notebookDesc', position: 'center', tabId: 'plans' },
         { targetId: 'risk-container', titleKey: 'risk', contentKey: 'riskDesc', position: 'center', tabId: 'risk' },
@@ -52,10 +55,14 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
             if (step) {
                 // Auto switch tab if needed
                 setActiveTab(step.tabId);
-                // Allow time for DOM to render before scrolling
+                // Allow time for DOM to render, then trigger step action and scroll
                 setTimeout(() => {
-                    const el = document.getElementById(step.targetId);
-                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    const action = stepActionsRef.current.get(step.titleKey);
+                    if (action) action();
+                    setTimeout(() => {
+                        const el = document.getElementById(step.targetId);
+                        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 300);
                 }, 300);
             }
         }
@@ -67,6 +74,8 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
     };
 
     const closeTour = () => {
+        const closeAction = stepActionsRef.current.get('__close__');
+        if (closeAction) closeAction();
         setIsTourOpen(false);
         setCurrentStepIndex(0);
     };
@@ -85,6 +94,14 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         }
     };
 
+    const registerStepAction = useCallback((titleKey: string, fn: () => void) => {
+        stepActionsRef.current.set(titleKey, fn);
+    }, []);
+
+    const unregisterStepAction = useCallback((titleKey: string) => {
+        stepActionsRef.current.delete(titleKey);
+    }, []);
+
     return (
         <TourContext.Provider value={{
             isTourOpen,
@@ -94,7 +111,9 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
             nextStep,
             prevStep,
             currentStep: steps[currentStepIndex] || null,
-            totalSteps: steps.length
+            totalSteps: steps.length,
+            registerStepAction,
+            unregisterStepAction,
         }}>
             {children}
         </TourContext.Provider>
