@@ -47,11 +47,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
   };
 
   const getTierLabel = () => {
-      switch(user.tier) {
-          case 'pro': return t.sidebar.tierPro;
-          case 'elite': return t.sidebar.tierElite;
-          default: return language === 'cn' ? '内测版' : 'Beta';
-      }
+      return language === 'cn' ? '内测版' : 'Beta';
   };
 
   const getTierColor = () => {
