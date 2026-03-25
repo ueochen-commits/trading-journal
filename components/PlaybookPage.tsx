@@ -2,6 +2,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Strategy, Trade, ChecklistItem, TradeStatus, Direction, DailyPlan, StrategyNote } from '../types';
 import { useLanguage } from '../LanguageContext';
+import { useTour } from './TourContext';
 import { Plus, MoreHorizontal, Lock, Trash2, RefreshCw, X, Edit2, Search, ArrowRight, CheckCircle2, Settings, ChevronDown, ArrowUp, ArrowDown, Layout, ExternalLink, LayoutGrid, List as ListIcon, GripVertical, ArrowLeft, Info, GripHorizontal, MoreVertical, Activity, BookMarked, Play, Bold, Sparkles, Wand2, Cloud, StickyNote } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { MOCK_ACCOUNTS } from '../constants';
@@ -482,7 +483,7 @@ const CreatePlaybookModal = ({
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
+            <div id="playbook-create-modal" className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
                 <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10 shrink-0">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{lbl.title}</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
@@ -1176,6 +1177,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
     autoCreate, onResetAutoCreate 
 }) => {
     const { t, language } = useLanguage();
+    const { registerStepAction, unregisterStepAction } = useTour();
     const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
     const [detailedStrategyId, setDetailedStrategyId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -1188,6 +1190,25 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
 
     const handleCreatePlaybook = () => { setEditStrategy(undefined); setIsCreateModalOpen(true); };
     const handleEditPlaybook = (strategy: Strategy) => { setEditStrategy(strategy); setIsCreateModalOpen(true); setMenuOpenId(null); };
+
+    useEffect(() => {
+        registerStepAction('playbookCreate', () => {
+            setIsCreateModalOpen(false);
+        });
+        registerStepAction('playbookModal', () => {
+            setEditStrategy(undefined);
+            setIsCreateModalOpen(true);
+        });
+        registerStepAction('playbookCards', () => {
+            setIsCreateModalOpen(false);
+        });
+        registerStepAction('__close__', () => {
+            setIsCreateModalOpen(false);
+        });
+        return () => {
+            ['playbookCreate', 'playbookModal', 'playbookCards', '__close__'].forEach(k => unregisterStepAction(k));
+        };
+    }, []);
 
     const handleSaveStrategy = (strategy: Strategy) => {
         const exists = strategies.some(s => s.id === strategy.id);
@@ -1258,7 +1279,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search strategy..." className="pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm w-full outline-none focus:ring-2 focus:ring-indigo-500" />
                     </div>
-                    <button onClick={handleCreatePlaybook} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 transform hover:scale-105"><Plus className="w-4 h-4" /> {t.playbook.create}</button>
+                    <button id="playbook-create-btn" onClick={handleCreatePlaybook} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 transform hover:scale-105"><Plus className="w-4 h-4" /> {t.playbook.create}</button>
                     <div className="relative" ref={dropdownRef}>
                         <button onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)} className="flex items-center justify-between gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 font-bold min-w-[140px] hover:border-slate-300 dark:hover:border-slate-600 transition-colors shadow-sm">{sortOption} <ChevronDown className="w-3.5 h-3.5 text-slate-400" /></button>
                         {isSortDropdownOpen && (
@@ -1272,7 +1293,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
+            <div id="playbook-grid" className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12 items-start">
                     {playbookData.map(pb => {
                         const isExpanded = selectedStrategyId === pb.id;
