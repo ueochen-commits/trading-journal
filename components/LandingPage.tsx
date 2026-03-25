@@ -39,7 +39,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
     return (
         <div className="min-h-screen bg-slate-950 text-white font-sans overflow-x-hidden selection:bg-indigo-500/30">
-            
+
+            {/* --- Beta Banner --- */}
+            <div className="bg-indigo-600 text-white text-center py-2 px-4 text-sm font-medium">
+                🎉 {language === 'cn'
+                    ? '现已开放内测，所有功能完全免费使用，欢迎体验并反馈建议！'
+                    : 'Now in Beta — All features are completely free. Try it out and share your feedback!'}
+            </div>
+
             {/* --- Navigation --- */}
             <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b ${scrolled ? 'bg-slate-950/90 backdrop-blur-xl border-slate-800 py-3' : 'bg-transparent border-transparent py-6'}`}>
                 <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
