@@ -98,7 +98,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
                 <Logo iconClassName="w-8 h-8" textClassName="mt-1" showText={true} />
                 <div className="flex items-center gap-1.5 mt-1 ml-11">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="text-[10px] font-mono text-slate-400 font-medium uppercase tracking-wider">Live v2.4</span>
+                    <span className="text-[10px] font-mono text-slate-400 font-medium uppercase tracking-wider">内测版 v1.2</span>
                 </div>
              </div>
         </div>
