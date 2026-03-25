@@ -196,7 +196,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
       )}
 
       {/* Column 1: Risk Settings */}
-      <div className="space-y-6">
+      <div id="risk-settings" className="space-y-6">
         <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Shield className="w-6 h-6 text-indigo-500" />
@@ -461,7 +461,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
       </div>
 
       {/* NEW SECTION: Equity Simulator (Full Width) */}
-      <div className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-indigo-500/5 transition-colors">
+      <div id="risk-simulator" className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-indigo-500/5 transition-colors">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
               <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
