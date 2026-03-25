@@ -307,7 +307,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
     <div className="h-full w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 font-sans relative">
       
       {/* Top Control Bar */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-2 flex flex-col md:flex-row items-center gap-3 shrink-0 z-20 shadow-sm">
+      <div id="chart-toolbar" className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-2 flex flex-col md:flex-row items-center gap-3 shrink-0 z-20 shadow-sm">
           
           {/* Left: Symbol & Timeframe */}
           <div className="flex items-center gap-2 w-full md:w-auto">
@@ -346,7 +346,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
           <div className="flex items-center gap-2">
               
               {/* View Toggles */}
-              <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <div id="chart-layout-toggle" className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                   <button onClick={() => setLayoutMode('chart-only')} className={`p-1.5 rounded ${layoutMode === 'chart-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}><Maximize2 className="w-4 h-4" /></button>
                   <button onClick={() => setLayoutMode('note-only')} className={`p-1.5 rounded ${layoutMode === 'note-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}><Minimize2 className="w-4 h-4" /></button>
               </div>
@@ -362,8 +362,9 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
       <div ref={mainContainerRef} className={`flex-1 flex overflow-hidden relative ${splitDirection === 'horizontal' ? 'flex-row' : 'flex-col'}`}>
           
           {/* Main Chart Area */}
-          <div 
-            style={{ 
+          <div
+            id="chart-view"
+            style={{
                 flexBasis: layoutMode === 'chart-only' ? '100%' : layoutMode === 'note-only' ? '0%' : `${splitRatio}%`,
                 display: layoutMode === 'note-only' ? 'none' : 'block'
             }}
@@ -396,8 +397,9 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
           )}
 
           {/* Note Editor Area */}
-          <div 
-            style={{ 
+          <div
+            id="chart-notes"
+            style={{
                 flexBasis: layoutMode === 'note-only' ? '100%' : layoutMode === 'chart-only' ? '0%' : `${100 - splitRatio}%`,
                 display: layoutMode === 'chart-only' ? 'none' : 'flex'
             }}
