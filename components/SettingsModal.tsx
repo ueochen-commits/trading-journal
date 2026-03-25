@@ -106,7 +106,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
     };
 
     const showToast = (msg?: string) => {
-        setToastMsg(msg || 'Settings Saved Successfully');
+        setToastMsg(msg || (language === 'cn' ? '设置保存成功' : 'Settings Saved Successfully'));
         setShowSuccessToast(true);
         setTimeout(() => setShowSuccessToast(false), 3000);
     };
@@ -244,7 +244,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                                     </div>
                                     <div className="h-px bg-slate-100 dark:bg-slate-800"></div>
                                     {/* 其他账户设置... */}
-                                    <p className="text-sm text-slate-400 italic">More account security settings coming soon.</p>
+                                    <p className="text-sm text-slate-400 italic">{language === 'cn' ? '更多账户安全设置即将上线。' : 'More account security settings coming soon.'}</p>
                                 </div>
                             </div>
                         )}
@@ -344,7 +344,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                         {activeTab !== 'public-profile' && activeTab !== 'api-sync' && activeTab !== 'account' && (
                             <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                 <SettingsIcon className="w-16 h-16 mb-4 opacity-20" />
-                                <p>Section under construction.</p>
+                            <p>{language === 'cn' ? '该模块正在建设中。' : 'Section under construction.'}</p>
                             </div>
                         )}
                     </div>

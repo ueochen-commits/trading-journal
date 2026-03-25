@@ -1417,6 +1417,52 @@ const cn = {
       markAllRead: "全部已读",
       empty: "暂无通知"
   },
+  settings: {
+      title: "设置",
+      menu: {
+          profileHeader: "个人资料",
+          publicProfile: "公开主页",
+          privacy: "隐私设置",
+          accountHeader: "账户",
+          account: "账户设置",
+          sessions: "登录设备",
+          billingHeader: "订阅与账单",
+          subscription: "订阅方案",
+          payment: "支付方式",
+          history: "账单记录",
+          notificationsHeader: "通知",
+          alerts: "消息提醒",
+          apiSync: "API 同步"
+      },
+      profile: {
+          photoTitle: "头像",
+          photoDesc: "将显示在您的公开主页上。",
+          uploadBtn: "上传新头像",
+          usernameLabel: "用户名",
+          changeUserBtn: "修改用户名",
+          socialTitle: "社交账号",
+          wechat: "微信",
+          bilibili: "哔哩哔哩",
+          douyin: "抖音",
+          weibo: "微博",
+          website: "个人网站",
+          saveBtn: "保存更改"
+      },
+      api: {
+          title: "交易所 API 同步",
+          desc: "连接您的交易所，自动导入交易记录。仅需只读权限。",
+          addBtn: "连接交易所",
+          exchangeLabel: "交易所",
+          keyLabel: "API Key",
+          secretLabel: "Secret Key",
+          connect: "连接并同步",
+          connected: "已连接",
+          syncing: "同步中...",
+          lastSync: "上次同步",
+          remove: "移除",
+          disclaimer: "我们仅使用只读权限获取订单历史，您的密钥已在本地加密存储。"
+      }
+  },
   calculator: {
       ...en.calculator,
       title: "仓位计算器",
