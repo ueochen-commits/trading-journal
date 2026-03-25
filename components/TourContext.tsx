@@ -59,9 +59,6 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         { targetId: 'playbook-grid', titleKey: 'playbookCards', contentKey: 'playbookCardsDesc', position: 'right', tabId: 'playbook' },
         { targetId: 'risk-settings', titleKey: 'riskSettings', contentKey: 'riskSettingsDesc', position: 'right', tabId: 'psychology' },
         { targetId: 'risk-simulator', titleKey: 'riskSimulator', contentKey: 'riskSimulatorDesc', position: 'top', tabId: 'psychology' },
-        { targetId: 'calendar-container', titleKey: 'calendar', contentKey: 'calendarDesc', position: 'center', tabId: 'calendar' },
-        { targetId: 'plaza-container', titleKey: 'plaza', contentKey: 'plazaDesc', position: 'center', tabId: 'plaza' },
-        { targetId: 'academy-container', titleKey: 'academy', contentKey: 'academyDesc', position: 'center', tabId: 'academy' },
     ];
 
     useEffect(() => {
