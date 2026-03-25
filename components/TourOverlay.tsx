@@ -129,19 +129,27 @@ const TourOverlay = () => {
                 </p>
 
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <button 
-                        onClick={prevStep} 
-                        disabled={currentStepIndex === 0}
-                        className="text-sm text-slate-500 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+                    <button
+                        onClick={closeTour}
+                        className="text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                     >
-                        <ChevronLeft className="w-4 h-4" /> {getTourText('back')}
+                        {getTourText('skip')}
                     </button>
-                    <button 
-                        onClick={nextStep}
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-indigo-500/20 flex items-center gap-2"
-                    >
-                        {currentStepIndex === totalSteps - 1 ? getTourText('finish') : getTourText('next')} <ChevronRight className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={prevStep}
+                            disabled={currentStepIndex === 0}
+                            className="text-sm text-slate-500 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+                        >
+                            <ChevronLeft className="w-4 h-4" /> {getTourText('back')}
+                        </button>
+                        <button
+                            onClick={nextStep}
+                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold rounded-lg shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+                        >
+                            {currentStepIndex === totalSteps - 1 ? getTourText('finish') : getTourText('next')} <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
