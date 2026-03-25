@@ -5,7 +5,7 @@ import posthog from 'posthog-js';
 import * as Sentry from '@sentry/react';
 
 posthog.init('phc_Bue0oaCzWqHfduKWkCejiDFljJIU0ehvImdGVGMwZdr0', {
-  api_host: 'https://us.i.posthog.com',
+  api_host: 'https://us.posthog.com',
   person_profiles: 'identified_only',
 });
 
