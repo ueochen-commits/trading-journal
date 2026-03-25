@@ -7,7 +7,9 @@ const TourOverlay = () => {
     const { isTourOpen, currentStep, nextStep, prevStep, closeTour, currentStepIndex, totalSteps } = useTour();
     const { t } = useLanguage();
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+    const [cardHeight, setCardHeight] = useState(260);
     const updateTimeout = useRef<any>(null);
+    const cardRef = useRef<HTMLDivElement>(null);
 
     // Track window resize and step changes to update position
     useEffect(() => {
@@ -52,6 +54,13 @@ const TourOverlay = () => {
         };
     }, [isTourOpen, currentStep, currentStepIndex]);
 
+    // Measure card height after each render so 'top' position is accurate
+    useEffect(() => {
+        if (cardRef.current) {
+            setCardHeight(cardRef.current.offsetHeight);
+        }
+    });
+
     if (!isTourOpen || !currentStep) return null;
 
     // Helper to get translation safely (since keys are dynamic strings)
@@ -84,7 +93,7 @@ const TourOverlay = () => {
                 left = targetRect.left;
                 break;
             case 'top':
-                top = targetRect.top - 200 - gap; // rough height
+                top = targetRect.top - cardHeight - gap;
                 left = targetRect.left;
                 break;
             case 'center':
@@ -95,7 +104,7 @@ const TourOverlay = () => {
         if (left < 10) left = 10;
         if (left + width > window.innerWidth) left = window.innerWidth - width - 10;
         if (top < 10) top = 10;
-        if (top + 200 > window.innerHeight) top = window.innerHeight - 250;
+        if (top + cardHeight > window.innerHeight) top = window.innerHeight - cardHeight - 10;
 
         return { top, left, width: `${width}px` };
     };
@@ -148,6 +157,7 @@ const TourOverlay = () => {
 
             {/* Tooltip Card — needs pointer events */}
             <div
+                ref={cardRef}
                 className="absolute bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all duration-300 ease-out flex flex-col gap-3"
                 style={{ ...getTooltipStyle(), pointerEvents: 'auto', maxWidth: 340 }}
             >
