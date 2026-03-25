@@ -50,7 +50,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
       switch(user.tier) {
           case 'pro': return t.sidebar.tierPro;
           case 'elite': return t.sidebar.tierElite;
-          default: return t.sidebar.tierFree;
+          default: return language === 'cn' ? '内测版' : 'Beta';
       }
   };
 

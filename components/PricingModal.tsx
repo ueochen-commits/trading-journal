@@ -56,9 +56,15 @@ const PricingModal: React.FC = () => {
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
                         {language === 'cn' ? '解锁全套交易工具' : 'Unlock Your Trading Edge'}
                     </h2>
-                    <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-8">
+                    <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-4">
                         {language === 'cn' ? '加入前 5% 的盈利交易员行列，用专业数据武装自己。' : 'Stop guessing. Start trading with institutional-grade data and AI coaching.'}
                     </p>
+
+                    {/* Beta Notice */}
+                    <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm px-5 py-2.5 rounded-full mb-8">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
+                        {language === 'cn' ? '目前 TraderGrad 正在内测中，所有功能均免费测试使用。' : 'TraderGrad is currently in beta — all features are free to use.'}
+                    </div>
 
                     {/* Billing Toggle */}
                     <div className="inline-flex bg-slate-900 p-1 rounded-full border border-slate-800 relative">
@@ -164,20 +170,11 @@ const PricingModal: React.FC = () => {
                                 )}
                             </div>
 
-                            <button 
-                                onClick={() => upgradeTier('pro')}
-                                disabled={user.tier === 'pro'}
-                                className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 shadow-lg ${
-                                    user.tier === 'pro' 
-                                    ? 'bg-slate-800 text-slate-500 cursor-default' 
-                                    : 'bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white shadow-indigo-500/25 hover:scale-[1.02]'
-                                }`}
+                            <button
+                                disabled
+                                className="w-full py-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-500 cursor-default flex items-center justify-center gap-2"
                             >
-                                {user.tier === 'pro' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (
-                                    <>
-                                        {language === 'cn' ? '免费试用 7 天' : 'Try free for 7 days'} <ArrowRight className="w-4 h-4" />
-                                    </>
-                                )}
+                                {language === 'cn' ? '内测期间免费开放' : 'Free During Beta'}
                             </button>
                             
                             {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3">{language === 'cn' ? '7天免费试用，随后按年收费' : '7-day free trial, then billed yearly'}</p>}
@@ -232,20 +229,11 @@ const PricingModal: React.FC = () => {
                             ) : <div className="h-10"></div>}
                         </div>
 
-                        <button 
-                            onClick={() => upgradeTier('elite')}
-                            disabled={user.tier === 'elite'}
-                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border ${
-                                user.tier === 'elite' 
-                                ? 'bg-slate-800 border-slate-800 text-slate-500 cursor-default' 
-                                : 'bg-transparent border-slate-700 text-white hover:border-amber-500 hover:text-amber-500'
-                            }`}
+                        <button
+                            disabled
+                            className="w-full py-3.5 rounded-xl font-bold text-sm bg-slate-800 border border-slate-800 text-slate-500 cursor-default"
                         >
-                            {user.tier === 'elite' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (
-                                <>
-                                    {language === 'cn' ? '免费试用 7 天' : 'Try free for 7 days'} <ArrowRight className="w-4 h-4 inline ml-1" />
-                                </>
-                            )}
+                            {language === 'cn' ? '内测期间免费开放' : 'Free During Beta'}
                         </button>
 
                         <div className="mt-8 space-y-4">
