@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.33.0",
+    "@sentry/react": "^10.45.0",
     "@supabase/supabase-js": "2.39.7",
     "flatpickr": "^4.6.13",
     "html2canvas": "^1.4.1",
