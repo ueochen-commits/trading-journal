@@ -51,11 +51,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
   };
 
   const getTierColor = () => {
-      switch(user.tier) {
-          case 'pro': return 'bg-indigo-500 text-white';
-          case 'elite': return 'bg-amber-500 text-white';
-          default: return 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300';
-      }
+      return 'bg-indigo-500 text-white';
   };
 
   useEffect(() => {
