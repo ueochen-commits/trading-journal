@@ -362,6 +362,18 @@ const Journal: React.FC<JournalProps> = ({
           setIsModalOpen(false);
           setShowReviewPanel(false);
       });
+      registerStepAction('journalViewModes', () => {
+          setIsModalOpen(false);
+          setShowReviewPanel(false);
+      });
+      registerStepAction('journalToolbar', () => {
+          setIsModalOpen(false);
+          setShowReviewPanel(false);
+      });
+      registerStepAction('journalActions', () => {
+          setIsModalOpen(false);
+          setShowReviewPanel(false);
+      });
       registerStepAction('journalChecklist', () => {
           setFormData({ ...initialFormState });
           setEditingTradeId(null);
@@ -401,7 +413,7 @@ const Journal: React.FC<JournalProps> = ({
           setShowReviewPanel(false);
       });
       return () => {
-          ['journalAddBtn', 'journalChecklist', 'journalForm', 'journalRequired', 'journalStrategy', 'journalReview', 'journalMistakes', '__close__'].forEach(key => unregisterStepAction(key));
+          ['journalAddBtn', 'journalChecklist', 'journalForm', 'journalRequired', 'journalStrategy', 'journalReview', 'journalMistakes', 'journalViewModes', 'journalToolbar', 'journalActions', '__close__'].forEach(key => unregisterStepAction(key));
       };
   }, [checklist]);
 
@@ -871,7 +883,7 @@ const Journal: React.FC<JournalProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.journal.title}</h2>
         <div className="flex items-center gap-3">
-            <div className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
+            <div id="journal-view-toggle" className="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-xl shadow-inner">
                 <button onClick={() => setViewMode('list')} className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 shadow text-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="List View"><List className="w-4 h-4" /></button>
                 <button onClick={() => setViewMode('gallery')} className={`p-2 rounded-lg transition-all ${viewMode === 'gallery' ? 'bg-white dark:bg-slate-700 shadow text-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="Gallery View"><LayoutGrid className="w-4 h-4" /></button>
                 <button onClick={() => setViewMode('daily')} className={`p-2 rounded-lg transition-all ${viewMode === 'daily' ? 'bg-white dark:bg-slate-700 shadow text-indigo-500' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`} title="Daily Journal View"><BookOpen className="w-4 h-4" /></button>
@@ -893,7 +905,7 @@ const Journal: React.FC<JournalProps> = ({
           </div>
        )}
 
-      <div className="flex flex-col gap-4">
+      <div id="journal-toolbar" className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-colors">
             <div className="relative flex-1 min-w-[300px] max-w-md">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
@@ -1008,7 +1020,7 @@ const Journal: React.FC<JournalProps> = ({
       </div>
 
       {viewMode === 'list' ? (
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm transition-colors animate-fade-in">
+          <div id="journal-list" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm transition-colors animate-fade-in">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-500 dark:text-slate-400">
                 <thead className="bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 uppercase font-semibold text-xs tracking-wider border-b border-slate-100 dark:border-slate-800">
