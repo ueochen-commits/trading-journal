@@ -11,17 +11,29 @@ const TourOverlay = () => {
 
     // Track window resize and step changes to update position
     useEffect(() => {
+        // Reset rect immediately on step change so stale highlight doesn't linger
+        setTargetRect(null);
+
         const updatePosition = () => {
             if (isTourOpen && currentStep) {
                 const el = document.getElementById(currentStep.targetId);
                 if (el) {
                     setTargetRect(el.getBoundingClientRect());
                 } else {
-                    // If element not found immediately (animation delay), retry briefly
-                    setTimeout(() => {
+                    // Element not in DOM yet (modal animating in) — retry a few times
+                    let attempts = 0;
+                    const retry = setInterval(() => {
+                        attempts++;
                         const retryEl = document.getElementById(currentStep.targetId);
-                        if(retryEl) setTargetRect(retryEl.getBoundingClientRect());
-                    }, 500);
+                        if (retryEl) {
+                            setTargetRect(retryEl.getBoundingClientRect());
+                            clearInterval(retry);
+                        } else if (attempts >= 6) {
+                            // Give up — no highlight for this step
+                            setTargetRect(null);
+                            clearInterval(retry);
+                        }
+                    }, 200);
                 }
             }
         };
@@ -89,26 +101,55 @@ const TourOverlay = () => {
     };
 
     return (
-        <div className="fixed inset-0 z-[100] overflow-hidden">
-            {/* Backdrop with SVG Mask (The "Cutout" Effect) */}
-            <div className="absolute inset-0 bg-slate-900/70 transition-all duration-300 ease-in-out">
-                {targetRect && (
-                    <div 
-                        className="absolute bg-transparent shadow-[0_0_0_9999px_rgba(15,23,42,0.75)] rounded-lg transition-all duration-300 ease-in-out border-2 border-white/50 animate-pulse"
-                        style={{
-                            top: targetRect.top - 4,
-                            left: targetRect.left - 4,
-                            width: targetRect.width + 8,
-                            height: targetRect.height + 8,
-                        }}
-                    ></div>
-                )}
-            </div>
+        <div className="fixed inset-0 z-[100] overflow-hidden pointer-events-none">
+            {/* Dark overlay with a transparent cutout over the target element */}
+            <svg
+                className="absolute inset-0 w-full h-full"
+                style={{ pointerEvents: 'none' }}
+            >
+                <defs>
+                    <mask id="tour-spotlight-mask">
+                        {/* White = visible (dark overlay shows), Black = hidden (cutout) */}
+                        <rect width="100%" height="100%" fill="white" />
+                        {targetRect && (
+                            <rect
+                                x={targetRect.left - 6}
+                                y={targetRect.top - 6}
+                                width={targetRect.width + 12}
+                                height={targetRect.height + 12}
+                                rx="10"
+                                ry="10"
+                                fill="black"
+                            />
+                        )}
+                    </mask>
+                </defs>
+                <rect
+                    width="100%"
+                    height="100%"
+                    fill="rgba(15,23,42,0.78)"
+                    mask="url(#tour-spotlight-mask)"
+                />
+            </svg>
 
-            {/* Tooltip Card */}
-            <div 
+            {/* Highlight border around target */}
+            {targetRect && (
+                <div
+                    className="absolute rounded-xl border-2 border-indigo-400 shadow-[0_0_0_4px_rgba(99,102,241,0.25)] transition-all duration-300 ease-in-out"
+                    style={{
+                        top: targetRect.top - 6,
+                        left: targetRect.left - 6,
+                        width: targetRect.width + 12,
+                        height: targetRect.height + 12,
+                        pointerEvents: 'none',
+                    }}
+                />
+            )}
+
+            {/* Tooltip Card — needs pointer events */}
+            <div
                 className="absolute bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all duration-300 ease-out flex flex-col gap-3"
-                style={getTooltipStyle()}
+                style={{ ...getTooltipStyle(), pointerEvents: 'auto', maxWidth: 340 }}
             >
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2">
