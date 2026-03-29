@@ -54,12 +54,12 @@ const TourOverlay = () => {
         };
     }, [isTourOpen, currentStep, currentStepIndex]);
 
-    // Measure card height after each render so 'top' position is accurate
+    // Measure card height when step changes so 'top' position is accurate
     useEffect(() => {
         if (cardRef.current) {
             setCardHeight(cardRef.current.offsetHeight);
         }
-    });
+    }, [currentStepIndex, isTourOpen]);
 
     if (!isTourOpen || !currentStep) return null;
 

@@ -34,32 +34,49 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
 
     const handleSaveToAlbum = async () => {
         if (!cardRef.current || isGenerating) return;
-        
+
+        let clone: HTMLDivElement | null = null;
+        let link: HTMLAnchorElement | null = null;
+
         try {
             setIsGenerating(true);
-            const canvas = await html2canvas(cardRef.current, {
+
+            // Clone the target node so html2canvas never touches React's live DOM tree,
+            // preventing "removeChild: node is not a child" errors during reconciliation.
+            clone = cardRef.current.cloneNode(true) as HTMLDivElement;
+            clone.style.position = 'fixed';
+            clone.style.top = '-9999px';
+            clone.style.left = '-9999px';
+            clone.style.width = `${cardRef.current.offsetWidth}px`;
+            document.body.appendChild(clone);
+
+            const canvas = await html2canvas(clone, {
                 useCORS: true,
-                scale: 2, // High resolution for better quality
-                backgroundColor: null, // Keep transparency/gradient
+                scale: 2,
+                backgroundColor: null,
                 logging: false,
             });
-            
+
             const image = canvas.toDataURL("image/png");
-            const link = document.createElement('a');
             const date = new Date().toISOString().split('T')[0];
-            
+
+            link = document.createElement('a');
             link.href = image;
             link.download = `tradegrail-share-${trade.symbol}-${date}.png`;
+            link.style.display = 'none';
             document.body.appendChild(link);
             link.click();
-            document.body.removeChild(link);
-            
-            // Log for debugging
-            console.log("Image saved to album successfully.");
         } catch (error) {
             console.error("Failed to generate share image:", error);
             alert(language === 'cn' ? "保存图片失败，请重试。" : "Failed to save image. Please try again.");
         } finally {
+            // Clean up cloned elements safely
+            if (clone && document.body.contains(clone)) {
+                document.body.removeChild(clone);
+            }
+            if (link && document.body.contains(link)) {
+                document.body.removeChild(link);
+            }
             setIsGenerating(false);
         }
     };
