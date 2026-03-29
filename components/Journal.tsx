@@ -331,6 +331,12 @@ const Journal: React.FC<JournalProps> = ({
   // Initializing Flatpickr logic
   useEffect(() => {
     if (isModalOpen && modalStep === 'form') {
+        // ✅ 防御性检查：确保 flatpickr 已加载
+        if (typeof window.flatpickr !== 'function') {
+            console.warn('Flatpickr not loaded yet, skipping initialization');
+            return;
+        }
+
         const fpConfig = { enableTime: true, dateFormat: "Y-m-d H:i", time_24hr: true, allowInput: true, disableMobile: "true", wrap: true };
         let entryFp: any;
         let exitFp: any;
