@@ -213,7 +213,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
       setIsDataLoading(true);
       try {
-        const result = await userDataService.loadUserData();
+        const [result, broadcastNotifications] = await Promise.all([
+          userDataService.loadUserData(),
+          userDataService.loadBroadcastNotifications(),
+        ]);
         if (!result) return;
 
         // 交易数据需要格式转换
@@ -224,7 +227,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.checklist.length > 0) setChecklist(result.checklist);
         if (result.trackerRules.length > 0) setTrackerRules(result.trackerRules);
         if (result.plans.length > 0) setPlans(result.plans);
-        if (result.notifications.length > 0) setNotifications(result.notifications);
+        // 广播通知排在前面，后面跟用户个人通知
+        const allNotifications = [...broadcastNotifications, ...(result.notifications || [])];
+        if (allNotifications.length > 0) setNotifications(allNotifications);
         if (result.disciplineRules.length > 0) setDisciplineRules(result.disciplineRules);
         if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
@@ -244,6 +249,30 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     if (isAuthenticated && !localStorage.getItem('tg_onboarding_done')) {
       setShowOnboarding(true);
     }
+  }, [isAuthenticated]);
+
+  // Realtime：订阅新广播，用户在线时立刻收到通知
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const channel = supabase
+      .channel('broadcast_notifications_realtime')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'broadcast_notifications' }, (payload) => {
+        const row = payload.new as any;
+        if (!row.is_active) return;
+        const newNotification: Notification = {
+          id: `broadcast_${row.id}`,
+          type: row.type || 'system',
+          title: row.title,
+          content: row.message,
+          timestamp: row.created_at,
+          isRead: false,
+        };
+        setNotifications(prev => [newNotification, ...prev]);
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, [isAuthenticated]);
 
   // UI State for Auto-Actions (Not persisted)
@@ -548,11 +577,19 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const handleMarkAllNotificationsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     userDataService.markAllNotificationsRead();
+    // 同时标记所有未读广播
+    notifications
+      .filter(n => n.id.startsWith('broadcast_') && !n.isRead)
+      .forEach(n => userDataService.markBroadcastRead(n.id.replace('broadcast_', '')));
   };
 
   const handleMarkOneNotificationRead = (id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-    userDataService.markNotificationRead(id);
+    if (id.startsWith('broadcast_')) {
+      userDataService.markBroadcastRead(id.replace('broadcast_', ''));
+    } else {
+      userDataService.markNotificationRead(id);
+    }
   };
 
   const handleCheckDisciplineRule = (ruleId: string, isChecked: boolean) => {

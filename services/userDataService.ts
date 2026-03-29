@@ -428,6 +428,40 @@ export const userDataService = {
     return { error };
   },
 
+  // 加载广播通知（含已读状态）
+  async loadBroadcastNotifications(): Promise<Notification[]> {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const [broadcastsRes, readsRes] = await Promise.all([
+      supabase.from('broadcast_notifications').select('*').eq('is_active', true).order('created_at', { ascending: false }),
+      supabase.from('broadcast_reads').select('broadcast_id').eq('user_id', userId),
+    ]);
+
+    const broadcasts = broadcastsRes.data || [];
+    const readIds = new Set((readsRes.data || []).map((r: any) => r.broadcast_id));
+
+    return broadcasts.map((row: any) => ({
+      id: `broadcast_${row.id}`,
+      type: row.type || 'system',
+      title: row.title,
+      content: row.message,
+      timestamp: row.created_at,
+      isRead: readIds.has(row.id),
+    }));
+  },
+
+  // 标记广播通知已读
+  async markBroadcastRead(broadcastId: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) return;
+
+    await supabase.from('broadcast_reads').upsert(
+      { user_id: userId, broadcast_id: broadcastId },
+      { ignoreDuplicates: true }
+    );
+  },
+
   // 保存纪律规则
   async saveDisciplineRules(rules: DisciplineRule[]) {
     const userId = await getCurrentUserId();
