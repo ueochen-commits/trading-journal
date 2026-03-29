@@ -698,16 +698,22 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
     // Load TradingView Widget
     useEffect(() => {
-        if (!chartContainerRef.current) return;
-        chartContainerRef.current.innerHTML = "";
+        const chartContainer = chartContainerRef.current;
+        if (!chartContainer) return;
+
+        // Remove all existing children before adding new widget
+        while (chartContainer.firstChild) {
+            chartContainer.removeChild(chartContainer.firstChild);
+        }
+
         const script = document.createElement("script");
         script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
         script.type = "text/javascript";
         script.async = true;
         let tvSymbol = currentTrade.symbol;
-        if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`; 
+        if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
         const isDark = document.documentElement.classList.contains('dark');
-        script.innerHTML = JSON.stringify({
+        script.textContent = JSON.stringify({
             "autosize": true,
             "symbol": tvSymbol,
             "interval": "15",
@@ -723,7 +729,20 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             "calendar": false,
             "support_host": "https://www.tradingview.com"
         });
-        chartContainerRef.current.appendChild(script);
+        chartContainer.appendChild(script);
+
+        return () => {
+            // Clear TradingView's DOM nodes before React unmounts the modal.
+            // Without this, React's reconciliation encounters nodes it didn't
+            // create and throws "removeChild: not a child" errors.
+            try {
+                while (chartContainer.firstChild) {
+                    chartContainer.removeChild(chartContainer.firstChild);
+                }
+            } catch(e) {
+                // Ignore errors during cleanup
+            }
+        };
     }, [currentTrade.symbol, language]);
 
     // --- Dynamic Tag Handlers ---

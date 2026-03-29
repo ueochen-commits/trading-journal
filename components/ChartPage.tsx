@@ -55,18 +55,23 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
 
   // Load TradingView Widget
   useEffect(() => {
-    if (container.current) {
-        container.current.innerHTML = ""; // Clear previous widget
+    // Capture ref value so the cleanup closure has a stable reference
+    const currentContainer = container.current;
+    if (!currentContainer) return;
+
+    // Remove all existing children (TradingView may have appended iframes etc.)
+    while (currentContainer.firstChild) {
+        currentContainer.removeChild(currentContainer.firstChild);
     }
 
     const script = document.createElement("script");
     script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
     script.type = "text/javascript";
     script.async = true;
-    
+
     const isDark = document.documentElement.classList.contains('dark');
 
-    script.innerHTML = JSON.stringify({
+    script.textContent = JSON.stringify({
       "autosize": true,
       "symbol": symbol,
       "interval": interval,
@@ -81,14 +86,12 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
       "support_host": "https://www.tradingview.com"
     });
 
-    if (container.current) {
-        try {
-            container.current.appendChild(script);
-        } catch(e) {
-            console.warn("Failed to append TradingView script", e);
-        }
+    try {
+        currentContainer.appendChild(script);
+    } catch(e) {
+        console.warn("Failed to append TradingView script", e);
     }
-    
+
     // Auto-update title when chart context changes if empty
     if (!noteTitle) {
         const tfLabel = TIMEFRAMES.find(t => t.value === interval)?.label || interval;
@@ -96,6 +99,19 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
         setNoteTitle(`${cleanSymbol} - ${tfLabel} Analysis`);
     }
 
+    return () => {
+        // Must clear the container before React unmounts the component.
+        // TradingView appends DOM nodes (iframes etc.) that React doesn't
+        // track — leaving them causes "removeChild: not a child" errors
+        // during reconciliation when the user navigates away.
+        try {
+            while (currentContainer.firstChild) {
+                currentContainer.removeChild(currentContainer.firstChild);
+            }
+        } catch(e) {
+            // Ignore errors during cleanup
+        }
+    };
   }, [language, symbol, interval]);
 
   // Drag Handlers
