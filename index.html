@@ -64,6 +64,11 @@
       }
     </script>
     <style>
+      /* Hide the app when the browser triggers print on this page */
+      @media print {
+        body > #root { display: none !important; }
+      }
+
       /* Custom scrollbar for a sleek look */
       ::-webkit-scrollbar {
         width: 6px;
