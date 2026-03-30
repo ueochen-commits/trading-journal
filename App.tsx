@@ -158,7 +158,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 
 // Wrapper to use context
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
-  const { isAuthenticated, openProfile } = useUser();
+  const { isAuthenticated, isLoading, openProfile } = useUser();
   const { t, language } = useLanguage();
   const { startInitialTour } = useTour();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -684,6 +684,14 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           }
       }
   ];
+
+  if (isLoading) {
+      return (
+          <div className="fixed inset-0 bg-slate-950 flex items-center justify-center">
+              <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+      );
+  }
 
   if (!isAuthenticated) {
       return <AuthPage />;

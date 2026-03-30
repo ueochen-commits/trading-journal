@@ -16,6 +16,7 @@ export interface UserProfile {
 interface UserContextType {
     user: UserProfile;
     isAuthenticated: boolean;
+    isLoading: boolean;
     isPricingOpen: boolean;
     isProfileOpen: boolean;
     isReferralOpen: boolean;
@@ -48,6 +49,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     });
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Listen for Auth Changes
     useEffect(() => {
@@ -56,6 +58,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                 await syncUser(session.user);
                 setIsAuthenticated(true);
             }
+            setIsLoading(false);
         });
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
@@ -167,9 +170,10 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     };
 
     return (
-        <UserContext.Provider value={{ 
-            user, 
+        <UserContext.Provider value={{
+            user,
             isAuthenticated,
+            isLoading,
             login,
             logout,
             isPricingOpen, 
