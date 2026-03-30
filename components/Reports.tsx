@@ -1147,7 +1147,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       {/* --- AI Reports Tab --- */}
       {activeTab === 'ai' && (
           <div className="h-full">
-              <FeatureGate tier="elite">
+              <FeatureGate tier="pro">
                   <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-[600px]">
                       {/* Header */}
                       <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col md:flex-row justify-between items-center gap-4">
