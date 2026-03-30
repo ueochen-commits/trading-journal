@@ -1148,7 +1148,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       {activeTab === 'ai' && (
           <div className="h-full">
               <FeatureGate tier="pro">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col h-[600px]">
+                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[1100px]">
                       {/* Header */}
                       <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col md:flex-row justify-between items-center gap-4">
                           <div>
@@ -1197,15 +1197,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </p>
                               </div>
                           ) : reportResult ? (
-                              <div className="max-w-3xl mx-auto bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm animate-fade-in-up">
-                                  <div className="prose prose-slate dark:prose-invert max-w-none prose-headings:text-indigo-600 dark:prose-headings:text-indigo-400 prose-a:text-indigo-500">
+                              <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
+                                  <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
+                                  <div className="p-10 md:p-14">
                                       <div dangerouslySetInnerHTML={{ __html: reportResult }} />
-                                  </div>
-                                  <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-center">
-                                      <p className="text-xs text-slate-400 flex items-center gap-2">
-                                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                          {language === 'cn' ? '报告已保存至笔记本 & 通知中心' : 'Report saved to Notebook & Notification Center'}
-                                      </p>
                                   </div>
                               </div>
                           ) : (

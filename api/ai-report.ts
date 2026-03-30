@@ -90,16 +90,43 @@ ${riskSettings ? `\n风控设置：单日最大亏损 ${riskSettings.maxDailyLos
 【日志内容】
 ${plans.slice(0, 10).map((p: any) => `${p.date}: ${(p.content || '').replace(/<[^>]*>/g, '').slice(0, 200)}`).join('\n')}
 
-【报告要求】
-直接输出 HTML 内容，不要用 markdown 代码块包裹，不要加 \`\`\`html 或 \`\`\`。结构如下：
-<h3>📊 执行摘要</h3> — 用数据说话，3-4句核心评估
-<h3>📈 量化绩效分析</h3> — 深入分析胜率、盈亏比、各策略表现
-<h3>🧠 心理与纪律分析</h3> — 基于高频错误和纪律数据，分析情绪对交易的影响
-<h3>⚠️ 关键风险点</h3> — 识别最危险的行为模式
-<h3>✅ 下${period === 'daily' ? '交易日' : period === 'weekly' ? '周' : '月'}行动计划</h3> — 具体、可执行的3-5条改进措施
+【报告输出规范】
+直接输出 HTML，禁止使用 markdown 代码块（不要加 \`\`\`html）。
+禁止在任何标题或正文中使用 emoji 符号。
+风格参考：摩根士丹利、高盛的机构研究报告——极度专业、冷静克制、数据驱动。
 
-语气：专业、直接、基于数据，像对冲基金内部报告`
-        : `You are a top hedge fund trading manager writing a professional ${periodLabel}.
+HTML 结构如下（使用内联 CSS 确保专业外观）：
+
+<div style="font-family: 'Georgia', serif; color: #1a1a2e; line-height: 1.8;">
+
+<div style="border-bottom: 2px solid #1a1a2e; padding-bottom: 16px; margin-bottom: 28px;">
+  <div style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #666; margin-bottom: 8px;">CONFIDENTIAL — FOR INTERNAL USE ONLY</div>
+  <h1 style="font-size: 22px; font-weight: bold; margin: 0; color: #1a1a2e;">${periodLabel}</h1>
+  <div style="font-size: 12px; color: #666; margin-top: 6px;">报告期间：${period === 'daily' ? '本交易日' : period === 'weekly' ? '本周' : '本月'} | 生成日期：${new Date().toLocaleDateString('zh-CN')}</div>
+</div>
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a2e; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">I. 执行摘要</h2>
+[内容]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a2e; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">II. 量化绩效分析</h2>
+[内容，包含数据表格，使用 <table style="width:100%;border-collapse:collapse;"> <th style="background:#1a1a2e;color:#fff;padding:8px 12px;text-align:left;font-size:12px;"> <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a2e; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">III. 行为与纪律评估</h2>
+[内容]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a2e; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">IV. 风险因素识别</h2>
+[内容]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: #1a1a2e; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">V. 改进建议与行动计划</h2>
+[内容，使用编号列表]
+
+<div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 11px; color: #999;">
+  本报告由 AI 分析系统自动生成，基于用户交易数据，仅供参考，不构成投资建议。
+</div>
+</div>
+
+语气：克制、客观、精准，全程不使用感叹号，不使用口语化表达`
+        : `You are a senior research analyst at a top-tier investment bank (Goldman Sachs / Morgan Stanley style) writing an institutional-grade trading performance report.
 
 [QUANTITATIVE DATA]
 Period: This ${period}
@@ -116,15 +143,40 @@ ${setupSummary ? `\nSetup Performance:\n${setupSummary}` : ''}
 [JOURNAL ENTRIES]
 ${plans.slice(0, 10).map((p: any) => `${p.date}: ${(p.content || '').replace(/<[^>]*>/g, '').slice(0, 200)}`).join('\n')}
 
-[REPORT REQUIREMENTS]
-Output HTML content directly. Do NOT wrap in markdown code blocks. Do NOT add \`\`\`html or \`\`\`. Structure:
-<h3>📊 Executive Summary</h3> — Data-driven, 3-4 sentence core assessment
-<h3>📈 Quantitative Performance Analysis</h3> — Deep dive into win rate, profit factor, setup performance
-<h3>🧠 Psychology & Discipline Analysis</h3> — Emotion impact based on mistakes and discipline data
-<h3>⚠️ Key Risk Factors</h3> — Identify the most dangerous behavioral patterns
-<h3>✅ Action Plan for Next ${period === 'daily' ? 'Session' : period === 'weekly' ? 'Week' : 'Month'}</h3> — 3-5 specific, actionable improvements
+[OUTPUT REQUIREMENTS]
+Output HTML directly. No markdown code blocks. No \`\`\`html. No emoji symbols anywhere.
+Style: Institutional research report — Morgan Stanley / Goldman Sachs level. Cold, data-driven, precise.
 
-Tone: Professional, direct, data-driven, like a hedge fund internal report`;
+HTML structure:
+<div style="font-family: 'Georgia', serif; color: #1a1a2e; line-height: 1.8;">
+
+<div style="border-bottom: 2px solid #1a1a2e; padding-bottom: 16px; margin-bottom: 28px;">
+  <div style="font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #666;">CONFIDENTIAL — FOR INTERNAL USE ONLY</div>
+  <h1 style="font-size: 22px; font-weight: bold; margin: 4px 0; color: #1a1a2e;">${periodLabel}</h1>
+  <div style="font-size: 12px; color: #666;">Report Period: This ${period} | Generated: ${new Date().toLocaleDateString('en-US')}</div>
+</div>
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">I. Executive Summary</h2>
+[content]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">II. Quantitative Performance Analysis</h2>
+[content with data tables: <table style="width:100%;border-collapse:collapse;"> <th style="background:#1a1a2e;color:#fff;padding:8px 12px;text-align:left;font-size:12px;"> <td style="padding:8px 12px;border-bottom:1px solid #eee;font-size:13px;">]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">III. Behavioral & Discipline Assessment</h2>
+[content]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">IV. Risk Factor Identification</h2>
+[content]
+
+<h2 style="font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid #ddd; padding-bottom: 6px; margin-top: 32px;">V. Recommendations & Action Plan</h2>
+[numbered list]
+
+<div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #ddd; font-size: 11px; color: #999;">
+  This report was generated by an AI analysis system based on user trading data. For reference only. Not investment advice.
+</div>
+</div>
+
+Tone: Restrained, objective, precise. No exclamation marks. No colloquial language.`;
 
     try {
         const response = await fetch('https://api.deepseek.com/chat/completions', {
