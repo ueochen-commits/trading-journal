@@ -1315,14 +1315,13 @@ const Journal: React.FC<JournalProps> = ({
             <div className={`bg-white dark:bg-slate-900 rounded-2xl w-full shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col transition-all duration-300 ${modalStep === 'checklist' && !editingTradeId ? 'max-w-md max-h-[90vh]' : showReviewPanel ? 'max-w-6xl h-auto' : 'max-w-4xl h-auto'}`}>
                 {modalStep === 'checklist' && !editingTradeId ? (
                     <div id="tour-checklist-modal" className="p-8 max-w-lg mx-auto w-full">
-                        <div className="mb-6 relative">
-                             <button onClick={handleCloseModal} className="absolute -top-1 -right-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+                        <div className="mb-6">
                             <div className="flex items-center justify-between gap-4 mb-1">
                                 <div className="flex items-center gap-2.5">
                                     <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.journal.preTrade.title}</h2>
                                 </div>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-3">
                                     <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
                                         {language === 'cn' ? '启用检查清单' : 'Enable Checklist'}
                                     </span>
@@ -1335,6 +1334,7 @@ const Journal: React.FC<JournalProps> = ({
                                     >
                                         <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isChecklistEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                     </button>
+                                    <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors ml-1"><X className="w-5 h-5" /></button>
                                 </div>
                             </div>
                             <p className="text-slate-500 dark:text-slate-400 text-sm">{t.journal.preTrade.subtitle}</p>
