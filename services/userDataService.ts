@@ -95,13 +95,9 @@ export const userDataService = {
       supabase.from('notifications').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('discipline_rules').select('*').eq('user_id', userId),
       supabase.from('daily_discipline_records').select('*').eq('user_id', userId).order('date', { ascending: false }),
-      supabase.from('user_settings').select('settings, risk_settings').eq('user_id', userId).single(),
-      supabase.from('profiles').select('*').eq('id', userId).single()
+      supabase.from('user_settings').select('settings, risk_settings').eq('user_id', userId).maybeSingle(),
+      supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
     ]);
-
-    // 调试日志
-    console.log('[loadUserData] plans raw:', plansRes.data?.length, plansRes.error);
-    console.log('[loadUserData] strategies raw:', strategiesRes.data?.length, strategiesRes.error);
 
     // 过滤软删除的笔记（在应用层处理，避免依赖 DB 列）
     const activePlans = (plansRes.data || []).filter((p: any) => !p.is_deleted);
