@@ -911,15 +911,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   </div>
                   <div className="pointer-events-auto flex gap-3 items-end">
                       {!isFabOpen && (
-                          <a
-                              href="https://tally.so/r/7RZGA2"
-                              target="_blank"
-                              rel="noopener noreferrer"
+                          <button
+                              onClick={() => setIsChatOpen(true)}
                               className="w-10 h-10 bg-slate-800 text-white rounded-full shadow-lg flex items-center justify-center hover:bg-indigo-600 transition-all hover:scale-110 animate-fade-in"
-                              title={language === 'cn' ? '反馈建议' : 'Feedback'}
+                              title={language === 'cn' ? 'AI 交易助手' : 'AI Trading Assistant'}
                           >
                               <MessageSquarePlus className="w-5 h-5" />
-                          </a>
+                          </button>
                       )}
                       <button 
                           onClick={() => setIsFabOpen(!isFabOpen)}
