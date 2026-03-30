@@ -126,6 +126,11 @@ const FIELD_LABELS_CN: Record<FilterField, string> = {
     direction: '方向'
 };
 
+const getChecklistPreference = () => {
+    if (typeof window === 'undefined') return true;
+    return localStorage.getItem('tg_enable_checklist') !== 'false';
+};
+
 const Journal: React.FC<JournalProps> = ({ 
     trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade, 
     checklist, onUpdateChecklist, onImportTrades, onShare,
@@ -162,6 +167,7 @@ const Journal: React.FC<JournalProps> = ({
   const [sessionChecklist, setSessionChecklist] = useState<ChecklistItem[]>([]);
   const [newItemText, setNewItemText] = useState('');
   const [preTradeMood, setPreTradeMood] = useState<string | null>(null);
+  const [isChecklistEnabled, setIsChecklistEnabled] = useState<boolean>(() => getChecklistPreference());
 
   // UI State
   const [searchTerm, setSearchTerm] = useState('');
@@ -384,8 +390,9 @@ const Journal: React.FC<JournalProps> = ({
           setFormData({ ...initialFormState });
           setEditingTradeId(null);
           setSessionChecklist(checklist.map(i => ({ ...i, isCompleted: false })));
-          const isChecklistEnabled = localStorage.getItem('tg_enable_checklist') !== 'false';
-          setModalStep(isChecklistEnabled ? 'checklist' : 'form');
+          const enabled = getChecklistPreference();
+          setIsChecklistEnabled(enabled);
+          setModalStep(enabled ? 'checklist' : 'form');
           setIsManualPnl(false);
           setIsModalOpen(true);
       });
@@ -469,10 +476,20 @@ const Journal: React.FC<JournalProps> = ({
       setFormData({ ...initialFormState, entryDate: getLocalNowStr(), fees: lastFeeRate });
       setEditingTradeId(null);
       setSessionChecklist(checklist.map(i => ({...i, isCompleted: false})));
-      const isChecklistEnabled = localStorage.getItem('tg_enable_checklist') !== 'false';
-      setModalStep(isChecklistEnabled ? 'checklist' : 'form');
+      const enabled = getChecklistPreference();
+      setIsChecklistEnabled(enabled);
+      setModalStep(enabled ? 'checklist' : 'form');
       setIsManualPnl(false);
       setIsModalOpen(true);
+  };
+
+  const handleInlineChecklistToggle = () => {
+      const next = !isChecklistEnabled;
+      if (typeof window !== 'undefined') {
+          localStorage.setItem('tg_enable_checklist', String(next));
+      }
+      setIsChecklistEnabled(next);
+      setModalStep(next ? 'checklist' : 'form');
   };
 
   const handleCloseModal = () => {
@@ -1300,7 +1317,26 @@ const Journal: React.FC<JournalProps> = ({
                     <div id="tour-checklist-modal" className="p-8 max-w-lg mx-auto w-full">
                         <div className="mb-6 relative">
                              <button onClick={handleCloseModal} className="absolute -top-1 -right-1 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
-                            <div className="flex items-center gap-2.5 mb-1"><ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" /><h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.journal.preTrade.title}</h2></div>
+                            <div className="flex items-center justify-between gap-4 mb-1">
+                                <div className="flex items-center gap-2.5">
+                                    <ShieldCheck className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                                    <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.journal.preTrade.title}</h2>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-[11px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">
+                                        {language === 'cn' ? '启用检查清单' : 'Enable Checklist'}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={handleInlineChecklistToggle}
+                                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${isChecklistEnabled ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-700'}`}
+                                        title={language === 'cn' ? (isChecklistEnabled ? '关闭' : '启用') : (isChecklistEnabled ? 'Turn Off' : 'Turn On')}
+                                        aria-pressed={isChecklistEnabled}
+                                    >
+                                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isChecklistEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                                    </button>
+                                </div>
+                            </div>
                             <p className="text-slate-500 dark:text-slate-400 text-sm">{t.journal.preTrade.subtitle}</p>
                         </div>
                         <div className="space-y-3 mb-8">{sessionChecklist.map(item => (<div key={item.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${item.isCompleted ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}><div className="flex items-center gap-3 cursor-pointer flex-1" onClick={() => handleToggleChecklist(item.id)}><div className={`w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 transition-colors ${item.isCompleted ? 'bg-emerald-500 text-white' : 'bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500'}`}><Check className="w-4 h-4" strokeWidth={3} /></div><span className={`font-medium text-sm ${item.isCompleted ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-300'}`}>{item.text}</span></div><button onClick={(e) => { e.stopPropagation(); handleDeleteChecklistItem(item.id); }} className="text-slate-300 dark:text-slate-600 hover:text-rose-500 dark:hover:text-rose-400 p-1"><X className="w-4 h-4" /></button></div>))}<div className="relative mt-4"><input type="text" value={newItemText} onChange={e => setNewItemText(e.target.value)} placeholder={t.journal.preTrade.addItem} className="w-full bg-transparent border-b border-slate-200 dark:border-slate-700 py-3 text-sm outline-none focus:border-indigo-500 placeholder-slate-400 dark:placeholder-slate-600 font-medium pr-8 text-slate-700 dark:text-slate-200" onKeyDown={e => e.key === 'Enter' && handleAddChecklistItem()} /><button onClick={handleAddChecklistItem} className="absolute right-0 top-1/2 -translate-y-1/2 text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300"><Plus className="w-5 h-5" /></button></div></div>
