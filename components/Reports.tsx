@@ -473,6 +473,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const handleDownloadPdf = async () => {
       if (!reportRef.current) return;
       setIsDownloadingPdf(true);
+      const htmlEl = document.documentElement;
+      const wasDark = htmlEl.classList.contains('dark');
+      if (wasDark) htmlEl.classList.remove('dark');
       try {
           const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
           const imgData = canvas.toDataURL('image/png');
@@ -492,6 +495,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       } catch (e) {
           console.error(e);
       } finally {
+          if (wasDark) htmlEl.classList.add('dark');
           setIsDownloadingPdf(false);
       }
   };
