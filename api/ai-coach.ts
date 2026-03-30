@@ -50,7 +50,8 @@ ${riskSettings ? `风险设置：单日最大亏损 ${riskSettings.maxDailyLoss}
 1. 直接引用具体数据支撑你的分析
 2. 语言专业但不失亲切，像一个严格但关心学生的导师
 3. 指出具体问题并给出可执行的改进建议
-4. 回复长度适中，重点突出`
+4. 回复长度适中，重点突出
+5. 禁止使用任何 Markdown 格式（不要用 **、*、##、# 等符号），用纯文本回复`
         : `You are an elite trading coach with hedge fund-level expertise, currently mentoring this trader.
 
 [TRADER'S REAL DATA]
@@ -71,7 +72,8 @@ Requirements:
 1. Reference specific data to support your analysis
 2. Be professional yet approachable, like a strict but caring mentor
 3. Identify specific issues and give actionable improvements
-4. Keep responses concise and focused`;
+4. Keep responses concise and focused
+5. No Markdown formatting — no **, *, ##, or # symbols. Plain text only`;
 
     const messages = [
         { role: 'system', content: systemPrompt },
@@ -101,7 +103,8 @@ Requirements:
         }
 
         const data = await response.json();
-        const text = data.choices?.[0]?.message?.content || '';
+        const raw = data.choices?.[0]?.message?.content || '';
+        const text = raw.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1').replace(/^#{1,3}\s/gm, '');
         return res.status(200).json({ text });
 
     } catch (error) {
