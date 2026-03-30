@@ -784,12 +784,14 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           case 'reports':
               return (
                   <PageContainer>
-                      <Reports 
+                      <Reports
                           trades={trades}
                           accountSize={riskSettings.accountSize}
                           plans={plans}
                           onSavePlan={handleSavePlan}
                           onPushNotification={handlePushNotification}
+                          disciplineHistory={disciplineHistory}
+                          riskSettings={riskSettings}
                       />
                   </PageContainer>
               );
@@ -960,6 +962,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   return newTrade;
               }}
               onViewTrade={(id) => { handleSetActiveTab('journal'); }}
+              trades={trades}
+              tradingRules={trackerRules}
+              riskSettings={riskSettings}
           />
           <ChatWindow />
           <FriendListDrawer />

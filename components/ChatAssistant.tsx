@@ -19,9 +19,12 @@ interface ChatAssistantProps {
     onSaveToNotebook: (content: string) => void;
     onAutoLogTrade?: (tradeData: any) => Trade;
     onViewTrade?: (tradeId: string) => void;
+    trades?: Trade[];
+    tradingRules?: any[];
+    riskSettings?: any;
 }
 
-const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onViewTrade }: ChatAssistantProps) => {
+const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onViewTrade, trades = [], tradingRules = [], riskSettings = null }: ChatAssistantProps) => {
     const { language } = useLanguage();
     const [isExpanded, setIsExpanded] = useState(false);
     const [input, setInput] = useState('');
@@ -95,7 +98,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
         const history = messages.map(m => ({ role: m.role, content: m.content }));
 
         try {
-            const response = await chatWithAnalyst(userMsg.content, userMsg.image || null, history, language);
+            const response = await chatWithAnalyst(userMsg.content, userMsg.image || null, history, language, trades, tradingRules, riskSettings);
             
             let loggedTrade: Trade | undefined = undefined;
 

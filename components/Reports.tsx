@@ -14,10 +14,12 @@ interface ReportsProps {
   accountSize?: number;
   plans?: DailyPlan[];
   onPushNotification?: (notification: Notification) => void;
-  onSavePlan?: (plan: DailyPlan) => void; 
+  onSavePlan?: (plan: DailyPlan) => void;
+  disciplineHistory?: any[];
+  riskSettings?: any;
 }
 
-const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = [], onPushNotification, onSavePlan }) => {
+const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = [], onPushNotification, onSavePlan, disciplineHistory = [], riskSettings = null }) => {
   const { t, language } = useLanguage();
   
   // Helper: Format duration with localization
@@ -454,7 +456,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
       setIsGeneratingReport(true);
       try {
-          const result = await generatePeriodicReport(plans, period, language);
+          const result = await generatePeriodicReport(plans, period, language, trades, disciplineHistory, riskSettings);
           setReportResult(result);
       } catch (e) {
           console.error(e);
