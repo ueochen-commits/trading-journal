@@ -75,7 +75,7 @@ Requirements:
 
     const messages = [
         { role: 'system', content: systemPrompt },
-        ...history.slice(-8).map((h: any) => ({ role: h.role, content: h.content })),
+        ...history.slice(-8).map((h: any) => ({ role: h.role === 'model' ? 'assistant' : h.role, content: h.content })),
         { role: 'user', content: message }
     ];
 
