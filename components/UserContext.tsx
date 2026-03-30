@@ -53,8 +53,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     // Listen for Auth Changes
     useEffect(() => {
-        // 5 秒超时兜底，网络再慢也不会永远卡在加载页
-        const timeout = setTimeout(() => setIsLoading(false), 5000);
+        // 5 秒超时兜底：强制清除坏 token，确保登录页可以正常登录
+        const timeout = setTimeout(async () => {
+            await supabase.auth.signOut();
+            setIsLoading(false);
+        }, 5000);
 
         supabase.auth.getSession().then(async ({ data: { session } }) => {
             try {
@@ -63,12 +66,15 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                     setIsAuthenticated(true);
                 }
             } catch (e) {
+                // session 恢复失败，清除坏 token 让用户可以重新登录
+                await supabase.auth.signOut();
                 console.error('Session restore error:', e);
             } finally {
                 clearTimeout(timeout);
                 setIsLoading(false);
             }
-        }).catch(() => {
+        }).catch(async () => {
+            await supabase.auth.signOut();
             clearTimeout(timeout);
             setIsLoading(false);
         });
