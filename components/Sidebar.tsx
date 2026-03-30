@@ -47,11 +47,15 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
   };
 
   const getTierLabel = () => {
-      return language === 'cn' ? '内测版' : 'Beta';
+      if (user.tier === 'elite') return language === 'cn' ? 'Elite' : 'Elite';
+      if (user.tier === 'pro') return language === 'cn' ? 'Pro' : 'Pro';
+      return language === 'cn' ? '免费版' : 'Free';
   };
 
   const getTierColor = () => {
-      return 'bg-indigo-500 text-white';
+      if (user.tier === 'elite') return 'bg-amber-500 text-white';
+      if (user.tier === 'pro') return 'bg-indigo-500 text-white';
+      return 'bg-slate-400 text-white';
   };
 
   useEffect(() => {

@@ -43,7 +43,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     const [user, setUser] = useState<UserProfile>({
         name: "Trader",
         email: "demo@tradegrail.com",
-        tier: 'elite', // Default to elite for development
+        tier: 'free',
         exchangeConnections: []
     });
 
@@ -51,16 +51,16 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     // Listen for Auth Changes
     useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        supabase.auth.getSession().then(async ({ data: { session } }) => {
             if (session) {
-                syncUser(session.user);
+                await syncUser(session.user);
                 setIsAuthenticated(true);
             }
         });
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
             if (session) {
-                syncUser(session.user);
+                await syncUser(session.user);
                 setIsAuthenticated(true);
             } else {
                 setIsAuthenticated(false);
@@ -70,14 +70,40 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const syncUser = (supabaseUser: any) => {
+    const syncUser = async (supabaseUser: any) => {
+        // 先同步基本信息
         setUser(prev => ({
             ...prev,
             id: supabaseUser.id,
             email: supabaseUser.email || prev.email,
             name: supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || prev.name,
-            avatarUrl: supabaseUser.user_metadata?.avatar_url
+            avatarUrl: supabaseUser.user_metadata?.avatar_url,
         }));
+
+        // 从 subscriptions 表读取真实会员等级
+        try {
+            const { data: sub } = await supabase
+                .from('subscriptions')
+                .select('plan, status, current_period_end')
+                .eq('user_id', supabaseUser.id)
+                .eq('status', 'active')
+                .order('current_period_end', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            let tier: UserTier = 'free';
+            if (sub) {
+                const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
+                // 没有到期时间（永久）或尚未到期
+                if (!periodEnd || periodEnd > new Date()) {
+                    tier = sub.plan as UserTier;
+                }
+            }
+
+            setUser(prev => ({ ...prev, tier }));
+        } catch {
+            setUser(prev => ({ ...prev, tier: 'free' }));
+        }
     };
 
     const [isPricingOpen, setIsPricingOpen] = useState(false);
