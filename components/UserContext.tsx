@@ -53,11 +53,23 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     // Listen for Auth Changes
     useEffect(() => {
+        // 5 秒超时兜底，网络再慢也不会永远卡在加载页
+        const timeout = setTimeout(() => setIsLoading(false), 5000);
+
         supabase.auth.getSession().then(async ({ data: { session } }) => {
-            if (session) {
-                await syncUser(session.user);
-                setIsAuthenticated(true);
+            try {
+                if (session) {
+                    await syncUser(session.user);
+                    setIsAuthenticated(true);
+                }
+            } catch (e) {
+                console.error('Session restore error:', e);
+            } finally {
+                clearTimeout(timeout);
+                setIsLoading(false);
             }
+        }).catch(() => {
+            clearTimeout(timeout);
             setIsLoading(false);
         });
 
