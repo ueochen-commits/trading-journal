@@ -52,35 +52,24 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     // Listen for Auth Changes
+    // 只用 onAuthStateChange，避免与 getSession() 竞态（Chrome 兼容性问题）
     useEffect(() => {
-        // 5 秒超时兜底：强制清除坏 token，确保登录页可以正常登录
-        const timeout = setTimeout(async () => {
-            await supabase.auth.signOut();
-            setIsLoading(false);
-        }, 5000);
+        const timeout = setTimeout(() => setIsLoading(false), 5000);
 
-        supabase.auth.getSession().then(async ({ data: { session } }) => {
-            try {
-                if (session) {
-                    await syncUser(session.user);
-                    setIsAuthenticated(true);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === 'INITIAL_SESSION') {
+                try {
+                    if (session) {
+                        await syncUser(session.user);
+                        setIsAuthenticated(true);
+                    }
+                } catch (e) {
+                    console.error('Auth init error:', e);
+                } finally {
+                    clearTimeout(timeout);
+                    setIsLoading(false);
                 }
-            } catch (e) {
-                // session 恢复失败，清除坏 token 让用户可以重新登录
-                await supabase.auth.signOut();
-                console.error('Session restore error:', e);
-            } finally {
-                clearTimeout(timeout);
-                setIsLoading(false);
-            }
-        }).catch(async () => {
-            await supabase.auth.signOut();
-            clearTimeout(timeout);
-            setIsLoading(false);
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session) {
+            } else if (session) {
                 await syncUser(session.user);
                 setIsAuthenticated(true);
             } else {
@@ -101,9 +90,9 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
         }));
 
-        // 从 subscriptions 表读取真实会员等级
+        // 从 subscriptions 表读取真实会员等级，3 秒内查不到默认给 pro
         try {
-            const { data: sub } = await supabase
+            const queryPromise = supabase
                 .from('subscriptions')
                 .select('plan, status, current_period_end')
                 .eq('user_id', supabaseUser.id)
@@ -112,18 +101,25 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                 .limit(1)
                 .maybeSingle();
 
-            let tier: UserTier = 'free';
+            const timeoutPromise = new Promise<{ data: null }>((resolve) =>
+                setTimeout(() => resolve({ data: null }), 3000)
+            );
+
+            const { data: sub } = await Promise.race([queryPromise, timeoutPromise]);
+
+            let tier: UserTier = 'pro';
             if (sub) {
                 const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
-                // 没有到期时间（永久）或尚未到期
                 if (!periodEnd || periodEnd > new Date()) {
                     tier = sub.plan as UserTier;
+                } else {
+                    tier = 'free';
                 }
             }
 
             setUser(prev => ({ ...prev, tier }));
         } catch {
-            setUser(prev => ({ ...prev, tier: 'free' }));
+            setUser(prev => ({ ...prev, tier: 'pro' }));
         }
     };
 
