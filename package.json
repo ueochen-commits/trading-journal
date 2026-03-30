@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "2.39.7",
     "flatpickr": "^4.6.13",
     "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.560.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",

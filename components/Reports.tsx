@@ -1,13 +1,15 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import { DailyPlan, Notification, Trade, TradeStatus, Direction } from '../types';
 import { useLanguage } from '../LanguageContext';
-import { 
+import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 interface ReportsProps {
   trades: Trade[];
@@ -453,6 +455,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
   }, [trades, dailyData]);
 
+  const reportRef = useRef<HTMLDivElement>(null);
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
       setIsGeneratingReport(true);
       try {
@@ -462,6 +467,32 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           console.error(e);
       } finally {
           setIsGeneratingReport(false);
+      }
+  };
+
+  const handleDownloadPdf = async () => {
+      if (!reportRef.current) return;
+      setIsDownloadingPdf(true);
+      try {
+          const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          const imgWidth = pageWidth;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let y = 0;
+          while (y < imgHeight) {
+              if (y > 0) pdf.addPage();
+              pdf.addImage(imgData, 'PNG', 0, -y, imgWidth, imgHeight);
+              y += pageHeight;
+          }
+          const date = new Date().toISOString().split('T')[0];
+          pdf.save(`TradeGrail_Performance_Report_${date}.pdf`);
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsDownloadingPdf(false);
       }
   };
 
@@ -1197,10 +1228,22 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </p>
                               </div>
                           ) : reportResult ? (
-                              <div className="max-w-4xl mx-auto bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
-                                  <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
-                                  <div className="p-10 md:p-14">
-                                      <div dangerouslySetInnerHTML={{ __html: reportResult }} />
+                              <div className="max-w-4xl mx-auto">
+                                  <div className="flex justify-end mb-3">
+                                      <button
+                                          onClick={handleDownloadPdf}
+                                          disabled={isDownloadingPdf}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                                      >
+                                          {isDownloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                                          {isDownloadingPdf ? (language === 'cn' ? '生成中...' : 'Generating...') : (language === 'cn' ? '下载 PDF' : 'Download PDF')}
+                                      </button>
+                                  </div>
+                                  <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
+                                      <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
+                                      <div className="p-10 md:p-14">
+                                          <div dangerouslySetInnerHTML={{ __html: reportResult }} />
+                                      </div>
                                   </div>
                               </div>
                           ) : (
