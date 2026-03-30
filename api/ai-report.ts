@@ -91,7 +91,7 @@ ${riskSettings ? `\n风控设置：单日最大亏损 ${riskSettings.maxDailyLos
 ${plans.slice(0, 10).map((p: any) => `${p.date}: ${(p.content || '').replace(/<[^>]*>/g, '').slice(0, 200)}`).join('\n')}
 
 【报告要求】
-用 HTML 格式撰写专业${periodLabel}，结构如下：
+直接输出 HTML 内容，不要用 markdown 代码块包裹，不要加 \`\`\`html 或 \`\`\`。结构如下：
 <h3>📊 执行摘要</h3> — 用数据说话，3-4句核心评估
 <h3>📈 量化绩效分析</h3> — 深入分析胜率、盈亏比、各策略表现
 <h3>🧠 心理与纪律分析</h3> — 基于高频错误和纪律数据，分析情绪对交易的影响
@@ -117,7 +117,7 @@ ${setupSummary ? `\nSetup Performance:\n${setupSummary}` : ''}
 ${plans.slice(0, 10).map((p: any) => `${p.date}: ${(p.content || '').replace(/<[^>]*>/g, '').slice(0, 200)}`).join('\n')}
 
 [REPORT REQUIREMENTS]
-Write a professional ${periodLabel} in HTML format with this structure:
+Output HTML content directly. Do NOT wrap in markdown code blocks. Do NOT add \`\`\`html or \`\`\`. Structure:
 <h3>📊 Executive Summary</h3> — Data-driven, 3-4 sentence core assessment
 <h3>📈 Quantitative Performance Analysis</h3> — Deep dive into win rate, profit factor, setup performance
 <h3>🧠 Psychology & Discipline Analysis</h3> — Emotion impact based on mistakes and discipline data
@@ -146,7 +146,9 @@ Tone: Professional, direct, data-driven, like a hedge fund internal report`;
         }
 
         const data = await response.json();
-        const html = data.choices?.[0]?.message?.content || '';
+        const raw = data.choices?.[0]?.message?.content || '';
+        // 去除 AI 可能包裹的 markdown 代码块
+        const html = raw.replace(/^```html\n?/i, '').replace(/^```\n?/i, '').replace(/\n?```$/i, '').trim();
         return res.status(200).json({ html });
 
     } catch (error) {
