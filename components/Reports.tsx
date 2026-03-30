@@ -8,8 +8,6 @@ import {
 import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
 
 interface ReportsProps {
   trades: Trade[];
@@ -456,7 +454,6 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   }, [trades, dailyData]);
 
   const reportRef = useRef<HTMLDivElement>(null);
-  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
 
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
       setIsGeneratingReport(true);
@@ -470,34 +467,27 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       }
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
       if (!reportRef.current) return;
-      setIsDownloadingPdf(true);
       const htmlEl = document.documentElement;
       const wasDark = htmlEl.classList.contains('dark');
       if (wasDark) htmlEl.classList.remove('dark');
-      try {
-          const canvas = await html2canvas(reportRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-          const imgData = canvas.toDataURL('image/png');
-          const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-          const pageWidth = pdf.internal.pageSize.getWidth();
-          const pageHeight = pdf.internal.pageSize.getHeight();
-          const imgWidth = pageWidth;
-          const imgHeight = (canvas.height * imgWidth) / canvas.width;
-          let y = 0;
-          while (y < imgHeight) {
-              if (y > 0) pdf.addPage();
-              pdf.addImage(imgData, 'PNG', 0, -y, imgWidth, imgHeight);
-              y += pageHeight;
-          }
-          const date = new Date().toISOString().split('T')[0];
-          pdf.save(`TradeGrail_Performance_Report_${date}.pdf`);
-      } catch (e) {
-          console.error(e);
-      } finally {
-          if (wasDark) htmlEl.classList.add('dark');
-          setIsDownloadingPdf(false);
-      }
+
+      const date = new Date().toISOString().split('T')[0];
+      const reportHtml = reportRef.current.innerHTML;
+      const blob = new Blob([
+          `<!DOCTYPE html><html><head><meta charset="utf-8"><title>TradeGrail_Performance_Report_${date}</title>` +
+          `<style>@page{margin:15mm 18mm;size:A4}body{margin:0;padding:0;-webkit-print-color-adjust:exact;print-color-adjust:exact}</style>` +
+          `</head><body>${reportHtml}</body></html>`
+      ], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const printWindow = window.open(url, '_blank');
+      if (!printWindow) { URL.revokeObjectURL(url); if (wasDark) htmlEl.classList.add('dark'); return; }
+      printWindow.addEventListener('load', () => {
+          printWindow.focus();
+          printWindow.print();
+          setTimeout(() => { printWindow.close(); URL.revokeObjectURL(url); if (wasDark) htmlEl.classList.add('dark'); }, 500);
+      });
   };
 
   const DataRow = ({ label, value, colorClass = "text-slate-900 dark:text-white" }: { label: string, value: string | number, colorClass?: string }) => (
@@ -1236,11 +1226,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   <div className="flex justify-end mb-3">
                                       <button
                                           onClick={handleDownloadPdf}
-                                          disabled={isDownloadingPdf}
-                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                                       >
-                                          {isDownloadingPdf ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                                          {isDownloadingPdf ? (language === 'cn' ? '生成中...' : 'Generating...') : (language === 'cn' ? '下载 PDF' : 'Download PDF')}
+                                          <Download className="w-4 h-4" />
+                                          {language === 'cn' ? '下载 PDF' : 'Download PDF'}
                                       </button>
                                   </div>
                                   <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
