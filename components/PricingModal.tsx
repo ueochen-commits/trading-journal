@@ -26,7 +26,9 @@ const PricingModal: React.FC = () => {
             savePro: language === 'cn' ? '¥149' : '$31',
             saveElite: language === 'cn' ? '¥349' : '$55',
             totalPro: language === 'cn' ? '199' : '29',
-            totalElite: language === 'cn' ? '599' : '89'
+            totalElite: language === 'cn' ? '599' : '89',
+            avgMonthlyPro: language === 'cn' ? '16.6' : '2.42',
+            avgMonthlyElite: language === 'cn' ? '49.9' : '7.42'
         }
     };
 
@@ -241,7 +243,7 @@ const PricingModal: React.FC = () => {
                                             <span className="text-slate-400 font-medium">{language === 'cn' ? '/ 年' : '/ year'}</span>
                                         </div>
                                         <div className="text-sm text-slate-400 font-medium mt-1">
-                                            {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.pro}` : `${currency}${pricing.yearly.pro}/mo average`}
+                                            {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.avgMonthlyPro}` : `${currency}${pricing.yearly.avgMonthlyPro}/mo average`}
                                         </div>
                                         <div className="mt-3 inline-flex items-center gap-2 bg-indigo-900/30 px-2 py-1 rounded border border-indigo-500/30">
                                             <span className="text-xs text-indigo-300 line-through">{currency}{Number(pricing.monthly.pro) * 12}</span>
@@ -310,7 +312,7 @@ const PricingModal: React.FC = () => {
                                         <span className="text-slate-500 font-medium">{language === 'cn' ? '/ 年' : '/ year'}</span>
                                     </div>
                                     <p className="text-sm text-slate-400 font-medium mt-1">
-                                        {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.elite}` : `${currency}${pricing.yearly.elite}/mo average`}
+                                        {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.avgMonthlyElite}` : `${currency}${pricing.yearly.avgMonthlyElite}/mo average`}
                                     </p>
                                     <p className="text-xs text-amber-500 mt-2 bg-amber-900/20 inline-block px-2 py-0.5 rounded">
                                         {language === 'cn' ? `立省 ${pricing.yearly.saveElite}` : `Save ${pricing.yearly.saveElite}`}
