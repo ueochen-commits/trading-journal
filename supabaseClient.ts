@@ -23,7 +23,11 @@ export const fetchReports = async (userId: string) => {
         .select('*')
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
-    if (error) throw error;
+    if (error) {
+        console.error('fetchReports error:', error);
+        throw error;
+    }
+    console.log('fetchReports result:', { userId, count: data?.length, data });
     return data as Report[];
 };
 
