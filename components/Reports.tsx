@@ -90,27 +90,13 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       try {
           const reports = await fetchReports(userId);
 
-          // 检测是否有报告从 pending 变为 completed
+          // 检测是否有报告从 pending 变为 completed（不再发送通知）
           if (previousReports.length > 0) {
               const newlyCompleted = reports.filter(r =>
                   r.status === 'completed' &&
                   previousReports.find(pr => pr.id === r.id && pr.status === 'pending')
               );
-
-              if (newlyCompleted.length > 0 && onPushNotification) {
-                  newlyCompleted.forEach(report => {
-                      onPushNotification({
-                          id: Date.now().toString() + Math.random(),
-                          type: 'success',
-                          title: language === 'cn' ? '报告已完成' : 'Report Completed',
-                          content: language === 'cn'
-                              ? '您的复盘分析报告已分析完成，请前去查看'
-                              : 'Your analysis report is ready, please check it out',
-                          timestamp: new Date().toISOString(),
-                          isRead: false
-                      });
-                  });
-              }
+              // 通知已移除，仅用于检测状态变化
           }
 
           setPreviousReports(reports);
@@ -570,20 +556,6 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ reportId: newReport.id })
           }).catch(err => console.error('Background generation failed:', err));
-
-          // 显示提示
-          if (onPushNotification) {
-              onPushNotification({
-                  id: Date.now().toString(),
-                  type: 'info',
-                  title: language === 'cn' ? '报告生成中' : 'Generating Report',
-                  content: language === 'cn'
-                      ? '您的周报正在处理中，处理完成后会为您发送新通知'
-                      : 'Your report is being processed, you will be notified when it\'s ready',
-                  timestamp: new Date().toISOString(),
-                  isRead: false
-              });
-          }
 
       } catch (e) {
           console.error(e);
