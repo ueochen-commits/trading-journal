@@ -1427,9 +1427,25 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       </div>
 
                       {/* Content Area */}
-                      <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50 dark:bg-slate-950/30">
+                      <div className="flex-1 overflow-y-auto p-8 bg-slate-50/50 dark:bg-slate-950/30 space-y-8">
+                          {/* Pending Reports - Always show at top if any */}
+                          {savedReports.filter(r => r.status === 'pending').length > 0 && (
+                              <div className="max-w-4xl mx-auto">
+                                  <div className="flex items-center gap-2 mb-4">
+                                      <Loader2 className="w-5 h-5 text-amber-500 animate-spin" />
+                                      <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                          {language === 'cn' ? '生成中' : 'Generating'}
+                                      </h4>
+                                  </div>
+                                  <div className="grid gap-3">
+                                      {savedReports.filter(r => r.status === 'pending').map(report => renderReportCard(report))}
+                                  </div>
+                              </div>
+                          )}
+
+                          {/* Current Report Display */}
                           {isGeneratingReport ? (
-                              <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-4">
+                              <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-4">
                                   <div className="relative">
                                       <div className="w-16 h-16 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
                                       <div className="absolute inset-0 flex items-center justify-center">
@@ -1441,71 +1457,50 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </p>
                               </div>
                           ) : reportResult ? (
-                              <div className="space-y-8">
-                                  <div className="max-w-4xl mx-auto">
-                                      <div className="flex justify-end mb-3">
-                                          <button
-                                              onClick={handleDownloadPdf}
-                                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                                          >
-                                              <Download className="w-4 h-4" />
-                                              {language === 'cn' ? '下载 PDF' : 'Download PDF'}
-                                          </button>
-                                      </div>
-                                      <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
-                                          <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
-                                          <div className="p-10 md:p-14">
-                                              <div dangerouslySetInnerHTML={{ __html: reportResult }} />
-                                          </div>
+                              <div className="max-w-4xl mx-auto">
+                                  <div className="flex justify-end mb-3">
+                                      <button
+                                          onClick={handleDownloadPdf}
+                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                      >
+                                          <Download className="w-4 h-4" />
+                                          {language === 'cn' ? '下载 PDF' : 'Download PDF'}
+                                      </button>
+                                  </div>
+                                  <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
+                                      <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
+                                      <div className="p-10 md:p-14">
+                                          <div dangerouslySetInnerHTML={{ __html: reportResult }} />
                                       </div>
                                   </div>
-
-                                  {/* Report History */}
-                                  {savedReports.length > 0 && (
-                                      <div className="max-w-4xl mx-auto">
-                                          <div className="flex items-center gap-2 mb-4">
-                                              <History className="w-5 h-5 text-slate-500" />
-                                              <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                                                  {language === 'cn' ? '历史报告' : 'Report History'}
-                                              </h4>
-                                              <span className="text-sm text-slate-400">({savedReports.length})</span>
-                                          </div>
-                                          <div className="grid gap-3">
-                                              {savedReports.map(report => renderReportCard(report))}
-                                          </div>
-                                      </div>
-                                  )}
                               </div>
-                          ) : (
-                              <div className="space-y-8">
-                                  {/* Empty State */}
-                                  <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                                      <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                                          <Bot className="w-8 h-8 text-slate-400" />
-                                      </div>
-                                      <p className="text-lg font-medium text-slate-600 dark:text-slate-300">
-                                          {language === 'cn' ? '准备好生成您的第一份智能报告了吗？' : 'Ready to generate your first intelligent report?'}
-                                      </p>
-                                      <p className="text-sm">
-                                          {language === 'cn' ? '点击上方按钮开始分析。' : 'Click a button above to start analysis.'}
-                                      </p>
+                          ) : savedReports.filter(r => r.status === 'pending').length === 0 && (
+                              <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                                  <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                      <Bot className="w-8 h-8 text-slate-400" />
                                   </div>
+                                  <p className="text-lg font-medium text-slate-600 dark:text-slate-300">
+                                      {language === 'cn' ? '准备好生成您的第一份智能报告了吗？' : 'Ready to generate your first intelligent report?'}
+                                  </p>
+                                  <p className="text-sm">
+                                      {language === 'cn' ? '点击上方按钮开始分析。' : 'Click a button above to start analysis.'}
+                                  </p>
+                              </div>
+                          )}
 
-                                  {/* Report History */}
-                                  {savedReports.length > 0 && (
-                                      <div className="max-w-4xl mx-auto">
-                                          <div className="flex items-center gap-2 mb-4">
-                                              <History className="w-5 h-5 text-slate-500" />
-                                              <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                                                  {language === 'cn' ? '历史报告' : 'Report History'}
-                                              </h4>
-                                              <span className="text-sm text-slate-400">({savedReports.length})</span>
-                                          </div>
-                                          <div className="grid gap-3">
-                                              {savedReports.map(report => renderReportCard(report))}
-                                          </div>
-                                      </div>
-                                  )}
+                          {/* Report History - Completed and Failed reports */}
+                          {savedReports.filter(r => r.status !== 'pending').length > 0 && (
+                              <div className="max-w-4xl mx-auto">
+                                  <div className="flex items-center gap-2 mb-4">
+                                      <History className="w-5 h-5 text-slate-500" />
+                                      <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                          {language === 'cn' ? '历史报告' : 'Report History'}
+                                      </h4>
+                                      <span className="text-sm text-slate-400">({savedReports.filter(r => r.status !== 'pending').length})</span>
+                                  </div>
+                                  <div className="grid gap-3">
+                                      {savedReports.filter(r => r.status !== 'pending').map(report => renderReportCard(report))}
+                                  </div>
                               </div>
                           )}
                       </div>
