@@ -43,31 +43,81 @@ const PricingModal: React.FC = () => {
         <>
             {/* Early Bird Modal */}
             {showEarlyBirdModal && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-amber-500/30 shadow-2xl shadow-amber-500/20">
-                        <div className="text-center">
-                            <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Crown className="w-8 h-8 text-amber-500" />
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
+                    <div className="relative bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-3xl p-10 max-w-lg w-full border border-amber-500/20 shadow-2xl overflow-hidden">
+                        {/* Background decorative elements */}
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
+                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-600/5 rounded-full blur-3xl"></div>
+
+                        {/* Close button */}
+                        <button
+                            onClick={() => setShowEarlyBirdModal(false)}
+                            className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="relative z-10">
+                            {/* Badge */}
+                            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-full mb-6">
+                                <Sparkles className="w-3.5 h-3.5" />
+                                {language === 'cn' ? '限时优惠' : 'LIMITED OFFER'}
                             </div>
-                            <h3 className="text-2xl font-bold text-white mb-2">
-                                {language === 'cn' ? '早鸟终身买断' : 'Lifetime Early Bird'}
+
+                            {/* Title */}
+                            <h3 className="text-3xl font-black text-white mb-3 leading-tight">
+                                {language === 'cn' ? '早鸟终身买断' : 'Lifetime Access'}
+                                <br />
+                                <span className="text-amber-500">{language === 'cn' ? 'Elite 会员' : 'Elite Membership'}</span>
                             </h3>
-                            <div className="text-4xl font-black text-amber-500 mb-4">¥1999</div>
-                            <p className="text-slate-400 mb-6">
-                                {language === 'cn'
-                                    ? '限前100名用户，一次付费终身使用 Elite 所有功能。支付功能即将开放，如需预约请添加微信。'
-                                    : 'Limited to first 100 users. One-time payment for lifetime Elite access. Payment coming soon, add WeChat to reserve.'}
-                            </p>
-                            <div className="bg-slate-800 rounded-lg p-4 mb-6">
-                                <p className="text-sm text-slate-400 mb-2">{language === 'cn' ? '添加微信预约：' : 'WeChat to reserve:'}</p>
-                                <p className="text-xl font-bold text-white">your_wechat_id</p>
+
+                            {/* Price */}
+                            <div className="flex items-baseline gap-2 mb-6">
+                                <span className="text-5xl font-black text-white">¥1,999</span>
+                                <span className="text-slate-500 line-through text-lg">¥7,188</span>
                             </div>
-                            <button
-                                onClick={() => setShowEarlyBirdModal(false)}
-                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl transition-colors"
-                            >
-                                {language === 'cn' ? '知道了' : 'Got it'}
-                            </button>
+
+                            {/* Features */}
+                            <div className="space-y-3 mb-8">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <Check className="w-3 h-3 text-amber-500" strokeWidth={3} />
+                                    </div>
+                                    <span className="text-slate-300 text-sm">{language === 'cn' ? '终身使用 Elite 所有功能' : 'Lifetime access to all Elite features'}</span>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <Check className="w-3 h-3 text-amber-500" strokeWidth={3} />
+                                    </div>
+                                    <span className="text-slate-300 text-sm">{language === 'cn' ? '未来所有新功能免费更新' : 'Free updates for all future features'}</span>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                        <Check className="w-3 h-3 text-amber-500" strokeWidth={3} />
+                                    </div>
+                                    <span className="text-slate-300 text-sm">{language === 'cn' ? '仅限前 100 名用户' : 'Limited to first 100 users only'}</span>
+                                </div>
+                            </div>
+
+                            {/* WeChat contact */}
+                            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-slate-700/50">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">{language === 'cn' ? '添加微信预约' : 'WeChat ID'}</p>
+                                        <p className="text-lg font-bold text-white tracking-wide">Timetravel_0</p>
+                                    </div>
+                                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
+                                        <Crown className="w-6 h-6 text-white" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* CTA */}
+                            <p className="text-center text-xs text-slate-500">
+                                {language === 'cn'
+                                    ? '支付功能即将开放，添加微信可提前预约锁定名额'
+                                    : 'Payment coming soon. Add WeChat to reserve your spot'}
+                            </p>
                         </div>
                     </div>
                 </div>
