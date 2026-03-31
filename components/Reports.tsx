@@ -66,14 +66,20 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
               setCurrentUserId(user.id);
-              loadReports(user.id);
           }
       };
       fetchUser();
+  }, []);
+
+  useEffect(() => {
+      if (!currentUserId) return;
+
+      // 初始加载
+      loadReports(currentUserId);
 
       // 每 5 秒自动刷新报告列表（检查 pending 状态）
       const interval = setInterval(() => {
-          if (currentUserId) loadReports(currentUserId);
+          loadReports(currentUserId);
       }, 5000);
 
       return () => clearInterval(interval);
