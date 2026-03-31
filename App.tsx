@@ -336,11 +336,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
     // 上传图片（如果有）
     let screenshotUrl = null;
-    console.log('Trade images:', trade.images);
     if (trade.images && trade.images.length > 0) {
-      console.log('Uploading image...');
       screenshotUrl = await uploadImage(user.id, trade.images[0]);
-      console.log('Screenshot URL:', screenshotUrl);
     }
 
     const { data, error } = await supabase.from('trading_journals').insert({
