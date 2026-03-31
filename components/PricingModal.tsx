@@ -16,18 +16,20 @@ const PricingModal: React.FC = () => {
     // Pricing Configuration
     const pricing = {
         monthly: {
-            pro: language === 'cn' ? '98' : '19',
-            elite: language === 'cn' ? '298' : '49',
+            pro: language === 'cn' ? '29' : '5',
+            elite: language === 'cn' ? '79' : '12',
         },
         yearly: {
-            pro: language === 'cn' ? '68' : '12', 
-            elite: language === 'cn' ? '198' : '39',
-            savePro: language === 'cn' ? '¥360' : '$84',
-            saveElite: language === 'cn' ? '¥1200' : '$120',
-            totalPro: language === 'cn' ? '816' : '144',
-            totalElite: language === 'cn' ? '2376' : '468'
+            pro: language === 'cn' ? '199' : '29',
+            elite: language === 'cn' ? '599' : '89',
+            savePro: language === 'cn' ? '¥149' : '$31',
+            saveElite: language === 'cn' ? '¥349' : '$55',
+            totalPro: language === 'cn' ? '199' : '29',
+            totalElite: language === 'cn' ? '599' : '89'
         }
     };
+
+    const [showEarlyBirdModal, setShowEarlyBirdModal] = useState(false);
 
     const FeatureItem = ({ text, highlight = false }: { text: string, highlight?: boolean }) => (
         <div className="flex items-start gap-3">
@@ -39,7 +41,40 @@ const PricingModal: React.FC = () => {
     );
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in overflow-y-auto md:overflow-hidden">
+        <>
+            {/* Early Bird Modal */}
+            {showEarlyBirdModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-amber-500/30 shadow-2xl shadow-amber-500/20">
+                        <div className="text-center">
+                            <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Crown className="w-8 h-8 text-amber-500" />
+                            </div>
+                            <h3 className="text-2xl font-bold text-white mb-2">
+                                {language === 'cn' ? '早鸟终身买断' : 'Lifetime Early Bird'}
+                            </h3>
+                            <div className="text-4xl font-black text-amber-500 mb-4">¥1999</div>
+                            <p className="text-slate-400 mb-6">
+                                {language === 'cn'
+                                    ? '限前100名用户，一次付费终身使用 Elite 所有功能。支付功能即将开放，如需预约请添加微信。'
+                                    : 'Limited to first 100 users. One-time payment for lifetime Elite access. Payment coming soon, add WeChat to reserve.'}
+                            </p>
+                            <div className="bg-slate-800 rounded-lg p-4 mb-6">
+                                <p className="text-sm text-slate-400 mb-2">{language === 'cn' ? '添加微信预约：' : 'WeChat to reserve:'}</p>
+                                <p className="text-xl font-bold text-white">your_wechat_id</p>
+                            </div>
+                            <button
+                                onClick={() => setShowEarlyBirdModal(false)}
+                                className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-xl transition-colors"
+                            >
+                                {language === 'cn' ? '知道了' : 'Got it'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in overflow-y-auto md:overflow-hidden">
             
             {/* Main Container */}
             <div className="w-full max-w-7xl relative flex flex-col items-center">
@@ -236,6 +271,14 @@ const PricingModal: React.FC = () => {
                             {language === 'cn' ? '内测期间免费开放' : 'Free During Beta'}
                         </button>
 
+                        {/* Early Bird Lifetime Deal */}
+                        <button
+                            onClick={() => setShowEarlyBirdModal(true)}
+                            className="w-full mt-3 text-center text-xs text-amber-500 hover:text-amber-400 transition-colors font-medium"
+                        >
+                            {language === 'cn' ? '🎁 早鸟买断 ¥1999 终身 · 限前100名' : '🎁 Lifetime Deal ¥1999 · First 100 Only'}
+                        </button>
+
                         <div className="mt-8 space-y-4">
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">VIP Access</p>
                             <FeatureItem text={language === 'cn' ? "包含 Pro 版所有功能" : "Everything in Pro"} />
@@ -269,7 +312,7 @@ const PricingModal: React.FC = () => {
                 </div>
 
             </div>
-        </div>
+        </>
     );
 };
 
