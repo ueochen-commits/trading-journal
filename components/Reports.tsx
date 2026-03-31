@@ -91,7 +91,14 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   previousReports.find(pr => pr.id === r.id && pr.status === 'pending')
               );
 
+              console.log('Checking for newly completed reports:', {
+                  previousReports: previousReports.map(r => ({ id: r.id, status: r.status })),
+                  currentReports: reports.map(r => ({ id: r.id, status: r.status })),
+                  newlyCompleted: newlyCompleted.length
+              });
+
               if (newlyCompleted.length > 0 && onPushNotification) {
+                  console.log('Sending completion notifications for:', newlyCompleted.length, 'reports');
                   newlyCompleted.forEach(report => {
                       onPushNotification({
                           id: Date.now().toString() + Math.random(),
