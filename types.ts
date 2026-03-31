@@ -267,3 +267,17 @@ export interface ExchangeConnection {
     lastSync?: string;
     isConnected: boolean;
 }
+
+// --- AI Report Types ---
+export interface Report {
+    id: string;
+    user_id: string;
+    report_type: 'weekly' | 'monthly';
+    title: string;
+    content: {
+        html: string;
+        period: string;
+        generated_at: string;
+    };
+    created_at: string;
+}

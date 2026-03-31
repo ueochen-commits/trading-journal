@@ -1,13 +1,14 @@
 
-import React, { useMemo, useState, useRef } from 'react';
-import { DailyPlan, Notification, Trade, TradeStatus, Direction } from '../types';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
+import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report } from '../types';
 import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
+import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
 
 interface ReportsProps {
   trades: Trade[];
@@ -54,6 +55,33 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportResult, setReportResult] = useState<string | null>(null);
+  const [savedReports, setSavedReports] = useState<Report[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(false);
+  const [viewingReport, setViewingReport] = useState<Report | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+      const fetchUser = async () => {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user) {
+              setCurrentUserId(user.id);
+              loadReports(user.id);
+          }
+      };
+      fetchUser();
+  }, []);
+
+  const loadReports = async (userId: string) => {
+      setIsLoadingReports(true);
+      try {
+          const reports = await fetchReports(userId);
+          setSavedReports(reports);
+      } catch (e) {
+          console.error(e);
+      } finally {
+          setIsLoadingReports(false);
+      }
+  };
 
   // --- 1. Daily Aggregation Logic ---
   const dailyData = useMemo(() => {
@@ -460,10 +488,49 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       try {
           const result = await generatePeriodicReport(plans, period, language, trades, disciplineHistory, riskSettings);
           setReportResult(result);
+
+          if (currentUserId && result) {
+              const periodLabel = period === 'weekly'
+                  ? (language === 'cn' ? '周报' : 'Weekly Report')
+                  : (language === 'cn' ? '月报' : 'Monthly Report');
+              const title = `${periodLabel} - ${new Date().toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')}`;
+
+              await saveReport({
+                  user_id: currentUserId,
+                  report_type: period,
+                  title,
+                  content: {
+                      html: result,
+                      period,
+                      generated_at: new Date().toISOString()
+                  }
+              });
+
+              if (currentUserId) loadReports(currentUserId);
+          }
       } catch (e) {
           console.error(e);
       } finally {
           setIsGeneratingReport(false);
+      }
+  };
+
+  const handleViewReport = (report: Report) => {
+      setViewingReport(report);
+      setReportResult(report.content.html);
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+      if (!confirm(language === 'cn' ? '确定删除此报告？' : 'Delete this report?')) return;
+      try {
+          await deleteReport(reportId);
+          if (currentUserId) loadReports(currentUserId);
+          if (viewingReport?.id === reportId) {
+              setViewingReport(null);
+              setReportResult(null);
+          }
+      } catch (e) {
+          console.error(e);
       }
   };
 
@@ -1222,34 +1289,165 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </p>
                               </div>
                           ) : reportResult ? (
-                              <div className="max-w-4xl mx-auto">
-                                  <div className="flex justify-end mb-3">
-                                      <button
-                                          onClick={handleDownloadPdf}
-                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                                      >
-                                          <Download className="w-4 h-4" />
-                                          {language === 'cn' ? '下载 PDF' : 'Download PDF'}
-                                      </button>
-                                  </div>
-                                  <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
-                                      <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
-                                      <div className="p-10 md:p-14">
-                                          <div dangerouslySetInnerHTML={{ __html: reportResult }} />
+                              <div className="space-y-8">
+                                  <div className="max-w-4xl mx-auto">
+                                      <div className="flex justify-end mb-3">
+                                          <button
+                                              onClick={handleDownloadPdf}
+                                              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                          >
+                                              <Download className="w-4 h-4" />
+                                              {language === 'cn' ? '下载 PDF' : 'Download PDF'}
+                                          </button>
+                                      </div>
+                                      <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
+                                          <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
+                                          <div className="p-10 md:p-14">
+                                              <div dangerouslySetInnerHTML={{ __html: reportResult }} />
+                                          </div>
                                       </div>
                                   </div>
+
+                                  {/* Report History */}
+                                  {savedReports.length > 0 && (
+                                      <div className="max-w-4xl mx-auto">
+                                          <div className="flex items-center gap-2 mb-4">
+                                              <History className="w-5 h-5 text-slate-500" />
+                                              <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                                  {language === 'cn' ? '历史报告' : 'Report History'}
+                                              </h4>
+                                              <span className="text-sm text-slate-400">({savedReports.length})</span>
+                                          </div>
+                                          <div className="grid gap-3">
+                                              {savedReports.map(report => (
+                                                  <div key={report.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group">
+                                                      <div className="flex items-center justify-between">
+                                                          <div className="flex items-center gap-3 flex-1">
+                                                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${report.report_type === 'weekly' ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-purple-100 dark:bg-purple-900/30'}`}>
+                                                                  {report.report_type === 'weekly'
+                                                                      ? <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                                                      : <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                                                  }
+                                                              </div>
+                                                              <div className="flex-1">
+                                                                  <h5 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h5>
+                                                                  <p className="text-xs text-slate-500 mt-0.5">
+                                                                      {new Date(report.created_at).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', {
+                                                                          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                                      })}
+                                                                  </p>
+                                                              </div>
+                                                          </div>
+                                                          <div className="flex items-center gap-2">
+                                                              <button
+                                                                  onClick={() => handleViewReport(report)}
+                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                                                                  title={language === 'cn' ? '查看' : 'View'}
+                                                              >
+                                                                  <Eye className="w-4 h-4" />
+                                                              </button>
+                                                              <button
+                                                                  onClick={() => {
+                                                                      setReportResult(report.content.html);
+                                                                      setTimeout(handleDownloadPdf, 100);
+                                                                  }}
+                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                                                  title={language === 'cn' ? '下载' : 'Download'}
+                                                              >
+                                                                  <Download className="w-4 h-4" />
+                                                              </button>
+                                                              <button
+                                                                  onClick={() => handleDeleteReport(report.id)}
+                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                                                                  title={language === 'cn' ? '删除' : 'Delete'}
+                                                              >
+                                                                  <Trash2 className="w-4 h-4" />
+                                                              </button>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  )}
                               </div>
                           ) : (
-                              <div className="flex flex-col items-center justify-center h-full text-slate-400">
-                                  <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                                      <Bot className="w-8 h-8 text-slate-400" />
+                              <div className="space-y-8">
+                                  {/* Empty State */}
+                                  <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                                      <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                                          <Bot className="w-8 h-8 text-slate-400" />
+                                      </div>
+                                      <p className="text-lg font-medium text-slate-600 dark:text-slate-300">
+                                          {language === 'cn' ? '准备好生成您的第一份智能报告了吗？' : 'Ready to generate your first intelligent report?'}
+                                      </p>
+                                      <p className="text-sm">
+                                          {language === 'cn' ? '点击上方按钮开始分析。' : 'Click a button above to start analysis.'}
+                                      </p>
                                   </div>
-                                  <p className="text-lg font-medium text-slate-600 dark:text-slate-300">
-                                      {language === 'cn' ? '准备好生成您的第一份智能报告了吗？' : 'Ready to generate your first intelligent report?'}
-                                  </p>
-                                  <p className="text-sm">
-                                      {language === 'cn' ? '点击上方按钮开始分析。' : 'Click a button above to start analysis.'}
-                                  </p>
+
+                                  {/* Report History */}
+                                  {savedReports.length > 0 && (
+                                      <div className="max-w-4xl mx-auto">
+                                          <div className="flex items-center gap-2 mb-4">
+                                              <History className="w-5 h-5 text-slate-500" />
+                                              <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
+                                                  {language === 'cn' ? '历史报告' : 'Report History'}
+                                              </h4>
+                                              <span className="text-sm text-slate-400">({savedReports.length})</span>
+                                          </div>
+                                          <div className="grid gap-3">
+                                              {savedReports.map(report => (
+                                                  <div key={report.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group">
+                                                      <div className="flex items-center justify-between">
+                                                          <div className="flex items-center gap-3 flex-1">
+                                                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${report.report_type === 'weekly' ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-purple-100 dark:bg-purple-900/30'}`}>
+                                                                  {report.report_type === 'weekly'
+                                                                      ? <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                                                      : <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                                                                  }
+                                                              </div>
+                                                              <div className="flex-1">
+                                                                  <h5 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h5>
+                                                                  <p className="text-xs text-slate-500 mt-0.5">
+                                                                      {new Date(report.created_at).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', {
+                                                                          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                                                      })}
+                                                                  </p>
+                                                              </div>
+                                                          </div>
+                                                          <div className="flex items-center gap-2">
+                                                              <button
+                                                                  onClick={() => handleViewReport(report)}
+                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                                                                  title={language === 'cn' ? '查看' : 'View'}
+                                                              >
+                                                                  <Eye className="w-4 h-4" />
+                                                              </button>
+                                                              <button
+                                                                  onClick={() => {
+                                                                      setReportResult(report.content.html);
+                                                                      setTimeout(handleDownloadPdf, 100);
+                                                                  }}
+                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                                                  title={language === 'cn' ? '下载' : 'Download'}
+                                                              >
+                                                                  <Download className="w-4 h-4" />
+                                                              </button>
+                                                              <button
+                                                                  onClick={() => handleDeleteReport(report.id)}
+                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                                                                  title={language === 'cn' ? '删除' : 'Delete'}
+                                                              >
+                                                                  <Trash2 className="w-4 h-4" />
+                                                              </button>
+                                                          </div>
+                                                      </div>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  )}
                               </div>
                           )}
                       </div>
