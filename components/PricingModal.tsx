@@ -167,7 +167,7 @@ const PricingModal: React.FC = () => {
                         {/* Most Popular Header Banner */}
                         <div className="bg-indigo-500 text-white text-center py-2 rounded-t-3xl font-bold text-sm flex items-center justify-center gap-2">
                             <Zap className="w-4 h-4 fill-current" />
-                            {t.pricing.mostPopular}
+                            {t?.pricing?.mostPopular || (language === 'cn' ? '最受欢迎' : 'MOST POPULAR')}
                         </div>
                         
                         <div className="bg-slate-900 rounded-b-3xl rounded-t-none p-8 border-x-2 border-b-2 border-indigo-500 shadow-[0_0_40px_rgba(99,102,241,0.15)] relative overflow-hidden">
