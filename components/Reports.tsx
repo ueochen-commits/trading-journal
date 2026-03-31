@@ -96,10 +96,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       onPushNotification({
                           id: Date.now().toString() + Math.random(),
                           type: 'success',
-                          message: language === 'cn'
+                          title: language === 'cn' ? '报告已完成' : 'Report Completed',
+                          content: language === 'cn'
                               ? '您的复盘分析报告已分析完成，请前去查看'
                               : 'Your analysis report is ready, please check it out',
-                          timestamp: new Date().toISOString()
+                          timestamp: new Date().toISOString(),
+                          isRead: false
                       });
                   });
               }
@@ -568,10 +570,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               onPushNotification({
                   id: Date.now().toString(),
                   type: 'info',
-                  message: language === 'cn'
+                  title: language === 'cn' ? '报告生成中' : 'Generating Report',
+                  content: language === 'cn'
                       ? '您的周报正在处理中，处理完成后会为您发送新通知'
                       : 'Your report is being processed, you will be notified when it\'s ready',
-                  timestamp: new Date().toISOString()
+                  timestamp: new Date().toISOString(),
+                  isRead: false
               });
           }
 
