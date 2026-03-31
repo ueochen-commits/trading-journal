@@ -312,6 +312,7 @@ const PricingModal: React.FC = () => {
                 </div>
 
             </div>
+        </div>
         </>
     );
 };
