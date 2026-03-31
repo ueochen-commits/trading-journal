@@ -59,6 +59,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [isLoadingReports, setIsLoadingReports] = useState(false);
   const [viewingReport, setViewingReport] = useState<Report | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [previousReports, setPreviousReports] = useState<Report[]>([]);
 
   useEffect(() => {
       const fetchUser = async () => {
@@ -82,7 +83,39 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       setIsLoadingReports(true);
       try {
           const reports = await fetchReports(userId);
+
+          // 检测是否有报告从 pending 变为 completed
+          if (previousReports.length > 0) {
+              const newlyCompleted = reports.filter(r =>
+                  r.status === 'completed' &&
+                  previousReports.find(pr => pr.id === r.id && pr.status === 'pending')
+              );
+
+              if (newlyCompleted.length > 0 && onPushNotification) {
+                  newlyCompleted.forEach(report => {
+                      onPushNotification({
+                          id: Date.now().toString() + Math.random(),
+                          type: 'success',
+                          message: language === 'cn'
+                              ? '您的复盘分析报告已分析完成，请前去查看'
+                              : 'Your analysis report is ready, please check it out',
+                          timestamp: new Date().toISOString()
+                      });
+                  });
+              }
+          }
+
+          setPreviousReports(reports);
           setSavedReports(reports);
+
+          // 自动显示最新的已完成报告
+          if (!reportResult && reports.length > 0) {
+              const latestCompleted = reports.find(r => r.status === 'completed');
+              if (latestCompleted) {
+                  setReportResult(latestCompleted.content.html);
+                  setViewingReport(latestCompleted);
+              }
+          }
       } catch (e) {
           console.error(e);
       } finally {
@@ -536,8 +569,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   id: Date.now().toString(),
                   type: 'info',
                   message: language === 'cn'
-                      ? '报告正在后台生成，您可以继续浏览其他页面'
-                      : 'Report is generating in background, you can continue browsing',
+                      ? '您的周报正在处理中，处理完成后会为您发送新通知'
+                      : 'Your report is being processed, you will be notified when it\'s ready',
                   timestamp: new Date().toISOString()
               });
           }
