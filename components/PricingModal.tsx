@@ -189,7 +189,7 @@ const PricingModal: React.FC = () => {
                         <div className="mb-8">
                             <div className="flex items-baseline">
                                 <span className="text-4xl font-black text-white">{currency}0</span>
-                                <span className="text-slate-500 ml-1">/ mo</span>
+                                <span className="text-slate-500 ml-1">{language === 'cn' ? '/ 月' : '/ mo'}</span>
                             </div>
                             <p className="text-xs text-slate-600 mt-2 h-4"></p>
                         </div>
@@ -232,17 +232,16 @@ const PricingModal: React.FC = () => {
                             </div>
                             
                             <div className="mb-8 relative">
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-5xl font-black text-white tracking-tight">
-                                        {currency}{billingCycle === 'yearly' ? pricing.yearly.pro : pricing.monthly.pro}
-                                    </span>
-                                    <span className="text-slate-400 font-medium">/ mo</span>
-                                </div>
-                                
                                 {billingCycle === 'yearly' ? (
                                     <>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-5xl font-black text-white tracking-tight">
+                                                {currency}{pricing.yearly.totalPro}
+                                            </span>
+                                            <span className="text-slate-400 font-medium">{language === 'cn' ? '/ 年' : '/ year'}</span>
+                                        </div>
                                         <div className="text-sm text-slate-400 font-medium mt-1">
-                                            {currency}{pricing.yearly.totalPro}/{language === 'cn' ? '年' : 'year'}
+                                            {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.pro}` : `${currency}${pricing.yearly.pro}/mo average`}
                                         </div>
                                         <div className="mt-3 inline-flex items-center gap-2 bg-indigo-900/30 px-2 py-1 rounded border border-indigo-500/30">
                                             <span className="text-xs text-indigo-300 line-through">{currency}{Number(pricing.monthly.pro) * 12}</span>
@@ -250,7 +249,15 @@ const PricingModal: React.FC = () => {
                                         </div>
                                     </>
                                 ) : (
-                                    <div className="h-9"></div> 
+                                    <>
+                                        <div className="flex items-baseline gap-1">
+                                            <span className="text-5xl font-black text-white tracking-tight">
+                                                {currency}{pricing.monthly.pro}
+                                            </span>
+                                            <span className="text-slate-400 font-medium">{language === 'cn' ? '/ 月' : '/ mo'}</span>
+                                        </div>
+                                        <div className="h-9"></div>
+                                    </>
                                 )}
                             </div>
 
@@ -294,23 +301,32 @@ const PricingModal: React.FC = () => {
                         </div>
                         
                         <div className="mb-8">
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-4xl font-black text-white">
-                                    {currency}{billingCycle === 'yearly' ? pricing.yearly.elite : pricing.monthly.elite}
-                                </span>
-                                <span className="text-slate-500 font-medium">/ mo</span>
-                            </div>
-                            
                             {billingCycle === 'yearly' ? (
                                 <>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-4xl font-black text-white">
+                                            {currency}{pricing.yearly.totalElite}
+                                        </span>
+                                        <span className="text-slate-500 font-medium">{language === 'cn' ? '/ 年' : '/ year'}</span>
+                                    </div>
                                     <p className="text-sm text-slate-400 font-medium mt-1">
-                                        {currency}{pricing.yearly.totalElite}/{language === 'cn' ? '年' : 'year'}
+                                        {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.elite}` : `${currency}${pricing.yearly.elite}/mo average`}
                                     </p>
                                     <p className="text-xs text-amber-500 mt-2 bg-amber-900/20 inline-block px-2 py-0.5 rounded">
                                         {language === 'cn' ? `立省 ${pricing.yearly.saveElite}` : `Save ${pricing.yearly.saveElite}`}
                                     </p>
                                 </>
-                            ) : <div className="h-10"></div>}
+                            ) : (
+                                <>
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-4xl font-black text-white">
+                                            {currency}{pricing.monthly.elite}
+                                        </span>
+                                        <span className="text-slate-500 font-medium">{language === 'cn' ? '/ 月' : '/ mo'}</span>
+                                    </div>
+                                    <div className="h-10"></div>
+                                </>
+                            )}
                         </div>
 
                         <button
