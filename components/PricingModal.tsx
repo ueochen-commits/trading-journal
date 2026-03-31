@@ -8,6 +8,7 @@ const PricingModal: React.FC = () => {
     const { isPricingOpen, closePricing, upgradeTier, user } = useUser();
     const { t, language } = useLanguage();
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+    const [showEarlyBirdModal, setShowEarlyBirdModal] = useState(false);
 
     if (!isPricingOpen) return null;
 
@@ -28,8 +29,6 @@ const PricingModal: React.FC = () => {
             totalElite: language === 'cn' ? '599' : '89'
         }
     };
-
-    const [showEarlyBirdModal, setShowEarlyBirdModal] = useState(false);
 
     const FeatureItem = ({ text, highlight = false }: { text: string, highlight?: boolean }) => (
         <div className="flex items-start gap-3">
