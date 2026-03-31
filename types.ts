@@ -279,5 +279,6 @@ export interface Report {
         period: string;
         generated_at: string;
     };
+    status: 'pending' | 'completed' | 'failed';
     created_at: string;
 }

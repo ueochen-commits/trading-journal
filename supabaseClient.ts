@@ -34,3 +34,13 @@ export const deleteReport = async (reportId: string) => {
         .eq('id', reportId);
     if (error) throw error;
 };
+
+export const updateReportStatus = async (reportId: string, status: 'pending' | 'completed' | 'failed', content?: any) => {
+    const updateData: any = { status };
+    if (content) updateData.content = content;
+    const { error } = await supabase
+        .from('reports')
+        .update(updateData)
+        .eq('id', reportId);
+    if (error) throw error;
+};

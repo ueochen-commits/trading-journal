@@ -69,7 +69,14 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           }
       };
       fetchUser();
-  }, []);
+
+      // 每 5 秒自动刷新报告列表（检查 pending 状态）
+      const interval = setInterval(() => {
+          if (currentUserId) loadReports(currentUserId);
+      }, 5000);
+
+      return () => clearInterval(interval);
+  }, [currentUserId]);
 
   const loadReports = async (userId: string) => {
       setIsLoadingReports(true);
@@ -484,30 +491,57 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
+      if (!currentUserId) return;
+
       setIsGeneratingReport(true);
       try {
-          const result = await generatePeriodicReport(plans, period, language, trades, disciplineHistory, riskSettings);
-          setReportResult(result);
+          const periodLabel = period === 'weekly'
+              ? (language === 'cn' ? '周报' : 'Weekly Report')
+              : (language === 'cn' ? '月报' : 'Monthly Report');
+          const title = `${periodLabel} - ${new Date().toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')}`;
 
-          if (currentUserId && result) {
-              const periodLabel = period === 'weekly'
-                  ? (language === 'cn' ? '周报' : 'Weekly Report')
-                  : (language === 'cn' ? '月报' : 'Monthly Report');
-              const title = `${periodLabel} - ${new Date().toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')}`;
-
-              await saveReport({
-                  user_id: currentUserId,
-                  report_type: period,
-                  title,
-                  content: {
-                      html: result,
-                      period,
-                      generated_at: new Date().toISOString()
+          // 先创建 pending 状态的报告记录
+          const newReport = await saveReport({
+              user_id: currentUserId,
+              report_type: period,
+              title,
+              status: 'pending',
+              content: {
+                  html: '',
+                  period,
+                  generated_at: new Date().toISOString(),
+                  metadata: {
+                      trades,
+                      plans,
+                      disciplineHistory,
+                      riskSettings,
+                      language
                   }
-              });
+              }
+          });
 
-              if (currentUserId) loadReports(currentUserId);
+          // 立即刷新列表显示 pending 状态
+          loadReports(currentUserId);
+
+          // 后台异步生成报告
+          fetch('/api/generate-report-background', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ reportId: newReport.id })
+          }).catch(err => console.error('Background generation failed:', err));
+
+          // 显示提示
+          if (onPushNotification) {
+              onPushNotification({
+                  id: Date.now().toString(),
+                  type: 'info',
+                  message: language === 'cn'
+                      ? '报告正在后台生成，您可以继续浏览其他页面'
+                      : 'Report is generating in background, you can continue browsing',
+                  timestamp: new Date().toISOString()
+              });
           }
+
       } catch (e) {
           console.error(e);
       } finally {
@@ -532,6 +566,109 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       } catch (e) {
           console.error(e);
       }
+  };
+
+  const handleRetryReport = async (reportId: string) => {
+      try {
+          await fetch('/api/generate-report-background', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ reportId })
+          });
+          if (currentUserId) loadReports(currentUserId);
+      } catch (e) {
+          console.error(e);
+      }
+  };
+
+  const renderReportCard = (report: Report) => {
+      const isPending = report.status === 'pending';
+      const isFailed = report.status === 'failed';
+      const isCompleted = report.status === 'completed';
+
+      return (
+          <div key={report.id} className={`bg-white dark:bg-slate-900 rounded-xl border p-4 transition-all group ${
+              isPending ? 'border-amber-300 dark:border-amber-700' :
+              isFailed ? 'border-rose-300 dark:border-rose-700' :
+              'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700'
+          }`}>
+              <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                          isPending ? 'bg-amber-100 dark:bg-amber-900/30' :
+                          isFailed ? 'bg-rose-100 dark:bg-rose-900/30' :
+                          report.report_type === 'weekly' ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-purple-100 dark:bg-purple-900/30'
+                      }`}>
+                          {isPending ? (
+                              <Loader2 className="w-5 h-5 text-amber-600 dark:text-amber-400 animate-spin" />
+                          ) : isFailed ? (
+                              <AlertTriangle className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                          ) : report.report_type === 'weekly' ? (
+                              <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                          ) : (
+                              <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          )}
+                      </div>
+                      <div className="flex-1">
+                          <h5 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h5>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                              {isPending ? (
+                                  <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
+                                      {language === 'cn' ? '生成中...' : 'Generating...'}
+                                  </span>
+                              ) : isFailed ? (
+                                  <span className="text-rose-600 dark:text-rose-400">
+                                      {language === 'cn' ? '生成失败' : 'Generation failed'}
+                                  </span>
+                              ) : (
+                                  new Date(report.created_at).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', {
+                                      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                                  })
+                              )}
+                          </p>
+                      </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                      {isCompleted && (
+                          <>
+                              <button
+                                  onClick={() => handleViewReport(report)}
+                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
+                                  title={language === 'cn' ? '查看' : 'View'}
+                              >
+                                  <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                  onClick={() => {
+                                      setReportResult(report.content.html);
+                                      setTimeout(handleDownloadPdf, 100);
+                                  }}
+                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
+                                  title={language === 'cn' ? '下载' : 'Download'}
+                              >
+                                  <Download className="w-4 h-4" />
+                              </button>
+                          </>
+                      )}
+                      {isFailed && (
+                          <button
+                              onClick={() => handleRetryReport(report.id)}
+                              className="px-3 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                          >
+                              {language === 'cn' ? '重试' : 'Retry'}
+                          </button>
+                      )}
+                      <button
+                          onClick={() => handleDeleteReport(report.id)}
+                          className="p-2 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                          title={language === 'cn' ? '删除' : 'Delete'}
+                      >
+                          <Trash2 className="w-4 h-4" />
+                      </button>
+                  </div>
+              </div>
+          </div>
+      );
   };
 
   const handleDownloadPdf = () => {
@@ -1319,54 +1456,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                               <span className="text-sm text-slate-400">({savedReports.length})</span>
                                           </div>
                                           <div className="grid gap-3">
-                                              {savedReports.map(report => (
-                                                  <div key={report.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group">
-                                                      <div className="flex items-center justify-between">
-                                                          <div className="flex items-center gap-3 flex-1">
-                                                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${report.report_type === 'weekly' ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-purple-100 dark:bg-purple-900/30'}`}>
-                                                                  {report.report_type === 'weekly'
-                                                                      ? <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                                                      : <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                                                  }
-                                                              </div>
-                                                              <div className="flex-1">
-                                                                  <h5 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h5>
-                                                                  <p className="text-xs text-slate-500 mt-0.5">
-                                                                      {new Date(report.created_at).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', {
-                                                                          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                                                      })}
-                                                                  </p>
-                                                              </div>
-                                                          </div>
-                                                          <div className="flex items-center gap-2">
-                                                              <button
-                                                                  onClick={() => handleViewReport(report)}
-                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                                                                  title={language === 'cn' ? '查看' : 'View'}
-                                                              >
-                                                                  <Eye className="w-4 h-4" />
-                                                              </button>
-                                                              <button
-                                                                  onClick={() => {
-                                                                      setReportResult(report.content.html);
-                                                                      setTimeout(handleDownloadPdf, 100);
-                                                                  }}
-                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-                                                                  title={language === 'cn' ? '下载' : 'Download'}
-                                                              >
-                                                                  <Download className="w-4 h-4" />
-                                                              </button>
-                                                              <button
-                                                                  onClick={() => handleDeleteReport(report.id)}
-                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-                                                                  title={language === 'cn' ? '删除' : 'Delete'}
-                                                              >
-                                                                  <Trash2 className="w-4 h-4" />
-                                                              </button>
-                                                          </div>
-                                                      </div>
-                                                  </div>
-                                              ))}
+                                              {savedReports.map(report => renderReportCard(report))}
                                           </div>
                                       </div>
                                   )}
@@ -1397,54 +1487,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                               <span className="text-sm text-slate-400">({savedReports.length})</span>
                                           </div>
                                           <div className="grid gap-3">
-                                              {savedReports.map(report => (
-                                                  <div key={report.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-4 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group">
-                                                      <div className="flex items-center justify-between">
-                                                          <div className="flex items-center gap-3 flex-1">
-                                                              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${report.report_type === 'weekly' ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-purple-100 dark:bg-purple-900/30'}`}>
-                                                                  {report.report_type === 'weekly'
-                                                                      ? <CalendarIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-                                                                      : <FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                                                                  }
-                                                              </div>
-                                                              <div className="flex-1">
-                                                                  <h5 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h5>
-                                                                  <p className="text-xs text-slate-500 mt-0.5">
-                                                                      {new Date(report.created_at).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', {
-                                                                          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
-                                                                      })}
-                                                                  </p>
-                                                              </div>
-                                                          </div>
-                                                          <div className="flex items-center gap-2">
-                                                              <button
-                                                                  onClick={() => handleViewReport(report)}
-                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg transition-colors"
-                                                                  title={language === 'cn' ? '查看' : 'View'}
-                                                              >
-                                                                  <Eye className="w-4 h-4" />
-                                                              </button>
-                                                              <button
-                                                                  onClick={() => {
-                                                                      setReportResult(report.content.html);
-                                                                      setTimeout(handleDownloadPdf, 100);
-                                                                  }}
-                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
-                                                                  title={language === 'cn' ? '下载' : 'Download'}
-                                                              >
-                                                                  <Download className="w-4 h-4" />
-                                                              </button>
-                                                              <button
-                                                                  onClick={() => handleDeleteReport(report.id)}
-                                                                  className="p-2 text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-                                                                  title={language === 'cn' ? '删除' : 'Delete'}
-                                                              >
-                                                                  <Trash2 className="w-4 h-4" />
-                                                              </button>
-                                                          </div>
-                                                      </div>
-                                                  </div>
-                                              ))}
+                                              {savedReports.map(report => renderReportCard(report))}
                                           </div>
                                       </div>
                                   )}
