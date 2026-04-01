@@ -1,4 +1,5 @@
 export const config = { runtime: 'nodejs' };
+import { checkAndIncrementAiQuota } from './_ai-quota';
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
@@ -16,8 +17,14 @@ export default async function handler(req: any, res: any) {
         period = 'weekly',
         language = 'cn',
         disciplineHistory = [],
-        riskSettings = null
+        riskSettings = null,
+        userId
     } = req.body;
+
+    if (userId) {
+        const quotaError = await checkAndIncrementAiQuota(userId);
+        if (quotaError) return res.status(429).json({ error: 'QUOTA_EXCEEDED', message: quotaError });
+    }
 
     const isChinese = language === 'cn';
 

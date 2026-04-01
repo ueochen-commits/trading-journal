@@ -1,4 +1,5 @@
 export const config = { runtime: 'nodejs' };
+import { checkAndIncrementAiQuota } from './_ai-quota';
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
@@ -10,7 +11,12 @@ export default async function handler(req: any, res: any) {
         return res.status(500).json({ error: 'AI service not configured' });
     }
 
-    const { message, history = [], trades = [], language = 'cn', tradingRules = [], riskSettings = null } = req.body;
+    const { message, history = [], trades = [], language = 'cn', tradingRules = [], riskSettings = null, userId } = req.body;
+
+    if (userId) {
+        const quotaError = await checkAndIncrementAiQuota(userId);
+        if (quotaError) return res.status(429).json({ error: 'QUOTA_EXCEEDED', message: quotaError });
+    }
 
     // 构建交易数据摘要（限制 token 用量）
     const recentTrades = trades.slice(0, 30).map((t: any) => ({

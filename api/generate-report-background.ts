@@ -46,7 +46,8 @@ export default async function handler(req: any, res: any) {
                 period: report_type,
                 language,
                 disciplineHistory,
-                riskSettings
+                riskSettings,
+                userId: user_id
             })
         });
 

@@ -1,4 +1,5 @@
 export const config = { runtime: 'nodejs' };
+import { checkAndIncrementAiQuota } from './_ai-quota';
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
@@ -10,7 +11,13 @@ export default async function handler(req: any, res: any) {
         return res.status(500).json({ error: 'AI service not configured' });
     }
 
-    const { trades = [], language = 'cn' } = req.body;
+    const { trades = [], language = 'cn', userId } = req.body;
+
+    if (userId) {
+        const quotaError = await checkAndIncrementAiQuota(userId);
+        if (quotaError) return res.status(429).json({ error: 'QUOTA_EXCEEDED', message: quotaError });
+    }
+
     const isChinese = language === 'cn';
 
     const tradeData = trades.slice(0, 20).map((t: any) => ({

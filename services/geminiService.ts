@@ -35,17 +35,21 @@ export const chatWithAnalyst = async (
     language: 'en' | 'cn' = 'cn',
     trades: Trade[] = [],
     tradingRules: any[] = [],
-    riskSettings: any = null
+    riskSettings: any = null,
+    userId?: string
 ): Promise<{ text: string; tradeData?: any }> => {
     try {
         const response = await fetch('/api/ai-coach', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message, history, trades, language, tradingRules, riskSettings })
+            body: JSON.stringify({ message, history, trades, language, tradingRules, riskSettings, userId })
         });
 
         if (!response.ok) throw new Error('API error');
         const data = await response.json();
+        if (data.error === 'QUOTA_EXCEEDED') {
+            return { text: language === 'cn' ? '今日 AI 使用次数已达上限，请明天再试或升级会员。' : 'Daily AI limit reached. Try again tomorrow or upgrade your plan.' };
+        }
         return { text: data.text || '' };
     } catch (error) {
         return {
@@ -55,16 +59,24 @@ export const chatWithAnalyst = async (
 };
 
 // --- 交易日志分析（AICoach 组件）---
-export const analyzeJournal = async (trades: Trade[], language: 'en' | 'cn' = 'cn'): Promise<any> => {
+export const analyzeJournal = async (trades: Trade[], language: 'en' | 'cn' = 'cn', userId?: string): Promise<any> => {
     try {
         const response = await fetch('/api/ai-analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trades, language })
+            body: JSON.stringify({ trades, language, userId })
         });
 
         if (!response.ok) throw new Error('API error');
-        return await response.json();
+        const data = await response.json();
+        if (data.error === 'QUOTA_EXCEEDED') {
+            return {
+                summary: language === 'cn' ? '今日 AI 使用次数已达上限，请明天再试或升级会员。' : 'Daily AI limit reached. Try again tomorrow or upgrade your plan.',
+                insights: [],
+                coachMessage: ''
+            };
+        }
+        return data;
     } catch (error) {
         return {
             summary: language === 'cn' ? 'AI 分析服务暂时不可用。' : 'AI analysis temporarily unavailable.',
@@ -81,17 +93,23 @@ export const generatePeriodicReport = async (
     language: 'en' | 'cn' = 'cn',
     trades: Trade[] = [],
     disciplineHistory: any[] = [],
-    riskSettings: any = null
+    riskSettings: any = null,
+    userId?: string
 ): Promise<string> => {
     try {
         const response = await fetch('/api/ai-report', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ trades, plans, period, language, disciplineHistory, riskSettings })
+            body: JSON.stringify({ trades, plans, period, language, disciplineHistory, riskSettings, userId })
         });
 
         if (!response.ok) throw new Error('API error');
         const data = await response.json();
+        if (data.error === 'QUOTA_EXCEEDED') {
+            return language === 'cn'
+                ? '<h3>今日 AI 使用次数已达上限</h3><p>请明天再试或升级会员。</p>'
+                : '<h3>Daily AI Limit Reached</h3><p>Try again tomorrow or upgrade your plan.</p>';
+        }
         return data.html || '';
     } catch (error) {
         return language === 'cn'

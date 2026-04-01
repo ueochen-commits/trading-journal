@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, Image as ImageIcon, Mic, X, ChevronDown, Loader2, Save, Maximize2, Minimize2, CheckCircle2, ArrowRight } from 'lucide-react';
 import { chatWithAnalyst } from '../services/geminiService';
 import { useLanguage } from '../LanguageContext';
+import { useUser } from './UserContext';
 import { Trade, Direction } from '../types';
 
 interface Message {
@@ -26,6 +27,7 @@ interface ChatAssistantProps {
 
 const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onViewTrade, trades = [], tradingRules = [], riskSettings = null }: ChatAssistantProps) => {
     const { language } = useLanguage();
+    const { user } = useUser();
     const [isExpanded, setIsExpanded] = useState(false);
     const [input, setInput] = useState('');
     const [messages, setMessages] = useState<Message[]>([
@@ -98,7 +100,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
         const history = messages.map(m => ({ role: m.role, content: m.content }));
 
         try {
-            const response = await chatWithAnalyst(userMsg.content, userMsg.image || null, history, language, trades, tradingRules, riskSettings);
+            const response = await chatWithAnalyst(userMsg.content, userMsg.image || null, history, language, trades, tradingRules, riskSettings, user.id);
             
             let loggedTrade: Trade | undefined = undefined;
 

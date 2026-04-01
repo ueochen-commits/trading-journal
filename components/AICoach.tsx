@@ -4,6 +4,7 @@ import { Trade } from '../types';
 import { analyzeJournal } from '../services/geminiService';
 import { Bot, Sparkles, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { useUser } from './UserContext';
 import FeatureGate from './FeatureGate';
 
 interface AICoachProps {
@@ -12,6 +13,7 @@ interface AICoachProps {
 
 const AICoach: React.FC<AICoachProps> = ({ trades }) => {
   const { t, language } = useLanguage();
+  const { user } = useUser();
   const [analysis, setAnalysis] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +22,7 @@ const AICoach: React.FC<AICoachProps> = ({ trades }) => {
     setLoading(true);
     setError('');
     try {
-      const result = await analyzeJournal(trades, language);
+      const result = await analyzeJournal(trades, language, user.id);
       setAnalysis(result);
     } catch (err) {
       setError(t.aiCoach.error);
