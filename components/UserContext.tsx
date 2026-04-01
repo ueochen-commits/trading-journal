@@ -39,6 +39,38 @@ interface UserContextType {
     refreshUser: () => Promise<void>; // 新增：刷新用户信息
 }
 
+const TIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCachedTier = (userId: string): UserTier | null => {
+    try {
+        const raw = localStorage.getItem(`tier_cache_${userId}`);
+        if (!raw) return null;
+        const { tier, expiresAt } = JSON.parse(raw);
+        if (Date.now() > expiresAt) {
+            localStorage.removeItem(`tier_cache_${userId}`);
+            return null;
+        }
+        return tier as UserTier;
+    } catch {
+        return null;
+    }
+};
+
+const setCachedTier = (userId: string, tier: UserTier) => {
+    try {
+        localStorage.setItem(`tier_cache_${userId}`, JSON.stringify({
+            tier,
+            expiresAt: Date.now() + TIER_CACHE_TTL
+        }));
+    } catch {}
+};
+
+const clearCachedTier = (userId: string) => {
+    try {
+        localStorage.removeItem(`tier_cache_${userId}`);
+    } catch {}
+};
+
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children?: ReactNode }) => {
@@ -81,7 +113,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         return () => subscription.unsubscribe();
     }, []);
 
-    const syncUser = async (supabaseUser: any) => {
+    const syncUser = async (supabaseUser: any, forceRefresh = false) => {
         // 先同步基本信息
         setUser(prev => ({
             ...prev,
@@ -91,8 +123,16 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
         }));
 
+        // 优先读缓存，命中则跳过数据库查询
+        if (!forceRefresh) {
+            const cached = getCachedTier(supabaseUser.id);
+            if (cached) {
+                setUser(prev => ({ ...prev, tier: cached }));
+                return;
+            }
+        }
+
         // 从 subscriptions 表读取真实会员等级
-        // 取出所有有效订阅，按等级优先级选最高的
         try {
             const { data: subs } = await supabase
                 .from('subscriptions')
@@ -102,18 +142,18 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
             const tierPriority: Record<string, number> = { elite: 3, pro: 2, free: 1 };
 
-            // 过滤未过期的订阅，按等级优先级取最高的
             const validSubs = (subs || []).filter(s => {
                 const periodEnd = s.current_period_end ? new Date(s.current_period_end) : null;
                 return !periodEnd || periodEnd > new Date();
             });
 
-            let tier: UserTier = 'pro'; // 默认 pro
+            let tier: UserTier = 'pro';
             if (validSubs.length > 0) {
                 validSubs.sort((a, b) => (tierPriority[b.plan] || 0) - (tierPriority[a.plan] || 0));
                 tier = validSubs[0].plan as UserTier;
             }
 
+            setCachedTier(supabaseUser.id, tier);
             setUser(prev => ({ ...prev, tier }));
         } catch {
             setUser(prev => ({ ...prev, tier: 'pro' }));
@@ -127,6 +167,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const login = () => setIsAuthenticated(true);
     const logout = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) clearCachedTier(session.user.id);
         await supabase.auth.signOut();
         setIsAuthenticated(false);
     };
@@ -145,11 +187,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         closePricing();
     };
 
-    // 主动刷新用户会员状态（支付成功后调用）
+    // 主动刷新用户会员状态（支付成功后调用，强制跳过缓存）
     const refreshUser = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-            await syncUser(session.user);
+            await syncUser(session.user, true);
         }
     };
 
