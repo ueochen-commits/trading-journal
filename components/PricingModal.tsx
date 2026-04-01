@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { X, Check, Zap, Crown, ShieldCheck, Star, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
 import { useUser } from './UserContext';
 import { useLanguage } from '../LanguageContext';
+import PaymentModal from './PaymentModal';
+import type { PlanType, BillingCycle } from '../services/xorpayService';
 
 const PricingModal: React.FC = () => {
     const { isPricingOpen, closePricing, upgradeTier, user } = useUser();
@@ -10,9 +12,29 @@ const PricingModal: React.FC = () => {
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
     const [showEarlyBirdModal, setShowEarlyBirdModal] = useState(false);
 
+    // 支付相关状态
+    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
+    const [selectedPlan, setSelectedPlan] = useState<{
+        plan: PlanType;
+        billingCycle: BillingCycle;
+        amount: number;
+    } | null>(null);
+
     if (!isPricingOpen) return null;
 
     const currency = language === 'cn' ? '¥' : '$';
+
+    // 处理购买按钮点击
+    const handleBuyClick = (plan: PlanType, cycle: BillingCycle, amount: number) => {
+        setSelectedPlan({ plan, billingCycle: cycle, amount });
+        setIsPaymentOpen(true);
+    };
+
+    // 处理支付完成
+    const handlePaymentClose = () => {
+        setIsPaymentOpen(false);
+        setSelectedPlan(null);
+    };
 
     // Pricing Configuration
     const pricing = {
@@ -114,12 +136,31 @@ const PricingModal: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* CTA */}
-                            <p className="text-center text-xs text-slate-500">
-                                {language === 'cn'
-                                    ? '支付功能即将开放，添加微信可提前预约锁定名额'
-                                    : 'Payment coming soon. Add WeChat to reserve your spot'}
-                            </p>
+                            {/* CTA Buttons */}
+                            <div className="space-y-3">
+                                <button
+                                    onClick={() => {
+                                        setShowEarlyBirdModal(false);
+                                        handleBuyClick('elite', 'lifetime', 1999);
+                                    }}
+                                    disabled={user.tier === 'elite'}
+                                    className={`w-full py-4 rounded-xl font-bold text-base transition-all ${
+                                        user.tier === 'elite'
+                                            ? 'bg-slate-700 text-slate-500 cursor-default'
+                                            : 'bg-amber-500 hover:bg-amber-600 text-black'
+                                    }`}
+                                >
+                                    {user.tier === 'elite'
+                                        ? (language === 'cn' ? '已是 Elite 会员' : 'Already Elite Member')
+                                        : (language === 'cn' ? '立即购买 ¥1,999' : 'Buy Now ¥1,999')
+                                    }
+                                </button>
+                                <p className="text-center text-xs text-slate-500">
+                                    {language === 'cn'
+                                        ? '支持支付宝和微信支付 · 或添加微信 Timetravel_0 咨询'
+                                        : 'Alipay & WeChat Pay · Or add WeChat Timetravel_0'}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -264,13 +305,24 @@ const PricingModal: React.FC = () => {
                             </div>
 
                             <button
-                                disabled
-                                className="w-full py-4 rounded-xl font-bold text-sm bg-slate-800 text-slate-500 cursor-default flex items-center justify-center gap-2"
+                                onClick={() => handleBuyClick(
+                                    'pro',
+                                    billingCycle,
+                                    Number(billingCycle === 'yearly' ? pricing.yearly.totalPro : pricing.monthly.pro)
+                                )}
+                                disabled={user.tier === 'pro' || user.tier === 'elite'}
+                                className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                                    user.tier === 'pro' || user.tier === 'elite'
+                                        ? 'bg-slate-800 text-slate-500 cursor-default'
+                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                                }`}
                             >
-                                {language === 'cn' ? '内测期间免费开放' : 'Free During Beta'}
+                                {user.tier === 'pro' ? (language === 'cn' ? '当前方案' : 'Current Plan') :
+                                 user.tier === 'elite' ? (language === 'cn' ? '已是更高等级' : 'Higher Tier Active') :
+                                 (language === 'cn' ? '立即购买' : 'Buy Now')}
                             </button>
-                            
-                            {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3">{language === 'cn' ? '7天免费试用，随后按年收费' : '7-day free trial, then billed yearly'}</p>}
+
+                            {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3">{language === 'cn' ? '支持支付宝和微信支付' : 'Alipay & WeChat Pay supported'}</p>}
 
                             <div className="mt-8 space-y-5">
                                 <div>
@@ -332,10 +384,19 @@ const PricingModal: React.FC = () => {
                         </div>
 
                         <button
-                            disabled
-                            className="w-full py-3.5 rounded-xl font-bold text-sm bg-slate-800 border border-slate-800 text-slate-500 cursor-default"
+                            onClick={() => handleBuyClick(
+                                'elite',
+                                billingCycle,
+                                Number(billingCycle === 'yearly' ? pricing.yearly.totalElite : pricing.monthly.elite)
+                            )}
+                            disabled={user.tier === 'elite'}
+                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border ${
+                                user.tier === 'elite'
+                                    ? 'bg-slate-800 border-slate-800 text-slate-500 cursor-default'
+                                    : 'bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black'
+                            }`}
                         >
-                            {language === 'cn' ? '内测期间免费开放' : 'Free During Beta'}
+                            {user.tier === 'elite' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (language === 'cn' ? '立即购买' : 'Buy Now')}
                         </button>
 
                         {/* Early Bird Lifetime Deal */}
@@ -380,6 +441,17 @@ const PricingModal: React.FC = () => {
 
             </div>
         </div>
+
+        {/* Payment Modal */}
+        {isPaymentOpen && selectedPlan && (
+            <PaymentModal
+                isOpen={isPaymentOpen}
+                onClose={handlePaymentClose}
+                plan={selectedPlan.plan}
+                billingCycle={selectedPlan.billingCycle}
+                amount={selectedPlan.amount}
+            />
+        )}
         </>
     );
 };
