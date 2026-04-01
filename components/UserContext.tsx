@@ -176,7 +176,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         const today = new Date().toISOString().split('T')[0];
 
         const [usageResult, tradeResult] = await Promise.all([
-            supabase.from('ai_usage').select('count').eq('user_id', userId).eq('date', today).single(),
+            supabase.from('ai_usage').select('count').eq('user_id', userId).eq('date', today).maybeSingle(),
             supabase.from('trading_journals').select('id', { count: 'exact', head: true }).eq('user_id', userId)
         ]);
 
