@@ -1,5 +1,5 @@
 export const config = { runtime: 'nodejs' };
-import { checkAndIncrementAiQuota } from './_ai-quota';
+import { checkAndIncrementAiQuota } from '../lib/aiQuota';
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
