@@ -4,14 +4,37 @@ import { X, User, Edit2, Shield, Monitor, Mail, Bot, Database, Crown, LogOut, He
 import { useUser } from './UserContext';
 import { useLanguage } from '../LanguageContext';
 
+const TIER_LIMITS = {
+    free:  { ai: 5,   trades: 100,  aiLabel: '5次/天' },
+    pro:   { ai: 100, trades: 1000, aiLabel: '100次/天' },
+    elite: { ai: null, trades: null, aiLabel: '无限制' },
+};
+
 const UserProfileModal: React.FC = () => {
-    const { isProfileOpen, closeProfile, user, openPricing, openSettings } = useUser();
+    const { isProfileOpen, closeProfile, user, openPricing, openSettings, logout } = useUser();
     const { t, language } = useLanguage();
 
     if (!isProfileOpen) return null;
 
     const isPro = user.tier === 'pro' || user.tier === 'elite';
     const isElite = user.tier === 'elite';
+    const limits = TIER_LIMITS[user.tier];
+
+    const joinedDate = user.createdAt
+        ? new Date(user.createdAt).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/')
+        : '--';
+
+    const subEndDate = user.subscriptionEnd
+        ? new Date(user.subscriptionEnd).toLocaleDateString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit' }).replace(/\//g, '/')
+        : null;
+
+    const aiUsed = user.aiUsageToday ?? 0;
+    const aiLimit = limits.ai;
+    const aiRemaining = aiLimit !== null ? Math.max(0, aiLimit - aiUsed) : null;
+
+    const tradeCount = user.tradeCount ?? 0;
+    const tradeLimit = limits.trades;
+    const tradePercent = tradeLimit ? Math.min(100, Math.round((tradeCount / tradeLimit) * 100)) : 0;
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in" onClick={closeProfile}>
@@ -56,7 +79,7 @@ const UserProfileModal: React.FC = () => {
                                 <HelpCircle className="w-4 h-4" />
                                 {language === 'cn' ? '用户支持' : 'Support'}
                             </button>
-                            <button className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/10 hover:text-rose-600 hover:border-rose-200 transition-colors flex items-center justify-center gap-2">
+                            <button onClick={logout} className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/10 hover:text-rose-600 hover:border-rose-200 transition-colors flex items-center justify-center gap-2">
                                 <LogOut className="w-4 h-4" />
                                 {language === 'cn' ? '退出登录' : 'Logout'}
                             </button>
@@ -76,28 +99,33 @@ const UserProfileModal: React.FC = () => {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <p className="font-bold text-slate-900 dark:text-white text-base mb-1">{user.email}</p>
-                                        <p className="text-slate-400 text-xs">2023/04/09 {language === 'cn' ? '开始使用 TradePulse' : 'Joined TradePulse'}</p>
+                                        <p className="text-slate-400 text-xs">{joinedDate} {language === 'cn' ? '开始使用 TradeGrail' : 'Joined TradeGrail'}</p>
                                     </div>
                                     <a href="#" className="text-indigo-600 hover:underline text-xs">{language === 'cn' ? '账户一览' : 'Overview'}</a>
                                 </div>
 
                                 {/* Level */}
-                                <div className="text-slate-500 dark:text-slate-400 font-medium self-center">
+                                <div className="text-slate-500 dark:text-slate-400 font-medium self-start pt-1">
                                     {language === 'cn' ? '账户级别:' : 'Level:'}
                                 </div>
-                                <div className="flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <div className={`p-1.5 rounded-md ${isElite ? 'bg-amber-100 text-amber-600' : isPro ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'}`}>
-                                            <Shield className="w-5 h-5" />
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <div className={`p-1.5 rounded-md ${isElite ? 'bg-amber-100 text-amber-600' : isPro ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'}`}>
+                                                <Shield className="w-5 h-5" />
+                                            </div>
+                                            <span className="font-bold text-slate-700 dark:text-slate-200">
+                                                TradeGrail {user.tier === 'free' ? (language === 'cn' ? '基础账户' : 'Basic') : user.tier === 'pro' ? (language === 'cn' ? '专业账户' : 'Pro') : (language === 'cn' ? '尊享账户' : 'Elite')}
+                                            </span>
                                         </div>
-                                        <span className="font-bold text-slate-700 dark:text-slate-200">
-                                            TradePulse {user.tier === 'free' ? (language === 'cn' ? '基础账户' : 'Basic') : user.tier === 'pro' ? (language === 'cn' ? '专业账户' : 'Pro') : (language === 'cn' ? '尊享账户' : 'Elite')}
-                                        </span>
+                                        {subEndDate && (
+                                            <p className="text-slate-400 text-xs">{language === 'cn' ? '到期日：' : 'Expires: '}{subEndDate}</p>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <a href="#" className="text-indigo-600 hover:underline text-xs">{language === 'cn' ? '权益说明' : 'Benefits'}</a>
                                         {!isElite && (
-                                            <button 
+                                            <button
                                                 onClick={() => { closeProfile(); openPricing(); }}
                                                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors"
                                             >
@@ -124,7 +152,7 @@ const UserProfileModal: React.FC = () => {
                                 </div>
                                 <div>
                                     <a href="#" className="text-indigo-600 hover:underline decoration-dashed underline-offset-4">
-                                        upload.{user.name.replace(' ', '').toLowerCase()}@tradepulse.net
+                                        upload.{user.name.replace(' ', '').toLowerCase()}@tradegrail.net
                                     </a>
                                 </div>
                             </div>
@@ -138,20 +166,27 @@ const UserProfileModal: React.FC = () => {
                                 </div>
                                 <div>
                                     <div className="flex justify-between items-start mb-2">
-                                        <h4 className="font-bold text-slate-800 dark:text-white">TradePulse AI</h4>
+                                        <h4 className="font-bold text-slate-800 dark:text-white">TradeGrail AI</h4>
                                         <div className="text-right">
-                                            <div className="text-xs text-slate-500">{language === 'cn' ? '剩余请求数: ' : 'Remaining: '} <span className="text-slate-900 dark:text-white font-mono">15</span> / {isPro ? '∞' : '20'}</div>
-                                            <div className="text-xs text-slate-500">{language === 'cn' ? '最大请求数: ' : 'Max Limit: '} <span className="text-slate-900 dark:text-white font-mono">{isPro ? 'Unlimited' : '20/day'}</span></div>
+                                            <div className="text-xs text-slate-500">
+                                                {language === 'cn' ? '今日已用: ' : 'Used today: '}
+                                                <span className="text-slate-900 dark:text-white font-mono">{aiUsed}</span>
+                                                {aiLimit !== null && <span className="text-slate-400"> / {aiLimit}</span>}
+                                            </div>
+                                            <div className="text-xs text-slate-500">
+                                                {language === 'cn' ? '每日上限: ' : 'Daily limit: '}
+                                                <span className="text-slate-900 dark:text-white font-mono">{isElite ? (language === 'cn' ? '无限制' : 'Unlimited') : limits.aiLabel}</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
-                                            {language === 'cn' ? '开通专业版会员，享受无限次 AI 诊疗与复盘。' : 'Upgrade to Pro for unlimited AI coaching and analysis.'}
+                                            {language === 'cn' ? '包含 AI 教练对话、周报及月报生成。' : 'Includes AI coach, weekly and monthly reports.'}
                                         </p>
                                         <div className="flex items-center gap-3">
                                             <a href="#" className="text-indigo-600 hover:underline text-xs">{language === 'cn' ? '功能说明' : 'Details'}</a>
                                             {!isPro && (
-                                                <button 
+                                                <button
                                                     onClick={() => { closeProfile(); openPricing(); }}
                                                     className="border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-1 rounded text-xs font-bold transition-colors"
                                                 >
@@ -172,9 +207,16 @@ const UserProfileModal: React.FC = () => {
                                 </div>
                                 <div>
                                     <div className="flex justify-between items-center mb-1">
-                                        <h4 className="font-bold text-slate-800 dark:text-white">{language === 'cn' ? '交易数据存储' : 'Trade History Storage'}</h4>
-                                        <div className="font-mono text-sm text-slate-700 dark:text-slate-300">1,240 / {isPro ? '∞' : '5,000'}</div>
+                                        <h4 className="font-bold text-slate-800 dark:text-white">{language === 'cn' ? '交易记录存储' : 'Trade Record Storage'}</h4>
+                                        <div className="font-mono text-sm text-slate-700 dark:text-slate-300">
+                                            {tradeCount.toLocaleString()} / {tradeLimit !== null ? tradeLimit.toLocaleString() : (language === 'cn' ? '无限制' : 'Unlimited')}
+                                        </div>
                                     </div>
+                                    {tradeLimit !== null && (
+                                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden mb-2">
+                                            <div className="h-full bg-indigo-500 rounded-full transition-all" style={{ width: `${tradePercent}%` }}></div>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center">
                                         <p className="text-xs text-slate-500 dark:text-slate-400">
                                             {language === 'cn' ? '云端加密存储，支持多端同步。' : 'Encrypted cloud storage with multi-device sync.'}
@@ -184,39 +226,21 @@ const UserProfileModal: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Bottom Promo Section (Green Box) */}
+                            {/* Bottom Promo Section */}
                             {!isElite && (
                                 <div className="mt-4">
                                     <div className="flex justify-between items-start mb-2">
                                         <p className="text-sm font-bold text-indigo-700 dark:text-indigo-400 max-w-md">
-                                            {language === 'cn' 
-                                             ? '使用 TradePulse 尊享会员，体验更多功能！导师圈子、实盘信号、API 自动导入，容量更大！' 
-                                             : 'Get TradePulse Elite! Access Mentor Group, Live Signals, API Imports, and more!'}
+                                            {language === 'cn'
+                                             ? '升级 TradeGrail 尊享会员，解锁无限记录、无限 AI 次数！'
+                                             : 'Upgrade to TradeGrail Elite for unlimited records and AI usage!'}
                                         </p>
-                                        <button 
+                                        <button
                                             onClick={() => { closeProfile(); openPricing(); }}
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-bold transition-colors whitespace-nowrap ml-4 shadow-sm"
                                         >
                                             {language === 'cn' ? '升级账户' : 'Upgrade Account'}
                                         </button>
-                                    </div>
-                                    
-                                    <div className="mt-4">
-                                        <div className="flex justify-between text-xs text-slate-500 mb-1">
-                                            <span>
-                                                {language === 'cn' ? '本月使用量: ' : 'Monthly Usage: '} 
-                                                <span className="font-mono font-bold text-slate-700 dark:text-slate-300">0 / 20 GB (0%)</span>
-                                            </span>
-                                            <span className="text-slate-400">{language === 'cn' ? '月上传流量将于 12 天后恢复' : 'Resets in 12 days'}</span>
-                                        </div>
-                                        <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
-                                            <div className="h-full bg-slate-300 dark:bg-slate-600 w-px"></div>
-                                        </div>
-                                        <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
-                                            <span>0</span>
-                                            <span>10 GB</span>
-                                            <span>20 GB</span>
-                                        </div>
                                     </div>
                                 </div>
                             )}

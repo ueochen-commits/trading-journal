@@ -11,6 +11,10 @@ export interface UserProfile {
     tier: UserTier;
     avatarUrl?: string;
     exchangeConnections?: ExchangeConnection[];
+    createdAt?: string;         // 注册时间
+    subscriptionEnd?: string;   // 会员到期日
+    aiUsageToday?: number;      // 今日 AI 使用次数
+    tradeCount?: number;        // 交易记录总条数
 }
 
 interface UserContextType {
@@ -114,13 +118,14 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     }, []);
 
     const syncUser = async (supabaseUser: any, forceRefresh = false) => {
-        // 先同步基本信息
+        // 先同步基本信息（包括注册时间）
         setUser(prev => ({
             ...prev,
             id: supabaseUser.id,
             email: supabaseUser.email || prev.email,
             name: supabaseUser.user_metadata?.username || supabaseUser.email?.split('@')[0] || prev.name,
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
+            createdAt: supabaseUser.created_at,
         }));
 
         // 优先读缓存，命中则跳过数据库查询
@@ -128,11 +133,13 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             const cached = getCachedTier(supabaseUser.id);
             if (cached) {
                 setUser(prev => ({ ...prev, tier: cached }));
+                // 后台加载其他数据
+                loadUserStats(supabaseUser.id).catch(() => {});
                 return;
             }
         }
 
-        // 从 subscriptions 表读取真实会员等级
+        // 从 subscriptions 表读取真实会员等级和到期日
         try {
             const { data: subs } = await supabase
                 .from('subscriptions')
@@ -147,17 +154,37 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                 return !periodEnd || periodEnd > new Date();
             });
 
-            let tier: UserTier = 'pro';
+            let tier: UserTier = 'free';
+            let subscriptionEnd: string | undefined;
             if (validSubs.length > 0) {
                 validSubs.sort((a, b) => (tierPriority[b.plan] || 0) - (tierPriority[a.plan] || 0));
                 tier = validSubs[0].plan as UserTier;
+                subscriptionEnd = validSubs[0].current_period_end;
             }
 
             setCachedTier(supabaseUser.id, tier);
-            setUser(prev => ({ ...prev, tier }));
+            setUser(prev => ({ ...prev, tier, subscriptionEnd }));
         } catch {
-            setUser(prev => ({ ...prev, tier: 'pro' }));
+            setUser(prev => ({ ...prev, tier: 'free' }));
         }
+
+        // 后台加载 AI 使用次数和交易记录条数
+        loadUserStats(supabaseUser.id).catch(() => {});
+    };
+
+    const loadUserStats = async (userId: string) => {
+        const today = new Date().toISOString().split('T')[0];
+
+        const [usageResult, tradeResult] = await Promise.all([
+            supabase.from('ai_usage').select('count').eq('user_id', userId).eq('date', today).single(),
+            supabase.from('trading_journals').select('id', { count: 'exact', head: true }).eq('user_id', userId)
+        ]);
+
+        setUser(prev => ({
+            ...prev,
+            aiUsageToday: usageResult.data?.count ?? 0,
+            tradeCount: tradeResult.count ?? 0,
+        }));
     };
 
     const [isPricingOpen, setIsPricingOpen] = useState(false);
