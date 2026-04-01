@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import CryptoJS from 'crypto-js';
 
 // XorPay 配置
 const XORPAY_API_URL = import.meta.env.VITE_XORPAY_API_URL || 'https://api.xorpay.com';
@@ -104,7 +105,7 @@ interface XorPayOrderResponse {
 }
 
 const createXorPayOrder = async (params: XorPayOrderParams): Promise<XorPayOrderResponse> => {
-  // 生成签名（根据 XorPay 文档实现）
+  // 生成签名
   const timestamp = Date.now().toString();
   const sign = generateXorPaySign({
     app_id: XORPAY_APP_ID!,
@@ -142,20 +143,28 @@ const createXorPayOrder = async (params: XorPayOrderParams): Promise<XorPayOrder
 
 /**
  * 生成 XorPay 签名
- * 注意：实际签名算法需要根据 XorPay 官方文档实现
+ * 签名算法：MD5(参数按 key 排序拼接 + &key=APP_SECRET)
  */
 const generateXorPaySign = (params: Record<string, string>): string => {
-  // 1. 按 key 排序
-  const sortedKeys = Object.keys(params).sort();
+  // 1. 过滤空值参数
+  const filteredParams = Object.entries(params)
+    .filter(([_, value]) => value !== '' && value !== null && value !== undefined)
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
-  // 2. 拼接字符串
+  // 2. 按 key 排序
+  const sortedKeys = Object.keys(filteredParams).sort();
+
+  // 3. 拼接字符串：key1=value1&key2=value2&key=APP_SECRET
   const signString = sortedKeys
-    .map(key => `${key}=${params[key]}`)
+    .map(key => `${key}=${filteredParams[key]}`)
     .join('&') + `&key=${XORPAY_APP_SECRET}`;
 
-  // 3. MD5 加密（需要安装 crypto-js 或使用浏览器 crypto API）
-  // 这里简化处理，实际需要根据 XorPay 文档实现
-  return btoa(signString); // 临时实现，需要替换为正确的签名算法
+  console.log('Sign string:', signString); // 调试用，生产环境可删除
+
+  // 4. MD5 加密并转大写
+  const sign = CryptoJS.MD5(signString).toString().toUpperCase();
+
+  return sign;
 };
 
 /**
