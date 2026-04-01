@@ -1,5 +1,27 @@
 export const config = { runtime: 'nodejs' };
-import { checkAndIncrementAiQuota } from '../lib/aiQuota';
+import { createClient } from '@supabase/supabase-js';
+
+async function checkAndIncrementAiQuota(userId: string): Promise<string | null> {
+    const supabase = createClient(process.env.VITE_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+    const today = new Date().toISOString().split('T')[0];
+    const AI_LIMITS: Record<string, number | null> = { free: 5, pro: 100, elite: null };
+
+    const { data: subs } = await supabase.from('subscriptions').select('plan, current_period_end').eq('user_id', userId).eq('status', 'active');
+    const validSubs = (subs || []).filter((s: any) => { const end = s.current_period_end ? new Date(s.current_period_end) : null; return !end || end > new Date(); });
+    const tierPriority: Record<string, number> = { elite: 3, pro: 2, free: 1 };
+    let tier = 'free';
+    if (validSubs.length > 0) { validSubs.sort((a: any, b: any) => (tierPriority[b.plan] || 0) - (tierPriority[a.plan] || 0)); tier = validSubs[0].plan; }
+
+    const limit = AI_LIMITS[tier];
+    if (limit === null) return null;
+
+    await supabase.from('ai_usage').upsert({ user_id: userId, date: today, count: 0 }, { onConflict: 'user_id,date', ignoreDuplicates: true });
+    const { data: current } = await supabase.from('ai_usage').select('count').eq('user_id', userId).eq('date', today).single();
+    const currentCount = current?.count ?? 0;
+    if (currentCount >= limit) return `AI usage limit reached (${limit}/day for ${tier} plan).`;
+    await supabase.from('ai_usage').update({ count: currentCount + 1 }).eq('user_id', userId).eq('date', today);
+    return null;
+}
 
 export default async function handler(req: any, res: any) {
     if (req.method !== 'POST') {
