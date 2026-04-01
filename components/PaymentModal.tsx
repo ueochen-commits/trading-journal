@@ -13,7 +13,7 @@ interface PaymentModalProps {
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, billingCycle, amount }) => {
   const { language } = useLanguage();
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('alipay');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('alipay'); // 默认支付宝
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -137,39 +137,20 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
           <>
             <div className="mb-6">
               <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">
-                {language === 'cn' ? '选择支付方式' : 'Payment Method'}
+                {language === 'cn' ? '支付方式' : 'Payment Method'}
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setPaymentMethod('alipay')}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    paymentMethod === 'alipay'
-                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                  }`}
-                >
+              <div className="flex justify-center">
+                <div className="p-4 rounded-xl border-2 border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 w-48">
                   <div className="text-center">
-                    <div className="text-2xl mb-1">💳</div>
+                    <div className="text-3xl mb-2">💳</div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">
                       {language === 'cn' ? '支付宝' : 'Alipay'}
                     </div>
-                  </div>
-                </button>
-                <button
-                  onClick={() => setPaymentMethod('wechat')}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    paymentMethod === 'wechat'
-                      ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">💚</div>
-                    <div className="text-sm font-bold text-slate-900 dark:text-white">
-                      {language === 'cn' ? '微信支付' : 'WeChat Pay'}
+                    <div className="text-xs text-slate-500 mt-1">
+                      {language === 'cn' ? '唯一支持的支付方式' : 'Only supported method'}
                     </div>
                   </div>
-                </button>
+                </div>
               </div>
             </div>
 
