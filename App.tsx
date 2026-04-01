@@ -158,7 +158,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 
 // Wrapper to use context
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
-  const { isAuthenticated, isLoading, openProfile } = useUser();
+  const { isAuthenticated, isLoading, openProfile, user } = useUser();
   const { t, language } = useLanguage();
   const { startInitialTour } = useTour();
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -317,16 +317,36 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   // 保存交易到 Supabase
   const handleAddTrade = async (trade: Trade) => {
     // 获取当前用户
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) {
       console.error('No user logged in');
       return;
+    }
+
+    // 检查交易记录条数上限
+    const TRADE_LIMITS: Record<string, number | null> = { free: 100, pro: 1000, elite: null };
+    const tradeLimit = TRADE_LIMITS[user.tier];
+    if (tradeLimit !== null && (user.tradeCount ?? 0) >= tradeLimit) {
+      alert(language === 'cn'
+        ? `你的 ${user.tier === 'free' ? '基础' : '专业'} 账户最多可存储 ${tradeLimit} 条交易记录，请升级会员以继续添加。`
+        : `Your ${user.tier} plan allows up to ${tradeLimit} trade records. Please upgrade to add more.`
+      );
+      return;
+    }
+
+    // Free 用户不支持截图上传
+    if (user.tier === 'free' && trade.images && trade.images.length > 0) {
+      alert(language === 'cn'
+        ? '基础账户不支持上传截图，请升级会员后使用此功能。'
+        : 'Screenshot upload is not available on the free plan. Please upgrade to use this feature.'
+      );
+      trade = { ...trade, images: [] };
     }
 
     // 计算 pnl_percent
     const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
 
-    console.log('Saving trade for user:', user.id);
+    console.log('Saving trade for user:', authUser.id);
     console.log('Trade direction:', trade.direction);
 
     // Direction enum 是 '做多'/'做空'，需要转换为 'long'/'short'
@@ -337,11 +357,11 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     // 上传图片（如果有）
     let screenshotUrl = null;
     if (trade.images && trade.images.length > 0) {
-      screenshotUrl = await uploadImage(user.id, trade.images[0]);
+      screenshotUrl = await uploadImage(authUser.id, trade.images[0]);
     }
 
     const { data, error } = await supabase.from('trading_journals').insert({
-      user_id: user.id,
+      user_id: authUser.id,
       date: trade.entryDate,
       exit_date: trade.exitDate || null,
       symbol: trade.symbol,
@@ -377,8 +397,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     // 乐观更新：立刻反映到 UI
     setTrades(prev => prev.map((t: Trade) => t.id === updated.id ? updated : t));
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser) return;
 
     const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
 
@@ -390,9 +410,17 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     // 检查是否有新图片需要上传
     let screenshotUrl = null;
     if (updated.images && updated.images.length > 0) {
-      // 检查是否已经是 URL（新上传的）还是 base64（需要上传的）
       if (updated.images[0].startsWith('data:')) {
-        screenshotUrl = await uploadImage(user.id, updated.images[0]);
+        // Free 用户不支持截图上传
+        if (user.tier === 'free') {
+          alert(language === 'cn'
+            ? '基础账户不支持上传截图，请升级会员后使用此功能。'
+            : 'Screenshot upload is not available on the free plan. Please upgrade to use this feature.'
+          );
+          updated = { ...updated, images: [] };
+        } else {
+          screenshotUrl = await uploadImage(authUser.id, updated.images[0]);
+        }
       } else {
         screenshotUrl = updated.images[0];
       }
