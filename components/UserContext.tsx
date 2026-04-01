@@ -36,6 +36,7 @@ interface UserContextType {
     addExchangeConnection: (connection: ExchangeConnection) => void;
     removeExchangeConnection: (id: string) => void;
     updateExchangeConnectionLastSync: (id: string) => void;
+    refreshUser: () => Promise<void>; // 新增：刷新用户信息
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -58,20 +59,20 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'INITIAL_SESSION') {
-                try {
-                    if (session) {
-                        await syncUser(session.user);
-                        setIsAuthenticated(true);
-                    }
-                } catch (e) {
-                    console.error('Auth init error:', e);
-                } finally {
+                if (session) {
+                    // 立刻设置已登录和加载完成，不等待订阅查询
+                    setIsAuthenticated(true);
+                    clearTimeout(timeout);
+                    setIsLoading(false);
+                    // 在后台查询会员等级（不阻塞页面显示）
+                    syncUser(session.user).catch(e => console.error('Auth init error:', e));
+                } else {
                     clearTimeout(timeout);
                     setIsLoading(false);
                 }
             } else if (session) {
-                await syncUser(session.user);
                 setIsAuthenticated(true);
+                syncUser(session.user).catch(e => console.error('Sync user error:', e));
             } else {
                 setIsAuthenticated(false);
             }
@@ -90,31 +91,27 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
         }));
 
-        // 从 subscriptions 表读取真实会员等级，3 秒内查不到默认给 pro
+        // 从 subscriptions 表读取真实会员等级
+        // 取出所有有效订阅，按等级优先级选最高的
         try {
-            const queryPromise = supabase
+            const { data: subs } = await supabase
                 .from('subscriptions')
                 .select('plan, status, current_period_end')
                 .eq('user_id', supabaseUser.id)
-                .eq('status', 'active')
-                .order('current_period_end', { ascending: false })
-                .limit(1)
-                .maybeSingle();
+                .eq('status', 'active');
 
-            const timeoutPromise = new Promise<{ data: null }>((resolve) =>
-                setTimeout(() => resolve({ data: null }), 3000)
-            );
+            const tierPriority: Record<string, number> = { elite: 3, pro: 2, free: 1 };
 
-            const { data: sub } = await Promise.race([queryPromise, timeoutPromise]);
+            // 过滤未过期的订阅，按等级优先级取最高的
+            const validSubs = (subs || []).filter(s => {
+                const periodEnd = s.current_period_end ? new Date(s.current_period_end) : null;
+                return !periodEnd || periodEnd > new Date();
+            });
 
-            let tier: UserTier = 'pro';
-            if (sub) {
-                const periodEnd = sub.current_period_end ? new Date(sub.current_period_end) : null;
-                if (!periodEnd || periodEnd > new Date()) {
-                    tier = sub.plan as UserTier;
-                } else {
-                    tier = 'free';
-                }
+            let tier: UserTier = 'pro'; // 默认 pro
+            if (validSubs.length > 0) {
+                validSubs.sort((a, b) => (tierPriority[b.plan] || 0) - (tierPriority[a.plan] || 0));
+                tier = validSubs[0].plan as UserTier;
             }
 
             setUser(prev => ({ ...prev, tier }));
@@ -146,6 +143,14 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     const upgradeTier = (tier: UserTier) => {
         setUser(prev => ({ ...prev, tier }));
         closePricing();
+    };
+
+    // 主动刷新用户会员状态（支付成功后调用）
+    const refreshUser = async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+            await syncUser(session.user);
+        }
     };
 
     const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -206,7 +211,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             updateProfile,
             addExchangeConnection,
             removeExchangeConnection,
-            updateExchangeConnectionLastSync
+            updateExchangeConnectionLastSync,
+            refreshUser
         }}>
             {children}
         </UserContext.Provider>

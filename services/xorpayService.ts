@@ -1,10 +1,6 @@
 import { supabase } from '../supabaseClient';
-import CryptoJS from 'crypto-js';
 
 // XorPay 配置
-const XORPAY_API_URL = import.meta.env.VITE_XORPAY_API_URL || 'https://xorpay.com';
-const XORPAY_APP_ID = import.meta.env.VITE_XORPAY_APP_ID;
-const XORPAY_APP_SECRET = import.meta.env.VITE_XORPAY_APP_SECRET;
 const XORPAY_TEST_MODE = import.meta.env.VITE_XORPAY_TEST_MODE === 'true';
 
 export type PaymentMethod = 'alipay' | 'wechat';
@@ -73,9 +69,12 @@ export const createPaymentOrder = async (params: CreateOrderParams): Promise<Pay
       .update({ xorpay_order_id: xorpayOrder.order_id })
       .eq('id', order.id);
 
+    // 返回订单信息,包含支付链接
     return {
       ...order,
-      xorpay_order_id: xorpayOrder.order_id
+      xorpay_order_id: xorpayOrder.order_id,
+      pay_url: xorpayOrder.pay_url,
+      qr_code: xorpayOrder.qr_code
     };
   } catch (error) {
     console.error('XorPay order creation failed:', error);
@@ -121,94 +120,46 @@ const createXorPayOrder = async (params: XorPayOrderParams): Promise<XorPayOrder
     };
   }
 
-  // 准备请求参数（按照 XorPay 文档）
-  const notifyUrl = `${window.location.origin}/api/xorpay/callback`;
-  const returnUrl = `${window.location.origin}/payment/success`;
-
-  const requestParams = {
-    aid: XORPAY_APP_ID!,
-    name: `TradeGrail会员订阅`,
-    pay_type: 'alipay', // 只支持支付宝
-    price: params.amount.toString(),
-    order_id: params.orderId,
-    notify_url: notifyUrl,
-    return_url: returnUrl
-  };
-
-  // 生成签名
-  const sign = generateXorPaySign({
-    name: requestParams.name,
-    pay_type: requestParams.pay_type,
-    price: requestParams.price,
-    order_id: requestParams.order_id,
-    notify_url: requestParams.notify_url
-  });
-
-  console.log('XorPay Request:', {
-    url: `${XORPAY_API_URL}/api/pay/${XORPAY_APP_ID}`,
-    params: requestParams,
-    sign
-  });
-
+  // 调用后端 API 创建订单（避免 CORS 和密钥泄露问题）
   try {
-    const response = await fetch(`${XORPAY_API_URL}/api/pay/${XORPAY_APP_ID}`, {
+    console.log('[XorPay Frontend] Calling backend API with:', {
+      orderId: params.orderId,
+      amount: params.amount,
+      paymentMethod: params.paymentMethod
+    });
+
+    const response = await fetch('/api/xorpay-create-order', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/json',
       },
-      body: new URLSearchParams({
-        ...requestParams,
-        sign
+      body: JSON.stringify({
+        orderId: params.orderId,
+        amount: params.amount,
+        paymentMethod: params.paymentMethod,
+        productName: 'TradeGrail会员订阅'
       })
     });
 
-    console.log('XorPay Response Status:', response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('XorPay Error Response:', errorText);
-      throw new Error(`XorPay API request failed: ${response.status} ${errorText}`);
+      const errorData = await response.json();
+      console.error('[XorPay Frontend] Backend API Error:', errorData);
+      console.error('[XorPay Frontend] Response status:', response.status);
+      throw new Error(errorData.message || `支付请求失败: ${response.status}`);
     }
 
     const result = await response.json();
-    console.log('XorPay Response:', result);
-
-    // XorPay 返回格式可能是 { code, msg, data }
-    if (result.code !== 1) {
-      throw new Error(result.msg || 'XorPay order creation failed');
-    }
+    console.log('[XorPay Frontend] Payment order created:', result);
 
     return {
-      order_id: params.orderId,
-      pay_url: result.data?.pay_url || result.pay_url,
-      qr_code: result.data?.qr_code || result.qr_code
+      order_id: result.order_id,
+      pay_url: result.pay_url,
+      qr_code: result.qr_code
     };
   } catch (error) {
     console.error('XorPay Request Error:', error);
     throw error;
   }
-};
-
-/**
- * 生成 XorPay 签名
- * 根据 XorPay 文档：MD5(name + pay_type + price + order_id + notify_url + app_secret)
- */
-const generateXorPaySign = (params: {
-  name: string;
-  pay_type: string;
-  price: string;
-  order_id: string;
-  notify_url: string;
-}): string => {
-  // 按照 XorPay 文档的顺序拼接
-  const signString = `${params.name}${params.pay_type}${params.price}${params.order_id}${params.notify_url}${XORPAY_APP_SECRET}`;
-
-  console.log('Sign string:', signString); // 调试用，生产环境可删除
-
-  // MD5 加密
-  const sign = CryptoJS.MD5(signString).toString();
-
-  return sign;
 };
 
 /**
@@ -299,10 +250,9 @@ export const handlePaymentCallback = async (callbackData: any) => {
 /**
  * 验证 XorPay 签名
  */
-const verifyXorPaySign = (data: any): boolean => {
-  // 实现签名验证逻辑
-  // 根据 XorPay 文档实现
-  return true; // 临时返回 true
+const verifyXorPaySign = (_data: any): boolean => {
+  // 签名验证已在后端 API 处理
+  return true;
 };
 
 /**

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { createPaymentOrder, queryOrderStatus, PaymentMethod, PlanType, BillingCycle } from '../services/xorpayService';
 import { useLanguage } from '../LanguageContext';
+import { useUser } from './UserContext';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface PaymentModalProps {
 
 const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, billingCycle, amount }) => {
   const { language } = useLanguage();
+  const { refreshUser, closePricing } = useUser();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('alipay'); // 默认支付宝
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
@@ -37,15 +39,20 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
         currency: 'CNY'
       });
 
+      console.log('Payment order created:', order);
+
       setOrderId(order.id);
+
+      // 设置支付 URL 和二维码
+      const payUrl = order.pay_url || order.qr_code;
+      console.log('Setting payment URL:', payUrl);
+      console.log('QR Code URL:', payUrl);
+
+      setPaymentUrl(payUrl || null);
+      setQrCode(payUrl || null);
       setPaymentStatus('pending');
 
-      // 这里需要根据 XorPay 返回的数据处理
-      // 如果是支付宝，可能返回支付 URL
-      // 如果是微信，可能返回二维码
-
-      // 临时处理：打开支付页面
-      // 实际需要根据 XorPay API 返回的数据处理
+      console.log('Payment status set to pending, qrCode:', payUrl);
 
       // 开始轮询订单状态
       startPollingOrderStatus(order.id);
@@ -67,9 +74,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
         if (order.payment_status === 'paid') {
           setPaymentStatus('success');
           clearInterval(interval);
+          // 立刻刷新用户会员状态,不依赖页面刷新
+          await refreshUser();
           setTimeout(() => {
             onClose();
-            window.location.reload(); // 刷新页面以更新会员状态
+            closePricing();
           }, 2000);
         } else if (order.payment_status === 'failed') {
           setPaymentStatus('failed');
@@ -182,14 +191,50 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
 
         {/* Payment Pending */}
         {paymentStatus === 'pending' && (
-          <div className="text-center py-8">
-            <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
-            <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">
-              {language === 'cn' ? '等待支付...' : 'Waiting for payment...'}
-            </p>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {language === 'cn' ? '请在新窗口完成支付' : 'Please complete payment in the new window'}
-            </p>
+          <div className="text-center py-6">
+            {qrCode ? (
+              <>
+                <p className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+                  {language === 'cn' ? '请扫码支付' : 'Scan to Pay'}
+                </p>
+
+                {/* QR Code */}
+                <div className="bg-white p-4 rounded-xl inline-block mb-4">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCode)}`}
+                    alt="Payment QR Code"
+                    className="w-48 h-48"
+                  />
+                </div>
+
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  {language === 'cn' ? '使用支付宝扫描二维码完成支付' : 'Scan with Alipay to complete payment'}
+                </p>
+
+                {/* 或者直接跳转 */}
+                <button
+                  onClick={() => window.open(qrCode, '_blank')}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                >
+                  {language === 'cn' ? '或点击此处在新窗口打开' : 'Or click here to open in new window'}
+                </button>
+
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {language === 'cn' ? '等待支付确认...' : 'Waiting for payment confirmation...'}
+                </div>
+              </>
+            ) : (
+              <>
+                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
+                <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">
+                  {language === 'cn' ? '正在生成支付二维码...' : 'Generating payment QR code...'}
+                </p>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  {language === 'cn' ? '请稍候' : 'Please wait'}
+                </p>
+              </>
+            )}
           </div>
         )}
 
