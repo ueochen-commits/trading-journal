@@ -214,7 +214,13 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [aiTips, setAiTips] = useState<string[]>([]);
   const [loadingTips, setLoadingTips] = useState(false);
   const { getMarketStatus } = useMarketHours();
-  const [selectedMarketIds, setSelectedMarketIds] = useState<string[]>(['tokyo', 'london', 'newyork']);
+  const [selectedMarketIds, setSelectedMarketIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('selectedMarketIds');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return ['tokyo', 'london', 'newyork'];
+  });
   const [isMarketConfigOpen, setIsMarketConfigOpen] = useState(false);
   const [friends, setFriends] = useState<Friend[]>(MOCK_FRIENDS);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
@@ -514,7 +520,11 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const goalRadialData = [{ name: 'Progress', value: goalProgress.percent, fill: '#ec4899' }, { name: 'Remaining', value: 100 - goalProgress.percent, fill: '#1e293b00' }];
 
-  const toggleMarket = (marketId: string) => setSelectedMarketIds(prev => prev.includes(marketId) ? (prev.length <= 2 ? prev : prev.filter(id => id !== marketId)) : (prev.length >= 4 ? prev : [...prev, marketId]));
+  const toggleMarket = (marketId: string) => setSelectedMarketIds(prev => {
+    const next = prev.includes(marketId) ? (prev.length <= 2 ? prev : prev.filter(id => id !== marketId)) : (prev.length >= 4 ? prev : [...prev, marketId]);
+    try { localStorage.setItem('selectedMarketIds', JSON.stringify(next)); } catch {}
+    return next;
+  });
 
   const handlePresetSelect = (preset: string) => {
       setActiveDatePreset(preset);
