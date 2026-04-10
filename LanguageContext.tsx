@@ -249,8 +249,8 @@ const en = {
       consecutiveLossAck: "I Acknowledge",
       preTrade: {
           title: "Pre-Trade Checklist",
-          subtitle: "Clear your mind before entering.",
-          addItem: "Add item...",
+          subtitle: "Check your personal trading conditions before entering — mindset, environment, session timing, and system rules.",
+          addItem: "Add a condition (e.g. mindset is calm, in valid session...)",
           moodTitle: "Current Mood",
           moodWarning: "Trading while emotional is risky.",
           progress: "Progress",
@@ -1123,8 +1123,8 @@ const cn = {
       preTrade: {
           ...en.journal.preTrade,
           title: "交易前检查清单",
-          subtitle: "入场前保持清醒。",
-          addItem: "添加项目...",
+          subtitle: "入场前确认你的主观交易条件——心态、环境、时段和系统规则，而非交易品种代码。",
+          addItem: "添加检查条件（例如：心态平稳、处于有效交易时段...）",
           moodTitle: "当前情绪",
           moodWarning: "情绪化交易风险极高。",
           progress: "进度",
