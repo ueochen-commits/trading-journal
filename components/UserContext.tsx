@@ -45,25 +45,26 @@ interface UserContextType {
 
 const TIER_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-const getCachedTier = (userId: string): UserTier | null => {
+const getCachedTier = (userId: string): { tier: UserTier; subscriptionEnd?: string } | null => {
     try {
         const raw = localStorage.getItem(`tier_cache_${userId}`);
         if (!raw) return null;
-        const { tier, expiresAt } = JSON.parse(raw);
+        const { tier, subscriptionEnd, expiresAt } = JSON.parse(raw);
         if (Date.now() > expiresAt) {
             localStorage.removeItem(`tier_cache_${userId}`);
             return null;
         }
-        return tier as UserTier;
+        return { tier: tier as UserTier, subscriptionEnd };
     } catch {
         return null;
     }
 };
 
-const setCachedTier = (userId: string, tier: UserTier) => {
+const setCachedTier = (userId: string, tier: UserTier, subscriptionEnd?: string) => {
     try {
         localStorage.setItem(`tier_cache_${userId}`, JSON.stringify({
             tier,
+            subscriptionEnd,
             expiresAt: Date.now() + TIER_CACHE_TTL
         }));
     } catch {}
@@ -132,7 +133,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         if (!forceRefresh) {
             const cached = getCachedTier(supabaseUser.id);
             if (cached) {
-                setUser(prev => ({ ...prev, tier: cached }));
+                setUser(prev => ({ ...prev, tier: cached.tier, subscriptionEnd: cached.subscriptionEnd }));
                 // 后台加载其他数据
                 loadUserStats(supabaseUser.id).catch(() => {});
                 return;
@@ -162,7 +163,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                 subscriptionEnd = validSubs[0].current_period_end;
             }
 
-            setCachedTier(supabaseUser.id, tier);
+            setCachedTier(supabaseUser.id, tier, subscriptionEnd);
             setUser(prev => ({ ...prev, tier, subscriptionEnd }));
         } catch {
             setUser(prev => ({ ...prev, tier: 'free' }));
