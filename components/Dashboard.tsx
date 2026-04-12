@@ -188,61 +188,67 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
     );
 };
 
-const DIMENSION_COLORS = ['#6366f1','#8b5cf6','#ec4899','#f59e0b','#10b981','#06b6d4'];
-
-const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number; display: string }[]; language: string }> = ({ composite, radarData }) => {
+const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData }) => {
+  const clampedScore = Math.min(100, Math.max(0, composite));
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-      {/* Header */}
-      <div className="flex items-center justify-between px-5 pt-4 pb-3">
-        <span className="text-sm font-bold text-slate-800 dark:text-slate-100">Grail Score</span>
-        <div className="w-5 h-5 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-          <span className="text-[10px] font-bold text-slate-400 leading-none select-none">i</span>
+      {/* Title row */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <span className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight">Grail Score</span>
+        <div className="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">i</span>
         </div>
       </div>
-      <div className="h-px bg-slate-100 dark:bg-slate-800" />
+      <div className="h-px bg-slate-100 dark:bg-slate-800 mx-5" />
 
-      {/* Body: radar left + list right */}
-      <div className="flex gap-0 p-4">
+      {/* Radar chart */}
+      <div className="px-4 pt-2 pb-1" style={{ height: 240 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={radarData} margin={{ top: 18, right: 30, bottom: 18, left: 30 }}>
+            <PolarGrid stroke="#e8eaf0" strokeDasharray="0" className="dark:stroke-slate-700/50" />
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={{ fontSize: 9.5, fill: '#94a3b8', fontWeight: 600 }}
+              tickLine={false}
+            />
+            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar
+              dataKey="value"
+              stroke="#6d28d9"
+              fill="rgba(167,139,250,0.18)"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: '#6d28d9', strokeWidth: 0 }}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
 
-        {/* Radar with score in center */}
-        <div className="relative shrink-0" style={{ width: 190, height: 200 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} margin={{ top: 22, right: 28, bottom: 22, left: 28 }}>
-              <PolarGrid stroke="#e2e8f0" strokeDasharray="0" className="dark:stroke-slate-700/40" />
-              <PolarAngleAxis
-                dataKey="subject"
-                tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }}
-                tickLine={false}
-              />
-              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar
-                dataKey="value"
-                stroke="#6366f1"
-                fill="rgba(99,102,241,0.12)"
-                strokeWidth={1.5}
-                dot={{ r: 2.5, fill: '#6366f1', strokeWidth: 0 }}
-              />
-            </RadarChart>
-          </ResponsiveContainer>
-          {/* Score overlay in center */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-2xl font-black tabular-nums text-slate-900 dark:text-white leading-none">{composite.toFixed(0)}</span>
-            <span className="text-[9px] text-slate-400 font-semibold mt-0.5 uppercase tracking-wide">/ 100</span>
+      {/* Score + gradient bar */}
+      <div className="px-5 pb-5">
+        <div className="flex items-end justify-between mb-2">
+          <div>
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Your Grail Score</p>
+            <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white leading-none">{clampedScore.toFixed(2)}</span>
           </div>
         </div>
 
-        {/* Dimension list */}
-        <div className="flex-1 flex flex-col justify-center gap-2.5 pl-2 min-w-0">
-          {radarData.map((d, i) => (
-            <div key={d.subject} className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: DIMENSION_COLORS[i] }} />
-              <span className="text-xs text-slate-500 dark:text-slate-400 flex-1 truncate">{d.subject}</span>
-              <span className="text-xs font-bold tabular-nums text-slate-800 dark:text-slate-100 shrink-0">{d.display}</span>
-            </div>
-          ))}
+        {/* Gradient bar */}
+        <div className="relative mt-3">
+          <div className="h-2.5 w-full rounded-full overflow-hidden" style={{
+            background: 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #06b6d4)'
+          }} />
+          {/* Indicator dot */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-700 shadow-md transition-all duration-700"
+            style={{ left: `calc(${clampedScore}% - 8px)` }}
+          />
+          {/* Tick labels */}
+          <div className="flex justify-between mt-1.5">
+            {[0, 20, 40, 60, 80, 100].map(n => (
+              <span key={n} className="text-[9px] text-slate-400 font-medium tabular-nums">{n}</span>
+            ))}
+          </div>
         </div>
-
       </div>
     </div>
   );
@@ -494,12 +500,12 @@ const Dashboard: React.FC<DashboardProps> = ({
     return {
       composite: Math.round(composite * 100) / 100,
       radarData: [
-        { subject: 'Win %',          value: Math.round(d1), fullMark: 100, display: `${winRate.toFixed(1)}%` },
-        { subject: 'Profit Factor',  value: Math.round(d2), fullMark: 100, display: profitFactor.toFixed(2) },
-        { subject: 'Avg Win/Loss',   value: Math.round(d3), fullMark: 100, display: `${rr.toFixed(2)}R` },
-        { subject: 'Recovery',       value: Math.round(d4), fullMark: 100, display: `${Math.round(d4)}` },
-        { subject: 'Max DD',         value: Math.round(d5), fullMark: 100, display: `${maxDD.toFixed(1)}%` },
-        { subject: 'Consistency',    value: Math.round(d6), fullMark: 100, display: `${Math.round(d6)}` },
+        { subject: 'Win %', value: Math.round(d1), fullMark: 100 },
+        { subject: 'Profit factor', value: Math.round(d2), fullMark: 100 },
+        { subject: 'Avg win/loss', value: Math.round(d3), fullMark: 100 },
+        { subject: 'Recovery factor', value: Math.round(d4), fullMark: 100 },
+        { subject: 'Max drawdown', value: Math.round(d5), fullMark: 100 },
+        { subject: 'Consistency', value: Math.round(d6), fullMark: 100 },
       ],
     };
   }, [trades, stats]);
