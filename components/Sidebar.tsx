@@ -396,26 +396,14 @@ const Sidebar = ({
         justifyContent: isCollapsed ? 'center' : 'flex-start',
         gap: 10,
       }}>
-        {/* Logo icon */}
-        <div style={{
-          width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-          background: 'linear-gradient(135deg, #4B5EE8, #8B5CF6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <svg viewBox="0 0 44 44" fill="none" width="18" height="18">
-            <path d="M4 38H12V24L4 29V38Z" fill="rgba(255,255,255,0.45)" />
-            <path d="M16 38H24V14L16 19V38Z" fill="white" />
-            <path d="M28 38H36V4L28 9V38Z" fill="white" />
-          </svg>
-        </div>
-        {/* Brand name */}
+        {/* Brand name only — no icon (icon lives in the left icon bar) */}
         {!isCollapsed && (
           <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 0.3 }}>TRADE</span>
             <span style={{ fontSize: 14, fontWeight: 700, color: '#7C6FF7', letterSpacing: 0.3 }}>GRAIL</span>
           </div>
         )}
-        {/* Collapse arrow (inside logo row, right side) */}
+        {/* Collapse arrow */}
         {!isCollapsed && (
           <button
             onClick={toggleCollapse}
