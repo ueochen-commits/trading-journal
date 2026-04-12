@@ -348,23 +348,25 @@ const Sidebar = ({
             );
           })}
         </div>
-      {/* Collapse toggle — bottom of icon bar, always visible */}
-        <button
-          onClick={toggleCollapse}
-          title={isCollapsed ? 'Expand' : 'Collapse'}
-          style={{
-            width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(255,255,255,0.06)',
-            color: 'rgba(255,255,255,0.45)',
-            marginBottom: 16, flexShrink: 0,
-            transition: 'background 0.15s',
-          }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
-        >
-          {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
-        </button>
+      {/* Expand button — only shown when sidebar is collapsed */}
+        {isCollapsed && (
+          <button
+            onClick={toggleCollapse}
+            title="Expand"
+            style={{
+              width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.06)',
+              color: 'rgba(255,255,255,0.45)',
+              marginBottom: 16, flexShrink: 0,
+              transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+          >
+            <Icons.ChevronRight />
+          </button>
+        )}
       </div>
 
       {/* ── Main sidebar ── */}
@@ -392,13 +394,29 @@ const Sidebar = ({
         justifyContent: isCollapsed ? 'center' : 'flex-start',
         gap: 10,
       }}>
-        {/* Brand logo image */}
+        {/* Brand logo image + collapse button */}
         {!isCollapsed && (
-          <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
-            <img src="/tradegrail-logo.png" alt="TradeGrail" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
-          </div>
+          <>
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+              <img src="/tradegrail-logo.png" alt="TradeGrail" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
+            </div>
+            <button
+              onClick={toggleCollapse}
+              title="Collapse"
+              style={{
+                width: 26, height: 26, borderRadius: 6, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'rgba(255,255,255,0.07)',
+                color: 'rgba(255,255,255,0.45)',
+                flexShrink: 0, transition: 'background 0.15s',
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
+            >
+              <Icons.ChevronLeft />
+            </button>
+          </>
         )}
-        {/* Collapse arrow removed — handled by icon bar */}
       </div>
 
       {/* Add Trade button */}
