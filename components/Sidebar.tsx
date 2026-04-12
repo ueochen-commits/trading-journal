@@ -311,7 +311,7 @@ const Sidebar = ({
         <img
           src="/lion-logo.png"
           alt="TradeGrail"
-          style={{ width: 36, height: 36, objectFit: 'contain', marginTop: 15, marginBottom: 20 }}
+          style={{ width: 48, height: 48, objectFit: 'contain', marginTop: 12, marginBottom: 16 }}
         />
 
         {/* Nav items */}
