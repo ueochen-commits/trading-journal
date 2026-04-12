@@ -189,51 +189,47 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
 };
 
 const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData, language }) => {
-  const ringColor = composite >= 70 ? '#10b981' : composite >= 40 ? '#f59e0b' : '#f43f5e';
+  const scoreColor = composite >= 70 ? '#10b981' : composite >= 40 ? '#f59e0b' : '#f43f5e';
+  const scoreLabel = composite >= 70 ? (language === 'cn' ? '优秀' : 'Excellent') : composite >= 40 ? (language === 'cn' ? '良好' : 'Good') : (language === 'cn' ? '待提升' : 'Needs Work');
   return (
-    <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-      <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-        <Hexagon className="w-4 h-4 text-violet-500" />
-        TradeGrail {language === 'cn' ? '分数' : 'Score'}
-      </h3>
-      <div className="flex items-center gap-4 mb-4">
-        <div className="relative flex items-center justify-center w-20 h-20 shrink-0">
-          <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 80 80">
-            <circle cx="40" cy="40" r="34" fill="none" stroke="#e2e8f0" strokeWidth="6" className="dark:stroke-slate-700" />
-            <circle cx="40" cy="40" r="34" fill="none" stroke={ringColor} strokeWidth="6"
-              strokeDasharray={`${2 * Math.PI * 34}`}
-              strokeDashoffset={`${2 * Math.PI * 34 * (1 - composite / 100)}`}
-              strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.8s ease' }} />
-          </svg>
-          <span className="text-xl font-black tabular-nums" style={{ color: ringColor }}>{composite}</span>
+    <div className="bg-slate-900 dark:bg-slate-950 p-5 rounded-2xl border border-slate-700/50 shadow-xl relative overflow-hidden">
+      {/* subtle glow */}
+      <div className="absolute inset-0 bg-gradient-to-br from-violet-900/20 via-transparent to-transparent pointer-events-none" />
+      <div className="relative z-10">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Hexagon className="w-3.5 h-3.5 text-violet-400" />
+            TradeGrail Score
+          </h3>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border" style={{ color: scoreColor, borderColor: scoreColor + '55', backgroundColor: scoreColor + '18' }}>{scoreLabel}</span>
         </div>
-        <div className="flex-1">
-          <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">{language === 'cn' ? '综合评分' : 'Composite Score'}</p>
-          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: ringColor }}>
-            {composite >= 70 ? (language === 'cn' ? '优秀' : 'Excellent') : composite >= 40 ? (language === 'cn' ? '良好' : 'Good') : (language === 'cn' ? '待提升' : 'Needs Work')}
-          </p>
-          <div className="mt-2 space-y-1">
-            {radarData.map(d => (
-              <div key={d.subject} className="flex items-center gap-2">
-                <span className="text-[10px] text-slate-400 w-12 shrink-0">{d.subject}</span>
-                <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full bg-violet-500 transition-all duration-700" style={{ width: `${d.value}%` }} />
-                </div>
-                <span className="text-[10px] font-mono text-slate-500 w-6 text-right">{d.value}</span>
-              </div>
-            ))}
+
+        {/* Radar chart with score overlaid in center */}
+        <div className="relative flex items-center justify-center" style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData} margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
+              <PolarGrid stroke="rgba(148,163,184,0.15)" />
+              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
+              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+              <Radar dataKey="value" stroke="#8b5cf6" fill="rgba(139,92,246,0.18)" strokeWidth={2} dot={{ r: 3, fill: '#8b5cf6', strokeWidth: 0 }} />
+            </RadarChart>
+          </ResponsiveContainer>
+          {/* Score in center */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-4xl font-black tabular-nums leading-none" style={{ color: scoreColor }}>{composite}</span>
+            <span className="text-[10px] text-slate-500 mt-1 font-semibold uppercase tracking-wider">{language === 'cn' ? '综合评分' : '/100'}</span>
           </div>
         </div>
-      </div>
-      <div className="h-44">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={radarData} margin={{ top: 4, right: 16, bottom: 4, left: 16 }}>
-            <PolarGrid stroke="#e2e8f0" className="dark:stroke-slate-700" />
-            <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#94a3b8' }} />
-            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-            <Radar dataKey="value" stroke="#7c3aed" fill="rgba(139,92,246,0.25)" strokeWidth={1.5} />
-          </RadarChart>
-        </ResponsiveContainer>
+
+        {/* Dimension row */}
+        <div className="grid grid-cols-5 gap-1 mt-2 border-t border-slate-700/50 pt-3">
+          {radarData.map(d => (
+            <div key={d.subject} className="flex flex-col items-center gap-1">
+              <span className="text-sm font-black tabular-nums text-white">{d.value}</span>
+              <span className="text-[9px] text-slate-500 font-semibold text-center leading-tight">{d.subject}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
