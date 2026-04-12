@@ -12,56 +12,160 @@ import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES, MOCK_ACCOUNTS } from '../constants';
 import MentorWidget from './MentorWidget';
 
-interface StatCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  color: string;
-  trend?: 'up' | 'down' | 'neutral';
-  sparkData?: number[];
-  subLabel?: string;
-}
+// ── TradeZella-style stat cards ──────────────────────────────────────────────
 
-const MiniSparkline: React.FC<{ data: number[]; positive: boolean }> = ({ data, positive }) => {
-  if (!data || data.length < 2) return null;
-  const min = Math.min(...data);
-  const max = Math.max(...data);
-  const range = max - min || 1;
-  const w = 64, h = 28;
-  const pts = data.map((v, i) => {
-    const x = (i / (data.length - 1)) * w;
-    const y = h - ((v - min) / range) * h;
-    return `${x},${y}`;
-  }).join(' ');
-  const color = positive ? '#10b981' : '#f43f5e';
+const TZInfoIcon = () => (
+  <div style={{ width: 16, height: 16, borderRadius: '50%', background: '#f2f2f8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+    <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4.5" stroke="#9396aa" strokeWidth="1"/><path d="M5 4.5v3M5 3h.01" stroke="#9396aa" strokeWidth="1.2" strokeLinecap="round"/></svg>
+  </div>
+);
+
+// Half-circle gauge SVG — arc length ~69px for full semicircle
+const HalfGauge: React.FC<{ pct: number; color?: string; pct2?: number; color2?: string }> = ({ pct, color = '#00c896', pct2, color2 }) => {
+  const total = 69;
+  const fill1 = Math.round(Math.min(pct, 100) / 100 * total);
+  const fill2 = pct2 != null ? Math.round(Math.min(pct2, 100) / 100 * total) : 0;
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
-      <polyline points={pts} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.8" />
+    <svg width="72" height="42" viewBox="0 0 72 42" style={{ flexShrink: 0 }}>
+      {/* bg */}
+      <path d="M6 38 A 30 30 0 0 1 66 38" fill="none" stroke="#f0f0f6" strokeWidth="6" strokeLinecap="round"/>
+      {/* value arc */}
+      {fill1 > 0 && <path d="M6 38 A 30 30 0 0 1 66 38" fill="none" stroke={color} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${fill1} ${total}`}/>}
+      {/* second arc (loss) stacked from right */}
+      {pct2 != null && fill2 > 0 && (
+        <path d="M6 38 A 30 30 0 0 1 66 38" fill="none" stroke={color2 || '#ff4d6a'} strokeWidth="6" strokeLinecap="round"
+          strokeDasharray={`${fill2} ${total}`} strokeDashoffset={-(total - fill2)} />
+      )}
     </svg>
   );
 };
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, trend, sparkData, subLabel }) => {
-  const isPositive = trend === 'up' || (typeof value === 'string' && value.startsWith('$') && !value.startsWith('$-')) || trend !== 'down';
-  const valueColor = trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-rose-500' : 'text-slate-900 dark:text-white';
+const cardStyle: React.CSSProperties = {
+  background: '#ffffff', border: '1px solid #ebebf2', borderRadius: 12,
+  padding: '12px 14px', minHeight: 90, position: 'relative',
+};
+const labelStyle: React.CSSProperties = { fontSize: 11.5, color: '#9396aa', fontWeight: 500 };
+const valStyle = (color: string): React.CSSProperties => ({
+  fontSize: 20, fontWeight: 700, letterSpacing: -0.5, color, lineHeight: 1.2, fontVariantNumeric: 'tabular-nums',
+});
+
+// 1. Net P&L
+const TZNetPnlCard: React.FC<{ value: number; total: number; label: string }> = ({ value, total, label }) => {
+  const pos = value >= 0;
+  const color = pos ? '#00c896' : '#ff4d6a';
+  const pct = total > 0 ? Math.min(100, Math.abs(value) / (Math.abs(value) + 1) * 100) : 0;
   return (
-    <div className="bg-white dark:bg-slate-900 px-5 py-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 ${color}`}>
-            <Icon className="w-4 h-4" />
-          </div>
-          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{title}</p>
-        </div>
-        {sparkData && <MiniSparkline data={sparkData} positive={trend !== 'down'} />}
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+        <span style={labelStyle}>{label}</span>
+        <TZInfoIcon />
+        <span style={{ fontSize: 10, background: '#eef0ff', color: '#6366f1', padding: '1px 6px', borderRadius: 8, fontWeight: 700 }}>{total}</span>
       </div>
-      <div className="flex items-end justify-between">
-        <h3 className={`text-2xl font-bold tracking-tight tabular-nums ${valueColor}`}>{value}</h3>
-        {subLabel && <span className="text-[11px] text-slate-400 mb-0.5">{subLabel}</span>}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div>
+          <div style={valStyle(color)}>{pos ? '+' : ''}${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+          <div style={{ fontSize: 10.5, color: '#9396aa', marginTop: 4 }}>{label}</div>
+        </div>
+        <HalfGauge pct={pct} color={color} />
       </div>
     </div>
   );
 };
+
+// 2. Trade Win %
+const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; breakEven: number; label: string }> = ({ winRate, wins, losses, breakEven, label }) => {
+  const lossPct = (losses / Math.max(wins + losses + breakEven, 1)) * 100;
+  return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+        <span style={labelStyle}>{label}</span>
+        <TZInfoIcon />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div>
+          <div style={valStyle('#1a1d2e')}>{winRate.toFixed(2)}%</div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+            <span style={{ color: '#00c896', fontSize: 11, fontWeight: 700 }}>● {wins}</span>
+            <span style={{ color: '#6366f1', fontSize: 11, fontWeight: 700 }}>● {breakEven}</span>
+            <span style={{ color: '#ff4d6a', fontSize: 11, fontWeight: 700 }}>● {losses}</span>
+          </div>
+        </div>
+        <HalfGauge pct={winRate} color="#00c896" pct2={lossPct} color2="#ff4d6a" />
+      </div>
+    </div>
+  );
+};
+
+// 3. Profit Factor
+const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
+  const pct = Math.min(100, (value / 4) * 100);
+  const color = value >= 1.5 ? '#00c896' : value >= 1 ? '#f59e0b' : '#ff4d6a';
+  return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+        <span style={labelStyle}>{label}</span>
+        <TZInfoIcon />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div>
+          <div style={valStyle('#1a1d2e')}>{value.toFixed(2)}</div>
+          <div style={{ fontSize: 10.5, color: '#9396aa', marginTop: 4 }}>综合盈亏比</div>
+        </div>
+        <HalfGauge pct={pct} color={color} />
+      </div>
+    </div>
+  );
+};
+
+// 4. Day Win %
+const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: number; breakEvenDays: number; label: string }> = ({ dayWinRate, winDays, lossDays, breakEvenDays, label }) => {
+  const total = winDays + lossDays + breakEvenDays;
+  const lossPct = total > 0 ? (lossDays / total) * 100 : 0;
+  return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+        <span style={labelStyle}>{label}</span>
+        <TZInfoIcon />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+        <div>
+          <div style={valStyle('#1a1d2e')}>{dayWinRate.toFixed(2)}%</div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
+            <span style={{ color: '#00c896', fontSize: 11, fontWeight: 700 }}>● {winDays}</span>
+            <span style={{ color: '#6366f1', fontSize: 11, fontWeight: 700 }}>● {breakEvenDays}</span>
+            <span style={{ color: '#ff4d6a', fontSize: 11, fontWeight: 700 }}>● {lossDays}</span>
+          </div>
+        </div>
+        <HalfGauge pct={dayWinRate} color="#00c896" pct2={lossPct} color2="#ff4d6a" />
+      </div>
+    </div>
+  );
+};
+
+// 5. Avg Win/Loss — horizontal bar, no gauge
+const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: number; label: string }> = ({ ratio, avgWin, avgLoss, label }) => {
+  const winPct = avgWin > 0 && Math.abs(avgLoss) > 0 ? (avgWin / (avgWin + Math.abs(avgLoss))) * 100 : 50;
+  const color = ratio >= 1 ? '#00c896' : '#ff4d6a';
+  return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 8 }}>
+        <span style={labelStyle}>{label}</span>
+        <TZInfoIcon />
+      </div>
+      <div style={valStyle('#1a1d2e')}>{ratio.toFixed(2)}</div>
+      <div style={{ marginTop: 10 }}>
+        <div style={{ height: 7, borderRadius: 4, overflow: 'hidden', background: '#ff4d6a', position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: `${winPct}%`, background: '#00c896', borderRadius: 4 }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          <span style={{ fontSize: 10.5, color: '#00c896', fontWeight: 700 }}>${avgWin.toFixed(0)}</span>
+          <span style={{ fontSize: 10.5, color: '#ff4d6a', fontWeight: 700 }}>${Math.abs(avgLoss).toFixed(0)}</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
 const MARKET_OPTIONS = [
     { id: 'sydney', labelKey: 'sydney', zone: 'Australia/Sydney', start: [10, 0], end: [16, 0], color: 'amber', icon: Sunrise },
@@ -453,7 +557,23 @@ const Dashboard: React.FC<DashboardProps> = ({
     let cum = 0;
     const pnlSpark = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
     const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => t.pnl > 0).length / slice.length * 100; });
-    return { totalTrades, winRate, netPnl, profitFactor, todayPnl, pnlSpark, wrSpark };
+    const winTrades = trades.filter(t => t.pnl > 0);
+    const lossTrades = trades.filter(t => t.pnl < 0);
+    const breakEvenTrades = trades.filter(t => t.pnl === 0);
+    const avgWin = winTrades.length > 0 ? winTrades.reduce((a, t) => a + t.pnl, 0) / winTrades.length : 0;
+    const avgLoss = lossTrades.length > 0 ? lossTrades.reduce((a, t) => a + t.pnl, 0) / lossTrades.length : 0;
+    const avgWinLossRatio = avgWin > 0 && Math.abs(avgLoss) > 0 ? avgWin / Math.abs(avgLoss) : 0;
+    // Day stats
+    const dayMap: Record<string, number> = {};
+    trades.forEach(t => { const d = new Date(t.entryDate).toDateString(); dayMap[d] = (dayMap[d] || 0) + (t.pnl - t.fees); });
+    const dayVals = Object.values(dayMap);
+    const winDays = dayVals.filter(v => v > 0).length;
+    const lossDays = dayVals.filter(v => v < 0).length;
+    const breakEvenDays = dayVals.filter(v => v === 0).length;
+    const dayWinRate = dayVals.length > 0 ? (winDays / dayVals.length) * 100 : 0;
+    return { totalTrades, winRate, netPnl, profitFactor, todayPnl, pnlSpark, wrSpark,
+      winCount: winTrades.length, lossCount: lossTrades.length, breakEvenCount: breakEvenTrades.length,
+      avgWin, avgLoss, avgWinLossRatio, winDays, lossDays, breakEvenDays, dayWinRate };
   }, [trades]);
 
   const grailScore = useMemo(() => {
@@ -777,11 +897,11 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div id="dashboard-stats" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                <StatCard title={t.dashboard.netPnl} value={`$${stats.netPnl.toFixed(2)}`} icon={stats.netPnl >= 0 ? TrendingUp : TrendingDown} color={stats.netPnl >= 0 ? "text-emerald-500" : "text-rose-500"} trend={stats.netPnl >= 0 ? 'up' : 'down'} sparkData={stats.pnlSpark} />
-                <StatCard title={t.dashboard.winRate} value={`${stats.winRate.toFixed(1)}%`} icon={Target} color="text-blue-500" trend={stats.winRate >= 50 ? 'up' : 'down'} sparkData={stats.wrSpark} />
-                <StatCard title={t.dashboard.profitFactor} value={stats.profitFactor.toFixed(2)} icon={Activity} color="text-violet-500" trend={stats.profitFactor >= 1.5 ? 'up' : 'neutral'} />
-                <StatCard title={t.dashboard.todayPnl} value={`$${stats.todayPnl.toFixed(2)}`} icon={ShieldCheck} color={stats.todayPnl >= 0 ? "text-emerald-500" : "text-rose-500"} trend={stats.todayPnl >= 0 ? 'up' : 'down'} />
-                <StatCard title={language === 'cn' ? '总交易数' : 'Total Trades'} value={stats.totalTrades} icon={BarChart2 as any} color="text-slate-400" trend="neutral" subLabel={language === 'cn' ? '笔' : 'trades'} />
+                <TZNetPnlCard value={stats.netPnl} total={stats.totalTrades} label={language === 'cn' ? '净盈亏' : 'Net P&L'} />
+                <TZWinRateCard winRate={stats.winRate} wins={stats.winCount} losses={stats.lossCount} breakEven={stats.breakEvenCount} label={language === 'cn' ? '胜率' : 'Trade win %'} />
+                <TZProfitFactorCard value={stats.profitFactor} label={language === 'cn' ? '盈利因子' : 'Profit factor'} />
+                <TZDayWinCard dayWinRate={stats.dayWinRate} winDays={stats.winDays} lossDays={stats.lossDays} breakEvenDays={stats.breakEvenDays} label={language === 'cn' ? '日胜率' : 'Day win %'} />
+                <TZAvgWinLossCard ratio={stats.avgWinLossRatio} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} />
               </div>
 
               <div id="dashboard-equity" className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 h-96"><div className="flex justify-between items-start mb-6"><div><div className="flex items-center gap-3 mb-1"><h3 className="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2 text-xs uppercase tracking-wider"><TrendingUp className="w-3.5 h-3.5 text-emerald-500" />{t.dashboard.equityCurve}</h3><span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : activeDatePreset}</span></div><div className="flex items-baseline gap-3"><span className={`text-3xl font-black tabular-nums tracking-tight ${stats.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{stats.netPnl >= 0 ? '+' : ''}${stats.netPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span><span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span></div></div><div className="text-xs text-slate-400 font-mono">{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div></div><ResponsiveContainer width="100%" height="100%"><ComposedChart data={mergedEquityData}><defs><linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.12}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.08} /><XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fontSize: 10, fill: '#94a3b8'}} axisLine={false} tickLine={false} domain={['auto', 'auto']} /><Tooltip contentStyle={tooltipStyle} itemStyle={{ fontSize: '12px' }} formatter={(value: number, name: string, props: any) => { if (name === 'My Equity') { const pct = props.payload.returnPct; return [`$${value.toLocaleString()} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)`, name]; } return [`$${value.toLocaleString()}`, name]; }} /><Legend content={renderCustomLegend} /><Area type="monotone" dataKey="equity" name="My Equity" stroke="#6366f1" strokeWidth={1.5} fillOpacity={1} fill="url(#colorEquity)" />{selectedFriends.map(friendId => { const friend = friends.find(f => f.id === friendId); if (!friend) return null; return (<div key={friend.id}><Line type="monotone" dataKey={friend.id} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" /></div>); })}</ComposedChart></ResponsiveContainer></div>
