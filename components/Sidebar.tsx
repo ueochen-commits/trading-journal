@@ -348,6 +348,23 @@ const Sidebar = ({
             );
           })}
         </div>
+      {/* Collapse toggle — bottom of icon bar, always visible */}
+        <button
+          onClick={toggleCollapse}
+          title={isCollapsed ? 'Expand' : 'Collapse'}
+          style={{
+            width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(255,255,255,0.06)',
+            color: 'rgba(255,255,255,0.45)',
+            marginBottom: 16, flexShrink: 0,
+            transition: 'background 0.15s',
+          }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
+        >
+          {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
+        </button>
       </div>
 
       {/* ── Main sidebar ── */}
@@ -366,21 +383,7 @@ const Sidebar = ({
         overflow: 'hidden',
       }}
     >
-      {/* Collapse toggle */}
-      <button
-        onClick={toggleCollapse}
-        style={{
-          position: 'absolute', right: -12, top: 32, zIndex: 110,
-          width: 24, height: 24, borderRadius: '50%',
-          background: '#1c2040', border: '1px solid rgba(255,255,255,0.1)',
-          color: 'rgba(255,255,255,0.3)', cursor: 'pointer',
-          display: 'none', alignItems: 'center', justifyContent: 'center',
-        }}
-        className="md:!flex"
-        title={isCollapsed ? 'Expand' : 'Collapse'}
-      >
-        {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
-      </button>
+      {/* Collapse toggle removed — handled by icon bar */}
 
       {/* Logo row */}
       <div style={{
@@ -395,16 +398,7 @@ const Sidebar = ({
             <img src="/tradegrail-logo.png" alt="TradeGrail" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
           </div>
         )}
-        {/* Collapse arrow */}
-        {!isCollapsed && (
-          <button
-            onClick={toggleCollapse}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, opacity: 0.3, color: '#fff', display: 'flex', flexShrink: 0 }}
-            className="hidden md:flex"
-          >
-            <Icons.ChevronLeft />
-          </button>
-        )}
+        {/* Collapse arrow removed — handled by icon bar */}
       </div>
 
       {/* Add Trade button */}
