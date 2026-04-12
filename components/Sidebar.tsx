@@ -308,18 +308,11 @@ const Sidebar = ({
         borderRight: '1px solid rgba(255,255,255,0.05)',
       }}>
         {/* Logo icon */}
-        <div style={{
-          width: 30, height: 30, borderRadius: 7, flexShrink: 0,
-          background: 'linear-gradient(135deg, #4B5EE8, #8B5CF6)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          marginTop: 15, marginBottom: 20,
-        }}>
-          <svg viewBox="0 0 44 44" fill="none" width="18" height="18">
-            <path d="M4 38H12V24L4 29V38Z" fill="rgba(255,255,255,0.45)" />
-            <path d="M16 38H24V14L16 19V38Z" fill="white" />
-            <path d="M28 38H36V4L28 9V38Z" fill="white" />
-          </svg>
-        </div>
+        <img
+          src="/lion-logo.png"
+          alt="TradeGrail"
+          style={{ width: 36, height: 36, objectFit: 'contain', marginTop: 15, marginBottom: 20 }}
+        />
 
         {/* Nav items */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 4 }}>
