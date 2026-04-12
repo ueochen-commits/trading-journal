@@ -348,25 +348,6 @@ const Sidebar = ({
             );
           })}
         </div>
-      {/* Expand button — only shown when sidebar is collapsed */}
-        {isCollapsed && (
-          <button
-            onClick={toggleCollapse}
-            title="Expand"
-            style={{
-              width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.06)',
-              color: 'rgba(255,255,255,0.45)',
-              marginBottom: 16, flexShrink: 0,
-              transition: 'background 0.15s',
-            }}
-            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.12)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.06)'; }}
-          >
-            <Icons.ChevronRight />
-          </button>
-        )}
       </div>
 
       {/* ── Main sidebar ── */}
@@ -390,12 +371,33 @@ const Sidebar = ({
       {/* Logo row */}
       <div style={{
         height: 60, display: 'flex', alignItems: 'center', flexShrink: 0,
-        padding: isCollapsed ? '0' : '0 14px',
+        padding: isCollapsed ? '0 10px' : '0 14px',
         justifyContent: isCollapsed ? 'center' : 'flex-start',
         gap: 10,
       }}>
-        {/* Brand logo image + collapse button */}
-        {!isCollapsed && (
+        {isCollapsed ? (
+          /* Expand button — shown when collapsed */
+          <button
+            onClick={toggleCollapse}
+            title="Expand"
+            style={{
+              width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.08)',
+              color: 'rgba(255,255,255,0.6)',
+              flexShrink: 0, transition: 'background 0.15s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; }}
+          >
+            {/* Double chevron right */}
+            <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+              <path fillRule="evenodd" d="M3.293 14.707a1 1 0 010-1.414L6.586 10 3.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+            </svg>
+          </button>
+        ) : (
+          /* Logo + collapse button — shown when expanded */
           <>
             <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
               <img src="/tradegrail-logo.png" alt="TradeGrail" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
@@ -404,16 +406,20 @@ const Sidebar = ({
               onClick={toggleCollapse}
               title="Collapse"
               style={{
-                width: 26, height: 26, borderRadius: 6, border: 'none', cursor: 'pointer',
+                width: 30, height: 30, borderRadius: 7, border: 'none', cursor: 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: 'rgba(255,255,255,0.07)',
-                color: 'rgba(255,255,255,0.45)',
+                background: 'rgba(255,255,255,0.08)',
+                color: 'rgba(255,255,255,0.6)',
                 flexShrink: 0, transition: 'background 0.15s',
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.14)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.08)'; }}
             >
-              <Icons.ChevronLeft />
+              {/* Double chevron left */}
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16">
+                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L13.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd"/>
+              </svg>
             </button>
           </>
         )}
