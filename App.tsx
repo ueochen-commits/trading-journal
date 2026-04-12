@@ -842,15 +842,18 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           case 'psychology':
               return (
                   <PageContainer>
-                      <Psychology 
+                      <Psychology
                           riskSettings={riskSettings}
                           onSaveSettings={handleSaveRiskSettings}
-                          rules={[]} 
+                          rules={[]}
                           onToggleRule={() => {}}
                           onAddRule={() => {}}
                           onDeleteRule={() => {}}
                           reviewStatus={reviewStatus}
                           onUpdateReview={() => {}}
+                          trades={trades}
+                          disciplineRules={disciplineRules}
+                          disciplineHistory={disciplineHistory}
                       />
                   </PageContainer>
               );
