@@ -18,102 +18,102 @@ interface SidebarProps {
 
 const Icons = {
   Dashboard: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/>
     </svg>
   ),
   Chart: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M1 12h2V7H1v5zm4 0h2V4H5v8zm4 0h2V1H9v11zm4 0h2V9h-2v3z"/>
     </svg>
   ),
   Journal: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M3 1a1 1 0 00-1 1v12a1 1 0 001 1h8a2 2 0 002-2V4.414A2 2 0 0012.586 3L11 1.414A2 2 0 009.586 1H3zm6 1.414L10.586 4H9V2.414zM3 2h5v3h4v9a1 1 0 01-1 1H3V2zm2 5h4v1H5V7zm0 2h4v1H5V9zm0 2h3v1H5v-1z"/>
     </svg>
   ),
   Playbook: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M2 3h12v1H2V3zm0 3h12v1H2V6zm0 3h8v1H2V9zm0 3h6v1H2v-1z"/>
     </svg>
   ),
   Reports: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1a6 6 0 110 12A6 6 0 018 2zm-.5 2v5.5l4 2-.5.87-4.5-2.37V4h1z"/>
     </svg>
   ),
   Plans: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M13.5 1l-8 8-3-3-1.5 1.5 4.5 4.5 9.5-9.5L13.5 1z"/>
     </svg>
   ),
   Psychology: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 1a5 5 0 00-3.54 8.54l-.46 3.46 4-1.5 4 1.5-.46-3.46A5 5 0 008 1zm0 1a4 4 0 110 8A4 4 0 018 2zm0 1.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>
     </svg>
   ),
   Calendar: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M5 1v1H2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1h-3V1h-1v1H6V1H5zm-3 4h12v8H2V5zm2 2v1h1V7H4zm3 0v1h1V7H7zm3 0v1h1V7h-1zM4 10v1h1v-1H4zm3 0v1h1v-1H7zm3 0v1h1v-1h-1z"/>
     </svg>
   ),
   Plaza: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1c.9 0 1.76.2 2.53.55L9 4H7L5.47 2.55A6 6 0 018 2zM4.7 3.3L6 5v2H2.07A6 6 0 014.7 3.3zM2.07 8H6v2l-1.3 1.7A6 6 0 012.07 8zm3.63 4.45L7 11h2l1.3 1.45A6 6 0 015.7 12.45zm5.6.25L10 11V9h3.93a6 6 0 01-2.63 3.7zM13.93 8H10V6l1.3-1.7A6 6 0 0113.93 8z"/>
     </svg>
   ),
   Academy: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 1L1 5l7 4 7-4-7-4zM3 7.5v3.5c0 1.1 2.24 2 5 2s5-.9 5-2V7.5L8 11 3 7.5z"/>
     </svg>
   ),
   Bell: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 1a5 5 0 00-5 5v3l-1.5 2h13L13 9V6a5 5 0 00-5-5zm0 14a2 2 0 01-2-2h4a2 2 0 01-2 2z"/>
     </svg>
   ),
   Plus: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   ),
   Message: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 2V3a1 1 0 011-1z"/>
     </svg>
   ),
   Crown: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 2L5 7 1 4l2 9h10l2-9-4 3-3-5z"/>
     </svg>
   ),
   Sun: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 5a3 3 0 100 6A3 3 0 008 5zM8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
   Moon: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M14 10.5A6.5 6.5 0 015.5 2a6.5 6.5 0 000 12A6.5 6.5 0 0014 10.5z"/>
     </svg>
   ),
   Settings: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1a2 2 0 110 4A2 2 0 018 6zm5.66 1.5l-1.1-.63a5.1 5.1 0 000-1.74l1.1-.63-.5-.87-1.1.63a5 5 0 00-1.5-.87V2h-1v1.39a5 5 0 00-1.5.87l-1.1-.63-.5.87 1.1.63a5.1 5.1 0 000 1.74l-1.1.63.5.87 1.1-.63c.44.37.95.65 1.5.87V10h1V8.89a5 5 0 001.5-.87l1.1.63.5-.87z"/>
     </svg>
   ),
   User: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 1a3 3 0 100 6A3 3 0 008 1zm0 7c-3.33 0-6 1.34-6 3v1h12v-1c0-1.66-2.67-3-6-3z"/>
     </svg>
   ),
   Gift: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M8 3a2 2 0 01-2-2 2 2 0 012 2zm0 0a2 2 0 012-2 2 2 0 01-2 2zM1 4h14v3H1V4zm1 4h5v6H2V8zm6 0h5v6H8V8z"/>
     </svg>
   ),
   LogOut: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M6 2H2v12h4v-1H3V3h3V2zm5 3l-1 1 2 2H5v1h7l-2 2 1 1 3-3-3-4z"/>
     </svg>
   ),
@@ -128,7 +128,7 @@ const Icons = {
     </svg>
   ),
   Map: () => (
-    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+    <svg viewBox="0 0 16 16" fill="currentColor" width="18" height="18">
       <path d="M1 2l4 1.5 6-2 4 1.5v11l-4-1.5-6 2-4-1.5V2zm4 2.3v8.4l6-2V4.3l-6 2z"/>
     </svg>
   ),
@@ -244,7 +244,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
           background: 'rgba(99,88,255,0.2)',
           border: '0.5px solid rgba(99,88,255,0.3)',
         } : {}}
-        className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] cursor-pointer mb-[1px] outline-none transition-all group
+        className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-start px-[0.875rem] py-[0.55rem]'} rounded-[7px] cursor-pointer mb-[2px] outline-none transition-all group
           ${isActive ? '' : 'hover:bg-white/5 border border-transparent'}`}
       >
         {/* Active left bar */}
@@ -264,8 +264,8 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
         </span>
         {!isCollapsed && (
           <span
-            className="ml-[10px] text-[13px] leading-none hidden md:block"
-            style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: isActive ? 500 : 400 }}
+            className="ml-[10px] leading-none hidden md:block whitespace-nowrap"
+            style={{ fontSize: 13, color: isActive ? '#fff' : 'rgba(255,255,255,0.55)', fontWeight: isActive ? 600 : 400 }}
           >
             {item.label}
           </span>
@@ -283,7 +283,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
     <div
       id="sidebar-nav"
       style={sidebarStyle}
-      className={`flex flex-col h-screen fixed left-0 top-0 transition-all duration-200 z-50 ${isCollapsed ? 'w-[60px]' : 'w-[60px] md:w-[220px]'}`}
+      className={`flex flex-col h-screen fixed left-0 top-0 transition-all duration-200 z-50 ${isCollapsed ? 'w-[60px]' : 'w-[60px] md:w-[160px]'}`}
     >
       {/* Radial overlay */}
       <div style={sidebarOverlayStyle} />
@@ -335,7 +335,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
         <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.07)', margin: '0.5rem 0' }} />
 
         {!isCollapsed && (
-          <p className="hidden md:block text-[10px] font-semibold uppercase tracking-widest px-1 mb-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+          <p className="hidden md:block text-[10px] font-semibold uppercase tracking-[0.1em] mb-[0.4rem]" style={{ color: 'rgba(255,255,255,0.25)', padding: '0.75rem 0 0.4rem' }}>
             Community
           </p>
         )}
@@ -349,7 +349,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
               onClick={() => { setActiveTab(item.id); onUserNavigateToTab(item.id); }}
               title={isCollapsed ? item.label : undefined}
               style={isActive ? { background: 'rgba(99,88,255,0.2)', border: '0.5px solid rgba(99,88,255,0.3)' } : {}}
-              className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] cursor-pointer mb-[1px] outline-none transition-all group
+              className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-start px-[0.875rem] py-[0.55rem]'} rounded-[7px] cursor-pointer mb-[2px] outline-none transition-all group
                 ${isActive ? '' : 'hover:bg-white/5 border border-transparent'}`}
             >
               {isActive && (
@@ -361,11 +361,11 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
                 <Icon />
               </span>
               {!isCollapsed && (
-                <span className="ml-[10px] text-[13px] leading-none hidden md:flex items-center gap-2 flex-1"
-                  style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: isActive ? 500 : 400 }}>
+                <span className="ml-[10px] leading-none hidden md:flex items-center gap-2 flex-1 whitespace-nowrap"
+                  style={{ fontSize: 13, color: isActive ? '#fff' : 'rgba(255,255,255,0.55)', fontWeight: isActive ? 600 : 400 }}>
                   {item.label}
                   {(item.id === 'plaza' || item.id === 'academy') && (
-                    <span style={{ fontSize: 10, fontWeight: 600, color: '#FFD700', background: 'rgba(255,215,0,0.12)', border: '0.5px solid rgba(255,215,0,0.25)', padding: '2px 7px', borderRadius: 4 }}>
+                    <span style={{ fontSize: 10, fontWeight: 600, color: '#a78bfa', background: 'rgba(167,139,250,0.15)', border: '0.5px solid rgba(167,139,250,0.3)', padding: '1px 6px', borderRadius: 4, marginLeft: 'auto', flexShrink: 0 }}>
                       PRO
                     </span>
                   )}
@@ -396,7 +396,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
             key={label}
             onClick={onClick}
             title={isCollapsed ? label : undefined}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] hover:bg-white/5 transition-colors group relative`}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-start px-[0.875rem] py-[0.55rem]'} rounded-[7px] hover:bg-white/5 transition-colors group relative`}
           >
             <span style={{ color: 'rgba(255,255,255,0.35)' }} className="group-hover:!text-white/60 transition-colors shrink-0">
               <Icon />
@@ -423,7 +423,7 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
           <button
             onClick={openPricing}
             title={isCollapsed ? (language === 'cn' ? '升级' : 'Upgrade') : undefined}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] hover:bg-white/5 transition-colors group`}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-start px-[0.875rem] py-[0.55rem]'} rounded-[7px] hover:bg-white/5 transition-colors group`}
           >
             <span style={{ color: 'rgba(255,215,0,0.6)' }} className="group-hover:!text-yellow-400 transition-colors shrink-0">
               <Icons.Crown />
@@ -481,32 +481,33 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
         <button
           onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
           title={isCollapsed ? user.name : undefined}
-          style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', width: '100%', background: 'transparent', border: 'none' }}
+          style={{ padding: '0.75rem 0.875rem', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', width: '100%', background: 'transparent', border: 'none', flexShrink: 0 }}
           className="hover:bg-white/5 transition-colors"
         >
-          <div
-            className="rounded-full overflow-hidden shrink-0 flex items-center justify-center text-[12px] font-bold"
-            style={{ width: 38, height: 38, background: 'linear-gradient(135deg, #4455EE, #9966FF)', color: '#fff' }}
-          >
+          {/* Avatar */}
+          <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #4455EE, #9966FF)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 600, color: '#fff', flexShrink: 0, overflow: 'hidden' }}>
             {user.avatarUrl
-              ? <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+              ? <img src={user.avatarUrl} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               : user.name.slice(0, 2).toUpperCase()
             }
           </div>
+          {/* User info */}
           {!isCollapsed && (
-            <div className="hidden md:flex flex-col items-start flex-1 min-w-0">
-              <span className="text-[13px] font-medium truncate w-full leading-tight" style={{ color: '#fff' }}>{user.name}</span>
-              <span
-                className="text-[9px] font-bold tracking-[0.05em] mt-0.5 px-[5px] py-[1px] rounded"
-                style={getTierBadgeStyle()}
-              >
+            <div className="hidden md:flex flex-col" style={{ gap: 3, minWidth: 0, flex: 1 }}>
+              <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.85)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {user.name}
+              </span>
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', display: 'inline-block', width: 'fit-content', padding: '1px 5px', borderRadius: 3, ...getTierBadgeStyle() }}>
                 {getTierLabel()}
               </span>
             </div>
           )}
+          {/* Chevron */}
           {!isCollapsed && (
-            <span className="hidden md:block ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
-              <Icons.ChevronRight />
+            <span className="hidden md:block" style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0, marginLeft: 'auto' }}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                <path d="M9 18l6-6-6-6"/>
+              </svg>
             </span>
           )}
         </button>
