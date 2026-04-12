@@ -12,167 +12,56 @@ import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES, MOCK_ACCOUNTS } from '../constants';
 import MentorWidget from './MentorWidget';
 
-// ─── TradeZella-style stat cards ────────────────────────────────────────────
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  color: string;
+  trend?: 'up' | 'down' | 'neutral';
+  sparkData?: number[];
+  subLabel?: string;
+}
 
-const InfoIcon = () => (
-  <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center shrink-0 cursor-pointer">
-    <span className="text-[9px] font-bold text-slate-400 leading-none select-none">i</span>
-  </div>
-);
-
-// 1. Net P&L — sparkline + red/green bar
-const NetPnlCard: React.FC<{ value: number; sparkData: number[]; label: string }> = ({ value, sparkData, label }) => {
-  const pos = value >= 0;
-  const color = pos ? '#00a862' : '#e63946';
-  const min = Math.min(...(sparkData.length ? sparkData : [0]));
-  const max = Math.max(...(sparkData.length ? sparkData : [0]));
+const MiniSparkline: React.FC<{ data: number[]; positive: boolean }> = ({ data, positive }) => {
+  if (!data || data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
   const range = max - min || 1;
-  const w = 120, h = 40;
-  const pts = sparkData.map((v, i) => {
-    const x = (i / Math.max(sparkData.length - 1, 1)) * w;
+  const w = 64, h = 28;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
     const y = h - ((v - min) / range) * h;
     return `${x},${y}`;
   }).join(' ');
-  const pct = sparkData.length ? Math.min(100, Math.max(0, ((value - min) / range) * 100)) : 50;
+  const color = positive ? '#10b981' : '#f43f5e';
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-        <InfoIcon />
-      </div>
-      <div className="flex justify-center">
-        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
-          {sparkData.length >= 2 && <polyline points={pts} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />}
-        </svg>
-      </div>
-      <div className="text-3xl font-black tabular-nums leading-none" style={{ color }}>{pos ? '+' : ''}${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-      <div className="relative h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800">
-        <div className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${pct}%`, backgroundColor: color }} />
-      </div>
-    </div>
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+      <polyline points={pts} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.8" />
+    </svg>
   );
 };
 
-// 2. Win Rate / Day Win % — semicircle gauge
-const GaugeCard: React.FC<{ value: number; label: string; sub?: string; ticks?: string }> = ({ value, label, sub, ticks }) => {
-  const clamped = Math.min(100, Math.max(0, value));
-  const r = 52, cx = 70, cy = 68;
-  const startAngle = Math.PI, endAngle = 0;
-  const angle = startAngle - (clamped / 100) * Math.PI;
-  const x = cx + r * Math.cos(angle);
-  const y = cy + r * Math.sin(angle);
-  const greenArc = (pct: number) => {
-    const a = startAngle - (pct / 100) * Math.PI;
-    return `M ${cx + r * Math.cos(startAngle)} ${cy + r * Math.sin(startAngle)} A ${r} ${r} 0 ${pct > 50 ? 1 : 0} 1 ${cx + r * Math.cos(a)} ${cy + r * Math.sin(a)}`;
-  };
-  const valueColor = clamped >= 50 ? '#00a862' : '#e63946';
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, trend, sparkData, subLabel }) => {
+  const isPositive = trend === 'up' || (typeof value === 'string' && value.startsWith('$') && !value.startsWith('$-')) || trend !== 'down';
+  const valueColor = trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-rose-500' : 'text-slate-900 dark:text-white';
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 flex flex-col gap-2">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-        <InfoIcon />
-      </div>
-      <div className="flex justify-center">
-        <svg width={140} height={80} viewBox="0 0 140 80">
-          {/* bg arc */}
-          <path d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`} fill="none" stroke="#fee2e2" strokeWidth="10" strokeLinecap="round" />
-          {/* green zone 50-100% */}
-          <path d={greenArc(50)} fill="none" stroke="#bbf7d0" strokeWidth="10" strokeLinecap="round" />
-          {/* value arc */}
-          <path d={greenArc(clamped)} fill="none" stroke={valueColor} strokeWidth="10" strokeLinecap="round" opacity="0.9" />
-          {/* needle dot */}
-          <circle cx={x} cy={y} r="5" fill="#1d4ed8" />
-          {/* 0 / 100 labels */}
-          <text x={cx - r - 4} y={cy + 14} fontSize="9" fill="#94a3b8" textAnchor="middle">0</text>
-          <text x={cx + r + 4} y={cy + 14} fontSize="9" fill="#94a3b8" textAnchor="middle">100</text>
-        </svg>
-      </div>
-      <div className="text-3xl font-black tabular-nums leading-none text-slate-900 dark:text-white">{clamped.toFixed(2)}%</div>
-      {ticks && <div className="text-xs text-slate-400 font-medium">{ticks}</div>}
-      {sub && <div className="text-xs text-slate-400">{sub}</div>}
-    </div>
-  );
-};
-
-// 3. Avg Win/Loss — horizontal bar
-const AvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: number; label: string }> = ({ ratio, avgWin, avgLoss, label }) => {
-  const pct = Math.min(100, Math.max(0, (ratio / 5) * 100));
-  const color = ratio >= 1 ? '#00a862' : '#e63946';
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-        <InfoIcon />
-      </div>
-      <div className="flex flex-col gap-1.5 mt-2">
-        <div className="relative h-3 rounded-full overflow-hidden" style={{ background: 'linear-gradient(to right, #fecaca, #bbf7d0)' }}>
-          <div className="absolute top-0 bottom-0 w-1 rounded-full bg-slate-800 dark:bg-white shadow" style={{ left: `calc(${pct}% - 2px)` }} />
+    <div className="bg-white dark:bg-slate-900 px-5 py-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className={`p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 ${color}`}>
+            <Icon className="w-4 h-4" />
+          </div>
+          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{title}</p>
         </div>
-        <div className="flex justify-between text-[10px] font-semibold text-slate-400">
-          <span>${Math.abs(avgLoss).toFixed(0)}</span>
-          <span>${avgWin.toFixed(0)}</span>
-        </div>
+        {sparkData && <MiniSparkline data={sparkData} positive={trend !== 'down'} />}
       </div>
-      <div className="text-3xl font-black tabular-nums leading-none" style={{ color }}>{ratio.toFixed(2)}</div>
-    </div>
-  );
-};
-
-// 4. Profit Factor — donut
-const ProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
-  const clamped = Math.min(5, Math.max(0, value));
-  const pct = (clamped / 5) * 100;
-  const r = 28, cx = 36, cy = 36, circ = 2 * Math.PI * r;
-  const color = value >= 1.5 ? '#00a862' : value >= 1 ? '#f59e0b' : '#e63946';
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-        <InfoIcon />
-      </div>
-      <div className="flex justify-center">
-        <svg width={72} height={72} viewBox="0 0 72 72">
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f1f5f9" strokeWidth="8" className="dark:stroke-slate-800" />
-          <circle cx={cx} cy={cy} r={r} fill="none" stroke={color} strokeWidth="8"
-            strokeDasharray={circ} strokeDashoffset={circ * (1 - pct / 100)}
-            strokeLinecap="round" transform={`rotate(-90 ${cx} ${cy})`} />
-        </svg>
-      </div>
-      <div className="text-3xl font-black tabular-nums leading-none text-slate-900 dark:text-white">{value.toFixed(2)}</div>
-    </div>
-  );
-};
-
-// 5. Total Trades — simple count + mini bar distribution
-const TotalTradesCard: React.FC<{ total: number; wins: number; losses: number; label: string }> = ({ total, wins, losses, label }) => {
-  const breakEven = total - wins - losses;
-  const bars = [
-    { v: wins, c: '#00a862' },
-    { v: breakEven, c: '#94a3b8' },
-    { v: losses, c: '#e63946' },
-  ];
-  const maxV = Math.max(...bars.map(b => b.v), 1);
-  return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 p-5 flex flex-col gap-3">
-      <div className="flex items-center justify-between">
-        <span className="text-sm font-semibold text-slate-700 dark:text-slate-200">{label}</span>
-        <InfoIcon />
-      </div>
-      <div className="flex items-end justify-center gap-2 h-10">
-        {bars.map((b, i) => (
-          <div key={i} className="w-6 rounded-t-sm transition-all duration-700" style={{ height: `${(b.v / maxV) * 40}px`, backgroundColor: b.c, minHeight: b.v > 0 ? 4 : 0 }} />
-        ))}
-      </div>
-      <div className="text-3xl font-black tabular-nums leading-none text-slate-900 dark:text-white">{total}</div>
-      <div className="flex gap-3 text-[10px] font-semibold">
-        <span style={{ color: '#00a862' }}>{wins}W</span>
-        <span className="text-slate-400">{breakEven}B</span>
-        <span style={{ color: '#e63946' }}>{losses}L</span>
+      <div className="flex items-end justify-between">
+        <h3 className={`text-2xl font-bold tracking-tight tabular-nums ${valueColor}`}>{value}</h3>
+        {subLabel && <span className="text-[11px] text-slate-400 mb-0.5">{subLabel}</span>}
       </div>
     </div>
   );
 };
-
 
 const MARKET_OPTIONS = [
     { id: 'sydney', labelKey: 'sydney', zone: 'Australia/Sydney', start: [10, 0], end: [16, 0], color: 'amber', icon: Sunrise },
@@ -564,19 +453,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     let cum = 0;
     const pnlSpark = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
     const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => t.pnl > 0).length / slice.length * 100; });
-    const winTrades = trades.filter(t => t.pnl > 0);
-    const lossTrades = trades.filter(t => t.pnl < 0);
-    const avgWin = winTrades.length > 0 ? winTrades.reduce((a, t) => a + t.pnl, 0) / winTrades.length : 0;
-    const avgLoss = lossTrades.length > 0 ? lossTrades.reduce((a, t) => a + t.pnl, 0) / lossTrades.length : 0;
-    // Day win/loss stats
-    const dayMap: Record<string, number> = {};
-    trades.forEach(t => { const d = new Date(t.entryDate).toDateString(); dayMap[d] = (dayMap[d] || 0) + (t.pnl - t.fees); });
-    const dayVals = Object.values(dayMap);
-    const winDays = dayVals.filter(v => v > 0).length;
-    const lossDays = dayVals.filter(v => v < 0).length;
-    const breakEvenDays = dayVals.filter(v => v === 0).length;
-    const dayWinRate = dayVals.length > 0 ? (winDays / dayVals.length) * 100 : 0;
-    return { totalTrades, winRate, netPnl, profitFactor, todayPnl, pnlSpark, wrSpark, avgWin, avgLoss, winDays, lossDays, breakEvenDays, dayWinRate };
+    return { totalTrades, winRate, netPnl, profitFactor, todayPnl, pnlSpark, wrSpark };
   }, [trades]);
 
   const grailScore = useMemo(() => {
@@ -899,12 +776,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                  )}
               </div>
 
-              <div id="dashboard-stats" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                <NetPnlCard value={stats.netPnl} sparkData={stats.pnlSpark} label={language === 'cn' ? '净盈亏' : 'Net P&L'} />
-                <GaugeCard value={stats.winRate} label={language === 'cn' ? '胜率' : 'Trade win %'} ticks={`${trades.filter(t=>t.pnl>0).length} / ${trades.filter(t=>t.pnl===0).length} / ${trades.filter(t=>t.pnl<0).length}`} />
-                <AvgWinLossCard ratio={stats.avgWin > 0 && Math.abs(stats.avgLoss) > 0 ? stats.avgWin / Math.abs(stats.avgLoss) : 0} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} />
-                <GaugeCard value={stats.dayWinRate} label={language === 'cn' ? '日胜率' : 'Day win %'} ticks={`${stats.winDays} / ${stats.breakEvenDays} / ${stats.lossDays}`} />
-                <TotalTradesCard total={stats.totalTrades} wins={trades.filter(t=>t.pnl>0).length} losses={trades.filter(t=>t.pnl<0).length} label={language === 'cn' ? '总交易数' : 'Total Trades'} />
+              <div id="dashboard-stats" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <StatCard title={t.dashboard.netPnl} value={`$${stats.netPnl.toFixed(2)}`} icon={stats.netPnl >= 0 ? TrendingUp : TrendingDown} color={stats.netPnl >= 0 ? "text-emerald-500" : "text-rose-500"} trend={stats.netPnl >= 0 ? 'up' : 'down'} sparkData={stats.pnlSpark} />
+                <StatCard title={t.dashboard.winRate} value={`${stats.winRate.toFixed(1)}%`} icon={Target} color="text-blue-500" trend={stats.winRate >= 50 ? 'up' : 'down'} sparkData={stats.wrSpark} />
+                <StatCard title={t.dashboard.profitFactor} value={stats.profitFactor.toFixed(2)} icon={Activity} color="text-violet-500" trend={stats.profitFactor >= 1.5 ? 'up' : 'neutral'} />
+                <StatCard title={t.dashboard.todayPnl} value={`$${stats.todayPnl.toFixed(2)}`} icon={ShieldCheck} color={stats.todayPnl >= 0 ? "text-emerald-500" : "text-rose-500"} trend={stats.todayPnl >= 0 ? 'up' : 'down'} />
+                <StatCard title={language === 'cn' ? '总交易数' : 'Total Trades'} value={stats.totalTrades} icon={BarChart2 as any} color="text-slate-400" trend="neutral" subLabel={language === 'cn' ? '笔' : 'trades'} />
               </div>
 
               <div id="dashboard-equity" className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 h-96"><div className="flex justify-between items-start mb-6"><div><div className="flex items-center gap-3 mb-1"><h3 className="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2 text-xs uppercase tracking-wider"><TrendingUp className="w-3.5 h-3.5 text-emerald-500" />{t.dashboard.equityCurve}</h3><span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : activeDatePreset}</span></div><div className="flex items-baseline gap-3"><span className={`text-3xl font-black tabular-nums tracking-tight ${stats.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{stats.netPnl >= 0 ? '+' : ''}${stats.netPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span><span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span></div></div><div className="text-xs text-slate-400 font-mono">{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div></div><ResponsiveContainer width="100%" height="100%"><ComposedChart data={mergedEquityData}><defs><linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.12}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.08} /><XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fontSize: 10, fill: '#94a3b8'}} axisLine={false} tickLine={false} domain={['auto', 'auto']} /><Tooltip contentStyle={tooltipStyle} itemStyle={{ fontSize: '12px' }} formatter={(value: number, name: string, props: any) => { if (name === 'My Equity') { const pct = props.payload.returnPct; return [`$${value.toLocaleString()} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)`, name]; } return [`$${value.toLocaleString()}`, name]; }} /><Legend content={renderCustomLegend} /><Area type="monotone" dataKey="equity" name="My Equity" stroke="#6366f1" strokeWidth={1.5} fillOpacity={1} fill="url(#colorEquity)" />{selectedFriends.map(friendId => { const friend = friends.find(f => f.id === friendId); if (!friend) return null; return (<div key={friend.id}><Line type="monotone" dataKey={friend.id} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" /></div>); })}</ComposedChart></ResponsiveContainer></div>
