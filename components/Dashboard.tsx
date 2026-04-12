@@ -6,7 +6,7 @@ import {
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend, ComposedChart,
   RadialBarChart, RadialBar
 } from 'recharts';
-import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, Check, Briefcase, Trash2, Circle, RefreshCw } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, Check, Briefcase, Trash2, Circle, RefreshCw, BarChart2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES, MOCK_ACCOUNTS } from '../constants';
@@ -18,22 +18,50 @@ interface StatCardProps {
   icon: React.ElementType;
   color: string;
   trend?: 'up' | 'down' | 'neutral';
+  sparkData?: number[];
+  subLabel?: string;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, trend }) => (
-  <div className="relative overflow-hidden bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-[0_2px_20px_rgba(0,0,0,0.04)] dark:shadow-none hover:shadow-lg transition-all duration-300 group">
-    <div className={`absolute -right-6 -top-6 w-24 h-24 rounded-full opacity-5 dark:opacity-10 group-hover:scale-150 transition-transform duration-500 bg-current ${color}`}></div>
-    <div className="relative z-10 flex justify-between items-start">
-        <div>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">{title}</p>
-            <h3 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight tabular-nums">{value}</h3>
+const MiniSparkline: React.FC<{ data: number[]; positive: boolean }> = ({ data, positive }) => {
+  if (!data || data.length < 2) return null;
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+  const w = 64, h = 28;
+  const pts = data.map((v, i) => {
+    const x = (i / (data.length - 1)) * w;
+    const y = h - ((v - min) / range) * h;
+    return `${x},${y}`;
+  }).join(' ');
+  const color = positive ? '#10b981' : '#f43f5e';
+  return (
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} fill="none">
+      <polyline points={pts} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.8" />
+    </svg>
+  );
+};
+
+const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, trend, sparkData, subLabel }) => {
+  const isPositive = trend === 'up' || (typeof value === 'string' && value.startsWith('$') && !value.startsWith('$-')) || trend !== 'down';
+  const valueColor = trend === 'up' ? 'text-emerald-500' : trend === 'down' ? 'text-rose-500' : 'text-slate-900 dark:text-white';
+  return (
+    <div className="bg-white dark:bg-slate-900 px-5 py-4 rounded-xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 transition-colors">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className={`p-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 ${color}`}>
+            <Icon className="w-4 h-4" />
+          </div>
+          <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{title}</p>
         </div>
-        <div className={`p-3 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors border border-slate-100 dark:border-slate-700 ${color}`}>
-            <Icon className="w-6 h-6" />
-        </div>
+        {sparkData && <MiniSparkline data={sparkData} positive={trend !== 'down'} />}
+      </div>
+      <div className="flex items-end justify-between">
+        <h3 className={`text-2xl font-bold tracking-tight tabular-nums ${valueColor}`}>{value}</h3>
+        {subLabel && <span className="text-[11px] text-slate-400 mb-0.5">{subLabel}</span>}
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 const MARKET_OPTIONS = [
     { id: 'sydney', labelKey: 'sydney', zone: 'Australia/Sydney', start: [10, 0], end: [16, 0], color: 'amber', icon: Sunrise },
@@ -354,7 +382,12 @@ const Dashboard: React.FC<DashboardProps> = ({
     const profitFactor = Math.abs(trades.filter(t => t.pnl > 0).reduce((acc, t) => acc + t.pnl, 0) / (trades.filter(t => t.pnl < 0).reduce((acc, t) => acc + t.pnl, 0) || 1));
     const today = new Date().toDateString();
     const todayPnl = trades.filter(t => new Date(t.entryDate).toDateString() === today).reduce((acc, t) => acc + (t.pnl - t.fees), 0);
-    return { totalTrades, winRate, netPnl, profitFactor, todayPnl };
+    // Sparkline: last 12 trades cumulative PnL
+    const sorted = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).slice(-12);
+    let cum = 0;
+    const pnlSpark = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
+    const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => t.pnl > 0).length / slice.length * 100; });
+    return { totalTrades, winRate, netPnl, profitFactor, todayPnl, pnlSpark, wrSpark };
   }, [trades]);
 
   const goalProgress = useMemo(() => {
@@ -623,11 +656,17 @@ const Dashboard: React.FC<DashboardProps> = ({
                  )}
               </div>
 
-              <div id="dashboard-stats" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"><StatCard title={t.dashboard.netPnl} value={`$${stats.netPnl.toFixed(2)}`} icon={stats.netPnl >= 0 ? TrendingUp : TrendingDown} color={stats.netPnl >= 0 ? "text-emerald-500" : "text-rose-500"} /><StatCard title={t.dashboard.winRate} value={`${stats.winRate.toFixed(1)}%`} icon={Target} color="text-blue-500" /><StatCard title={t.dashboard.profitFactor} value={stats.profitFactor.toFixed(2)} icon={Activity} color="text-yellow-500" /><StatCard title={t.dashboard.todayPnl} value={`$${stats.todayPnl.toFixed(2)}`} icon={ShieldCheck} color={stats.todayPnl >= 0 ? "text-emerald-500" : "text-rose-500"} /></div>
+              <div id="dashboard-stats" className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                <StatCard title={t.dashboard.netPnl} value={`$${stats.netPnl.toFixed(2)}`} icon={stats.netPnl >= 0 ? TrendingUp : TrendingDown} color={stats.netPnl >= 0 ? "text-emerald-500" : "text-rose-500"} trend={stats.netPnl >= 0 ? 'up' : 'down'} sparkData={stats.pnlSpark} />
+                <StatCard title={t.dashboard.winRate} value={`${stats.winRate.toFixed(1)}%`} icon={Target} color="text-blue-500" trend={stats.winRate >= 50 ? 'up' : 'down'} sparkData={stats.wrSpark} />
+                <StatCard title={t.dashboard.profitFactor} value={stats.profitFactor.toFixed(2)} icon={Activity} color="text-violet-500" trend={stats.profitFactor >= 1.5 ? 'up' : 'neutral'} />
+                <StatCard title={t.dashboard.todayPnl} value={`$${stats.todayPnl.toFixed(2)}`} icon={ShieldCheck} color={stats.todayPnl >= 0 ? "text-emerald-500" : "text-rose-500"} trend={stats.todayPnl >= 0 ? 'up' : 'down'} />
+                <StatCard title={language === 'cn' ? '总交易数' : 'Total Trades'} value={stats.totalTrades} icon={BarChart2 as any} color="text-slate-400" trend="neutral" subLabel={language === 'cn' ? '笔' : 'trades'} />
+              </div>
 
-              <div id="dashboard-equity" className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-96"><div className="flex justify-between items-center mb-6"><div><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-1"><TrendingUp className="w-5 h-5 text-emerald-500" />{t.dashboard.equityCurve}</h3><p className="text-xs text-slate-500">{t.dashboard.equityChart.current} <span className="font-bold text-slate-700 dark:text-slate-300">${currentTotalEquity.toLocaleString()}</span><span className={`ml-2 font-bold ${currentTotalReturnPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>({currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%)</span></p></div><div className="text-sm text-slate-500 font-mono">{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div></div><ResponsiveContainer width="100%" height="100%"><ComposedChart data={mergedEquityData}><defs><linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.1} /><XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fontSize: 10, fill: '#94a3b8'}} axisLine={false} tickLine={false} domain={['auto', 'auto']} /><Tooltip contentStyle={tooltipStyle} itemStyle={{ fontSize: '12px' }} formatter={(value: number, name: string, props: any) => { if (name === 'My Equity') { const pct = props.payload.returnPct; return [`$${value.toLocaleString()} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)`, name]; } return [`$${value.toLocaleString()}`, name]; }} /><Legend content={renderCustomLegend} /><Area type="monotone" dataKey="equity" name="My Equity" stroke="#6366f1" strokeWidth={2} fillOpacity={1} fill="url(#colorEquity)" />{selectedFriends.map(friendId => { const friend = friends.find(f => f.id === friendId); if (!friend) return null; return (<div key={friend.id}><Line type="monotone" dataKey={friend.id} name={friend.name} stroke={friend.color} strokeWidth={2} dot={false} strokeDasharray="4 4" /></div>); })}</ComposedChart></ResponsiveContainer></div>
+              <div id="dashboard-equity" className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 h-96"><div className="flex justify-between items-center mb-6"><div><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-1"><TrendingUp className="w-4 h-4 text-emerald-500" />{t.dashboard.equityCurve}</h3><p className="text-xs text-slate-500">{t.dashboard.equityChart.current} <span className="font-bold text-slate-700 dark:text-slate-300">${currentTotalEquity.toLocaleString()}</span><span className={`ml-2 font-bold ${currentTotalReturnPct >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>({currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%)</span></p></div><div className="text-xs text-slate-400 font-mono">{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div></div><ResponsiveContainer width="100%" height="100%"><ComposedChart data={mergedEquityData}><defs><linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.12}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.08} /><XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fontSize: 10, fill: '#94a3b8'}} axisLine={false} tickLine={false} domain={['auto', 'auto']} /><Tooltip contentStyle={tooltipStyle} itemStyle={{ fontSize: '12px' }} formatter={(value: number, name: string, props: any) => { if (name === 'My Equity') { const pct = props.payload.returnPct; return [`$${value.toLocaleString()} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)`, name]; } return [`$${value.toLocaleString()}`, name]; }} /><Legend content={renderCustomLegend} /><Area type="monotone" dataKey="equity" name="My Equity" stroke="#6366f1" strokeWidth={1.5} fillOpacity={1} fill="url(#colorEquity)" />{selectedFriends.map(friendId => { const friend = friends.find(f => f.id === friendId); if (!friend) return null; return (<div key={friend.id}><Line type="monotone" dataKey={friend.id} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" /></div>); })}</ComposedChart></ResponsiveContainer></div>
 
-              <div id="dashboard-strategy" className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm h-80 flex flex-col"><h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2"><Activity className="w-5 h-5 text-purple-500" />{t.dashboard.setupPerformance}</h3><div className="flex-1 min-h-0"><ResponsiveContainer width="100%" height="100%"><BarChart data={setupPerformance} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}><CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" opacity={0.5} /><XAxis type="number" hide /><YAxis dataKey="name" type="category" width={120} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} axisLine={false} tickLine={false} /><Tooltip cursor={{fill: 'transparent'}} contentStyle={{...tooltipStyle, fontSize: '12px'}} itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }} formatter={(value: number) => [`$${value.toFixed(2)}`, 'PnL']} /><Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={20}>{setupPerformance.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.value >= 0 ? '#10b981' : '#f43f5e'} />))}</Bar></BarChart></ResponsiveContainer></div></div><div className="lg:col-span-1 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-slate-800 dark:to-slate-800/50 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm relative overflow-hidden h-80 flex flex-col"><div className="absolute top-0 right-0 p-6 opacity-5 dark:opacity-10"><BrainCircuit className="w-40 h-40" /></div><div className="relative z-10 flex flex-col h-full"><div className="flex items-center gap-2 mb-4"><Lightbulb className="w-5 h-5 text-amber-400" /><h3 className="font-bold text-slate-800 dark:text-white">{t.dashboard.aiTips.title}</h3></div>{loadingTips ? (<div className="flex flex-1 items-center justify-center text-slate-500 dark:text-slate-400"><Activity className="w-5 h-5 animate-spin mr-2" /><p className="text-xs">{t.dashboard.aiTips.loading}</p></div>) : aiTips.length > 0 ? (<div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">{aiTips.map((tip, idx) => (<div key={idx} className="bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm p-3 rounded-xl border border-white dark:border-slate-700 flex items-start gap-2.5 shadow-sm"><span className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[10px] font-bold mt-0.5">{idx + 1}</span><p className="text-xs font-medium text-slate-800 dark:text-slate-200 leading-relaxed">{tip}</p></div>))}</div>) : (<div className="flex flex-1 items-center justify-center"><p className="text-xs text-slate-500 dark:text-slate-400 italic text-center px-4">{t.dashboard.aiTips.fallback}</p></div>)}</div></div></div>
+              <div id="dashboard-strategy" className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 h-80 flex flex-col"><h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2 text-sm"><Activity className="w-4 h-4 text-purple-500" />{t.dashboard.setupPerformance}</h3><div className="flex-1 min-h-0"><ResponsiveContainer width="100%" height="100%"><BarChart data={setupPerformance} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}><CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" opacity={0.4} /><XAxis type="number" hide /><YAxis dataKey="name" type="category" width={120} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} axisLine={false} tickLine={false} /><Tooltip cursor={{fill: 'rgba(0,0,0,0.03)'}} contentStyle={{...tooltipStyle, fontSize: '12px'}} itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }} formatter={(value: number) => [`$${value.toFixed(2)}`, 'PnL']} /><Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>{setupPerformance.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.value >= 0 ? 'rgba(16,185,129,0.75)' : 'rgba(244,63,94,0.75)'} />))}</Bar></BarChart></ResponsiveContainer></div></div><div className="lg:col-span-1 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden h-80 flex flex-col"><div className="relative z-10 flex flex-col h-full"><div className="flex items-center gap-2 mb-4"><Lightbulb className="w-4 h-4 text-amber-400" /><h3 className="font-bold text-slate-800 dark:text-white text-sm">{t.dashboard.aiTips.title}</h3></div>{loadingTips ? (<div className="flex flex-1 items-center justify-center text-slate-500 dark:text-slate-400"><Activity className="w-5 h-5 animate-spin mr-2" /><p className="text-xs">{t.dashboard.aiTips.loading}</p></div>) : aiTips.length > 0 ? (<div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">{aiTips.map((tip, idx) => (<div key={idx} className="bg-white dark:bg-slate-900/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700 flex items-start gap-2.5"><span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[9px] font-bold mt-0.5">{idx + 1}</span><p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">{tip}</p></div>))}</div>) : (<div className="flex flex-1 items-center justify-center"><p className="text-xs text-slate-500 dark:text-slate-400 italic text-center px-4">{t.dashboard.aiTips.fallback}</p></div>)}</div></div></div>
 
               <div id="dashboard-calendar" className="pt-2"><div className="flex items-center gap-3 mb-6"><div className="p-2 bg-orange-100 dark:bg-orange-50/10 rounded-lg"><Calendar className="w-6 h-6 text-orange-500" /></div><h3 className="text-xl font-bold text-slate-900 dark:text-white">{t.calendar.title}</h3></div><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} /></div>
           </div>
