@@ -653,10 +653,11 @@ const Dashboard: React.FC<DashboardProps> = ({
     let currentEquity = riskSettings.accountSize || 0;
     const initialEquity = riskSettings.accountSize || 1;
     const sortedTrades = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
-    const data: any[] = [{ date: 'Start', equity: riskSettings.accountSize, returnPct: 0 }];
+    const data: any[] = [{ date: 'Start', equity: riskSettings.accountSize, returnPct: 0, cumulativePnl: 0 }];
     sortedTrades.forEach((t, i) => {
         currentEquity += (t.pnl - t.fees);
-        const dataPoint: any = { date: new Date(t.entryDate).toLocaleDateString(), equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100 };
+        const cumulativePnl = parseFloat((currentEquity - initialEquity).toFixed(2));
+        const dataPoint: any = { date: new Date(t.entryDate).toLocaleDateString(), equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl };
         selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend) dataPoint[friendId] = friend.equityCurve[Math.min(i + 1, friend.equityCurve.length - 1)]; });
         data.push(dataPoint);
     });
@@ -898,7 +899,63 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <TZAvgWinLossCard ratio={stats.avgWinLossRatio} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} />
               </div>
 
-              <div id="dashboard-equity" className="bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 h-96"><div className="flex justify-between items-start mb-6"><div><div className="flex items-center gap-3 mb-1"><h3 className="font-bold text-slate-500 dark:text-slate-400 flex items-center gap-2 text-xs uppercase tracking-wider"><TrendingUp className="w-3.5 h-3.5 text-emerald-500" />{t.dashboard.equityCurve}</h3><span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">{activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : activeDatePreset}</span></div><div className="flex items-baseline gap-3"><span className={`text-3xl font-black tabular-nums tracking-tight ${stats.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{stats.netPnl >= 0 ? '+' : ''}${stats.netPnl.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span><span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span></div></div><div className="text-xs text-slate-400 font-mono">{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div></div><ResponsiveContainer width="100%" height="100%"><ComposedChart data={mergedEquityData}><defs><linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#6366f1" stopOpacity={0.12}/><stop offset="95%" stopColor="#6366f1" stopOpacity={0}/></linearGradient></defs><CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.08} /><XAxis dataKey="date" hide /><YAxis orientation="right" tick={{fontSize: 10, fill: '#94a3b8'}} axisLine={false} tickLine={false} domain={['auto', 'auto']} /><Tooltip contentStyle={tooltipStyle} itemStyle={{ fontSize: '12px' }} formatter={(value: number, name: string, props: any) => { if (name === 'My Equity') { const pct = props.payload.returnPct; return [`$${value.toLocaleString()} (${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%)`, name]; } return [`$${value.toLocaleString()}`, name]; }} /><Legend content={renderCustomLegend} /><Area type="monotone" dataKey="equity" name="My Equity" stroke="#6366f1" strokeWidth={1.5} fillOpacity={1} fill="url(#colorEquity)" />{selectedFriends.map(friendId => { const friend = friends.find(f => f.id === friendId); if (!friend) return null; return (<div key={friend.id}><Line type="monotone" dataKey={friend.id} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" /></div>); })}</ComposedChart></ResponsiveContainer></div>
+              <div id="dashboard-equity" style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
+                {/* Header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '累计净盈亏' : 'Daily net cumulative P&L'}</span>
+                    <TZInfoIcon />
+                    <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span>
+                  </div>
+                  <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div>
+                </div>
+                {/* Chart */}
+                <div style={{ height: 260 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={mergedEquityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="pnlGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#00c896" stopOpacity={0.25}/>
+                          <stop offset="60%" stopColor="#00c896" stopOpacity={0.08}/>
+                          <stop offset="100%" stopColor="#00c896" stopOpacity={0}/>
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" vertical={false} />
+                      <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} interval="preserveStartEnd" />
+                      <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} width={60}
+                        tickFormatter={(v: number) => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : v <= -1000 ? `-$${(Math.abs(v)/1000).toFixed(0)}k` : `$${v}`}
+                        domain={['auto', 'auto']}
+                      />
+                      <Tooltip
+                        cursor={{ stroke: '#00c896', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        content={({ active, payload, label }: any) => {
+                          if (!active || !payload?.length) return null;
+                          const val = payload[0]?.value ?? 0;
+                          const sign = val >= 0 ? '+' : '';
+                          return (
+                            <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
+                              <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ width: 10, height: 10, background: '#00c896', borderRadius: 2, display: 'inline-block' }} />
+                                <span>{sign}${Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                              </div>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Area type="monotone" dataKey="cumulativePnl" stroke="#00c896" strokeWidth={2}
+                        fill="url(#pnlGradient)" dot={false}
+                        activeDot={{ r: 5, fill: '#00c896', stroke: '#fff', strokeWidth: 2 }}
+                      />
+                      {selectedFriends.map(friendId => {
+                        const friend = friends.find(f => f.id === friendId);
+                        if (!friend) return null;
+                        return <Line key={friend.id} type="monotone" dataKey={friendId} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" />;
+                      })}
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
 
               <div id="dashboard-strategy" className="grid grid-cols-1 lg:grid-cols-3 gap-6"><div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-xl border border-slate-100 dark:border-slate-800 h-80 flex flex-col"><h3 className="font-bold text-slate-800 dark:text-slate-200 mb-2 flex items-center gap-2 text-sm"><Activity className="w-4 h-4 text-purple-500" />{t.dashboard.setupPerformance}</h3><div className="flex-1 min-h-0"><ResponsiveContainer width="100%" height="100%"><BarChart data={setupPerformance} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}><CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" opacity={0.4} /><XAxis type="number" hide /><YAxis dataKey="name" type="category" width={120} tick={{fontSize: 11, fill: '#64748b', fontWeight: 500}} axisLine={false} tickLine={false} /><Tooltip cursor={{fill: 'rgba(0,0,0,0.03)'}} contentStyle={{...tooltipStyle, fontSize: '12px'}} itemStyle={{ color: isDark ? '#f8fafc' : '#0f172a' }} formatter={(value: number) => [`$${value.toFixed(2)}`, 'PnL']} /><Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={16}>{setupPerformance.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.value >= 0 ? 'rgba(16,185,129,0.75)' : 'rgba(244,63,94,0.75)'} />))}</Bar></BarChart></ResponsiveContainer></div></div><div className="lg:col-span-1 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden h-80 flex flex-col"><div className="relative z-10 flex flex-col h-full"><div className="flex items-center gap-2 mb-4"><Lightbulb className="w-4 h-4 text-amber-400" /><h3 className="font-bold text-slate-800 dark:text-white text-sm">{t.dashboard.aiTips.title}</h3></div>{loadingTips ? (<div className="flex flex-1 items-center justify-center text-slate-500 dark:text-slate-400"><Activity className="w-5 h-5 animate-spin mr-2" /><p className="text-xs">{t.dashboard.aiTips.loading}</p></div>) : aiTips.length > 0 ? (<div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">{aiTips.map((tip, idx) => (<div key={idx} className="bg-white dark:bg-slate-900/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700 flex items-start gap-2.5"><span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[9px] font-bold mt-0.5">{idx + 1}</span><p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">{tip}</p></div>))}</div>) : (<div className="flex flex-1 items-center justify-center"><p className="text-xs text-slate-500 dark:text-slate-400 italic text-center px-4">{t.dashboard.aiTips.fallback}</p></div>)}</div></div></div>
 
