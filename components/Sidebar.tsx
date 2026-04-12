@@ -396,11 +396,10 @@ const Sidebar = ({
         justifyContent: isCollapsed ? 'center' : 'flex-start',
         gap: 10,
       }}>
-        {/* Brand name only — no icon (icon lives in the left icon bar) */}
+        {/* Brand logo image */}
         {!isCollapsed && (
           <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 0.3 }}>TRADE</span>
-            <span style={{ fontSize: 14, fontWeight: 700, color: '#7C6FF7', letterSpacing: 0.3 }}>GRAIL</span>
+            <img src="/tradegrail-logo.png" alt="TradeGrail" style={{ height: 22, width: 'auto', objectFit: 'contain' }} />
           </div>
         )}
         {/* Collapse arrow */}
