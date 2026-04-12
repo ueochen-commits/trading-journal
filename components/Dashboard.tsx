@@ -44,7 +44,7 @@ const HalfGauge: React.FC<{ winPct: number; lossPct: number; singleColor?: strin
 
 const tzCard: React.CSSProperties = {
   background: '#ffffff', border: '1px solid #ededf3', borderRadius: 10,
-  padding: '11px 13px', height: 82, display: 'flex', flexDirection: 'column',
+  padding: '14px 16px', height: 100, display: 'flex', flexDirection: 'column',
   justifyContent: 'space-between', flex: 1, minWidth: 0,
 };
 const tzLabel: React.CSSProperties = { fontSize: 11, color: '#9396aa', fontWeight: 500 };
