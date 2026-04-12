@@ -84,10 +84,9 @@ import {
   DailyDisciplineRecord, WeeklyGoal, TradeStatus, Direction
 } from './types';
 
-// PageContainer updated to reduce side margins and increase max width for a wider view
 const PageContainer = ({ children }: { children?: React.ReactNode }) => (
-    <div className="py-6 px-4 md:py-8 md:px-6 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors">
-        <div className="max-w-[1600px] mx-auto h-full">
+    <div className="py-6 px-4 md:py-8 md:px-8 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors">
+        <div className="w-full h-full">
             {children}
         </div>
     </div>
