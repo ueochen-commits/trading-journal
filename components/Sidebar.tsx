@@ -621,11 +621,11 @@ const Sidebar = ({
           </div>
           {/* Info */}
           {!isCollapsed && (
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, overflow: 'hidden' }}>
+              <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
                 {user.name}
               </div>
-              <div style={getTierBadgeStyle()}>
+              <div style={{ ...getTierBadgeStyle(), flexShrink: 0 }}>
                 {getTierLabel()}
               </div>
             </div>
