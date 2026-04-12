@@ -189,44 +189,50 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
 };
 
 const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData, language }) => {
-  const scoreColor = composite >= 70 ? '#10b981' : composite >= 40 ? '#f59e0b' : '#f43f5e';
+  const scoreColor = composite >= 70 ? '#10b981' : composite >= 40 ? '#f59e0b' : '#ef4444';
   const scoreLabel = composite >= 70 ? (language === 'cn' ? '优秀' : 'Excellent') : composite >= 40 ? (language === 'cn' ? '良好' : 'Good') : (language === 'cn' ? '待提升' : 'Needs Work');
   return (
-    <div className="bg-slate-900 dark:bg-slate-950 p-5 rounded-2xl border border-slate-700/50 shadow-xl relative overflow-hidden">
-      {/* subtle glow */}
-      <div className="absolute inset-0 bg-gradient-to-br from-violet-900/20 via-transparent to-transparent pointer-events-none" />
-      <div className="relative z-10">
-        <div className="flex items-center justify-between mb-1">
-          <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <Hexagon className="w-3.5 h-3.5 text-violet-400" />
-            TradeGrail Score
-          </h3>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full border" style={{ color: scoreColor, borderColor: scoreColor + '55', backgroundColor: scoreColor + '18' }}>{scoreLabel}</span>
-        </div>
-
-        {/* Radar chart with score overlaid in center */}
-        <div className="relative flex items-center justify-center" style={{ height: 220 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} margin={{ top: 16, right: 24, bottom: 16, left: 24 }}>
-              <PolarGrid stroke="rgba(148,163,184,0.15)" />
-              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }} />
-              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar dataKey="value" stroke="#8b5cf6" fill="rgba(139,92,246,0.18)" strokeWidth={2} dot={{ r: 3, fill: '#8b5cf6', strokeWidth: 0 }} />
-            </RadarChart>
-          </ResponsiveContainer>
-          {/* Score in center */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-            <span className="text-4xl font-black tabular-nums leading-none" style={{ color: scoreColor }}>{composite}</span>
-            <span className="text-[10px] text-slate-500 mt-1 font-semibold uppercase tracking-wider">{language === 'cn' ? '综合评分' : '/100'}</span>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-5 pt-5 pb-3 flex items-center justify-between">
+        <div>
+          <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">TradeGrail Score</p>
+          <div className="flex items-baseline gap-2">
+            <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white leading-none">{composite}</span>
+            <span className="text-sm text-slate-400 font-medium">/ 100</span>
           </div>
         </div>
+        <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ color: scoreColor, backgroundColor: scoreColor + '18' }}>{scoreLabel}</span>
+      </div>
 
-        {/* Dimension row */}
-        <div className="grid grid-cols-5 gap-1 mt-2 border-t border-slate-700/50 pt-3">
+      {/* Body: radar left, dimensions right */}
+      <div className="flex items-center gap-2 px-3 pb-4">
+        {/* Radar */}
+        <div className="shrink-0" style={{ width: 170, height: 170 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart data={radarData} margin={{ top: 12, right: 18, bottom: 12, left: 18 }}>
+              <PolarGrid stroke="#e2e8f0" className="dark:stroke-slate-700/60" />
+              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} />
+              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+              <Radar dataKey="value" stroke="#6366f1" fill="rgba(99,102,241,0.15)" strokeWidth={1.5} dot={{ r: 2.5, fill: '#6366f1', strokeWidth: 0 }} />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Dimension list */}
+        <div className="flex-1 space-y-2.5 min-w-0">
           {radarData.map(d => (
-            <div key={d.subject} className="flex flex-col items-center gap-1">
-              <span className="text-sm font-black tabular-nums text-white">{d.value}</span>
-              <span className="text-[9px] text-slate-500 font-semibold text-center leading-tight">{d.subject}</span>
+            <div key={d.subject}>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{d.subject}</span>
+                <span className="text-[11px] font-bold tabular-nums text-slate-700 dark:text-slate-200">{d.value}</span>
+              </div>
+              <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{ width: `${d.value}%`, backgroundColor: d.value >= 70 ? '#10b981' : d.value >= 40 ? '#6366f1' : '#f59e0b' }}
+                />
+              </div>
             </div>
           ))}
         </div>
