@@ -142,6 +142,7 @@ const Icons = {
   ),
 };
 
+const ICON_BAR_W = 48;
 const SIDEBAR_W = 224;
 const COLLAPSED_W = 56;
 
@@ -285,7 +286,78 @@ const Sidebar = ({
 
   const sidebarWidth = isCollapsed ? COLLAPSED_W : SIDEBAR_W;
 
+  const iconBarItems = [
+    { id: 'plaza',         label: t.sidebar.plaza,         icon: Icons.Plaza },
+    { id: 'academy',       label: t.sidebar.academy,       icon: Icons.Academy },
+    { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell,  badge: unreadNotificationsCount },
+  ];
+
   return (
+    <>
+      {/* ── Vertical icon bar (leftmost strip) ── */}
+      <div style={{
+        width: ICON_BAR_W,
+        height: '100vh',
+        background: 'linear-gradient(180deg, #080d1e 0%, #0a0f22 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        position: 'fixed',
+        left: 0, top: 0,
+        zIndex: 101,
+        borderRight: '1px solid rgba(255,255,255,0.05)',
+      }}>
+        {/* Logo icon */}
+        <div style={{
+          width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+          background: 'linear-gradient(135deg, #4B5EE8, #8B5CF6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginTop: 15, marginBottom: 20,
+        }}>
+          <svg viewBox="0 0 44 44" fill="none" width="18" height="18">
+            <path d="M4 38H12V24L4 29V38Z" fill="rgba(255,255,255,0.45)" />
+            <path d="M16 38H24V14L16 19V38Z" fill="white" />
+            <path d="M28 38H36V4L28 9V38Z" fill="white" />
+          </svg>
+        </div>
+
+        {/* Nav items */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 4 }}>
+          {iconBarItems.map(({ id, label, icon: Icon, badge }) => {
+            const isActive = activeTab === id;
+            return (
+              <button
+                key={id}
+                onClick={() => { setActiveTab(id); onUserNavigateToTab(id); }}
+                title={label}
+                style={{
+                  width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: isActive ? 'rgba(88,80,220,0.3)' : 'transparent',
+                  color: isActive ? '#9B8FF8' : 'rgba(255,255,255,0.35)',
+                  position: 'relative', transition: 'background 0.15s',
+                }}
+                onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
+                onMouseLeave={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              >
+                <Icon />
+                {badge != null && badge > 0 && (
+                  <span style={{
+                    position: 'absolute', top: 3, right: 3,
+                    minWidth: 14, height: 14, padding: '0 3px',
+                    background: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700,
+                    borderRadius: 7, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    {badge > 9 ? '9+' : badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Main sidebar ── */}
     <div
       id="sidebar-nav"
       style={{
@@ -295,7 +367,7 @@ const Sidebar = ({
         display: 'flex',
         flexDirection: 'column',
         position: 'fixed',
-        left: 0, top: 0,
+        left: ICON_BAR_W, top: 0,
         zIndex: 100,
         transition: 'width 0.2s',
         overflow: 'hidden',
@@ -568,7 +640,7 @@ const Sidebar = ({
           )}
         </button>
       </div>
-    </div>
+    </>
   );
 };
 
