@@ -4,7 +4,6 @@ import { useLanguage } from '../LanguageContext';
 import { useTour } from './TourContext';
 import { useUser } from './UserContext';
 import { useSocial } from './SocialContext';
-import { Logo } from './Logo';
 
 interface SidebarProps {
   activeTab: string;
@@ -17,131 +16,169 @@ interface SidebarProps {
   onAddTrade: () => void;
 }
 
-// Filled SVG icons — no AI-feel, matches TradeZilla's solid icon style
 const Icons = {
   Dashboard: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm8-3a1 1 0 00-1 1v2H7a1 1 0 000 2h2v2a1 1 0 002 0v-2h2a1 1 0 000-2h-2V8a1 1 0 00-1-1z" />
-      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm13 0a1 1 0 00-1-1h-4a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L15 6.414V8a1 1 0 002 0V4z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M2 2h5v5H2V2zm0 7h5v5H2V9zm7-7h5v5H9V2zm0 7h5v5H9V9z"/>
     </svg>
   ),
   Chart: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M1 12h2V7H1v5zm4 0h2V4H5v8zm4 0h2V1H9v11zm4 0h2V9h-2v3z"/>
     </svg>
   ),
   Journal: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M3 1a1 1 0 00-1 1v12a1 1 0 001 1h8a2 2 0 002-2V4.414A2 2 0 0012.586 3L11 1.414A2 2 0 009.586 1H3zm6 1.414L10.586 4H9V2.414zM3 2h5v3h4v9a1 1 0 01-1 1H3V2zm2 5h4v1H5V7zm0 2h4v1H5V9zm0 2h3v1H5v-1z"/>
     </svg>
   ),
   Playbook: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M2 3h12v1H2V3zm0 3h12v1H2V6zm0 3h8v1H2V9zm0 3h6v1H2v-1z"/>
     </svg>
   ),
   Reports: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm2 10a1 1 0 10-2 0v3a1 1 0 102 0v-3zm2-3a1 1 0 011 1v5a1 1 0 11-2 0v-5a1 1 0 011-1zm4-1a1 1 0 10-2 0v7a1 1 0 102 0V8z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1a6 6 0 110 12A6 6 0 018 2zm-.5 2v5.5l4 2-.5.87-4.5-2.37V4h1z"/>
     </svg>
   ),
   Plans: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M13.5 1l-8 8-3-3-1.5 1.5 4.5 4.5 9.5-9.5L13.5 1z"/>
     </svg>
   ),
   Psychology: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 1a5 5 0 00-3.54 8.54l-.46 3.46 4-1.5 4 1.5-.46-3.46A5 5 0 008 1zm0 1a4 4 0 110 8A4 4 0 018 2zm0 1.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/>
     </svg>
   ),
   Calendar: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M5 1v1H2a1 1 0 00-1 1v11a1 1 0 001 1h12a1 1 0 001-1V3a1 1 0 00-1-1h-3V1h-1v1H6V1H5zm-3 4h12v8H2V5zm2 2v1h1V7H4zm3 0v1h1V7H7zm3 0v1h1V7h-1zM4 10v1h1v-1H4zm3 0v1h1v-1H7zm3 0v1h1v-1h-1z"/>
     </svg>
   ),
   Plaza: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM4.332 8.027a6.012 6.012 0 011.912-2.706C6.512 5.73 6.974 6 7.5 6A1.5 1.5 0 019 7.5V8a2 2 0 004 0 2 2 0 011.523-1.943A5.977 5.977 0 0116 10c0 .34-.028.675-.083 1H15a2 2 0 00-2 2v2.197A5.973 5.973 0 0110 16v-2a2 2 0 00-2-2 2 2 0 01-2-2 2 2 0 00-1.668-1.973z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 1a7 7 0 100 14A7 7 0 008 1zm0 1c.9 0 1.76.2 2.53.55L9 4H7L5.47 2.55A6 6 0 018 2zM4.7 3.3L6 5v2H2.07A6 6 0 014.7 3.3zM2.07 8H6v2l-1.3 1.7A6 6 0 012.07 8zm3.63 4.45L7 11h2l1.3 1.45A6 6 0 015.7 12.45zm5.6.25L10 11V9h3.93a6 6 0 01-2.63 3.7zM13.93 8H10V6l1.3-1.7A6 6 0 0113.93 8z"/>
     </svg>
   ),
   Academy: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 1L1 5l7 4 7-4-7-4zM3 7.5v3.5c0 1.1 2.24 2 5 2s5-.9 5-2V7.5L8 11 3 7.5z"/>
     </svg>
   ),
   Bell: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 1a5 5 0 00-5 5v3l-1.5 2h13L13 9V6a5 5 0 00-5-5zm0 14a2 2 0 01-2-2h4a2 2 0 01-2 2z"/>
     </svg>
   ),
   Plus: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
     </svg>
   ),
   Message: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
-      <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M2 2h12a1 1 0 011 1v8a1 1 0 01-1 1H5l-3 2V3a1 1 0 011-1z"/>
     </svg>
   ),
   Crown: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M10 1l2.928 5.618L19 7.618l-4.5 4.382 1.072 6.25L10 15.118l-5.572 3.132L5.5 12 1 7.618l6.072-1L10 1z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 2L5 7 1 4l2 9h10l2-9-4 3-3-5z"/>
     </svg>
   ),
   Sun: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 5a3 3 0 100 6A3 3 0 008 5zM8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
     </svg>
   ),
   Moon: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M14 10.5A6.5 6.5 0 015.5 2a6.5 6.5 0 000 12A6.5 6.5 0 0014 10.5z"/>
     </svg>
   ),
   Settings: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.561.379-1.561 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.836 1.372.734 2.942 2.106 2.106a1.532 1.532 0 012.287.947c.379 1.561 2.6 1.561 2.978 0a1.533 1.533 0 012.287-.947c1.372.836 2.942-.734 2.106-2.106a1.533 1.533 0 01.947-2.287c1.561-.379 1.561-2.6 0-2.978a1.532 1.532 0 01-.947-2.287c.836-1.372-.734-2.942-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 5a3 3 0 100 6A3 3 0 008 5zm0 1a2 2 0 110 4A2 2 0 018 6zm5.66 1.5l-1.1-.63a5.1 5.1 0 000-1.74l1.1-.63-.5-.87-1.1.63a5 5 0 00-1.5-.87V2h-1v1.39a5 5 0 00-1.5.87l-1.1-.63-.5.87 1.1.63a5.1 5.1 0 000 1.74l-1.1.63.5.87 1.1-.63c.44.37.95.65 1.5.87V10h1V8.89a5 5 0 001.5-.87l1.1.63.5-.87z"/>
     </svg>
   ),
   User: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 1a3 3 0 100 6A3 3 0 008 1zm0 7c-3.33 0-6 1.34-6 3v1h12v-1c0-1.66-2.67-3-6-3z"/>
     </svg>
   ),
   Gift: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M5 5a3 3 0 015-2.236A3 3 0 0114.83 6H16a2 2 0 110 4h-5V9a1 1 0 10-2 0v1H4a2 2 0 110-4h1.17C5.06 5.687 5 5.35 5 5zm4 1V5a1 1 0 10-1 1h1zm3 0a1 1 0 10-1-1v1h1z" clipRule="evenodd" />
-      <path d="M9 11H3v5a2 2 0 002 2h4v-7zm2 7h4a2 2 0 002-2v-5h-6v7z" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M8 3a2 2 0 01-2-2 2 2 0 012 2zm0 0a2 2 0 012-2 2 2 0 01-2 2zM1 4h14v3H1V4zm1 4h5v6H2V8zm6 0h5v6H8V8z"/>
     </svg>
   ),
   LogOut: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M6 2H2v12h4v-1H3V3h3V2zm5 3l-1 1 2 2H5v1h7l-2 2 1 1 3-3-3-4z"/>
     </svg>
   ),
   ChevronRight: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+      <path d="M6 3l5 5-5 5-1-1 4-4-4-4 1-1z"/>
     </svg>
   ),
   ChevronLeft: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-      <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+      <path d="M10 3L5 8l5 5 1-1-4-4 4-4-1-1z"/>
     </svg>
   ),
   Map: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M12 1.586l-4 4v12.828l4-4V1.586zM3.707 3.293A1 1 0 002 4v10a1 1 0 00.293.707L6 18.414V5.586L3.707 3.293zM17.707 5.293L14 1.586v12.828l2.293 2.293A1 1 0 0018 16V6a1 1 0 00-.293-.707z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M1 2l4 1.5 6-2 4 1.5v11l-4-1.5-6 2-4-1.5V2zm4 2.3v8.4l6-2V4.3l-6 2z"/>
     </svg>
   ),
   Languages: () => (
-    <svg viewBox="0 0 20 20" fill="currentColor" className="w-[18px] h-[18px]">
-      <path fillRule="evenodd" d="M7 2a1 1 0 011 1v1h3a1 1 0 110 2H9.578a18.87 18.87 0 01-1.724 4.78c.29.354.596.696.914 1.026a1 1 0 11-1.44 1.389c-.188-.196-.373-.396-.554-.6a19.098 19.098 0 01-3.107 3.567 1 1 0 01-1.334-1.49 17.087 17.087 0 003.13-3.733 18.992 18.992 0 01-1.487-3.754 1 1 0 111.94-.485c.261.104.52.198.78.284A17.502 17.502 0 007.478 6H4a1 1 0 110-2h3V3a1 1 0 011-1zm6 6a1 1 0 01.894.553l2.991 5.992a.869.869 0 01.02.037l.99 1.98a1 1 0 11-1.79.895L15.383 16h-4.764l-.724 1.447a1 1 0 11-1.788-.894l.99-1.98.019-.038 2.99-5.99A1 1 0 0113 8zm-1.382 6h2.764L13 11.236 11.618 14z" clipRule="evenodd" />
+    <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16">
+      <path d="M7 2H1v1h2.5C3 5 2 6.5 1 8l.8.6C2.5 7.5 3 6.8 3.5 6c.5.8 1 1.5 1.7 2.6L6 8C5 6.5 4.2 5 4 3H7V2zm2 3l-3 9h1.2l.8-2.5h3l.8 2.5H13L10 5H9zm.5 1.5L11 10H8.5l1-3.5z"/>
     </svg>
   ),
+};
+
+// Inline styles for gradient backgrounds (can't be done in Tailwind)
+const sidebarStyle: React.CSSProperties = {
+  background: 'linear-gradient(160deg, #0f1535 0%, #131b45 40%, #1a1040 100%)',
+  position: 'relative',
+};
+
+const sidebarOverlayStyle: React.CSSProperties = {
+  content: '',
+  position: 'absolute',
+  top: 0, left: 0, right: 0, bottom: 0,
+  background: 'radial-gradient(ellipse at 30% 20%, rgba(99,88,255,0.12) 0%, transparent 60%)',
+  pointerEvents: 'none',
+  zIndex: 0,
+};
+
+const addBtnStyle: React.CSSProperties = {
+  background: 'linear-gradient(135deg, #5566FF, #8855EE)',
+  borderRadius: '8px',
+  padding: '9px 14px',
+  color: '#fff',
+  fontSize: '13px',
+  fontWeight: 500,
+  width: 'calc(100% - 1.75rem)',
+  margin: '0.875rem',
+  border: 'none',
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '7px',
+};
+
+const logoIconStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  borderRadius: 8,
+  background: 'linear-gradient(135deg, #4455EE, #9966FF)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
 };
 
 const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificationsCount = 0, isCollapsed, toggleCollapse, onAddTrade }: SidebarProps) => {
@@ -153,32 +190,35 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const menuItems = [
-    { id: 'dashboard', label: t.sidebar.dashboard, icon: Icons.Dashboard, tourId: undefined },
-    { id: 'charts',    label: t.sidebar.charts,    icon: Icons.Chart,     tourId: 'chart-nav-item' },
-    { id: 'journal',   label: t.sidebar.journal,   icon: Icons.Journal,   tourId: undefined },
-    { id: 'playbook',  label: t.sidebar.playbook,  icon: Icons.Playbook,  tourId: undefined },
-    { id: 'reports',   label: t.sidebar.reports,   icon: Icons.Reports,   tourId: undefined },
-    { id: 'plans',     label: t.sidebar.plans,     icon: Icons.Plans,     tourId: undefined },
-    { id: 'psychology',label: t.sidebar.psychology,icon: Icons.Psychology,tourId: undefined },
-    { id: 'calendar',  label: t.sidebar.calendar,  icon: Icons.Calendar,  tourId: undefined },
-    { id: 'plaza',     label: t.sidebar.plaza,     icon: Icons.Plaza,     tourId: undefined },
-    { id: 'academy',   label: t.sidebar.academy,   icon: Icons.Academy,   tourId: undefined },
-    { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell, tourId: undefined },
+  const mainMenuItems = [
+    { id: 'dashboard',     label: t.sidebar.dashboard,     icon: Icons.Dashboard, tourId: undefined },
+    { id: 'charts',        label: t.sidebar.charts,        icon: Icons.Chart,     tourId: 'chart-nav-item' },
+    { id: 'journal',       label: t.sidebar.journal,       icon: Icons.Journal,   tourId: undefined },
+    { id: 'playbook',      label: t.sidebar.playbook,      icon: Icons.Playbook,  tourId: undefined },
+    { id: 'reports',       label: t.sidebar.reports,       icon: Icons.Reports,   tourId: undefined },
+    { id: 'plans',         label: t.sidebar.plans,         icon: Icons.Plans,     tourId: undefined },
+    { id: 'psychology',    label: t.sidebar.psychology,    icon: Icons.Psychology,tourId: undefined },
+    { id: 'calendar',      label: t.sidebar.calendar,      icon: Icons.Calendar,  tourId: undefined },
+  ];
+
+  const proMenuItems = [
+    { id: 'plaza',         label: t.sidebar.plaza,         icon: Icons.Plaza,     tourId: undefined },
+    { id: 'academy',       label: t.sidebar.academy,       icon: Icons.Academy,   tourId: undefined },
+    { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell,      tourId: undefined },
   ];
 
   const toggleLanguage = () => setLanguage(language === 'cn' ? 'en' : 'cn');
 
   const getTierLabel = () => {
-    if (user.tier === 'elite') return 'Elite';
-    if (user.tier === 'pro') return 'Pro';
-    return language === 'cn' ? '免费版' : 'Free';
+    if (user.tier === 'elite') return 'ELITE';
+    if (user.tier === 'pro') return 'PRO';
+    return 'FREE';
   };
 
-  const getTierColor = () => {
-    if (user.tier === 'elite') return 'bg-amber-500/20 text-amber-400';
-    if (user.tier === 'pro') return 'bg-indigo-500/20 text-indigo-400';
-    return 'bg-white/10 text-white/40';
+  const getTierBadgeStyle = (): React.CSSProperties => {
+    if (user.tier === 'elite') return { color: '#FFD700', background: 'rgba(255,215,0,0.15)', border: '0.5px solid rgba(255,215,0,0.3)' };
+    if (user.tier === 'pro') return { color: '#AA88FF', background: 'rgba(170,136,255,0.15)', border: '0.5px solid rgba(170,136,255,0.3)' };
+    return { color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.08)', border: '0.5px solid rgba(255,255,255,0.15)' };
   };
 
   useEffect(() => {
@@ -191,80 +231,148 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isProfileMenuOpen]);
 
+  const NavItem = ({ item }: { item: typeof mainMenuItems[0] }) => {
+    const Icon = item.icon;
+    const isActive = activeTab === item.id;
+    return (
+      <button
+        key={item.id}
+        id={item.tourId}
+        onClick={() => { setActiveTab(item.id); onUserNavigateToTab(item.id); }}
+        title={isCollapsed ? item.label : undefined}
+        style={isActive ? {
+          background: 'rgba(99,88,255,0.2)',
+          border: '0.5px solid rgba(99,88,255,0.3)',
+        } : {}}
+        className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] cursor-pointer mb-[1px] outline-none transition-all group
+          ${isActive ? '' : 'hover:bg-white/5 border border-transparent'}`}
+      >
+        {/* Active left bar */}
+        {isActive && (
+          <span
+            className="absolute left-0 top-[20%] rounded-r-[2px]"
+            style={{
+              width: '2.5px',
+              height: '60%',
+              background: 'linear-gradient(180deg, #6655FF, #AA77FF)',
+            }}
+          />
+        )}
+        <span style={{ color: isActive ? 'rgba(180,160,255,0.95)' : 'rgba(255,255,255,0.4)' }}
+          className="group-hover:!text-white/70 transition-colors shrink-0">
+          <Icon />
+        </span>
+        {!isCollapsed && (
+          <span
+            className="ml-[10px] text-[13px] leading-none hidden md:block"
+            style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: isActive ? 500 : 400 }}
+          >
+            {item.label}
+          </span>
+        )}
+        {item.id === 'notifications' && unreadNotificationsCount > 0 && (
+          <span className={`${isCollapsed ? 'absolute top-1 right-1' : 'ml-auto hidden md:flex'} min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full items-center justify-center flex`}>
+            {unreadNotificationsCount}
+          </span>
+        )}
+      </button>
+    );
+  };
+
   return (
     <div
       id="sidebar-nav"
-      className={`bg-[#111318] flex flex-col h-screen fixed left-0 top-0 transition-all duration-200 z-50 border-r border-white/[0.06] ${isCollapsed ? 'w-[60px]' : 'w-[60px] md:w-[220px]'}`}
+      style={sidebarStyle}
+      className={`flex flex-col h-screen fixed left-0 top-0 transition-all duration-200 z-50 ${isCollapsed ? 'w-[60px]' : 'w-[60px] md:w-[220px]'}`}
     >
+      {/* Radial overlay */}
+      <div style={sidebarOverlayStyle} />
+
       {/* Collapse toggle */}
       <button
         onClick={toggleCollapse}
-        className="absolute -right-3 top-8 z-50 w-6 h-6 bg-[#1c1f26] border border-white/10 rounded-full text-white/30 hover:text-white/70 transition-colors hidden md:flex items-center justify-center"
+        className="absolute -right-3 top-8 z-50 w-6 h-6 rounded-full border border-white/10 text-white/30 hover:text-white/70 transition-colors hidden md:flex items-center justify-center"
+        style={{ background: '#1c1f3a' }}
         title={isCollapsed ? 'Expand' : 'Collapse'}
       >
         {isCollapsed ? <Icons.ChevronRight /> : <Icons.ChevronLeft />}
       </button>
 
       {/* Logo */}
-      <div className={`h-[56px] flex items-center shrink-0 ${isCollapsed ? 'justify-center px-0' : 'justify-center md:justify-start md:px-5'}`}>
-        {isCollapsed ? (
-          <Logo showText={false} iconClassName="w-7 h-7" />
-        ) : (
-          <div className="hidden md:flex items-center gap-2.5">
-            <Logo showText={false} iconClassName="w-7 h-7" />
-            <span className="text-white font-bold text-[15px] tracking-wide">TradeGrail</span>
+      <div className={`h-[56px] flex items-center shrink-0 relative z-10 ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-4'}`}>
+        <div style={logoIconStyle}>
+          <svg viewBox="0 0 44 44" fill="none" width="20" height="20">
+            <path d="M4 38H12V24L4 29V38Z" fill="rgba(255,255,255,0.4)" />
+            <path d="M16 38H24V14L16 19V38Z" fill="white" />
+            <path d="M28 38H36V4L28 9V38Z" fill="white" />
+          </svg>
+        </div>
+        {!isCollapsed && (
+          <div className="hidden md:flex items-center ml-2.5">
+            <span className="font-semibold text-[15px] tracking-[0.5px] text-white">TRADE</span>
+            <span className="font-semibold text-[15px] tracking-[0.5px]" style={{ color: '#8877FF' }}>GRAIL</span>
           </div>
         )}
-        <div className={`${isCollapsed ? 'block' : 'md:hidden'}`}>
-          <Logo showText={false} iconClassName="w-7 h-7" />
-        </div>
       </div>
 
-      {/* Add Trade */}
-      <div className={`px-3 mb-3 shrink-0`}>
+      {/* Add Trade button */}
+      <div className="relative z-10 shrink-0">
         <button
           onClick={onAddTrade}
           title={isCollapsed ? t.journal.addTrade : undefined}
-          className={`w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white rounded-md font-semibold text-[13px] transition-colors ${isCollapsed ? 'py-2.5' : 'py-2.5 md:px-3'}`}
+          style={isCollapsed ? { ...addBtnStyle, width: 'calc(100% - 1.75rem)', justifyContent: 'center', padding: '9px 0' } : addBtnStyle}
         >
           <Icons.Plus />
           {!isCollapsed && <span className="hidden md:block">{t.journal.addTrade}</span>}
         </button>
       </div>
 
-      {/* Nav items */}
-      <nav className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar px-2 space-y-0.5">
-        {menuItems.map((item) => {
+      {/* Main nav */}
+      <nav className="flex-1 overflow-y-auto overflow-x-hidden no-scrollbar relative z-10 px-[0.875rem] pt-1">
+        {mainMenuItems.map((item) => <NavItem key={item.id} item={item} />)}
+
+        {/* PRO section divider */}
+        <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.07)', margin: '0.5rem 0' }} />
+
+        {!isCollapsed && (
+          <p className="hidden md:block text-[10px] font-semibold uppercase tracking-widest px-1 mb-1" style={{ color: 'rgba(255,255,255,0.2)' }}>
+            Community
+          </p>
+        )}
+
+        {proMenuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
           return (
             <button
               key={item.id}
-              id={item.tourId}
               onClick={() => { setActiveTab(item.id); onUserNavigateToTab(item.id); }}
               title={isCollapsed ? item.label : undefined}
-              className={`relative w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-3'} py-2.5 rounded-md transition-colors group outline-none
-                ${isActive
-                  ? 'bg-white/10 text-white'
-                  : 'text-white/40 hover:bg-white/5 hover:text-white/70'
-                }`}
+              style={isActive ? { background: 'rgba(99,88,255,0.2)', border: '0.5px solid rgba(99,88,255,0.3)' } : {}}
+              className={`relative w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-3' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] cursor-pointer mb-[1px] outline-none transition-all group
+                ${isActive ? '' : 'hover:bg-white/5 border border-transparent'}`}
             >
-              {/* Active left bar */}
               {isActive && (
-                <span className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-indigo-500" />
+                <span className="absolute left-0 top-[20%] rounded-r-[2px]"
+                  style={{ width: '2.5px', height: '60%', background: 'linear-gradient(180deg, #6655FF, #AA77FF)' }} />
               )}
-
-              <Icon />
-
+              <span style={{ color: isActive ? 'rgba(180,160,255,0.95)' : 'rgba(255,255,255,0.4)' }}
+                className="group-hover:!text-white/70 transition-colors shrink-0">
+                <Icon />
+              </span>
               {!isCollapsed && (
-                <span className={`ml-2.5 text-[13px] font-medium hidden md:block leading-none ${isActive ? 'text-white' : ''}`}>
+                <span className="ml-[10px] text-[13px] leading-none hidden md:flex items-center gap-2 flex-1"
+                  style={{ color: isActive ? '#fff' : 'rgba(255,255,255,0.5)', fontWeight: isActive ? 500 : 400 }}>
                   {item.label}
+                  {(item.id === 'plaza' || item.id === 'academy') && (
+                    <span style={{ fontSize: 10, fontWeight: 600, color: '#FFD700', background: 'rgba(255,215,0,0.12)', border: '0.5px solid rgba(255,215,0,0.25)', padding: '2px 7px', borderRadius: 4 }}>
+                      PRO
+                    </span>
+                  )}
                 </span>
               )}
-
-              {/* Notification badge */}
               {item.id === 'notifications' && unreadNotificationsCount > 0 && (
-                <span className={`${isCollapsed ? 'absolute top-1.5 right-1.5' : 'ml-auto hidden md:flex'} min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full items-center justify-center flex`}>
+                <span className={`${isCollapsed ? 'absolute top-1 right-1' : 'ml-auto hidden md:flex'} min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full items-center justify-center flex`}>
                   {unreadNotificationsCount}
                 </span>
               )}
@@ -274,157 +382,130 @@ const Sidebar = ({ activeTab, setActiveTab, theme, toggleTheme, unreadNotificati
       </nav>
 
       {/* Divider */}
-      <div className="mx-3 border-t border-white/[0.06] shrink-0" />
+      <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.07)', margin: '0 0.875rem' }} className="shrink-0 relative z-10" />
 
       {/* Bottom utilities */}
-      <div className="px-2 py-2 space-y-0.5 shrink-0">
-
-        {/* Friends */}
-        <button
-          onClick={openFriendDrawer}
-          title={isCollapsed ? t.social.friends : undefined}
-          className={`relative w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-3'} py-2.5 rounded-md text-white/40 hover:bg-white/5 hover:text-white/70 transition-colors`}
-        >
-          <Icons.Message />
-          {!isCollapsed && <span className="ml-2.5 text-[13px] font-medium hidden md:block">{t.social.friends}</span>}
-          {totalUnreadCount > 0 && (
-            <span className={`${isCollapsed ? 'absolute top-1.5 right-1.5' : 'ml-auto hidden md:flex'} min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full items-center justify-center flex`}>
-              {totalUnreadCount > 9 ? '9+' : totalUnreadCount}
+      <div className="px-[0.875rem] py-2 space-y-[1px] shrink-0 relative z-10">
+        {[
+          { label: t.social.friends, icon: Icons.Message, onClick: openFriendDrawer, badge: totalUnreadCount },
+          { label: t.sidebar.guide, icon: Icons.Map, onClick: () => startTourForTab(activeTab) },
+          { label: language === 'cn' ? 'Language' : '语言', icon: Icons.Languages, onClick: toggleLanguage, extra: language.toUpperCase() },
+          { label: theme === 'dark' ? t.sidebar.lightMode : t.sidebar.darkMode, icon: theme === 'dark' ? Icons.Sun : Icons.Moon, onClick: toggleTheme },
+        ].map(({ label, icon: Icon, onClick, badge, extra }) => (
+          <button
+            key={label}
+            onClick={onClick}
+            title={isCollapsed ? label : undefined}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] hover:bg-white/5 transition-colors group relative`}
+          >
+            <span style={{ color: 'rgba(255,255,255,0.35)' }} className="group-hover:!text-white/60 transition-colors shrink-0">
+              <Icon />
             </span>
-          )}
-        </button>
+            {!isCollapsed && (
+              <span className="ml-[10px] text-[13px] hidden md:block flex-1 text-left" style={{ color: 'rgba(255,255,255,0.35)' }}>
+                {label}
+              </span>
+            )}
+            {extra && !isCollapsed && (
+              <span className="hidden md:block text-[10px] font-bold font-mono px-1.5 py-0.5 rounded" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.4)' }}>
+                {extra}
+              </span>
+            )}
+            {badge != null && badge > 0 && (
+              <span className={`${isCollapsed ? 'absolute top-1 right-1' : 'ml-auto hidden md:flex'} min-w-[16px] h-4 px-1 bg-rose-500 text-white text-[10px] font-bold rounded-full items-center justify-center flex`}>
+                {badge > 9 ? '9+' : badge}
+              </span>
+            )}
+          </button>
+        ))}
 
-        {/* Guide */}
-        <button
-          onClick={() => startTourForTab(activeTab)}
-          title={isCollapsed ? t.sidebar.guide : undefined}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-3'} py-2.5 rounded-md text-white/40 hover:bg-white/5 hover:text-white/70 transition-colors`}
-        >
-          <Icons.Map />
-          {!isCollapsed && <span className="ml-2.5 text-[13px] font-medium hidden md:block">{t.sidebar.guide}</span>}
-        </button>
-
-        {/* Language */}
-        <button
-          onClick={toggleLanguage}
-          title={isCollapsed ? (language === 'cn' ? 'Language' : '语言') : undefined}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-3'} py-2.5 rounded-md text-white/40 hover:bg-white/5 hover:text-white/70 transition-colors`}
-        >
-          <Icons.Languages />
-          {!isCollapsed && (
-            <span className="ml-2.5 text-[13px] font-medium hidden md:block flex-1 text-left">
-              {language === 'cn' ? 'Language' : '语言'}
-            </span>
-          )}
-          {!isCollapsed && (
-            <span className="hidden md:block text-[10px] font-bold font-mono bg-white/10 text-white/50 px-1.5 py-0.5 rounded">
-              {language.toUpperCase()}
-            </span>
-          )}
-        </button>
-
-        {/* Theme */}
-        <button
-          onClick={toggleTheme}
-          title={isCollapsed ? (theme === 'dark' ? t.sidebar.lightMode : t.sidebar.darkMode) : undefined}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-3'} py-2.5 rounded-md text-white/40 hover:bg-white/5 hover:text-white/70 transition-colors`}
-        >
-          {theme === 'dark' ? <Icons.Sun /> : <Icons.Moon />}
-          {!isCollapsed && (
-            <span className="ml-2.5 text-[13px] font-medium hidden md:block">
-              {theme === 'dark' ? t.sidebar.lightMode : t.sidebar.darkMode}
-            </span>
-          )}
-        </button>
-
-        {/* Upgrade (free tier only) */}
         {user.tier === 'free' && (
           <button
             onClick={openPricing}
             title={isCollapsed ? (language === 'cn' ? '升级' : 'Upgrade') : undefined}
-            className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-3'} py-2.5 rounded-md text-amber-400/70 hover:bg-white/5 hover:text-amber-400 transition-colors`}
+            className={`w-full flex items-center ${isCollapsed ? 'justify-center px-0 py-2.5' : 'justify-start px-3 py-[0.6rem]'} rounded-[7px] hover:bg-white/5 transition-colors group`}
           >
-            <Icons.Crown />
-            {!isCollapsed && <span className="ml-2.5 text-[13px] font-medium hidden md:block">{language === 'cn' ? '升级 Pro' : 'Upgrade'}</span>}
+            <span style={{ color: 'rgba(255,215,0,0.6)' }} className="group-hover:!text-yellow-400 transition-colors shrink-0">
+              <Icons.Crown />
+            </span>
+            {!isCollapsed && (
+              <span className="ml-[10px] text-[13px] hidden md:block" style={{ color: 'rgba(255,215,0,0.6)' }}>
+                {language === 'cn' ? '升级 Pro' : 'Upgrade'}
+              </span>
+            )}
           </button>
         )}
       </div>
 
-      {/* Divider */}
-      <div className="mx-3 border-t border-white/[0.06] shrink-0" />
-
-      {/* User profile */}
-      <div className="px-2 py-3 shrink-0 relative" ref={menuRef}>
+      {/* User area */}
+      <div style={{ borderTop: '0.5px solid rgba(255,255,255,0.07)' }} className="shrink-0 relative z-10" ref={menuRef}>
         {/* Pop-up menu */}
         {isProfileMenuOpen && (
-          <div className="absolute bottom-[calc(100%+8px)] left-2 w-56 bg-[#1c1f26] border border-white/10 rounded-lg shadow-2xl overflow-hidden z-[60]">
-            <div className="p-1 space-y-0.5">
-              <button
-                onClick={() => { setIsProfileMenuOpen(false); openPricing(); }}
-                className="w-full text-left px-3 py-2 hover:bg-white/5 text-indigo-400 text-[13px] font-semibold rounded-md transition-colors"
-              >
+          <div
+            className="absolute bottom-[calc(100%+4px)] left-2 w-56 rounded-lg shadow-2xl overflow-hidden z-[60]"
+            style={{ background: '#1a1d3a', border: '0.5px solid rgba(255,255,255,0.1)' }}
+          >
+            <div className="p-1 space-y-[1px]">
+              <button onClick={() => { setIsProfileMenuOpen(false); openPricing(); }}
+                className="w-full text-left px-3 py-2 rounded-md text-[13px] font-semibold transition-colors hover:bg-white/5"
+                style={{ color: '#8877FF' }}>
                 {language === 'cn' ? '探索我们的方案' : 'Explore plans'}
               </button>
-              <div className="h-px bg-white/[0.06] mx-1 my-1" />
-              <button
-                onClick={() => { setIsProfileMenuOpen(false); openProfile(); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-white/5 text-white/60 hover:text-white text-[13px] rounded-md transition-colors"
-              >
-                <Icons.User />
-                {language === 'cn' ? '个人资料' : 'Profile'}
+              <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.07)', margin: '4px 4px' }} />
+              {[
+                { label: language === 'cn' ? '个人资料' : 'Profile', icon: Icons.User, action: openProfile },
+                { label: language === 'cn' ? '设置与账单' : 'Settings & Billing', icon: Icons.Settings, action: openSettings },
+              ].map(({ label, icon: Icon, action }) => (
+                <button key={label} onClick={() => { setIsProfileMenuOpen(false); action(); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors hover:bg-white/5"
+                  style={{ color: 'rgba(255,255,255,0.6)' }}>
+                  <Icon />{label}
+                </button>
+              ))}
+              <button onClick={() => { setIsProfileMenuOpen(false); openReferral(); }}
+                className="w-full flex items-center justify-between px-3 py-2 rounded-md text-[13px] transition-colors hover:bg-white/5"
+                style={{ color: 'rgba(255,255,255,0.6)' }}>
+                <div className="flex items-center gap-2.5"><Icons.Gift />{language === 'cn' ? '推荐朋友' : 'Refer a friend'}</div>
+                <span className="text-[11px] font-bold" style={{ color: '#4ade80' }}>$15</span>
               </button>
-              <button
-                onClick={() => { setIsProfileMenuOpen(false); openSettings(); }}
-                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-white/5 text-white/60 hover:text-white text-[13px] rounded-md transition-colors"
-              >
-                <Icons.Settings />
-                {language === 'cn' ? '设置与账单' : 'Settings & Billing'}
-              </button>
-              <button
-                onClick={() => { setIsProfileMenuOpen(false); openReferral(); }}
-                className="w-full flex items-center justify-between px-3 py-2 hover:bg-white/5 text-white/60 hover:text-white text-[13px] rounded-md transition-colors"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icons.Gift />
-                  <span>{language === 'cn' ? '推荐朋友' : 'Refer a friend'}</span>
-                </div>
-                <span className="text-[11px] text-emerald-400 font-bold">$15</span>
-              </button>
-              <div className="h-px bg-white/[0.06] mx-1 my-1" />
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-2.5 px-3 py-2 hover:bg-rose-500/10 text-rose-400 text-[13px] rounded-md transition-colors"
-              >
-                <Icons.LogOut />
-                {language === 'cn' ? '退出' : 'Sign out'}
+              <div style={{ height: '0.5px', background: 'rgba(255,255,255,0.07)', margin: '4px 4px' }} />
+              <button onClick={logout}
+                className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-colors hover:bg-rose-500/10"
+                style={{ color: '#f87171' }}>
+                <Icons.LogOut />{language === 'cn' ? '退出' : 'Sign out'}
               </button>
             </div>
           </div>
         )}
 
-        {/* Profile trigger */}
         <button
           onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
           title={isCollapsed ? user.name : undefined}
-          className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-center md:justify-start md:px-2'} gap-2.5 py-1.5 rounded-md hover:bg-white/5 transition-colors`}
+          style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', width: '100%', background: 'transparent', border: 'none' }}
+          className="hover:bg-white/5 transition-colors"
         >
-          <div className="w-7 h-7 rounded-md bg-indigo-500/20 flex items-center justify-center text-[11px] font-bold text-indigo-400 overflow-hidden shrink-0">
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
-            ) : (
-              user.name.slice(0, 2).toUpperCase()
-            )}
+          <div
+            className="rounded-full overflow-hidden shrink-0 flex items-center justify-center text-[12px] font-bold"
+            style={{ width: 38, height: 38, background: 'linear-gradient(135deg, #4455EE, #9966FF)', color: '#fff' }}
+          >
+            {user.avatarUrl
+              ? <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
+              : user.name.slice(0, 2).toUpperCase()
+            }
           </div>
           {!isCollapsed && (
             <div className="hidden md:flex flex-col items-start flex-1 min-w-0">
-              <span className="text-[13px] font-semibold text-white/80 truncate w-full leading-tight">{user.name}</span>
-              <span className={`text-[10px] font-bold uppercase tracking-wider leading-tight ${getTierColor()}`}>
+              <span className="text-[13px] font-medium truncate w-full leading-tight" style={{ color: '#fff' }}>{user.name}</span>
+              <span
+                className="text-[9px] font-bold tracking-[0.05em] mt-0.5 px-[5px] py-[1px] rounded"
+                style={getTierBadgeStyle()}
+              >
                 {getTierLabel()}
               </span>
             </div>
           )}
           {!isCollapsed && (
-            <span className="hidden md:block text-white/20 ml-auto">
+            <span className="hidden md:block ml-auto" style={{ color: 'rgba(255,255,255,0.25)' }}>
               <Icons.ChevronRight />
             </span>
           )}
