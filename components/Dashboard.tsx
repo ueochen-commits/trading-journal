@@ -972,9 +972,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               </div>
 
-              <div id="dashboard-strategy" className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Daily P&L bar chart */}
-                <div className="lg:col-span-2" style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 280, display: 'flex', flexDirection: 'column' }}>
+              <div id="dashboard-strategy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', alignItems: 'stretch' }}>
+                {/* Left: Daily P&L bar chart */}
+                <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
                     <TZInfoIcon />
@@ -1003,8 +1003,54 @@ const Dashboard: React.FC<DashboardProps> = ({
                     })()}
                   </div>
                 </div>
-                {/* AI Tips */}
-                <div className="lg:col-span-1 bg-slate-50 dark:bg-slate-800/50 p-6 rounded-xl border border-slate-100 dark:border-slate-700/50 relative overflow-hidden flex flex-col" style={{ height: 280 }}><div className="relative z-10 flex flex-col h-full"><div className="flex items-center gap-2 mb-4"><Lightbulb className="w-4 h-4 text-amber-400" /><h3 className="font-bold text-slate-800 dark:text-white text-sm">{t.dashboard.aiTips.title}</h3></div>{loadingTips ? (<div className="flex flex-1 items-center justify-center text-slate-500 dark:text-slate-400"><Activity className="w-5 h-5 animate-spin mr-2" /><p className="text-xs">{t.dashboard.aiTips.loading}</p></div>) : aiTips.length > 0 ? (<div className="flex-1 overflow-y-auto space-y-3 pr-2 custom-scrollbar">{aiTips.map((tip, idx) => (<div key={idx} className="bg-white dark:bg-slate-900/60 p-3 rounded-lg border border-slate-100 dark:border-slate-700 flex items-start gap-2.5"><span className="flex-shrink-0 w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[9px] font-bold mt-0.5">{idx + 1}</span><p className="text-xs text-slate-700 dark:text-slate-200 leading-relaxed">{tip}</p></div>))}</div>) : (<div className="flex flex-1 items-center justify-center"><p className="text-xs text-slate-500 dark:text-slate-400 italic text-center px-4">{t.dashboard.aiTips.fallback}</p></div>)}</div></div>
+
+                {/* Right: Recent Trades */}
+                {(() => {
+                  const recent = [...trades]
+                    .filter(t => t.exitDate)
+                    .sort((a, b) => new Date(b.exitDate).getTime() - new Date(a.exitDate).getTime())
+                    .slice(0, 10);
+                  const fmtDate = (d: string) => { const dt = new Date(d); return `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`; };
+                  return (
+                    <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 320 }}>
+                      {/* Tab header */}
+                      <div style={{ padding: '14px 20px 0', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', paddingBottom: 12, display: 'inline-block', borderBottom: '2px solid #6366f1' }}>
+                          {language === 'cn' ? '最近交易' : 'Recent trades'}
+                        </span>
+                      </div>
+                      {/* Table header */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px 20px', background: '#fafafa', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
+                        {[language === 'cn' ? '平仓日期' : 'Close Date', language === 'cn' ? '品种' : 'Symbol', language === 'cn' ? '净盈亏' : 'Net P&L'].map((h, i) => (
+                          <span key={h} style={{ fontSize: 12, fontWeight: 600, color: '#9396aa', textAlign: i === 2 ? 'right' : i === 1 ? 'center' : 'left' }}>{h}</span>
+                        ))}
+                      </div>
+                      {/* Rows */}
+                      <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
+                        {recent.length === 0 ? (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120, color: '#c0c3d4', fontSize: 13 }}>
+                            {language === 'cn' ? '暂无交易记录' : 'No trades yet'}
+                          </div>
+                        ) : recent.map((trade, idx) => {
+                          const netPnl = trade.pnl - trade.fees;
+                          return (
+                            <div key={trade.id || idx}
+                              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 20px', borderBottom: idx < recent.length - 1 ? '1px solid #f5f5fa' : 'none', transition: 'background 0.1s', cursor: 'default' }}
+                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#fafafe'}
+                              onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
+                            >
+                              <span style={{ fontSize: 12.5, color: '#4a4d6a' }}>{fmtDate(trade.exitDate)}</span>
+                              <span style={{ fontSize: 12.5, color: '#4a4d6a', fontWeight: 500, textAlign: 'center' }}>{trade.symbol}</span>
+                              <span style={{ fontSize: 12.5, fontWeight: 600, color: netPnl >= 0 ? '#00c896' : '#ff4d6a', textAlign: 'right' }}>
+                                {netPnl >= 0 ? '+' : ''}${Math.abs(netPnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div id="dashboard-calendar" className="pt-2"><div className="flex items-center gap-3 mb-6"><div className="p-2 bg-orange-100 dark:bg-orange-50/10 rounded-lg"><Calendar className="w-6 h-6 text-orange-500" /></div><h3 className="text-xl font-bold text-slate-900 dark:text-white">{t.calendar.title}</h3></div><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} /></div>
