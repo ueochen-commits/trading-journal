@@ -188,53 +188,66 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
     );
 };
 
-const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData, language }) => {
-  const scoreColor = composite >= 70 ? '#10b981' : composite >= 40 ? '#f59e0b' : '#ef4444';
-  const scoreLabel = composite >= 70 ? (language === 'cn' ? '优秀' : 'Excellent') : composite >= 40 ? (language === 'cn' ? '良好' : 'Good') : (language === 'cn' ? '待提升' : 'Needs Work');
+const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData }) => {
+  const clampedScore = Math.min(100, Math.max(0, composite));
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-5 pt-5 pb-3 flex items-center justify-between">
-        <div>
-          <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">TradeGrail Score</p>
-          <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white leading-none">{composite}</span>
-            <span className="text-sm text-slate-400 font-medium">/ 100</span>
-          </div>
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+      {/* Title row */}
+      <div className="flex items-center justify-between px-5 pt-5 pb-3">
+        <span className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight">Grail Score</span>
+        <div className="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors">
+          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">i</span>
         </div>
-        <span className="text-xs font-bold px-3 py-1 rounded-full" style={{ color: scoreColor, backgroundColor: scoreColor + '18' }}>{scoreLabel}</span>
+      </div>
+      <div className="h-px bg-slate-100 dark:bg-slate-800 mx-5" />
+
+      {/* Radar chart */}
+      <div className="px-4 pt-2 pb-1" style={{ height: 240 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <RadarChart data={radarData} margin={{ top: 18, right: 30, bottom: 18, left: 30 }}>
+            <PolarGrid stroke="#e8eaf0" strokeDasharray="0" className="dark:stroke-slate-700/50" />
+            <PolarAngleAxis
+              dataKey="subject"
+              tick={{ fontSize: 9.5, fill: '#94a3b8', fontWeight: 600 }}
+              tickLine={false}
+            />
+            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
+            <Radar
+              dataKey="value"
+              stroke="#6d28d9"
+              fill="rgba(167,139,250,0.18)"
+              strokeWidth={1.5}
+              dot={{ r: 3, fill: '#6d28d9', strokeWidth: 0 }}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
       </div>
 
-      {/* Body: radar left, dimensions right */}
-      <div className="flex items-center gap-2 px-3 pb-4">
-        {/* Radar */}
-        <div className="shrink-0" style={{ width: 170, height: 170 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart data={radarData} margin={{ top: 12, right: 18, bottom: 12, left: 18 }}>
-              <PolarGrid stroke="#e2e8f0" className="dark:stroke-slate-700/60" />
-              <PolarAngleAxis dataKey="subject" tick={{ fontSize: 9, fill: '#94a3b8', fontWeight: 600 }} />
-              <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-              <Radar dataKey="value" stroke="#6366f1" fill="rgba(99,102,241,0.15)" strokeWidth={1.5} dot={{ r: 2.5, fill: '#6366f1', strokeWidth: 0 }} />
-            </RadarChart>
-          </ResponsiveContainer>
+      {/* Score + gradient bar */}
+      <div className="px-5 pb-5">
+        <div className="flex items-end justify-between mb-2">
+          <div>
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Your Grail Score</p>
+            <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white leading-none">{clampedScore.toFixed(2)}</span>
+          </div>
         </div>
 
-        {/* Dimension list */}
-        <div className="flex-1 space-y-2.5 min-w-0">
-          {radarData.map(d => (
-            <div key={d.subject}>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{d.subject}</span>
-                <span className="text-[11px] font-bold tabular-nums text-slate-700 dark:text-slate-200">{d.value}</span>
-              </div>
-              <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{ width: `${d.value}%`, backgroundColor: d.value >= 70 ? '#10b981' : d.value >= 40 ? '#6366f1' : '#f59e0b' }}
-                />
-              </div>
-            </div>
-          ))}
+        {/* Gradient bar */}
+        <div className="relative mt-3">
+          <div className="h-2.5 w-full rounded-full overflow-hidden" style={{
+            background: 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #06b6d4)'
+          }} />
+          {/* Indicator dot */}
+          <div
+            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-700 shadow-md transition-all duration-700"
+            style={{ left: `calc(${clampedScore}% - 8px)` }}
+          />
+          {/* Tick labels */}
+          <div className="flex justify-between mt-1.5">
+            {[0, 20, 40, 60, 80, 100].map(n => (
+              <span key={n} className="text-[9px] text-slate-400 font-medium tabular-nums">{n}</span>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -464,22 +477,35 @@ const Dashboard: React.FC<DashboardProps> = ({
     const mean = counts.length > 0 ? counts.reduce((a, b) => a + b, 0) / counts.length : 0;
     const stdDev = counts.length > 1 ? Math.sqrt(counts.reduce((a, b) => a + (b - mean) ** 2, 0) / counts.length) : 0;
 
-    const d1 = totalTrades === 0 ? 0 : Math.min(100, winRate);
-    const d2 = totalTrades === 0 ? 0 : Math.min(1, rr / 3) * 100;
-    const d3 = totalTrades === 0 ? 0 : Math.min(1, profitFactor / 3) * 100;
-    const d4 = totalTrades === 0 ? 0 : Math.max(0, 100 - maxConsecLoss * 15);
-    const d5 = totalTrades === 0 ? 0 : Math.max(0, 100 - stdDev * 20);
+    // Max drawdown (peak-to-trough on cumulative PnL)
+    let peak = 0, cumPnl = 0, maxDD = 0;
+    [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).forEach(t => {
+      cumPnl += t.pnl; if (cumPnl > peak) peak = cumPnl;
+      const dd = peak > 0 ? (peak - cumPnl) / peak * 100 : 0;
+      if (dd > maxDD) maxDD = dd;
+    });
+    // Recovery factor: net pnl / max drawdown amount
+    const maxDDAmount = peak > 0 ? peak * (maxDD / 100) : 1;
+    const recoveryFactor = totalTrades === 0 ? 0 : Math.min(1, (stats.netPnl > 0 ? stats.netPnl : 0) / (maxDDAmount || 1)) * 100;
 
-    const composite = d1 * 0.20 + d2 * 0.25 + d3 * 0.20 + d4 * 0.15 + d5 * 0.15;
+    const d1 = totalTrades === 0 ? 0 : Math.min(100, winRate);
+    const d2 = totalTrades === 0 ? 0 : Math.min(1, profitFactor / 3) * 100;
+    const d3 = totalTrades === 0 ? 0 : Math.min(1, rr / 3) * 100;
+    const d4 = totalTrades === 0 ? 0 : Math.round(recoveryFactor);
+    const d5 = totalTrades === 0 ? 0 : Math.max(0, 100 - maxDD * 1.5);
+    const d6 = totalTrades === 0 ? 0 : Math.max(0, 100 - stdDev * 20);
+
+    const composite = d1 * 0.18 + d2 * 0.20 + d3 * 0.18 + d4 * 0.15 + d5 * 0.15 + d6 * 0.14;
 
     return {
-      composite: Math.round(composite),
+      composite: Math.round(composite * 100) / 100,
       radarData: [
-        { subject: '胜率', value: Math.round(d1), fullMark: 100 },
-        { subject: '盈亏比', value: Math.round(d2), fullMark: 100 },
-        { subject: '盈利因子', value: Math.round(d3), fullMark: 100 },
-        { subject: '纪律性', value: Math.round(d4), fullMark: 100 },
-        { subject: '稳定性', value: Math.round(d5), fullMark: 100 },
+        { subject: 'Win %', value: Math.round(d1), fullMark: 100 },
+        { subject: 'Profit factor', value: Math.round(d2), fullMark: 100 },
+        { subject: 'Avg win/loss', value: Math.round(d3), fullMark: 100 },
+        { subject: 'Recovery factor', value: Math.round(d4), fullMark: 100 },
+        { subject: 'Max drawdown', value: Math.round(d5), fullMark: 100 },
+        { subject: 'Consistency', value: Math.round(d6), fullMark: 100 },
       ],
     };
   }, [trades, stats]);
