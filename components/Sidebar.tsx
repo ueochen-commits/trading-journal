@@ -142,7 +142,7 @@ const Icons = {
   ),
 };
 
-const ICON_BAR_W = 48;
+const ICON_BAR_W = 60;
 const SIDEBAR_W = 224;
 const COLLAPSED_W = 56;
 

@@ -912,7 +912,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
               onAddTrade={() => { handleSetActiveTab('journal'); setJournalAutoOpen(true); }}
           />
-          <main className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-200 ${isSidebarCollapsed ? 'ml-[104px]' : 'ml-[104px] md:ml-[272px]'}`}>
+          <main className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-200 ${isSidebarCollapsed ? 'ml-[116px]' : 'ml-[116px] md:ml-[284px]'}`}>
               {renderContent()}
               <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
                   <div className={`flex flex-col items-end gap-3 transition-all duration-300 ease-out mb-2 ${isFabOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-10 pointer-events-none scale-90'}`}>
