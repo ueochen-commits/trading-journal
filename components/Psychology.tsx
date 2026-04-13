@@ -124,7 +124,7 @@ const ToggleRow: React.FC<{
 
 // ── Heatmap ───────────────────────────────────────────────────────────────────
 
-const WEEKS = 18;
+const WEEKS = 26;
 const DAY_LABELS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 function buildWeeks(): (string | null)[][] {
@@ -167,17 +167,17 @@ const HeatmapCalendar: React.FC<{ data: Record<string, number> }> = ({ data }) =
       {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 11, padding: '4px 8px', borderRadius: 6, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}: {Math.round((data[tip.key] ?? 0) * 100)}%</div>}
       <div style={{ display: 'flex', gap: 3 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 20, marginRight: 2 }}>
-          {DAY_LABELS.map(d => <div key={d} style={{ height: 14, fontSize: 9, color: '#b0b3c6', lineHeight: '14px', width: 24 }}>{d}</div>)}
+          {DAY_LABELS.map(d => <div key={d} style={{ height: 18, fontSize: 10, color: '#b0b3c6', lineHeight: '18px', width: 28 }}>{d}</div>)}
         </div>
         <div>
           <div style={{ display: 'flex', gap: 3, marginBottom: 4, height: 16 }}>
-            {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 14, fontSize: 9, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
+            {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 18, fontSize: 10, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
           </div>
           <div style={{ display: 'flex', gap: 3 }}>
             {weeks.map((week, wi) => (
               <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {week.map((dateKey, di) => (
-                  <div key={di} style={{ width: 14, height: 14, borderRadius: 2, background: dateKey ? heatColor(data[dateKey]) : 'transparent', border: dateKey === todayKey ? '1.5px solid #f97316' : 'none', cursor: dateKey ? 'pointer' : 'default' }}
+                  <div key={di} style={{ width: 18, height: 18, borderRadius: 3, background: dateKey ? heatColor(data[dateKey]) : 'transparent', border: dateKey === todayKey ? '2px solid #f97316' : 'none', cursor: dateKey ? 'pointer' : 'default' }}
                     onMouseEnter={e => dateKey && setTip({ key: dateKey, x: e.clientX, y: e.clientY })}
                     onMouseLeave={() => setTip(null)} />
                 ))}
