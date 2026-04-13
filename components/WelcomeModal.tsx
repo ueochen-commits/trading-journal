@@ -262,7 +262,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
             }, { onConflict: 'id' });
             if (error) throw error;
             updateUserPreferences(form.currency, form.timezone);
-            markOnboardingComplete();
+            // markOnboardingComplete is called when user closes Step2, not here
             setSavedUserName(form.firstName);
             setStep(2);
             setSaving(false);
@@ -276,7 +276,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
         return (
             <WelcomeStep2
                 userName={savedUserName}
-                onClose={onComplete}
+                onClose={() => { markOnboardingComplete(); onComplete(); }}
                 onNavigate={onNavigate}
             />
         );
