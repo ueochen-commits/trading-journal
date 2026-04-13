@@ -364,12 +364,12 @@ const Psychology: React.FC<PsychologyProps> = ({
           <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', marginBottom: 16 }}>{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
           {todayRulesList.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-              <img src="/todolist.png" alt="" style={{ width: 80, height: 80, objectFit: 'contain', marginBottom: 4 }} />
+              <img src="/todolist.png" alt="" style={{ width: 110, height: 110, objectFit: 'contain', marginBottom: 8 }} />
               <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? (allRuleIds.length === 0 ? '暂无规则' : '今日无生效规则') : (allRuleIds.length === 0 ? 'No rules yet' : 'No rules active today')}</div>
-              <div style={{ fontSize: 12, color: '#9396aa', textAlign: 'center', lineHeight: 1.6 }}>
+              <div style={{ fontSize: 12, color: '#9396aa', textAlign: 'center', lineHeight: 1.6, maxWidth: 200 }}>
                 {allRuleIds.length === 0
                   ? (language === 'cn' ? '点击「编辑规则」开始配置' : 'Click "Edit rules" to get started')
-                  : (language === 'cn' ? `今天是${todayDayAbbr}，不在交易日范围内` : `Today (${todayDayAbbr}) is not a trading day`)}
+                  : (language === 'cn' ? '要更改此设置，请更新您的交易日或添加手动规则。' : `Today (${todayDayAbbr}) is not a trading day`)}
               </div>
             </div>
           ) : (
