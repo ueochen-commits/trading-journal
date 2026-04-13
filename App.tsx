@@ -173,8 +173,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   // const [showOnboarding, setShowOnboarding] = useState(false); // TEMPORARILY DISABLED
-  // showWelcome is derived from context — no separate DB request needed
-  const showWelcome = isAuthenticated && onboardingCompleted === false;
+  // showWelcome: derived from context but controlled by local state so Step2 can stay open
+  const [welcomeDismissed, setWelcomeDismissed] = useState(false);
+  const showWelcome = isAuthenticated && onboardingCompleted === false && !welcomeDismissed;
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -1013,7 +1014,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   userId={user.id}
                   userEmail={user.email}
                   userMetaUsername={user.name !== 'Trader' ? user.name : undefined}
-                  onComplete={markOnboardingComplete}
+                  onComplete={() => setWelcomeDismissed(true)}
                   onNavigate={(tab, action) => {
                       handleSetActiveTab(tab);
                       if (action === 'add-trade') setJournalAutoOpen(true);
