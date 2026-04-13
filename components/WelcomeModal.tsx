@@ -3,30 +3,33 @@ import { supabase } from '../supabaseClient';
 import { useUser } from './UserContext';
 
 const CURRENCIES = [
-    { value: 'USD', label: 'USD', desc: '美元 · United States Dollar', symbol: '$' },
-    { value: 'CNY', label: 'CNY', desc: '人民币 · Chinese Yuan', symbol: '¥' },
-    { value: 'EUR', label: 'EUR', desc: '欧元 · Euro', symbol: '€' },
-    { value: 'GBP', label: 'GBP', desc: '英镑 · British Pound', symbol: '£' },
-    { value: 'JPY', label: 'JPY', desc: '日元 · Japanese Yen', symbol: '¥' },
-    { value: 'HKD', label: 'HKD', desc: '港币 · Hong Kong Dollar', symbol: 'HK$' },
-    { value: 'AUD', label: 'AUD', desc: '澳元 · Australian Dollar', symbol: 'A$' },
-    { value: 'CAD', label: 'CAD', desc: '加元 · Canadian Dollar', symbol: 'C$' },
-    { value: 'SGD', label: 'SGD', desc: '新加坡元 · Singapore Dollar', symbol: 'S$' },
+    { value: 'USD', symbol: '$',    label: 'USD', desc: '美元 · United States Dollar' },
+    { value: 'CNY', symbol: '¥',    label: 'CNY', desc: '人民币 · Chinese Yuan' },
+    { value: 'EUR', symbol: '€',    label: 'EUR', desc: '欧元 · Euro' },
+    { value: 'GBP', symbol: '£',    label: 'GBP', desc: '英镑 · British Pound' },
+    { value: 'JPY', symbol: '¥',    label: 'JPY', desc: '日元 · Japanese Yen' },
+    { value: 'HKD', symbol: 'HK$',  label: 'HKD', desc: '港币 · Hong Kong Dollar' },
+    { value: 'AUD', symbol: 'A$',   label: 'AUD', desc: '澳元 · Australian Dollar' },
+    { value: 'CAD', symbol: 'C$',   label: 'CAD', desc: '加元 · Canadian Dollar' },
+    { value: 'SGD', symbol: 'S$',   label: 'SGD', desc: '新加坡元 · Singapore Dollar' },
 ];
 
 const TIMEZONES = [
-    { value: 'Asia/Shanghai',       label: 'Asia/Shanghai',       offset: 'UTC+8' },
-    { value: 'Asia/Hong_Kong',      label: 'Asia/Hong Kong',      offset: 'UTC+8' },
-    { value: 'Asia/Tokyo',          label: 'Asia/Tokyo',          offset: 'UTC+9' },
-    { value: 'America/New_York',    label: 'America/New York',    offset: 'UTC-4' },
-    { value: 'America/Chicago',     label: 'America/Chicago',     offset: 'UTC-5' },
-    { value: 'America/Los_Angeles', label: 'America/Los Angeles', offset: 'UTC-7' },
-    { value: 'Europe/London',       label: 'Europe/London',       offset: 'UTC+1' },
-    { value: 'Europe/Paris',        label: 'Europe/Paris',        offset: 'UTC+2' },
+    { value: 'Asia/Shanghai',       label: 'Asia/Shanghai',       offset: 'UTC+8'  },
+    { value: 'Asia/Hong_Kong',      label: 'Asia/Hong_Kong',      offset: 'UTC+8'  },
+    { value: 'Asia/Tokyo',          label: 'Asia/Tokyo',          offset: 'UTC+9'  },
+    { value: 'Asia/Singapore',      label: 'Asia/Singapore',      offset: 'UTC+8'  },
+    { value: 'Asia/Seoul',          label: 'Asia/Seoul',          offset: 'UTC+9'  },
+    { value: 'Asia/Dubai',          label: 'Asia/Dubai',          offset: 'UTC+4'  },
+    { value: 'America/New_York',    label: 'America/New_York',    offset: 'UTC-4'  },
+    { value: 'America/Chicago',     label: 'America/Chicago',     offset: 'UTC-5'  },
+    { value: 'America/Los_Angeles', label: 'America/Los_Angeles', offset: 'UTC-7'  },
+    { value: 'Europe/London',       label: 'Europe/London',       offset: 'UTC+1'  },
+    { value: 'Europe/Paris',        label: 'Europe/Paris',        offset: 'UTC+2'  },
     { value: 'Australia/Sydney',    label: 'Australia/Sydney',    offset: 'UTC+10' },
 ];
 
-// ── Custom dropdown ──────────────────────────────────────────────────────────
+// ── Custom dropdown with fixed positioning ───────────────────────────────────
 
 interface DropdownOption {
     value: string;
@@ -40,194 +43,148 @@ interface CustomSelectProps {
     value: string;
     options: DropdownOption[];
     onChange: (v: string) => void;
-    placeholder?: string;
     hasError?: boolean;
+    renderSelected: (val: string) => React.ReactNode;
+    renderOption: (opt: DropdownOption) => React.ReactNode;
     searchable?: boolean;
 }
 
 const CustomSelect: React.FC<CustomSelectProps> = ({
-    value, options, onChange, hasError, searchable = false,
+    value, options, onChange, hasError, renderSelected, renderOption, searchable = false,
 }) => {
     const [open, setOpen] = useState(false);
-    const [query, setQuery] = useState('');
-    const ref = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const [search, setSearch] = useState('');
+    const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const searchRef = useRef<HTMLInputElement>(null);
 
-    const selected = options.find(o => o.value === value);
-
-    const filtered = searchable && query
+    const filtered = searchable && search
         ? options.filter(o =>
-            o.label.toLowerCase().includes(query.toLowerCase()) ||
-            (o.desc ?? '').toLowerCase().includes(query.toLowerCase())
+            o.label.toLowerCase().includes(search.toLowerCase()) ||
+            (o.offset ?? '').toLowerCase().includes(search.toLowerCase())
           )
         : options;
 
+    const handleOpen = () => {
+        if (open) { setOpen(false); return; }
+        if (triggerRef.current) {
+            const rect = triggerRef.current.getBoundingClientRect();
+            const dropdownHeight = Math.min(240, options.length * 52 + (searchable ? 48 : 0));
+            const spaceBelow = window.innerHeight - rect.bottom;
+            if (spaceBelow < dropdownHeight + 10) {
+                setDropdownStyle({
+                    position: 'fixed',
+                    bottom: window.innerHeight - rect.top + 4,
+                    left: rect.left,
+                    width: rect.width,
+                    zIndex: 99999,
+                });
+            } else {
+                setDropdownStyle({
+                    position: 'fixed',
+                    top: rect.bottom + 4,
+                    left: rect.left,
+                    width: rect.width,
+                    zIndex: 99999,
+                });
+            }
+        }
+        setSearch('');
+        setOpen(true);
+    };
+
     useEffect(() => {
+        if (!open) return;
+        if (searchable) setTimeout(() => searchRef.current?.focus(), 50);
         const handler = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
+            if (triggerRef.current && !triggerRef.current.contains(e.target as Node)) {
                 setOpen(false);
-                setQuery('');
             }
         };
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
-    }, []);
-
-    useEffect(() => {
-        if (open && searchable) {
-            setTimeout(() => inputRef.current?.focus(), 50);
-        }
     }, [open, searchable]);
 
     return (
-        <div ref={ref} style={{ position: 'relative' }}>
+        <div ref={triggerRef} style={{ position: 'relative' }}>
             {/* Trigger */}
-            <button
-                type="button"
-                onClick={() => { setOpen(o => !o); setQuery(''); }}
+            <div
+                onClick={handleOpen}
                 style={{
-                    width: '100%', height: 42, borderRadius: 9,
+                    height: 42, borderRadius: 9,
                     border: `1.5px solid ${hasError ? '#ff4d6a' : open ? '#6366f1' : '#e8e8f0'}`,
+                    padding: '0 14px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    cursor: 'pointer', background: '#fff',
                     boxShadow: open ? '0 0 0 3px rgba(99,102,241,0.1)' : 'none',
-                    padding: '0 36px 0 14px',
-                    fontSize: 13.5, color: '#1a1d2e', background: '#fff',
-                    outline: 'none', boxSizing: 'border-box',
-                    display: 'flex', alignItems: 'center', gap: 8,
-                    cursor: 'pointer', textAlign: 'left',
                     transition: 'border-color 0.15s, box-shadow 0.15s',
+                    boxSizing: 'border-box',
                 }}
             >
-                {selected?.symbol && (
-                    <span style={{
-                        minWidth: 28, height: 22, borderRadius: 5,
-                        background: 'linear-gradient(135deg, #0e1428, #1a1040)',
-                        color: '#fff', fontSize: 11, fontWeight: 700,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                    }}>
-                        {selected.symbol}
-                    </span>
-                )}
-                {selected?.offset && (
-                    <span style={{
-                        minWidth: 44, height: 22, borderRadius: 5,
-                        background: 'linear-gradient(135deg, #0e1428, #1a1040)',
-                        color: '#fff', fontSize: 10, fontWeight: 700,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0,
-                    }}>
-                        {selected.offset}
-                    </span>
-                )}
-                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {selected?.label ?? ''}
-                </span>
-                {/* Chevron */}
-                <span style={{
-                    position: 'absolute', right: 12, top: '50%',
-                    transform: `translateY(-50%) rotate(${open ? 180 : 0}deg)`,
-                    transition: 'transform 0.2s', pointerEvents: 'none',
-                    color: '#6366f1',
-                }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                        <path d="M6 9l6 6 6-6"/>
-                    </svg>
-                </span>
-            </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                    {renderSelected(value)}
+                </div>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9396aa" strokeWidth="2.5" strokeLinecap="round"
+                    style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', flexShrink: 0, marginLeft: 8 }}>
+                    <path d="M6 9l6 6 6-6"/>
+                </svg>
+            </div>
 
-            {/* Dropdown panel */}
+            {/* Dropdown panel — fixed, escapes overflow:hidden */}
             {open && (
                 <div style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', left: 0, right: 0,
-                    background: '#fff', borderRadius: 12,
+                    ...dropdownStyle,
+                    background: '#fff',
                     border: '1.5px solid #e8e8f0',
-                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
-                    zIndex: 9999, overflow: 'hidden',
+                    borderRadius: 10,
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                    maxHeight: 240,
+                    overflowY: 'auto',
                     animation: 'dd-open 0.15s ease-out',
                 }}>
                     {searchable && (
-                        <div style={{ padding: '8px 10px', borderBottom: '1px solid #f0f0f8' }}>
+                        <div style={{ padding: '8px 10px', borderBottom: '1px solid #f0f0f6', position: 'sticky', top: 0, background: '#fff' }}>
                             <input
-                                ref={inputRef}
-                                value={query}
-                                onChange={e => setQuery(e.target.value)}
+                                ref={searchRef}
+                                type="text"
                                 placeholder="搜索..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
                                 style={{
-                                    width: '100%', height: 32, borderRadius: 7,
-                                    border: '1.5px solid #e8e8f0', padding: '0 10px',
-                                    fontSize: 12.5, color: '#1a1d2e', outline: 'none',
+                                    width: '100%', height: 32, borderRadius: 6,
+                                    border: '1px solid #e8e8f0', padding: '0 10px',
+                                    fontSize: 12, color: '#1a1d2e', outline: 'none',
                                     boxSizing: 'border-box', background: '#fafafa',
                                 }}
                             />
                         </div>
                     )}
-                    <div style={{ maxHeight: 220, overflowY: 'auto' }}>
-                        {filtered.map(opt => {
-                            const isSelected = opt.value === value;
-                            return (
-                                <button
-                                    key={opt.value}
-                                    type="button"
-                                    onClick={() => { onChange(opt.value); setOpen(false); setQuery(''); }}
-                                    style={{
-                                        width: '100%', padding: '9px 14px',
-                                        display: 'flex', alignItems: 'center', gap: 10,
-                                        background: isSelected ? 'rgba(99,102,241,0.06)' : 'transparent',
-                                        border: 'none', cursor: 'pointer', textAlign: 'left',
-                                        transition: 'background 0.1s',
-                                    }}
-                                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f7f7fc'; }}
-                                    onMouseLeave={e => { e.currentTarget.style.background = isSelected ? 'rgba(99,102,241,0.06)' : 'transparent'; }}
-                                >
-                                    {opt.symbol && (
-                                        <span style={{
-                                            minWidth: 28, height: 22, borderRadius: 5,
-                                            background: isSelected
-                                                ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-                                                : 'linear-gradient(135deg, #0e1428, #1a1040)',
-                                            color: '#fff', fontSize: 11, fontWeight: 700,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            flexShrink: 0,
-                                        }}>
-                                            {opt.symbol}
-                                        </span>
-                                    )}
-                                    {opt.offset && (
-                                        <span style={{
-                                            minWidth: 44, height: 22, borderRadius: 5,
-                                            background: isSelected
-                                                ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
-                                                : 'linear-gradient(135deg, #0e1428, #1a1040)',
-                                            color: '#fff', fontSize: 10, fontWeight: 700,
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            flexShrink: 0,
-                                        }}>
-                                            {opt.offset}
-                                        </span>
-                                    )}
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{
-                                            fontSize: 13, fontWeight: isSelected ? 700 : 500,
-                                            color: isSelected ? '#6366f1' : '#1a1d2e',
-                                            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                                        }}>
-                                            {opt.label}
-                                        </div>
-                                        {opt.desc && (
-                                            <div style={{ fontSize: 11, color: '#9396aa', marginTop: 1 }}>
-                                                {opt.desc}
-                                            </div>
-                                        )}
-                                    </div>
-                                    {isSelected && (
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                            <path d="M20 6L9 17l-5-5"/>
-                                        </svg>
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
+                    {filtered.map(opt => {
+                        const isSelected = opt.value === value;
+                        return (
+                            <div
+                                key={opt.value}
+                                onClick={() => { onChange(opt.value); setOpen(false); }}
+                                style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '10px 14px', cursor: 'pointer',
+                                    background: isSelected ? '#f5f5ff' : 'transparent',
+                                    transition: 'background 0.1s',
+                                }}
+                                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#fafafa'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? '#f5f5ff' : 'transparent'; }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    {renderOption(opt)}
+                                </div>
+                                {isSelected && (
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                                        <path d="M20 6L9 17l-5-5"/>
+                                    </svg>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
@@ -287,7 +244,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
     const handleSubmit = async () => {
         const errs = validate();
         if (Object.keys(errs).length > 0) { setErrors(errs); return; }
-
         setSaving(true);
         try {
             const { error } = await supabase.from('profiles').upsert({
@@ -300,10 +256,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                 onboarding_completed: true,
                 updated_at: new Date().toISOString(),
             }, { onConflict: 'id' });
-
             if (error) throw error;
-
-            // Push chosen values into global context immediately
             updateUserPreferences(form.currency, form.timezone);
             markOnboardingComplete();
             onComplete();
@@ -319,15 +272,17 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
                 zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
             }}>
+                {/* Card — no overflow:hidden so dropdowns aren't clipped */}
                 <div style={{
                     background: '#fff', borderRadius: 20, width: '100%', maxWidth: 460,
-                    overflow: 'hidden', boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
                     animation: 'wm-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)', position: 'relative',
                 }}>
-                    {/* Top banner */}
+                    {/* Top banner — own border-radius so card doesn't need overflow:hidden */}
                     <div style={{
                         background: 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
                         padding: '28px 32px 52px', textAlign: 'center', position: 'relative',
+                        borderRadius: '20px 20px 0 0',
                     }}>
                         <div style={{
                             position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
@@ -411,6 +366,24 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                                     value={form.currency}
                                     options={CURRENCIES}
                                     onChange={v => update('currency', v)}
+                                    renderSelected={val => {
+                                        const c = CURRENCIES.find(x => x.value === val);
+                                        return (
+                                            <>
+                                                <span style={{ fontSize: 14, color: '#4a4d6a', fontWeight: 600, minWidth: 24 }}>{c?.symbol}</span>
+                                                <span style={{ fontSize: 13, color: '#1a1d2e', fontWeight: 500 }}>{c?.label}</span>
+                                            </>
+                                        );
+                                    }}
+                                    renderOption={opt => (
+                                        <>
+                                            <span style={{ fontSize: 14, color: '#4a4d6a', fontWeight: 600, minWidth: 24 }}>{opt.symbol}</span>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{opt.label}</div>
+                                                {opt.desc && <div style={{ fontSize: 11, color: '#9396aa', marginTop: 1 }}>{opt.desc}</div>}
+                                            </div>
+                                        </>
+                                    )}
                                 />
                             </div>
 
@@ -422,6 +395,21 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                                     options={TIMEZONES}
                                     onChange={v => update('timezone', v)}
                                     searchable
+                                    renderSelected={val => {
+                                        const tz = TIMEZONES.find(x => x.value === val);
+                                        return (
+                                            <>
+                                                <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, minWidth: 46 }}>{tz?.offset}</span>
+                                                <span style={{ fontSize: 13, color: '#1a1d2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tz?.label}</span>
+                                            </>
+                                        );
+                                    }}
+                                    renderOption={opt => (
+                                        <>
+                                            <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, minWidth: 46 }}>{opt.offset}</span>
+                                            <span style={{ fontSize: 13, color: '#1a1d2e' }}>{opt.label}</span>
+                                        </>
+                                    )}
                                 />
                             </div>
                         </div>
