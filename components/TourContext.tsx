@@ -130,16 +130,9 @@ export const TourProvider = ({ children, setActiveTab }: { children?: ReactNode,
         setIsTourOpen(true);
     };
 
-    const onUserNavigateToTab = (tabId: string) => {
-        if (isTourOpen) return;
-        const toured = getTouredTabs();
-        if (toured.has(tabId)) return;
-        const tabSteps = stepsByTab[tabId];
-        if (!tabSteps || tabSteps.length === 0) return;
-        markTabAsToured(tabId);
-        setActiveSteps(tabSteps);
-        setCurrentStepIndex(0);
-        setIsTourOpen(true);
+    const onUserNavigateToTab = (_tabId: string) => {
+        // TEMPORARILY DISABLED — auto-tour on tab navigation disabled with new first-login flow
+        return;
     };
 
     // Legacy — kept for any residual internal callers

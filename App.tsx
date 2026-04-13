@@ -60,7 +60,7 @@ import ChatAssistant from './components/ChatAssistant';
 import ChatWindow from './components/ChatWindow';
 import FriendListDrawer from './components/FriendListDrawer';
 import TourOverlay from './components/TourOverlay';
-import OnboardingModal from './components/OnboardingModal';
+// import OnboardingModal from './components/OnboardingModal'; // TEMPORARILY DISABLED
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
@@ -159,7 +159,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
   const { isAuthenticated, isLoading, openProfile, user } = useUser();
   const { t, language } = useLanguage();
-  const { startInitialTour } = useTour();
+  const { /* startInitialTour */ } = useTour(); // TEMPORARILY DISABLED
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -171,7 +171,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   });
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  // const [showOnboarding, setShowOnboarding] = useState(false); // TEMPORARILY DISABLED
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -244,11 +244,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   }, [isAuthenticated]);
 
   // First-login detection: show onboarding survey if not done yet
-  useEffect(() => {
-    if (isAuthenticated && !localStorage.getItem('tg_onboarding_done')) {
-      setShowOnboarding(true);
-    }
-  }, [isAuthenticated]);
+  // TEMPORARILY DISABLED — replaced by new first-login flow
+  // useEffect(() => {
+  //   if (isAuthenticated && !localStorage.getItem('tg_onboarding_done')) {
+  //     setShowOnboarding(true);
+  //   }
+  // }, [isAuthenticated]);
 
   // Realtime：订阅新广播，用户在线时立刻收到通知
   useEffect(() => {
@@ -998,9 +999,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           <PricingModal />
           <UserProfileModal />
           <ReferralModal />
-          {showOnboarding && (
+          {/* TEMPORARILY DISABLED — OnboardingModal replaced by new first-login flow */}
+          {/* {showOnboarding && (
               <OnboardingModal onComplete={() => { setShowOnboarding(false); startInitialTour(); }} />
-          )}
+          )} */}
           <TourOverlay />
           {isShareModalOpen && shareIntent?.type === 'trade' && (
               <TradeShareModal 
