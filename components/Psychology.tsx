@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { RiskSettings, TradingRule, ReviewStatus, Trade, DisciplineRule, DailyDisciplineRecord } from '../types';
 import { useLanguage } from '../LanguageContext';
 import { Edit2 } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 interface PsychologyProps {
   riskSettings: RiskSettings;
@@ -204,14 +205,81 @@ const Psychology: React.FC<PsychologyProps> = ({
   const [manualRules, setManualRules] = useState<ManualRule[]>(() => {
     try { const s = localStorage.getItem('tg_manual_rules'); return s ? JSON.parse(s) : []; } catch { return []; }
   });
+  // Heatmap data from Supabase execution logs
+  const [dbHeatmap, setDbHeatmap] = useState<Record<string, number>>({});
   const [showModal, setShowModal] = useState(false);
 
-  const handleSave = (newSettings: RuleSettings, newManualRules: ManualRule[]) => {
+  // Load settings + manual rules + heatmap from Supabase on mount
+  useEffect(() => {
+    const load = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const [{ data: settingsData }, { data: manualData }, { data: logsData }] = await Promise.all([
+        supabase.from('user_rule_settings').select('*').eq('user_id', user.id).single(),
+        supabase.from('manual_rules').select('*').eq('user_id', user.id),
+        supabase.from('rule_execution_logs').select('date, completion_rate').eq('user_id', user.id),
+      ]);
+      if (settingsData) {
+        const s: RuleSettings = {
+          trading_days: settingsData.trading_days ?? DEFAULT_SETTINGS.trading_days,
+          email_reminder_enabled: settingsData.email_reminder_enabled ?? false,
+          email_reminder_time: settingsData.email_reminder_time ?? '20:30',
+          trading_hours_enabled: settingsData.trading_hours_enabled ?? false,
+          trading_hours_from: settingsData.trading_hours_from ?? '09:00',
+          trading_hours_to: settingsData.trading_hours_to ?? '12:00',
+          start_my_day_enabled: settingsData.start_my_day_enabled ?? true,
+          start_my_day_time: settingsData.start_my_day_time ?? '09:30',
+          link_to_playbook_enabled: settingsData.link_to_playbook_enabled ?? true,
+          input_stop_loss_enabled: settingsData.input_stop_loss_enabled ?? true,
+          net_max_loss_per_trade_enabled: settingsData.net_max_loss_per_trade_enabled ?? true,
+          net_max_loss_per_trade_type: settingsData.net_max_loss_per_trade_type ?? '$',
+          net_max_loss_per_trade_value: settingsData.net_max_loss_per_trade_value ?? 100,
+          net_max_loss_per_day_enabled: settingsData.net_max_loss_per_day_enabled ?? true,
+          net_max_loss_per_day_value: settingsData.net_max_loss_per_day_value ?? 100,
+        };
+        setRuleSettings(s);
+        localStorage.setItem('tg_rule_settings', JSON.stringify(s));
+      }
+      if (manualData) {
+        const m: ManualRule[] = manualData.map((r: any) => ({ id: r.id, name: r.name, active_days: r.active_days, enabled: r.enabled }));
+        setManualRules(m);
+        localStorage.setItem('tg_manual_rules', JSON.stringify(m));
+      }
+      if (logsData) {
+        const hm: Record<string, number> = {};
+        logsData.forEach((row: any) => { hm[row.date] = parseFloat(row.completion_rate); });
+        setDbHeatmap(hm);
+      }
+    };
+    load().catch(() => {});
+  }, []);
+
+  const handleSave = useCallback(async (newSettings: RuleSettings, newManualRules: ManualRule[]) => {
     setRuleSettings(newSettings);
     setManualRules(newManualRules);
     localStorage.setItem('tg_rule_settings', JSON.stringify(newSettings));
     localStorage.setItem('tg_manual_rules', JSON.stringify(newManualRules));
-  };
+    // Persist to Supabase
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('user_rule_settings').upsert({ user_id: user.id, ...newSettings, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+    await supabase.from('manual_rules').delete().eq('user_id', user.id);
+    if (newManualRules.length > 0) {
+      await supabase.from('manual_rules').insert(newManualRules.map(r => ({ user_id: user.id, name: r.name, active_days: r.active_days, enabled: r.enabled })));
+    }
+  }, []);
+
+  // Write today's execution log to Supabase whenever trade data changes
+  const writeExecutionLog = useCallback(async (ruleResults: Record<string, boolean>, total: number, completed: number) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('rule_execution_logs').upsert({
+      user_id: user.id, date: todayKey,
+      total_rules: total, completed_rules: completed,
+      rule_results: ruleResults, updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id,date' });
+    setDbHeatmap(prev => ({ ...prev, [todayKey]: total > 0 ? completed / total : 0 }));
+  }, [todayKey]);
 
   // Today's day abbreviation: Mo/Tu/We/Th/Fr/Sa/Su
   const todayDayAbbr = ['Su','Mo','Tu','We','Th','Fr','Sa'][new Date().getDay()];
@@ -260,15 +328,18 @@ const Psychology: React.FC<PsychologyProps> = ({
     return [...sys, ...manual];
   }, [ruleSettings, manualRules, todayDayAbbr, language]);
 
-  // Heatmap data from disciplineHistory
+  // Heatmap: merge Supabase logs + disciplineHistory fallback
   const heatmapData = useMemo(() => {
     const map: Record<string, number> = {};
+    // fallback from disciplineHistory
     disciplineHistory.forEach(rec => {
       if (!allRuleIds.length) return;
       map[rec.date] = rec.completedRuleIds.length / allRuleIds.length;
     });
+    // override with Supabase data (more accurate)
+    Object.assign(map, dbHeatmap);
     return map;
-  }, [disciplineHistory, allRuleIds]);
+  }, [disciplineHistory, allRuleIds, dbHeatmap]);
 
   const currentStreak = useMemo(() => {
     let streak = 0;
@@ -289,6 +360,27 @@ const Psychology: React.FC<PsychologyProps> = ({
   const todayRecord = disciplineHistory.find(r => r.date === todayKey);
   const todayCompleted = todayRecord ? todayRuleIds.filter(id => todayRecord.completedRuleIds.includes(id)).length : 0;
   const todayTotal = todayRuleIds.length;
+
+  // Auto-write execution log when today's trade data changes
+  useEffect(() => {
+    if (!todayRuleIds.length) return;
+    const todayTrades = trades.filter(t => t.entryDate.startsWith(todayKey));
+    const todayNetPnl = todayTrades.reduce((a, t) => a + (t.pnl - t.fees), 0);
+    const results: Record<string, boolean> = {};
+    if (ruleSettings.start_my_day_enabled) results['start_my_day'] = todayTrades.length > 0;
+    if (ruleSettings.link_to_playbook_enabled) results['link_playbook'] = todayTrades.length > 0 && todayTrades.every(t => t.setup && t.setup !== '');
+    if (ruleSettings.input_stop_loss_enabled) results['stop_loss'] = todayTrades.length > 0 && todayTrades.every(t => t.riskAmount && t.riskAmount > 0);
+    if (ruleSettings.net_max_loss_per_trade_enabled) {
+      const limit = ruleSettings.net_max_loss_per_trade_value;
+      results['max_loss_trade'] = todayTrades.every(t => (t.pnl - t.fees) >= -limit);
+    }
+    if (ruleSettings.net_max_loss_per_day_enabled) results['max_loss_day'] = todayNetPnl >= -ruleSettings.net_max_loss_per_day_value;
+    manualRules.filter(r => r.active_days.includes(todayDayAbbr)).forEach(r => {
+      results[r.id] = todayRecord?.completedRuleIds.includes(r.id) ?? false;
+    });
+    const completed = Object.values(results).filter(Boolean).length;
+    writeExecutionLog(results, Object.keys(results).length, completed).catch(() => {});
+  }, [trades, todayKey, ruleSettings, manualRules, todayDayAbbr, todayRecord, todayRuleIds, writeExecutionLog]);
 
   // Build rules for table
   const tableRules = useMemo(() => {
@@ -432,11 +524,10 @@ const Psychology: React.FC<PsychologyProps> = ({
                     </div>
                     {/* Rule name */}
                     <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? '#9396aa' : '#1a1d2e', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
-                    {/* Value badge */}
+                    {/* Value — plain text, no badge */}
                     <span style={{
-                      fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 5, flexShrink: 0,
-                      background: rule.status === 'pass' ? '#e8faf5' : rule.status === 'fail' ? '#fff0f0' : '#f5f5fa',
-                      color: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#9396aa',
+                      fontSize: 12, fontWeight: 400, flexShrink: 0,
+                      color: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#b0b3c6',
                     }}>{rule.value}</span>
                   </div>
                 ));
