@@ -166,7 +166,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             border: '3px solid rgba(255,255,255,0.9)',
                         }}>
                             <img
-                                src="/images/lion-logo.png"
+                                src="/lion-logo.png"
                                 alt="TradeGrail"
                                 style={{ width: 46, height: 46, objectFit: 'contain' }}
                             />
@@ -250,23 +250,23 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             style={{
                                 width: '100%', height: 48, marginTop: 24,
                                 borderRadius: 12, border: 'none',
-                                background: saving ? '#e8e8f0' : 'linear-gradient(135deg, #5b6af0 0%, #8b5cf6 100%)',
+                                background: saving ? '#e8e8f0' : 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
                                 color: saving ? '#b0b3c6' : '#fff',
                                 fontSize: 15, fontWeight: 700,
                                 cursor: saving ? 'not-allowed' : 'pointer',
                                 letterSpacing: '0.02em',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                boxShadow: saving ? 'none' : '0 6px 20px rgba(99,102,241,0.4)',
+                                boxShadow: saving ? 'none' : '0 6px 20px rgba(14,20,40,0.35)',
                                 transition: 'transform 0.15s, box-shadow 0.15s',
                             }}
                             onMouseEnter={e => {
                                 if (saving) return;
                                 e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(99,102,241,0.5)';
+                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(14,20,40,0.45)';
                             }}
                             onMouseLeave={e => {
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = saving ? 'none' : '0 6px 20px rgba(99,102,241,0.4)';
+                                e.currentTarget.style.boxShadow = saving ? 'none' : '0 6px 20px rgba(14,20,40,0.35)';
                             }}
                         >
                             {saving ? '保存中...' : (
