@@ -285,8 +285,6 @@ function buildDashWeeks(n = 18): (string | null)[][] {
   return weeks;
 }
 
-interface DashTodayRule { id: string; name: string; done: boolean }
-
 const DashboardHeatmap: React.FC<{
   language: string;
   trades: any[];
@@ -302,63 +300,92 @@ const DashboardHeatmap: React.FC<{
   const [ruleSettings, setRuleSettings] = useState<any>(null);
   const [manualRules, setManualRules] = useState<any[]>([]);
 
-  // Load from Supabase + localStorage on mount
   useEffect(() => {
-    // Load rule settings from localStorage (written by Psychology page)
     try {
       const s = localStorage.getItem('tg_rule_settings');
       if (s) setRuleSettings(JSON.parse(s));
       const m = localStorage.getItem('tg_manual_rules');
       if (m) setManualRules(JSON.parse(m));
     } catch {}
-
-    // Load heatmap from Supabase
     const load = async () => {
       try {
         const { supabase } = await import('../supabaseClient');
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         const { data } = await supabase.from('rule_execution_logs').select('date, completion_rate').eq('user_id', user.id);
-        if (data) {
+        if (data?.length) {
           const hm: Record<string, number> = {};
           data.forEach((row: any) => { hm[row.date] = parseFloat(row.completion_rate); });
           setHeatmapData(hm);
+          return;
         }
       } catch {}
-      // Fallback: compute from disciplineHistory
+      // Fallback from disciplineHistory
       if (disciplineHistory.length && disciplineRules.length) {
-        setHeatmapData(prev => {
-          const map = { ...prev };
-          disciplineHistory.forEach((rec: any) => {
-            if (!map[rec.date]) map[rec.date] = rec.completedRuleIds.length / disciplineRules.length;
-          });
-          return map;
-        });
+        const map: Record<string, number> = {};
+        disciplineHistory.forEach((rec: any) => { map[rec.date] = rec.completedRuleIds.length / disciplineRules.length; });
+        setHeatmapData(map);
       }
     };
     load();
   }, [disciplineHistory, disciplineRules]);
 
-  // Build today's rules list (filtered by trading day)
-  const todayRules = useMemo((): DashTodayRule[] => {
+  // ── Identical rule evaluation logic as Psychology today rules panel ──
+  const todayRuleRows = useMemo(() => {
     if (!ruleSettings) return [];
     const isTradingDay = ruleSettings.trading_days?.includes(todayDayAbbr) ?? true;
+    if (!isTradingDay) return [];
+
+    const todayTrades = trades.filter(t => t.entryDate?.startsWith(todayKey));
+    const todayNetPnl = todayTrades.reduce((a: number, t: any) => a + (t.pnl - t.fees), 0);
+    const worstTrade = todayTrades.length > 0 ? todayTrades.reduce((a: any, b: any) => (a.pnl - a.fees) < (b.pnl - b.fees) ? a : b) : null;
+    const worstTradePnl = worstTrade ? (worstTrade.pnl - worstTrade.fees) : 0;
     const todayRecord = disciplineHistory.find((r: any) => r.date === todayKey);
-    const sys: DashTodayRule[] = isTradingDay ? [
-      ruleSettings.start_my_day_enabled && { id: 'start_my_day', name: language === 'cn' ? '开始我的一天' : 'Start my day', done: todayRecord?.completedRuleIds?.includes('start_my_day') ?? false },
-      ruleSettings.link_to_playbook_enabled && { id: 'link_playbook', name: language === 'cn' ? '关联策略手册' : 'Link to playbook', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).every(t => t.setup && t.setup !== '') && trades.filter(t => t.entryDate?.startsWith(todayKey)).length > 0 },
-      ruleSettings.input_stop_loss_enabled && { id: 'stop_loss', name: language === 'cn' ? '设置止损' : 'Input stop loss', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).every(t => t.riskAmount && t.riskAmount > 0) && trades.filter(t => t.entryDate?.startsWith(todayKey)).length > 0 },
-      ruleSettings.net_max_loss_per_trade_enabled && { id: 'max_loss_trade', name: language === 'cn' ? '单笔最大亏损' : 'Max loss /trade', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).every(t => (t.pnl - t.fees) >= -ruleSettings.net_max_loss_per_trade_value) },
-      ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: language === 'cn' ? '单日最大亏损' : 'Max loss /day', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).reduce((a: number, t: any) => a + (t.pnl - t.fees), 0) >= -ruleSettings.net_max_loss_per_day_value },
-    ].filter(Boolean) as DashTodayRule[] : [];
-    const manual: DashTodayRule[] = manualRules.filter((r: any) => r.active_days?.includes(todayDayAbbr)).map((r: any) => ({
-      id: r.id, name: r.name, done: disciplineHistory.find((rec: any) => rec.date === todayKey)?.completedRuleIds?.includes(r.id) ?? false,
-    }));
-    return [...sys, ...manual];
+
+    // Build today's rule list (same as Psychology todayRulesList)
+    const sys = [
+      ruleSettings.start_my_day_enabled && { id: 'start_my_day', name: language === 'cn' ? '开始我的一天' : 'Start my day by' },
+      ruleSettings.link_to_playbook_enabled && { id: 'link_playbook', name: language === 'cn' ? '关联策略手册' : 'Link trades to playbook' },
+      ruleSettings.input_stop_loss_enabled && { id: 'stop_loss', name: language === 'cn' ? '设置止损' : 'Input Stop loss' },
+      ruleSettings.net_max_loss_per_trade_enabled && { id: 'max_loss_trade', name: language === 'cn' ? '单笔最大亏损' : 'Net max loss /trade' },
+      ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: language === 'cn' ? '单日最大亏损' : 'Net max loss /day' },
+    ].filter(Boolean) as { id: string; name: string }[];
+    const manual = manualRules.filter((r: any) => r.active_days?.includes(todayDayAbbr)).map((r: any) => ({ id: r.id, name: r.name }));
+
+    return [...sys, ...manual].map(rule => {
+      if (rule.id === 'start_my_day') {
+        return { ...rule, value: ruleSettings.start_my_day_time, status: todayTrades.length > 0 ? 'pass' : 'pending' };
+      }
+      if (rule.id === 'link_playbook') {
+        const unlinked = todayTrades.filter((t: any) => !t.setup || t.setup === '');
+        const status = todayTrades.length === 0 ? 'pending' : unlinked.length === 0 ? 'pass' : 'fail';
+        return { ...rule, value: todayTrades.length === 0 ? '—' : `${todayTrades.length - unlinked.length}/${todayTrades.length}`, status };
+      }
+      if (rule.id === 'stop_loss') {
+        const noSL = todayTrades.filter((t: any) => !t.riskAmount || t.riskAmount === 0);
+        const status = todayTrades.length === 0 ? 'pending' : noSL.length === 0 ? 'pass' : 'fail';
+        return { ...rule, value: todayTrades.length === 0 ? '—' : `${todayTrades.length - noSL.length}/${todayTrades.length}`, status };
+      }
+      if (rule.id === 'max_loss_trade') {
+        const limit = ruleSettings.net_max_loss_per_trade_value;
+        const type = ruleSettings.net_max_loss_per_trade_type;
+        const exceeded = todayTrades.some((t: any) => (t.pnl - t.fees) < -(type === '%' ? (limit / 100) * 10000 : limit));
+        const status = todayTrades.length === 0 ? 'pending' : exceeded ? 'fail' : 'pass';
+        return { ...rule, value: worstTrade ? `$${Math.abs(worstTradePnl).toFixed(0)} / ${type}${limit}` : `${type}${limit}`, status };
+      }
+      if (rule.id === 'max_loss_day') {
+        const limit = ruleSettings.net_max_loss_per_day_value;
+        const exceeded = todayNetPnl < -limit;
+        const status = todayTrades.length === 0 ? 'pending' : exceeded ? 'fail' : 'pass';
+        return { ...rule, value: `$${Math.abs(todayNetPnl).toFixed(0)} / $${limit}`, status };
+      }
+      const done = todayRecord?.completedRuleIds?.includes(rule.id) ?? false;
+      return { ...rule, value: '—', status: done ? 'pass' : 'pending' };
+    }) as { id: string; name: string; value: string; status: 'pass' | 'fail' | 'pending' }[];
   }, [ruleSettings, manualRules, trades, todayKey, todayDayAbbr, disciplineHistory, language]);
 
-  const todayCompleted = todayRules.filter(r => r.done).length;
-  const todayTotal = todayRules.length;
+  const todayCompleted = todayRuleRows.filter(r => r.status === 'pass').length;
+  const todayTotal = todayRuleRows.length;
   const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
 
   const monthLabels: { col: number; label: string }[] = [];
@@ -371,7 +398,6 @@ const DashboardHeatmap: React.FC<{
     <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
       {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 10, padding: '4px 8px', borderRadius: 5, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}：{Math.round((heatmapData[tip.key] ?? 0) * 100)}%</div>}
 
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
@@ -380,29 +406,22 @@ const DashboardHeatmap: React.FC<{
       </div>
 
       {showChecklist ? (
-        /* ── Today's checklist view ── */
         <div>
           <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1d2e', marginBottom: 10 }} className="dark:text-white">{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
-          {todayRules.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#b0b3c6', textAlign: 'center', padding: '20px 0' }}>
-              {language === 'cn' ? '今日无生效规则' : 'No rules active today'}
+          {todayRuleRows.length === 0 ? (
+            <div style={{ fontSize: 12, color: '#b0b3c6', textAlign: 'center', padding: '20px 0' }}>{language === 'cn' ? '今日无生效规则' : 'No rules active today'}</div>
+          ) : todayRuleRows.map((rule, i) => (
+            <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < todayRuleRows.length - 1 ? '1px solid #f5f5fa' : 'none' }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#f0f0f6', border: `2px solid ${rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#e0e0ea'}` }}>
+                {rule.status === 'pass' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
+                {rule.status === 'fail' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✕</span>}
+              </div>
+              <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? '#9396aa' : '#1a1d2e', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 400, flexShrink: 0, color: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#b0b3c6' }}>{rule.value}</span>
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {todayRules.map(rule => (
-                <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f5f5fa' }}>
-                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${rule.done ? '#00c896' : '#e0e0ea'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: rule.done ? '#00c896' : 'transparent' }}>
-                    {rule.done && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
-                  </div>
-                  <span style={{ fontSize: 12.5, color: rule.done ? '#9396aa' : '#1a1d2e', textDecoration: rule.done ? 'line-through' : 'none' }} className={rule.done ? '' : 'dark:text-white'}>{rule.name}</span>
-                  <span style={{ marginLeft: 'auto', fontSize: 11, color: rule.done ? '#00c896' : '#ff4d6a', fontWeight: 600 }}>{rule.done ? (language === 'cn' ? '完成' : 'Done') : (language === 'cn' ? '待完成' : 'Pending')}</span>
-                </div>
-              ))}
-            </div>
-          )}
+          ))}
         </div>
       ) : (
-        /* ── Heatmap view ── */
         <div style={{ overflowX: 'auto' }}>
           <div style={{ display: 'flex', gap: 3 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 18, marginRight: 4 }}>
@@ -437,10 +456,8 @@ const DashboardHeatmap: React.FC<{
         </div>
       )}
 
-      {/* Divider */}
       <div style={{ height: 1, background: '#f0f0f6', margin: '12px 0' }} />
 
-      {/* Today score + toggle button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 11, color: '#9396aa', marginBottom: 5 }}>{language === 'cn' ? '今日得分' : "Today's score"}</div>
