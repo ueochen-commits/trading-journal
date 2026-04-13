@@ -435,22 +435,24 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             onClick={handleSubmit}
                             disabled={saving}
                             style={{
-                                width: '100%', height: 48, marginTop: 24, borderRadius: 12, border: 'none',
-                                background: saving ? '#e8e8f0' : 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
-                                color: saving ? '#b0b3c6' : '#fff', fontSize: 15, fontWeight: 700,
+                                width: '100%', height: 46, marginTop: 24, borderRadius: 10, border: 'none',
+                                background: saving ? '#e8e8f0' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
+                                color: saving ? '#b0b3c6' : '#fff', fontSize: 14, fontWeight: 700,
                                 cursor: saving ? 'not-allowed' : 'pointer', letterSpacing: '0.02em',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                                boxShadow: saving ? 'none' : '0 6px 20px rgba(14,20,40,0.35)',
-                                transition: 'transform 0.15s, box-shadow 0.15s',
+                                boxShadow: saving ? 'none' : '0 4px 16px rgba(30,27,75,0.4)',
+                                transition: 'all 0.2s', opacity: saving ? 0.6 : 1,
                             }}
                             onMouseEnter={e => {
                                 if (saving) return;
+                                e.currentTarget.style.background = 'linear-gradient(135deg, #312e81 0%, #3730a3 50%, #4338ca 100%)';
                                 e.currentTarget.style.transform = 'translateY(-1px)';
-                                e.currentTarget.style.boxShadow = '0 8px 24px rgba(14,20,40,0.45)';
+                                e.currentTarget.style.boxShadow = '0 6px 20px rgba(30,27,75,0.5)';
                             }}
                             onMouseLeave={e => {
+                                e.currentTarget.style.background = saving ? '#e8e8f0' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = saving ? 'none' : '0 6px 20px rgba(14,20,40,0.35)';
+                                e.currentTarget.style.boxShadow = saving ? 'none' : '0 4px 16px rgba(30,27,75,0.4)';
                             }}
                         >
                             {saving ? '保存中...' : (

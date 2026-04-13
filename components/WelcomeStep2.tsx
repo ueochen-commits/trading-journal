@@ -124,9 +124,9 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                         width: 64, height: 64, borderRadius: '50%', background: '#fff',
                         boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 20, border: '3px solid #fff',
+                        zIndex: 20, border: '3px solid #fff', overflow: 'hidden',
                     }}>
-                        <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain' }} />
+                        <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain', display: 'block' }} />
                     </div>
 
                     {/* Card */}
@@ -169,18 +169,18 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                             {/* Top 2 large options — full width stacked */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 10 }}>
                                 <LargeOption
-                                    icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="#6366f1"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z"/><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z"/></svg>}
-                                    title="记录第一笔交易"
-                                    desc="手动添加一笔交易记录，开始建立你的复盘数据库"
-                                    badge={null}
-                                    onClick={() => { onClose(); onNavigate('journal', 'add-trade'); }}
-                                />
-                                <LargeOption
                                     icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="#6366f1"><path d="M4.5 6.375a4.125 4.125 0 118.25 0 4.125 4.125 0 01-8.25 0zM14.25 8.625a3.375 3.375 0 116.75 0 3.375 3.375 0 01-6.75 0zM1.5 19.125a7.125 7.125 0 0114.25 0v.003l-.001.119a.75.75 0 01-.363.63 13.067 13.067 0 01-6.761 1.873c-2.472 0-4.786-.684-6.76-1.873a.75.75 0 01-.364-.63l-.001-.122zM17.25 19.128l-.001.144a2.25 2.25 0 01-.233.96 10.088 10.088 0 005.06-1.01.75.75 0 00.42-.643 4.875 4.875 0 00-6.957-4.611 8.586 8.586 0 011.71 5.157v.003z"/></svg>}
                                     title="连接交易所"
-                                    desc="通过 API Key 自动同步 Binance、OKX、Bitget 交易记录，无需手动录入"
+                                    desc="API 自动同步交易所数据，无需手动录入"
                                     badge={{ text: 'Beta', color: '#f59e0b' }}
                                     onClick={() => { onClose(); onNavigate('settings'); }}
+                                />
+                                <LargeOption
+                                    icon={<svg width="20" height="20" viewBox="0 0 24 24" fill="#6366f1"><path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32l8.4-8.4z"/><path d="M5.25 5.25a3 3 0 00-3 3v10.5a3 3 0 003 3h10.5a3 3 0 003-3V13.5a.75.75 0 00-1.5 0v5.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5V8.25a1.5 1.5 0 011.5-1.5h5.25a.75.75 0 000-1.5H5.25z"/></svg>}
+                                    title="记录第一笔交易"
+                                    desc="手动添加一笔交易，开始建立你的复盘数据库"
+                                    badge={null}
+                                    onClick={() => { onClose(); onNavigate('journal', 'add-trade'); }}
                                 />
                             </div>
 
@@ -225,14 +225,14 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                                 onClick={onClose}
                                 style={{
                                     flex: 2, height: 42, borderRadius: 8, border: 'none',
-                                    background: 'linear-gradient(135deg, #3730a3 0%, #4c1d95 100%)',
+                                    background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
                                     fontSize: 13, fontWeight: 700, color: '#fff',
                                     cursor: 'pointer', transition: 'all 0.15s',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
-                                    boxShadow: '0 4px 14px rgba(55,48,163,0.35)', letterSpacing: '0.01em',
+                                    boxShadow: '0 4px 14px rgba(30,27,75,0.35)', letterSpacing: '0.01em',
                                 }}
-                                onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #312e81 0%, #3b0764 100%)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(55,48,163,0.45)'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #3730a3 0%, #4c1d95 100%)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(55,48,163,0.35)'; }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #312e81 0%, #3730a3 50%, #4338ca 100%)'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(30,27,75,0.45)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(30,27,75,0.35)'; }}
                             >
                                 进入仪表盘
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
