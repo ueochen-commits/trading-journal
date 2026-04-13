@@ -1062,99 +1062,63 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div id="dashboard-goal" className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative group cursor-pointer hover:border-pink-500/50 transition-colors" onClick={onViewGoals}><div className="flex justify-between items-start mb-2"><div><h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide"><Target className="w-4 h-4 text-pink-500" />{t.dashboard.goals.title}</h3><p className="text-[10px] text-slate-500 mt-1">{t.dashboard.goals.subtitle}</p></div><button onClick={(e) => { e.stopPropagation(); setIsGoalModalOpen(true); }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-pink-500 transition-colors"><Edit2 className="w-3 h-3" /></button></div><div className="flex items-center gap-4"><div className="relative w-24 h-24 flex items-center justify-center"><ResponsiveContainer width="100%" height="100%"><RadialBarChart innerRadius="70%" outerRadius="100%" barSize={10} data={goalRadialData} startAngle={180} endAngle={-180}><RadialBar background={{ fill: '#f1f5f9' }} dataKey="value" cornerRadius={10} /></RadialBarChart></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center flex-col"><span className="text-lg font-bold text-pink-500">{goalProgress.percent.toFixed(0)}%</span></div></div><div className="flex-1 space-y-2"><div><p className="text-[10px] text-slate-400 uppercase">{t.dashboard.goals.current}</p><p className="font-bold tabular-nums text-slate-800 dark:text-slate-200">{weeklyGoal?.type === 'amount' ? '$' : ''}{goalProgress.current.toFixed(weeklyGoal?.type === 'percentage' ? 1 : 0)}{weeklyGoal?.type === 'percentage' ? '%' : weeklyGoal?.type === 'r_multiple' ? 'R' : ''}</p></div><div><p className="text-[10px] text-slate-400 uppercase">{t.dashboard.goals.target}</p><p className="font-medium tabular-nums text-slate-500">{weeklyGoal?.type === 'amount' ? '$' : ''}{weeklyGoal?.value}{weeklyGoal?.type === 'percentage' ? '%' : weeklyGoal?.type === 'r_multiple' ? 'R' : ''}</p></div></div></div>{goalProgress.percent >= 100 && (<div className="absolute top-4 right-12 animate-bounce"><span className="bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-lg">{t.dashboard.goals.achieved}</span></div>)}<div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end"><button onClick={(e) => { e.stopPropagation(); setIsHistoryModalOpen(true); }} className="text-xs text-pink-500 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">{t.dashboard.goals.history} <ArrowRight className="w-3 h-3" /></button></div></div>
 
-              {/* --- ENHANCED TODO LIST WIDGET --- */}
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-all duration-300">
-                  <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide">
-                      <ClipboardList className="w-4 h-4 text-indigo-500" /> {t.dashboard.todo.title}
-                      {pendingCount > 0 && (
-                          <span className="w-5 h-5 flex items-center justify-center bg-red-500 text-white text-[10px] font-bold rounded-full animate-pulse-slow">
-                              {pendingCount}
-                          </span>
-                      )}
-                  </h3>
-
-                  {/* Add Input Area */}
-                  <div className="flex gap-2 mb-4">
-                      <input 
-                          type="text" 
-                          value={newTodoInput}
-                          onChange={(e) => setNewTodoInput(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleAddCustomTodo()}
-                          placeholder={language === 'cn' ? "添加新待办..." : "Add new task..."}
-                          className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500"
-                      />
-                      <button 
-                          onClick={handleAddCustomTodo}
-                          disabled={!newTodoInput.trim()}
-                          className="p-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white rounded-xl shadow-md transition-colors"
-                      >
-                          <Plus className="w-4 h-4" />
-                      </button>
-                  </div>
-
-                  <div className="space-y-3">
-                      {visibleTodos.map((task) => (
-                          <div 
-                            key={task.id}
-                            className={`p-3 rounded-xl border flex items-center justify-between transition-all group ${
-                                task.isCompleted 
-                                ? 'bg-slate-50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 opacity-60' 
-                                : 'bg-white dark:bg-slate-800 border-indigo-200 dark:border-indigo-500/30 shadow-sm'
-                            }`}
-                          >
-                              <div className="flex items-center gap-3 flex-1">
-                                  <button 
-                                      onClick={() => !task.isSystem && toggleCustomTodo(task.id)}
-                                      className={`p-1 transition-colors ${task.isCompleted ? 'text-emerald-500' : 'text-slate-300 hover:text-indigo-500'}`}
-                                  >
-                                      {task.isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <Circle className="w-5 h-5" />}
-                                  </button>
-                                  <div>
-                                      <p className={`text-sm font-bold transition-all ${task.isCompleted ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-white'}`}>
-                                          {task.label}
-                                      </p>
-                                      <p className="text-[10px] text-slate-500 font-medium">
-                                          {task.isSystem ? t.dashboard.todo.system : t.dashboard.todo.manual}
-                                      </p>
+              {/* --- DRAWDOWN CHART --- */}
+              {(() => {
+                const ddTooltipStyle: React.CSSProperties = { background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
+                const sorted = [...trades].filter(t => t.exitDate).sort((a, b) => new Date(a.exitDate).getTime() - new Date(b.exitDate).getTime());
+                const dayMap: Record<string, number> = {};
+                sorted.forEach(t => { const d = new Date(t.exitDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }); dayMap[d] = (dayMap[d] || 0) + (t.pnl - t.fees); });
+                let cum = 0, peak = 0;
+                const ddData = Object.entries(dayMap).map(([date, pnl]) => { cum += pnl; if (cum > peak) peak = cum; const dd = peak > 0 ? cum - peak : Math.min(0, cum); return { date, drawdown: parseFloat(dd.toFixed(2)) }; });
+                const minVal = ddData.length ? Math.min(...ddData.map(d => d.drawdown)) : 0;
+                const yMin = Math.floor(minVal / 100) * 100 - 100;
+                return (
+                  <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 280, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '回撤分析' : 'Drawdown'}</span>
+                      <TZInfoIcon />
+                    </div>
+                    {ddData.length === 0 ? (
+                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无回撤数据' : 'No drawdown data'}</div>
+                    ) : (
+                      <div style={{ flex: 1, minHeight: 0 }}>
+                        <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={ddData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                            <defs>
+                              <linearGradient id="ddGradient" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#e8a0b4" stopOpacity={0.5}/>
+                                <stop offset="60%" stopColor="#e8a0b4" stopOpacity={0.2}/>
+                                <stop offset="100%" stopColor="#e8a0b4" stopOpacity={0}/>
+                              </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" vertical={false} />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} interval="preserveStartEnd" />
+                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} domain={[yMin, 0]} width={58}
+                              tickFormatter={(v: number) => v === 0 ? '$0' : `-$${Math.abs(v).toLocaleString('en-US')}`} />
+                            <Tooltip cursor={{ stroke: '#7b7ef8', strokeWidth: 1, strokeDasharray: '4 4' }}
+                              content={({ active, payload, label }: any) => {
+                                if (!active || !payload?.length) return null;
+                                const val = payload[0]?.value ?? 0;
+                                return (
+                                  <div style={ddTooltipStyle}>
+                                    <div style={{ fontWeight: 600, color: '#1a1d2e', marginBottom: 5 }}>{label}</div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                      <span style={{ width: 10, height: 10, background: '#e8a0b4', borderRadius: 2, display: 'inline-block' }} />
+                                      <span style={{ color: val < 0 ? '#e05c8a' : '#1a1d2e', fontWeight: 600 }}>
+                                        {val < 0 ? '-' : ''}${Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                      </span>
+                                    </div>
                                   </div>
-                              </div>
-                              
-                              <div className="flex items-center gap-2">
-                                  {task.isSystem && !task.isCompleted && (
-                                      <button 
-                                        onClick={() => onStartReview && onStartReview(task.type as any)}
-                                        className="text-[10px] px-2 py-1 bg-indigo-600 text-white rounded-lg font-bold shadow-md hover:bg-indigo-700"
-                                      >
-                                          {t.dashboard.todo.start}
-                                      </button>
-                                  )}
-                                  {!task.isSystem && (
-                                      <button 
-                                          onClick={() => deleteCustomTodo(task.id)}
-                                          className="p-1.5 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                                      >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                  )}
-                              </div>
-                          </div>
-                      ))}
+                                );
+                              }} />
+                            <Area type="monotone" dataKey="drawdown" stroke="#7b7ef8" strokeWidth={2} fill="url(#ddGradient)" dot={false} activeDot={{ r: 5, fill: '#7b7ef8', stroke: '#fff', strokeWidth: 2 }} />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Expand/Collapse Footer */}
-                  {allTodos.length > 3 && (
-                      <button 
-                          onClick={() => setIsTodoListExpanded(!isTodoListExpanded)}
-                          className="w-full mt-4 flex items-center justify-center gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-indigo-500 transition-colors"
-                      >
-                          {isTodoListExpanded 
-                            ? (language === 'cn' ? '收起' : 'Collapse') 
-                            : (language === 'cn' ? `展开 (${allTodos.length - 3} 更多)` : `Show More (${allTodos.length - 3})`)
-                          }
-                          <ChevronDown className={`w-3 h-3 transition-transform ${isTodoListExpanded ? 'rotate-180' : ''}`} />
-                      </button>
-                  )}
-              </div>
+                );
+              })()}
 
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide"><Flame className="w-4 h-4 text-orange-500" /> {t.dashboard.discipline.streak}</h3><div className="grid grid-cols-7 gap-1.5">{disciplineCalendarDays?.map((day, idx) => (<div key={idx} className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-all ${day.status === 'success' ? 'bg-emerald-500 text-white shadow-sm' : day.status === 'fail' ? 'bg-rose-500/20 text-rose-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`} title={day.status === 'success' ? t.dashboard.discipline.success : day.status === 'fail' ? t.dashboard.discipline.fail : t.dashboard.discipline.empty}>{day.day}</div>))}</div><div className="flex justify-center gap-4 mt-4 text-[10px] text-slate-400"><div className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-emerald-500"></span> {t.dashboard.discipline.success}</div><div className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-rose-500/20"></span> {t.dashboard.discipline.fail}</div><div className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-slate-200 dark:bg-slate-800"></span> {t.dashboard.discipline.empty}</div></div></div>
 
