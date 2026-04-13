@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 
 interface BadgeProps {
     text: string;
@@ -107,16 +107,6 @@ interface WelcomeStep2Props {
 
 const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNavigate }) => {
     const [showQR, setShowQR] = useState(false);
-    const bannerRef = useRef<HTMLDivElement>(null);
-    const [logoTop, setLogoTop] = useState(80); // fallback
-
-    useEffect(() => {
-        if (bannerRef.current) {
-            // Banner total height - paddingBottom(32) = content height = logo center position
-            const totalHeight = bannerRef.current.getBoundingClientRect().height;
-            setLogoTop(totalHeight - 32); // logo top = banner content height - logo radius
-        }
-    }, []);
 
     return (
         <>
@@ -133,12 +123,11 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                         background: '#fff', borderRadius: 16, overflow: 'hidden',
                         boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
                         animation: 'ws2-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)',
-                        position: 'relative',
                     }}>
-                        {/* Top banner — paddingBottom = logo radius (32px) so boundary = logo center */}
-                        <div ref={bannerRef} style={{
+                        {/* Top banner — logo sits inside at the bottom, TradeZella style */}
+                        <div style={{
                             background: 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
-                            paddingTop: 28, paddingLeft: 32, paddingRight: 32, paddingBottom: 16,
+                            padding: '28px 32px 24px',
                             textAlign: 'center', position: 'relative',
                         }}>
                             <div style={{
@@ -152,27 +141,23 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                             }}>
                                 谢谢，{userName || '交易者'} 👋
                             </h2>
-                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0, position: 'relative', zIndex: 1 }}>
+                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 20px', position: 'relative', zIndex: 1 }}>
                                 设置已保存，开始你的交易复盘之旅
                             </p>
-                        </div>
-
-                        {/* Logo — absolutely positioned so center = banner bottom edge */}
-                        <div style={{
-                            position: 'absolute',
-                            top: logoTop,
-                            left: '50%',
-                            transform: 'translate(-50%, -50%)',
-                            width: 64, height: 64, borderRadius: '50%', background: '#fff',
-                            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            zIndex: 10, border: '3px solid #fff', overflow: 'hidden',
-                        }}>
-                            <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain', display: 'block' }} />
+                            {/* Logo inside banner, bottom-centered */}
+                            <div style={{
+                                width: 56, height: 56, borderRadius: '50%',
+                                background: 'rgba(255,255,255,0.12)',
+                                border: '2px solid rgba(255,255,255,0.2)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                margin: '0 auto', position: 'relative', zIndex: 1,
+                            }}>
+                                <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 36, height: 36, objectFit: 'contain', display: 'block' }} />
+                            </div>
                         </div>
 
                         {/* Content */}
-                        <div style={{ padding: '48px 22px 10px' }}>
+                        <div style={{ padding: '20px 20px 8px' }}>
                             <h3 style={{
                                 fontSize: 16, fontWeight: 700, color: '#1a1d2e',
                                 textAlign: 'center', marginBottom: 22, letterSpacing: '-0.2px',
