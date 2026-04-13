@@ -62,6 +62,7 @@ import FriendListDrawer from './components/FriendListDrawer';
 import TourOverlay from './components/TourOverlay';
 // import OnboardingModal from './components/OnboardingModal'; // TEMPORARILY DISABLED
 import WelcomeModal from './components/WelcomeModal';
+import ConnectExchangePage from './components/ConnectExchangePage';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
@@ -176,6 +177,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   // showWelcome: derived from context but controlled by local state so Step2 can stay open
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const showWelcome = isAuthenticated && onboardingCompleted === false && !welcomeDismissed;
+  const [showConnectExchange, setShowConnectExchange] = useState(false);
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -1016,12 +1018,20 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   userMetaUsername={user.name !== 'Trader' ? user.name : undefined}
                   onComplete={() => setWelcomeDismissed(true)}
                   onNavigate={(tab, action) => {
+                      if (tab === 'connect-exchange') {
+                          setWelcomeDismissed(true);
+                          setShowConnectExchange(true);
+                          return;
+                      }
                       handleSetActiveTab(tab);
                       if (action === 'add-trade') setJournalAutoOpen(true);
                   }}
               />
           )}
           <TourOverlay />
+          {showConnectExchange && (
+              <ConnectExchangePage onClose={() => setShowConnectExchange(false)} />
+          )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
               <TradeShareModal 
                 isOpen={isShareModalOpen} 
