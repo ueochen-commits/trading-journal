@@ -271,16 +271,16 @@ const heatColor = (v: number | undefined) => {
 
 function buildDashWeeks(): (string | null)[][] {
   const now = new Date();
-  const todayStr = now.toISOString().split('T')[0];
-  const todayTs = new Date(todayStr).getTime(); // midnight UTC of today
+  // Today in local time, normalized to midnight
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const pad = (n: number) => String(n).padStart(2, '0');
+  const toLocalStr = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
-  // Start: 1st of 2 months ago, then back to Sunday
   const y = now.getFullYear(), m = now.getMonth();
+  // Start: 1st of 2 months ago, back to Sunday
   const startBase = new Date(y, m - 2, 1);
-  const startSunday = new Date(startBase);
-  startSunday.setDate(startBase.getDate() - startBase.getDay());
-
-  // End: last day of next month (month+2 day 0 = last day of month+1)
+  const startSunday = new Date(y, m - 2, 1 - startBase.getDay());
+  // End: last day of next month
   const endDate = new Date(y, m + 2, 0);
 
   const weeks: (string | null)[][] = [];
@@ -289,9 +289,8 @@ function buildDashWeeks(): (string | null)[][] {
     const week: (string | null)[] = [];
     for (let d = 0; d < 7; d++) {
       const day = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + d);
-      const dayStr = day.toISOString().split('T')[0];
-      // Show cell if day <= today (include today, hide future)
-      week.push(day.getTime() <= todayTs ? dayStr : null);
+      // Compare purely in local time — include today, exclude future
+      week.push(day.getTime() <= todayLocal.getTime() ? toLocalStr(day) : null);
     }
     weeks.push(week);
     cur.setDate(cur.getDate() + 7);
@@ -306,7 +305,8 @@ const DashboardHeatmap: React.FC<{
   disciplineRules?: any[];
 }> = ({ language, trades, disciplineHistory = [], disciplineRules = [] }) => {
   const weeks = useMemo(() => buildDashWeeks(), []);
-  const todayKey = new Date().toISOString().split('T')[0];
+  const _now = new Date();
+  const todayKey = `${_now.getFullYear()}-${String(_now.getMonth()+1).padStart(2,'0')}-${String(_now.getDate()).padStart(2,'0')}`;
   const todayDayAbbr = ['Su','Mo','Tu','We','Th','Fr','Sa'][new Date().getDay()];
   const [tip, setTip] = useState<{ key: string; x: number; y: number } | null>(null);
   const [showChecklist, setShowChecklist] = useState(false);
