@@ -373,18 +373,74 @@ const Psychology: React.FC<PsychologyProps> = ({
               </div>
             </div>
           ) : (
-            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {todayRulesList.map(rule => {
-                const done = todayRecord?.completedRuleIds.includes(rule.id) ?? false;
-                return (
-                  <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f5f5fa' }}>
-                    <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${done ? '#00c896' : '#e0e0ea'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: done ? '#00c896' : 'transparent' }}>
-                      {done && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+            <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+              {(() => {
+                const todayTrades = trades.filter(t => t.entryDate.startsWith(todayKey));
+                const todayNetPnl = todayTrades.reduce((a, t) => a + (t.pnl - t.fees), 0);
+                const worstTrade = todayTrades.length > 0 ? todayTrades.reduce((a, b) => (a.pnl - a.fees) < (b.pnl - b.fees) ? a : b) : null;
+                const worstTradePnl = worstTrade ? (worstTrade.pnl - worstTrade.fees) : 0;
+
+                const ruleRows: { id: string; name: string; value: string; status: 'pass' | 'fail' | 'pending' }[] = todayRulesList.map(rule => {
+                  if (rule.id === 'start_my_day') {
+                    const target = ruleSettings.start_my_day_time;
+                    const hasPlan = todayTrades.length > 0;
+                    return { id: rule.id, name: rule.name, value: target, status: hasPlan ? 'pass' : 'pending' };
+                  }
+                  if (rule.id === 'link_playbook') {
+                    const unlinked = todayTrades.filter(t => !t.setup || t.setup === '');
+                    const status = todayTrades.length === 0 ? 'pending' : unlinked.length === 0 ? 'pass' : 'fail';
+                    const value = todayTrades.length === 0 ? '—' : `${todayTrades.length - unlinked.length}/${todayTrades.length}`;
+                    return { id: rule.id, name: rule.name, value, status };
+                  }
+                  if (rule.id === 'stop_loss') {
+                    const noSL = todayTrades.filter(t => !t.riskAmount || t.riskAmount === 0);
+                    const status = todayTrades.length === 0 ? 'pending' : noSL.length === 0 ? 'pass' : 'fail';
+                    const value = todayTrades.length === 0 ? '—' : `${todayTrades.length - noSL.length}/${todayTrades.length}`;
+                    return { id: rule.id, name: rule.name, value, status };
+                  }
+                  if (rule.id === 'max_loss_trade') {
+                    const limit = ruleSettings.net_max_loss_per_trade_value;
+                    const type = ruleSettings.net_max_loss_per_trade_type;
+                    const exceeded = todayTrades.some(t => (t.pnl - t.fees) < -(type === '%' ? (ruleSettings.net_max_loss_per_trade_value / 100) * 10000 : limit));
+                    const status = todayTrades.length === 0 ? 'pending' : exceeded ? 'fail' : 'pass';
+                    const value = worstTrade ? `$${Math.abs(worstTradePnl).toFixed(0)} / ${type}${limit}` : `${type}${limit}`;
+                    return { id: rule.id, name: rule.name, value, status };
+                  }
+                  if (rule.id === 'max_loss_day') {
+                    const limit = ruleSettings.net_max_loss_per_day_value;
+                    const exceeded = todayNetPnl < -limit;
+                    const status = todayTrades.length === 0 ? 'pending' : exceeded ? 'fail' : 'pass';
+                    const value = `$${Math.abs(todayNetPnl).toFixed(0)} / $${limit}`;
+                    return { id: rule.id, name: rule.name, value, status };
+                  }
+                  // manual rule
+                  const done = todayRecord?.completedRuleIds.includes(rule.id) ?? false;
+                  return { id: rule.id, name: rule.name, value: '—', status: done ? 'pass' : 'pending' };
+                });
+
+                return ruleRows.map((rule, i) => (
+                  <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < ruleRows.length - 1 ? '1px solid #f5f5fa' : 'none' }}>
+                    {/* Status icon */}
+                    <div style={{
+                      width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#f0f0f6',
+                      border: `2px solid ${rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#e0e0ea'}`,
+                    }}>
+                      {rule.status === 'pass' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
+                      {rule.status === 'fail' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✕</span>}
                     </div>
-                    <span style={{ fontSize: 13, color: done ? '#9396aa' : '#1a1d2e', textDecoration: done ? 'line-through' : 'none' }}>{rule.name}</span>
+                    {/* Rule name */}
+                    <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? '#9396aa' : '#1a1d2e', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
+                    {/* Value badge */}
+                    <span style={{
+                      fontSize: 11, fontWeight: 600, padding: '2px 7px', borderRadius: 5, flexShrink: 0,
+                      background: rule.status === 'pass' ? '#e8faf5' : rule.status === 'fail' ? '#fff0f0' : '#f5f5fa',
+                      color: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#9396aa',
+                    }}>{rule.value}</span>
                   </div>
-                );
-              })}
+                ));
+              })()}
             </div>
           )}
         </div>
