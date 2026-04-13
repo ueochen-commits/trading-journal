@@ -207,6 +207,7 @@ const Psychology: React.FC<PsychologyProps> = ({
   });
   // Heatmap data from Supabase execution logs
   const [dbHeatmap, setDbHeatmap] = useState<Record<string, number>>({});
+  const [dbExecutionLogs, setDbExecutionLogs] = useState<{ date: string; rule_results: Record<string, boolean> }[]>([]);
   const [showModal, setShowModal] = useState(false);
 
   // Load settings + manual rules + heatmap from Supabase on mount
@@ -217,7 +218,7 @@ const Psychology: React.FC<PsychologyProps> = ({
       const [{ data: settingsData }, { data: manualData }, { data: logsData }] = await Promise.all([
         supabase.from('user_rule_settings').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('manual_rules').select('*').eq('user_id', user.id),
-        supabase.from('rule_execution_logs').select('date, completion_rate').eq('user_id', user.id),
+        supabase.from('rule_execution_logs').select('date, completion_rate, rule_results').eq('user_id', user.id),
       ]);
       if (settingsData) {
         const s: RuleSettings = {
@@ -249,6 +250,7 @@ const Psychology: React.FC<PsychologyProps> = ({
         const hm: Record<string, number> = {};
         logsData.forEach((row: any) => { hm[row.date] = parseFloat(row.completion_rate); });
         setDbHeatmap(hm);
+        setDbExecutionLogs(logsData.map((row: any) => ({ date: row.date, rule_results: row.rule_results ?? {} })));
       }
     };
     load().catch(() => {});
@@ -279,6 +281,10 @@ const Psychology: React.FC<PsychologyProps> = ({
       rule_results: ruleResults, updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id,date' });
     setDbHeatmap(prev => ({ ...prev, [todayKey]: total > 0 ? completed / total : 0 }));
+    setDbExecutionLogs(prev => {
+      const filtered = prev.filter(l => l.date !== todayKey);
+      return [...filtered, { date: todayKey, rule_results: ruleResults }];
+    });
   }, [todayKey]);
 
   // Today's day abbreviation: Mo/Tu/We/Th/Fr/Sa/Su
@@ -392,24 +398,35 @@ const Psychology: React.FC<PsychologyProps> = ({
       ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: language === 'cn' ? '单日最大亏损' : 'Net max loss /day', condition: `$${ruleSettings.net_max_loss_per_day_value}` },
     ].filter(Boolean) as { id: string; name: string; condition: string }[];
     const manual = manualRules.map(r => ({ id: r.id, name: r.name, condition: r.active_days.join('/') }));
+
+    // Use dbExecutionLogs for accurate per-rule stats
     return [...sys, ...manual].map(r => {
-      const records = disciplineHistory.filter(rec => rec.completedRuleIds.includes(r.id));
-      const followRate = disciplineHistory.length > 0 ? Math.round((records.length / disciplineHistory.length) * 100) : 0;
+      // Days where this rule was completed (from execution logs rule_results)
+      const completedDays = dbExecutionLogs.filter(log => log.rule_results?.[r.id] === true);
+      // Days where this rule was applicable (rule_results has the key)
+      const applicableDays = dbExecutionLogs.filter(log => r.id in (log.rule_results ?? {}));
+      const followRate = applicableDays.length > 0 ? Math.round((completedDays.length / applicableDays.length) * 100) : 0;
+
+      // Streak: consecutive days completed up to today
       let streak = 0;
       const today = new Date();
       for (let i = 0; i < 365; i++) {
         const d = new Date(today); d.setDate(d.getDate() - i);
-        const rec = disciplineHistory.find(rec2 => rec2.date === fmtKey(d));
-        if (rec?.completedRuleIds.includes(r.id)) streak++; else break;
+        const log = dbExecutionLogs.find(l => l.date === fmtKey(d));
+        if (log?.rule_results?.[r.id] === true) streak++; else break;
       }
+
+      // Avg P&L on days rule was completed
       let avgPerf: number | null = null;
-      if (records.length > 0) {
-        const pnls = records.map(rec => trades.filter(t => t.entryDate.startsWith(rec.date)).reduce((a, t) => a + (t.pnl - t.fees), 0));
+      if (completedDays.length > 0) {
+        const pnls = completedDays.map(log =>
+          trades.filter(t => t.entryDate.startsWith(log.date)).reduce((a, t) => a + (t.pnl - t.fees), 0)
+        );
         avgPerf = parseFloat((pnls.reduce((a, b) => a + b, 0) / pnls.length).toFixed(2));
       }
       return { ...r, followRate, streak, avgPerf };
     });
-  }, [ruleSettings, manualRules, disciplineHistory, trades, language]);
+  }, [ruleSettings, manualRules, dbExecutionLogs, trades, language]);
 
   const card: React.CSSProperties = { background: '#fff', border: '1px solid #ededf3', borderRadius: 12 };
 
@@ -579,9 +596,6 @@ const Psychology: React.FC<PsychologyProps> = ({
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${rule.followRate > 0 ? '#00c896' : '#ff4d6a'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ fontSize: 10, color: rule.followRate > 0 ? '#00c896' : '#ff4d6a' }}>{rule.followRate > 0 ? '✓' : '✕'}</span>
-              </div>
               <span style={{ fontSize: 13, color: '#1a1d2e' }}>{rule.name}</span>
             </div>
             <span style={{ fontSize: 13, color: '#4a4d6a' }}>{rule.condition}</span>
