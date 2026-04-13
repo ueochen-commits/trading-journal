@@ -259,11 +259,11 @@ const Psychology: React.FC<PsychologyProps> = ({
   // Build rules for table
   const tableRules = useMemo(() => {
     const sys = [
-      ruleSettings.start_my_day_enabled && { id: 'start_my_day', name: 'Start my day by', condition: ruleSettings.start_my_day_time },
-      ruleSettings.link_to_playbook_enabled && { id: 'link_playbook', name: 'Link trades to playbook', condition: '100%' },
-      ruleSettings.input_stop_loss_enabled && { id: 'stop_loss', name: 'Input Stop loss to all trades', condition: '100%' },
-      ruleSettings.net_max_loss_per_trade_enabled && { id: 'max_loss_trade', name: 'Net max loss /trade', condition: `${ruleSettings.net_max_loss_per_trade_type}${ruleSettings.net_max_loss_per_trade_value}` },
-      ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: 'Net max loss /day', condition: `$${ruleSettings.net_max_loss_per_day_value}` },
+      ruleSettings.start_my_day_enabled && { id: 'start_my_day', name: language === 'cn' ? '开始我的一天' : 'Start my day by', condition: ruleSettings.start_my_day_time },
+      ruleSettings.link_to_playbook_enabled && { id: 'link_playbook', name: language === 'cn' ? '关联策略手册' : 'Link trades to playbook', condition: '100%' },
+      ruleSettings.input_stop_loss_enabled && { id: 'stop_loss', name: language === 'cn' ? '设置止损' : 'Input Stop loss', condition: '100%' },
+      ruleSettings.net_max_loss_per_trade_enabled && { id: 'max_loss_trade', name: language === 'cn' ? '单笔最大亏损' : 'Net max loss /trade', condition: `${ruleSettings.net_max_loss_per_trade_type}${ruleSettings.net_max_loss_per_trade_value}` },
+      ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: language === 'cn' ? '单日最大亏损' : 'Net max loss /day', condition: `$${ruleSettings.net_max_loss_per_day_value}` },
     ].filter(Boolean) as { id: string; name: string; condition: string }[];
     const manual = manualRules.map(r => ({ id: r.id, name: r.name, condition: r.active_days.join('/') }));
     return [...sys, ...manual].map(r => {
@@ -283,7 +283,7 @@ const Psychology: React.FC<PsychologyProps> = ({
       }
       return { ...r, followRate, streak, avgPerf };
     });
-  }, [ruleSettings, manualRules, disciplineHistory, trades]);
+  }, [ruleSettings, manualRules, disciplineHistory, trades, language]);
 
   const card: React.CSSProperties = { background: '#fff', border: '1px solid #ededf3', borderRadius: 12 };
 
@@ -375,7 +375,13 @@ const Psychology: React.FC<PsychologyProps> = ({
           </button>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr 1fr', padding: '10px 24px', background: '#fafafa', borderBottom: '1px solid #f0f0f6' }}>
-          {['RULE','CONDITION','RULE STREAK','AVG PERFORMANCE','FOLLOW RATE'].map((h, i) => (
+          {[
+          language === 'cn' ? '规则' : 'RULE',
+          language === 'cn' ? '条件' : 'CONDITION',
+          language === 'cn' ? '连续天数' : 'RULE STREAK',
+          language === 'cn' ? '平均表现' : 'AVG PERFORMANCE',
+          language === 'cn' ? '执行率' : 'FOLLOW RATE',
+        ].map((h, i) => (
             <span key={h} style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', letterSpacing: '0.06em', textAlign: i > 1 ? 'center' : 'left' }}>{h}</span>
           ))}
         </div>
