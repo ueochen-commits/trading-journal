@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import WelcomeHeader from './WelcomeHeader';
 
 interface BadgeProps {
     text: string;
@@ -115,49 +116,20 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
                 zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
             }}>
-                {/* Outer wrapper */}
-                <div style={{ position: 'relative', width: '100%', maxWidth: 440 }}>
+                {/* Card — same dimensions as WelcomeModal */}
+                <div style={{
+                    background: '#fff', borderRadius: 20, width: '100%', maxWidth: 460,
+                    boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
+                    animation: 'ws2-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)', position: 'relative',
+                }}>
+                    {/* Shared header — identical to WelcomeModal */}
+                    <WelcomeHeader
+                        title={`谢谢，${userName || '交易者'} 👋`}
+                        subtitle="设置已保存，开始你的交易复盘之旅"
+                    />
 
-                    {/* Card */}
-                    <div style={{
-                        background: '#fff', borderRadius: 16, overflow: 'hidden',
-                        boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
-                        animation: 'ws2-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)',
-                    }}>
-                        {/* Top banner — logo sits inside at the bottom, TradeZella style */}
-                        <div style={{
-                            background: 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
-                            padding: '28px 32px 24px',
-                            textAlign: 'center', position: 'relative',
-                        }}>
-                            <div style={{
-                                position: 'absolute', inset: 0,
-                                background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)',
-                                pointerEvents: 'none',
-                            }}/>
-                            <h2 style={{
-                                fontSize: 20, fontWeight: 700, color: '#fff',
-                                letterSpacing: '-0.3px', marginBottom: 4, position: 'relative', zIndex: 1,
-                            }}>
-                                谢谢，{userName || '交易者'} 👋
-                            </h2>
-                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 20px', position: 'relative', zIndex: 1 }}>
-                                设置已保存，开始你的交易复盘之旅
-                            </p>
-                            {/* Logo inside banner, bottom-centered */}
-                            <div style={{
-                                width: 56, height: 56, borderRadius: '50%',
-                                background: 'rgba(255,255,255,0.12)',
-                                border: '2px solid rgba(255,255,255,0.2)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '0 auto', position: 'relative', zIndex: 1,
-                            }}>
-                                <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 36, height: 36, objectFit: 'contain', display: 'block' }} />
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div style={{ padding: '20px 20px 8px' }}>
+                    {/* Content — paddingTop matches WelcomeModal form area */}
+                    <div style={{ padding: '52px 20px 8px' }}>
                             <h3 style={{
                                 fontSize: 16, fontWeight: 700, color: '#1a1d2e',
                                 textAlign: 'center', marginBottom: 22, letterSpacing: '-0.2px',
@@ -241,7 +213,6 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                         </div>
                     </div>
                 </div>
-            </div>
 
             {/* WeChat QR modal */}
             {showQR && (
