@@ -259,6 +259,139 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   );
 };
 
+// ── Dashboard Progress Tracker (heatmap + today score) ───────────────────────
+const HEAT_COLORS = ['#f0f0f6','#e0e4fd','#b8bef9','#7b7ef8','#4338ca'];
+const heatColor = (v: number | undefined) => {
+  if (!v) return HEAT_COLORS[0];
+  if (v <= 0.25) return HEAT_COLORS[1];
+  if (v <= 0.5) return HEAT_COLORS[2];
+  if (v <= 0.75) return HEAT_COLORS[3];
+  return HEAT_COLORS[4];
+};
+
+function buildDashWeeks(n = 10): (string | null)[][] {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const start = new Date(today);
+  start.setDate(today.getDate() - today.getDay() - (n - 1) * 7);
+  const weeks: (string | null)[][] = [];
+  for (let w = 0; w < n; w++) {
+    const week: (string | null)[] = [];
+    for (let d = 0; d < 7; d++) {
+      const cur = new Date(start); cur.setDate(start.getDate() + w * 7 + d);
+      week.push(cur > today ? null : cur.toISOString().split('T')[0]);
+    }
+    weeks.push(week);
+  }
+  return weeks;
+}
+
+const DashboardHeatmap: React.FC<{
+  heatmapData: Record<string, number>;
+  todayCompleted: number;
+  todayTotal: number;
+  onNavigate: () => void;
+  language: string;
+}> = ({ heatmapData, todayCompleted, todayTotal, onNavigate, language }) => {
+  const weeks = useMemo(() => buildDashWeeks(10), []);
+  const todayKey = new Date().toISOString().split('T')[0];
+  const [tip, setTip] = useState<{ key: string; x: number; y: number } | null>(null);
+  const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
+
+  // month labels
+  const monthLabels: { col: number; label: string }[] = [];
+  weeks.forEach((week, wi) => {
+    const first = week.find(d => d !== null);
+    if (first) { const d = new Date(first); if (d.getDate() <= 7) monthLabels.push({ col: wi, label: `${d.getMonth() + 1}月` }); }
+  });
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
+      {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 10, padding: '4px 8px', borderRadius: 5, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}：{Math.round((heatmapData[tip.key] ?? 0) * 100)}%</div>}
+
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
+          <TZInfoIcon />
+        </div>
+        <button onClick={onNavigate} style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
+          {language === 'cn' ? '查看更多 →' : 'View more →'}
+        </button>
+      </div>
+
+      {/* Heatmap grid */}
+      <div style={{ overflowX: 'auto' }}>
+        <div style={{ display: 'flex', gap: 3 }}>
+          {/* Day labels */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 18, marginRight: 4 }}>
+            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+              <div key={d} style={{ height: 14, fontSize: 9, color: '#b0b3c6', lineHeight: '14px', width: 22, textAlign: 'right' }}>
+                {['Mon','Wed','Fri'].includes(d) ? d : ''}
+              </div>
+            ))}
+          </div>
+          <div>
+            {/* Month labels */}
+            <div style={{ display: 'flex', gap: 3, height: 18, position: 'relative' }}>
+              {weeks.map((_, wi) => {
+                const ml = monthLabels.find(m => m.col === wi);
+                return <div key={wi} style={{ width: 14, fontSize: 9, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>;
+              })}
+            </div>
+            {/* Cells */}
+            <div style={{ display: 'flex', gap: 3 }}>
+              {weeks.map((week, wi) => (
+                <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  {week.map((dateKey, di) => (
+                    <div key={di} style={{
+                      width: 14, height: 14, borderRadius: 2,
+                      background: dateKey ? heatColor(heatmapData[dateKey]) : 'transparent',
+                      border: dateKey === todayKey ? '1.5px solid #f97316' : 'none',
+                      cursor: dateKey ? 'pointer' : 'default',
+                    }}
+                      onMouseEnter={e => dateKey && setTip({ key: dateKey, x: e.clientX, y: e.clientY })}
+                      onMouseLeave={() => setTip(null)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
+            {/* Legend */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 6, justifyContent: 'flex-end' }}>
+              <span style={{ fontSize: 9, color: '#b0b3c6' }}>Less</span>
+              {HEAT_COLORS.map((c, i) => <span key={i} style={{ width: 11, height: 11, background: c, borderRadius: 2, display: 'inline-block' }} />)}
+              <span style={{ fontSize: 9, color: '#b0b3c6' }}>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div style={{ height: 1, background: '#f0f0f6', margin: '12px 0' }} />
+
+      {/* Today score + button */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 11, color: '#9396aa', marginBottom: 5 }}>{language === 'cn' ? '今日得分' : "Today's score"}</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: '#1a1d2e', letterSpacing: '-0.5px' }} className="dark:text-white">{todayCompleted}/{todayTotal}</span>
+            <div style={{ width: 100, height: 5, background: '#f0f0f6', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? '#00c896' : '#6366f1', borderRadius: 3, transition: 'width 0.3s' }} />
+            </div>
+          </div>
+        </div>
+        <button onClick={onNavigate}
+          style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #e0e0ea', background: '#fff', fontSize: 12, fontWeight: 600, color: '#1a1d2e', cursor: 'pointer' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#f5f5fa'}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#fff'}
+        >
+          {language === 'cn' ? '每日检查清单' : 'Daily checklist'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const MARKET_OPTIONS = [
     { id: 'sydney', labelKey: 'sydney', zone: 'Australia/Sydney', start: [10, 0], end: [16, 0], color: 'amber', icon: Sunrise },
     { id: 'tokyo', labelKey: 'asia', zone: 'Asia/Tokyo', start: [9, 0], end: [15, 0], color: 'cyan', icon: Flower },
@@ -468,6 +601,7 @@ interface DashboardProps {
   onSetWeeklyGoal?: (goal: WeeklyGoal) => void;
   onViewGoals?: () => void;
   onViewLeaderboard?: () => void;
+  onViewPsychology?: () => void;
 }
 
 const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
@@ -493,7 +627,7 @@ const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
 const Dashboard: React.FC<DashboardProps> = ({
     trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
-    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard
+    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology
 }) => {
   const { t, language } = useLanguage();
   const isDark = document.documentElement.classList.contains('dark');
@@ -784,6 +918,29 @@ const Dashboard: React.FC<DashboardProps> = ({
   }, [disciplineHistory]);
 
   const riskAlert = stats.todayPnl < -Math.abs(riskSettings.maxDailyLoss);
+
+  // Progress tracker heatmap data (from disciplineHistory + Supabase logs via localStorage)
+  const dashHeatmap = useMemo(() => {
+    const map: Record<string, number> = {};
+    // Try to load from localStorage (written by Psychology page)
+    try {
+      const stored = localStorage.getItem('tg_heatmap_cache');
+      if (stored) Object.assign(map, JSON.parse(stored));
+    } catch {}
+    // Fallback: compute from disciplineHistory
+    if (disciplineHistory && disciplineRules) {
+      disciplineHistory.forEach(rec => {
+        if (!disciplineRules.length) return;
+        if (!map[rec.date]) map[rec.date] = rec.completedRuleIds.length / disciplineRules.length;
+      });
+    }
+    return map;
+  }, [disciplineHistory, disciplineRules]);
+
+  const dashTodayKey = new Date().toISOString().split('T')[0];
+  const dashTodayRecord = disciplineHistory?.find(r => r.date === dashTodayKey);
+  const dashTodayCompleted = dashTodayRecord?.completedRuleIds.length ?? 0;
+  const dashTodayTotal = disciplineRules?.length ?? 0;
   
   const toggleFriend = (id: string) => setSelectedFriends(prev => prev.includes(id) ? prev.filter(fId => fId !== id) : [...prev, id]);
 
@@ -1206,7 +1363,13 @@ const Dashboard: React.FC<DashboardProps> = ({
               {/* --- TRADE TIME PERFORMANCE --- */}
               <TradeTimeChart trades={trades} language={language} />
 
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[400px]"><h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide"><Zap className="w-4 h-4 text-yellow-500" /> {t.dashboard.discipline.rituals}</h3><div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">{disciplineRules?.map(rule => { const todayStr = new Date().toISOString().split('T')[0], todayRecord = disciplineHistory?.find(r => r.date === todayStr), isChecked = todayRecord?.completedRuleIds.includes(rule.id) || false; return (<div key={rule.id} onClick={() => onCheckDisciplineRule && onCheckDisciplineRule(rule.id, !isChecked)} className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all group ${isChecked ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'}`}><div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${isChecked ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600'}`}>{isChecked && <CheckCircle2 className="w-3 h-3" />}</div><div className="flex-1"><p className={`text-sm font-medium transition-colors ${isChecked ? 'text-emerald-700 dark:text-emerald-400 line-through opacity-70' : 'text-slate-700 dark:text-slate-300'}`}>{rule.text}</p></div><button onClick={(e) => { e.stopPropagation(); handleDeleteDisciplineRule(rule.id); }} className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4" /></button></div>); })}</div><div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-2"><input type="text" placeholder={t.dashboard.discipline.addRule} value={newDisciplineRuleText} onChange={(e) => setNewDisciplineRuleText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddDisciplineRule()} className="flex-1 bg-slate-50 dark:bg-slate-800 border-none rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500" /><button onClick={handleAddDisciplineRule} className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"><Plus className="w-4 h-4" /></button></div></div>
+              <DashboardHeatmap
+                heatmapData={dashHeatmap}
+                todayCompleted={dashTodayCompleted}
+                todayTotal={dashTodayTotal}
+                onNavigate={() => onViewPsychology?.()}
+                language={language}
+              />
 
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[300px]"><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 text-sm uppercase tracking-wide"><Users className="w-4 h-4 text-indigo-500" />{t.social.title}</h3><button onClick={() => setIsAddFriendModalOpen(true)} className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"><UserPlus className="w-3 h-3" /></button></div><div className="flex-1 overflow-y-auto pr-1 custom-scrollbar"><table className="w-full text-xs"><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{friends.sort((a,b) => b.pnl - a.pnl).map((friend, index) => { const isSelected = selectedFriends.includes(friend.id); return (<tr key={friend.id} className="group"><td className="py-2.5 w-6 text-center">{index === 0 && <span className="text-base">🥇</span>}{index === 1 && <span className="text-base">🥈</span>}{index === 2 && <span className="text-base">🥉</span>}{index > 2 && <span className="text-slate-400 font-mono">{index + 1}</span>}</td><td className="py-2.5"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{backgroundColor: friend.color}}>{friend.initials}</div><div className="overflow-hidden"><p className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[80px]">{friend.name}</p></div></div></td><td className={`py-2.5 text-right font-bold tabular-nums ${friend.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${friend.pnl.toLocaleString()}</td><td className="py-2.5 text-right"><button onClick={() => toggleFriend(friend.id)} className={`p-1 rounded transition-colors ${isSelected ? 'text-indigo-500' : 'text-slate-300 hover:text-slate-500'}`}>{isSelected ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button></td></tr>); })}</tbody></table></div></div>
           </div>
