@@ -213,7 +213,10 @@ const Psychology: React.FC<PsychologyProps> = ({
     localStorage.setItem('tg_manual_rules', JSON.stringify(newManualRules));
   };
 
-  // Build discipline rules from settings + manual rules (for heatmap/streak)
+  // Today's day abbreviation: Mo/Tu/We/Th/Fr/Sa/Su
+  const todayDayAbbr = ['Su','Mo','Tu','We','Th','Fr','Sa'][new Date().getDay()];
+
+  // All enabled rule IDs (for heatmap — not filtered by day)
   const allRuleIds = useMemo(() => {
     const sys = ['start_my_day','link_playbook','stop_loss','max_loss_trade','max_loss_day'].filter(id => {
       if (id === 'start_my_day') return ruleSettings.start_my_day_enabled;
@@ -225,6 +228,37 @@ const Psychology: React.FC<PsychologyProps> = ({
     });
     return [...sys, ...manualRules.map(r => r.id)];
   }, [ruleSettings, manualRules]);
+
+  // Today's active rule IDs — filtered by trading_days / active_days
+  const todayRuleIds = useMemo(() => {
+    const isTradingDay = ruleSettings.trading_days.includes(todayDayAbbr);
+    const sys = isTradingDay
+      ? ['start_my_day','link_playbook','stop_loss','max_loss_trade','max_loss_day'].filter(id => {
+          if (id === 'start_my_day') return ruleSettings.start_my_day_enabled;
+          if (id === 'link_playbook') return ruleSettings.link_to_playbook_enabled;
+          if (id === 'stop_loss') return ruleSettings.input_stop_loss_enabled;
+          if (id === 'max_loss_trade') return ruleSettings.net_max_loss_per_trade_enabled;
+          if (id === 'max_loss_day') return ruleSettings.net_max_loss_per_day_enabled;
+          return false;
+        })
+      : [];
+    const manual = manualRules.filter(r => r.enabled && r.active_days.includes(todayDayAbbr)).map(r => r.id);
+    return [...sys, ...manual];
+  }, [ruleSettings, manualRules, todayDayAbbr]);
+
+  // Today's active rules with names (for the checklist panel)
+  const todayRulesList = useMemo(() => {
+    const isTradingDay = ruleSettings.trading_days.includes(todayDayAbbr);
+    const sys = isTradingDay ? [
+      ruleSettings.start_my_day_enabled && { id: 'start_my_day', name: language === 'cn' ? '开始我的一天' : 'Start my day by' },
+      ruleSettings.link_to_playbook_enabled && { id: 'link_playbook', name: language === 'cn' ? '关联策略手册' : 'Link trades to playbook' },
+      ruleSettings.input_stop_loss_enabled && { id: 'stop_loss', name: language === 'cn' ? '设置止损' : 'Input Stop loss' },
+      ruleSettings.net_max_loss_per_trade_enabled && { id: 'max_loss_trade', name: language === 'cn' ? '单笔最大亏损' : 'Net max loss /trade' },
+      ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: language === 'cn' ? '单日最大亏损' : 'Net max loss /day' },
+    ].filter(Boolean) as { id: string; name: string }[] : [];
+    const manual = manualRules.filter(r => r.enabled && r.active_days.includes(todayDayAbbr)).map(r => ({ id: r.id, name: r.name }));
+    return [...sys, ...manual];
+  }, [ruleSettings, manualRules, todayDayAbbr, language]);
 
   // Heatmap data from disciplineHistory
   const heatmapData = useMemo(() => {
@@ -253,8 +287,8 @@ const Psychology: React.FC<PsychologyProps> = ({
   }, [heatmapData]);
 
   const todayRecord = disciplineHistory.find(r => r.date === todayKey);
-  const todayCompleted = todayRecord?.completedRuleIds.length ?? 0;
-  const todayTotal = allRuleIds.length;
+  const todayCompleted = todayRecord ? todayRuleIds.filter(id => todayRecord.completedRuleIds.includes(id)).length : 0;
+  const todayTotal = todayRuleIds.length;
 
   // Build rules for table
   const tableRules = useMemo(() => {
@@ -328,15 +362,19 @@ const Psychology: React.FC<PsychologyProps> = ({
         {/* Today rules */}
         <div style={{ ...card, padding: 20, display: 'flex', flexDirection: 'column', minHeight: 280 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', marginBottom: 16 }}>{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
-          {allRuleIds.length === 0 ? (
+          {todayRulesList.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <div style={{ fontSize: 32 }}>📋</div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '暂无规则' : 'No rules yet'}</div>
-              <div style={{ fontSize: 12, color: '#9396aa', textAlign: 'center', lineHeight: 1.6 }}>{language === 'cn' ? '点击「编辑规则」开始配置' : 'Click "Edit rules" to get started'}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? (allRuleIds.length === 0 ? '暂无规则' : '今日无生效规则') : (allRuleIds.length === 0 ? 'No rules yet' : 'No rules active today')}</div>
+              <div style={{ fontSize: 12, color: '#9396aa', textAlign: 'center', lineHeight: 1.6 }}>
+                {allRuleIds.length === 0
+                  ? (language === 'cn' ? '点击「编辑规则」开始配置' : 'Click "Edit rules" to get started')
+                  : (language === 'cn' ? `今天是${todayDayAbbr}，不在交易日范围内` : `Today (${todayDayAbbr}) is not a trading day`)}
+              </div>
             </div>
           ) : (
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {tableRules.map(rule => {
+              {todayRulesList.map(rule => {
                 const done = todayRecord?.completedRuleIds.includes(rule.id) ?? false;
                 return (
                   <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f5f5fa' }}>
