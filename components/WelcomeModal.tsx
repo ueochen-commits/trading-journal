@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useUser } from './UserContext';
+import WelcomeStep2 from './WelcomeStep2';
 
 const CURRENCIES = [
     { value: 'USD', symbol: '$',    label: 'USD', desc: '美元 · United States Dollar' },
@@ -198,10 +199,13 @@ interface WelcomeModalProps {
     userEmail: string;
     userMetaUsername?: string;
     onComplete: () => void;
+    onNavigate: (tab: string, action?: string) => void;
 }
 
-const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMetaUsername, onComplete }) => {
+const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMetaUsername, onComplete, onNavigate }) => {
     const { markOnboardingComplete, updateUserPreferences } = useUser();
+    const [step, setStep] = useState(1);
+    const [savedUserName, setSavedUserName] = useState('');
     const [saving, setSaving] = useState(false);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
     const [form, setForm] = useState({
@@ -259,12 +263,24 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
             if (error) throw error;
             updateUserPreferences(form.currency, form.timezone);
             markOnboardingComplete();
-            onComplete();
+            setSavedUserName(form.firstName);
+            setStep(2);
+            setSaving(false);
         } catch (err) {
             console.error('保存失败:', err);
             setSaving(false);
         }
     };
+
+    if (step === 2) {
+        return (
+            <WelcomeStep2
+                userName={savedUserName}
+                onClose={onComplete}
+                onNavigate={onNavigate}
+            />
+        );
+    }
 
     return (
         <>

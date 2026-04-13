@@ -1014,6 +1014,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   userEmail={user.email}
                   userMetaUsername={user.name !== 'Trader' ? user.name : undefined}
                   onComplete={markOnboardingComplete}
+                  onNavigate={(tab, action) => {
+                      handleSetActiveTab(tab);
+                      if (action === 'add-trade') setJournalAutoOpen(true);
+                  }}
               />
           )}
           <TourOverlay />
