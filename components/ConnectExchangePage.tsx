@@ -80,7 +80,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
     return (
         <div style={{
             position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'linear-gradient(135deg, #f0efff 0%, #f8f0ff 50%, #eef0ff 100%)',
+            background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             overflowY: 'auto', padding: '0 24px',
         }}>
