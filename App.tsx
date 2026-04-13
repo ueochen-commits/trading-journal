@@ -61,6 +61,7 @@ import ChatWindow from './components/ChatWindow';
 import FriendListDrawer from './components/FriendListDrawer';
 import TourOverlay from './components/TourOverlay';
 // import OnboardingModal from './components/OnboardingModal'; // TEMPORARILY DISABLED
+import WelcomeModal from './components/WelcomeModal';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
@@ -172,6 +173,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   // const [showOnboarding, setShowOnboarding] = useState(false); // TEMPORARILY DISABLED
+  const [showWelcome, setShowWelcome] = useState(false);
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -250,6 +252,24 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   //     setShowOnboarding(true);
   //   }
   // }, [isAuthenticated]);
+
+  // New welcome card: check onboarding_completed in profiles table
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const checkWelcome = async () => {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) return;
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_completed')
+        .eq('id', authUser.id)
+        .maybeSingle();
+      if (!profile || !profile.onboarding_completed) {
+        setShowWelcome(true);
+      }
+    };
+    checkWelcome();
+  }, [isAuthenticated]);
 
   // Realtime：订阅新广播，用户在线时立刻收到通知
   useEffect(() => {
@@ -1003,6 +1023,14 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           {/* {showOnboarding && (
               <OnboardingModal onComplete={() => { setShowOnboarding(false); startInitialTour(); }} />
           )} */}
+          {showWelcome && user.id && (
+              <WelcomeModal
+                  userId={user.id}
+                  userEmail={user.email}
+                  userMetaUsername={user.name !== 'Trader' ? user.name : undefined}
+                  onComplete={() => setShowWelcome(false)}
+              />
+          )}
           <TourOverlay />
           {isShareModalOpen && shareIntent?.type === 'trade' && (
               <TradeShareModal 
