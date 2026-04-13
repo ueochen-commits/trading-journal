@@ -138,7 +138,7 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                         {/* Top banner — paddingBottom = logo radius (32px) so boundary = logo center */}
                         <div ref={bannerRef} style={{
                             background: 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
-                            paddingTop: 28, paddingLeft: 32, paddingRight: 32, paddingBottom: 32,
+                            paddingTop: 28, paddingLeft: 32, paddingRight: 32, paddingBottom: 16,
                             textAlign: 'center', position: 'relative',
                         }}>
                             <div style={{
