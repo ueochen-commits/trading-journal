@@ -97,11 +97,11 @@ const InfoIcon = () => (
 
 const Toggle: React.FC<{ enabled: boolean; onToggle: (v: boolean) => void }> = ({ enabled, onToggle }) => (
   <div onClick={() => onToggle(!enabled)} style={{
-    width: 42, height: 24, borderRadius: 12, cursor: 'pointer', flexShrink: 0,
+    width: 44, height: 26, borderRadius: 13, cursor: 'pointer', flexShrink: 0,
     background: enabled ? '#6366f1' : '#e0e0ea', position: 'relative', transition: 'background 0.2s',
   }}>
     <div style={{
-      width: 20, height: 20, borderRadius: 10, background: '#fff',
+      width: 22, height: 22, borderRadius: 11, background: '#fff',
       position: 'absolute', top: 2, left: enabled ? 20 : 2,
       transition: 'left 0.2s', boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
     }} />
@@ -112,11 +112,11 @@ const ToggleRow: React.FC<{
   enabled: boolean; onToggle: (v: boolean) => void;
   title: string; desc?: string; children?: React.ReactNode;
 }> = ({ enabled, onToggle, title, desc, children }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 24px', borderBottom: '1px solid #f5f5fa' }}>
+  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '16px 28px', borderBottom: '1px solid #f5f5fa' }}>
     <Toggle enabled={enabled} onToggle={onToggle} />
     <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: enabled ? '#1a1d2e' : '#9396aa' }}>{title}</div>
-      {desc && <div style={{ fontSize: 11, color: '#b0b3c6', marginTop: 3, lineHeight: 1.6, whiteSpace: 'pre-line' }}>{desc}</div>}
+      <div style={{ fontSize: 14, fontWeight: 600, color: enabled ? '#1a1d2e' : '#9396aa' }}>{title}</div>
+      {desc && <div style={{ fontSize: 12, color: '#b0b3c6', marginTop: 3, lineHeight: 1.5, whiteSpace: 'pre-line' }}>{desc}</div>}
     </div>
     {children && <div style={{ flexShrink: 0, marginTop: 2 }}>{children}</div>}
   </div>
@@ -652,7 +652,133 @@ const RulesModal: React.FC<{
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 560, maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
+      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 660, maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
+
+        {/* Header */}
+        <div style={{ padding: '22px 28px 14px', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1d2e', margin: 0, letterSpacing: '-0.3px' }}>{language === 'cn' ? '规则设置' : 'Rules'}</h2>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #e8e8f0', background: 'transparent', fontSize: 16, color: '#9396aa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+          </div>
+          <p style={{ fontSize: 12, color: '#9396aa', marginTop: 5, marginBottom: 0, lineHeight: 1.6 }}>{language === 'cn' ? '修改只会影响今天及以后的得分记录' : 'Changes you make will only update your scoring for today and for future days.'}</p>
+        </div>
+
+        {/* Scrollable body */}
+        <div style={{ flex: 1, overflowY: 'auto' }}>
+
+          {/* Trading days */}
+          <div style={{ padding: '18px 28px', borderBottom: '1px solid #f5f5fa' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1d2e', marginBottom: 4 }}>{language === 'cn' ? '交易天数' : 'Trading days'}</div>
+            <div style={{ fontSize: 12, color: '#9396aa', marginBottom: 12 }}>{language === 'cn' ? '规则在哪些天生效。' : 'The days on which these rules should be active.'}</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {DAYS.map(day => {
+                const active = settings.trading_days.includes(day);
+                return (
+                  <button key={day} onClick={() => update('trading_days', active ? settings.trading_days.filter(d => d !== day) : [...settings.trading_days, day])}
+                    style={{ width: 44, height: 38, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', background: active ? 'transparent' : '#f5f5fa', color: active ? '#00b894' : '#9396aa', border: active ? '1.5px solid #00b894' : '1px solid #e8e8f0', transition: 'all 0.15s' }}>
+                    {day}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Email reminder */}
+          <ToggleRow enabled={settings.email_reminder_enabled} onToggle={v => update('email_reminder_enabled', v)} title={language === 'cn' ? '快要断签时发送邮件提醒' : "Send an email reminder when I'm about to lose my streak"}>
+            <select value={settings.email_reminder_time} onChange={e => update('email_reminder_time', e.target.value)} disabled={!settings.email_reminder_enabled} style={selectSt(!settings.email_reminder_enabled)}>
+              {generateTimeOptions().map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </ToggleRow>
+
+          {/* Trading hours */}
+          <ToggleRow enabled={settings.trading_hours_enabled} onToggle={v => update('trading_hours_enabled', v)} title={language === 'cn' ? '限制交易时间' : 'Trading hours'} desc={language === 'cn' ? `以24小时格式设置交易时间。\n当前时区：${Intl.DateTimeFormat().resolvedOptions().timeZone}` : `Set trading hours in a 24-hour format.\nYour timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <select value={settings.trading_hours_from} onChange={e => update('trading_hours_from', e.target.value)} disabled={!settings.trading_hours_enabled} style={selectSt(!settings.trading_hours_enabled)}>
+                {generateTimeOptions().map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+              <span style={{ fontSize: 11, color: '#9396aa' }}>to</span>
+              <select value={settings.trading_hours_to} onChange={e => update('trading_hours_to', e.target.value)} disabled={!settings.trading_hours_enabled} style={selectSt(!settings.trading_hours_enabled)}>
+                {generateTimeOptions().map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          </ToggleRow>
+
+          {/* Start my day */}
+          <ToggleRow enabled={settings.start_my_day_enabled} onToggle={v => update('start_my_day_enabled', v)} title={language === 'cn' ? '开始我的一天' : 'Start my day by'} desc={language === 'cn' ? '在交易前需要在此时间前填写开盘日志。' : 'The time you should start your day and enter your starting journal entry before your trading session.'}>
+            <input type="time" value={settings.start_my_day_time} onChange={e => update('start_my_day_time', e.target.value)} disabled={!settings.start_my_day_enabled} style={{ ...inputStyle, width: 90, opacity: settings.start_my_day_enabled ? 1 : 0.4 }} />
+          </ToggleRow>
+
+          {/* Link to playbook */}
+          <ToggleRow enabled={settings.link_to_playbook_enabled} onToggle={v => update('link_to_playbook_enabled', v)} title={language === 'cn' ? '每笔交易必须关联策略手册' : 'Link trades to playbook'} desc={language === 'cn' ? '所有开仓交易必须附上策略手册。' : 'All trades opened must have a playbook attached.'} />
+
+          {/* Stop loss */}
+          <ToggleRow enabled={settings.input_stop_loss_enabled} onToggle={v => update('input_stop_loss_enabled', v)} title={language === 'cn' ? '所有交易必须设置止损' : 'Input Stop loss to all trades'} desc={language === 'cn' ? '所有开仓交易必须填写止损价。' : 'All trades opened must have a stop loss added.'} />
+
+          {/* Max loss per trade */}
+          <ToggleRow enabled={settings.net_max_loss_per_trade_enabled} onToggle={v => update('net_max_loss_per_trade_enabled', v)} title={language === 'cn' ? '单笔最大亏损限制' : 'Net max loss /trade'} desc={language === 'cn' ? '单笔交易的最大亏损金额或账户余额百分比。' : 'The maximum net loss on a trade in amount or percentage of the account balance.'}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              {['%', '$'].map(t => (
+                <button key={t} onClick={() => update('net_max_loss_per_trade_type', t)} style={{ width: 34, height: 34, borderRadius: 6, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: settings.net_max_loss_per_trade_type === t ? '#6366f1' : '#f0f0f6', color: settings.net_max_loss_per_trade_type === t ? '#fff' : '#9396aa' }}>{t}</button>
+              ))}
+              <input type="number" value={settings.net_max_loss_per_trade_value} onChange={e => update('net_max_loss_per_trade_value', Number(e.target.value))} disabled={!settings.net_max_loss_per_trade_enabled} style={{ ...inputStyle, width: 80 }} />
+            </div>
+          </ToggleRow>
+
+          {/* Max loss per day */}
+          <ToggleRow enabled={settings.net_max_loss_per_day_enabled} onToggle={v => update('net_max_loss_per_day_enabled', v)} title={language === 'cn' ? '单日最大亏损限制' : 'Net max loss /day'} desc={language === 'cn' ? '所有账户中单日的最大净亏损。' : 'The maximum net loss on a day among all accounts.'}>
+            <input type="number" value={settings.net_max_loss_per_day_value} onChange={e => update('net_max_loss_per_day_value', Number(e.target.value))} disabled={!settings.net_max_loss_per_day_enabled} style={{ ...inputStyle, width: 80 }} />
+          </ToggleRow>
+
+          {/* Manual rules */}
+          <div style={{ padding: '18px 28px', borderTop: '1px solid #f0f0f6' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1d2e', marginBottom: 2 }}>{language === 'cn' ? '手动规则' : 'Manual rules'}</div>
+            <div style={{ fontSize: 12, color: '#9396aa', marginBottom: 12 }}>{language === 'cn' ? '规则将作为每日检查清单。' : 'The rule will be added as a daily check list'}</div>
+            <input type="text" placeholder={language === 'cn' ? '输入规则名称...' : 'Rule name...'} value={newRuleName} onChange={e => setNewRuleName(e.target.value)} onKeyDown={e => e.key === 'Enter' && addManualRule()} style={{ ...inputStyle, width: '100%', marginBottom: 8, boxSizing: 'border-box' }} />
+            <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
+              {DAYS.map(day => {
+                const active = newRuleDays.includes(day);
+                return <button key={day} onClick={() => setNewRuleDays(prev => active ? prev.filter(d => d !== day) : [...prev, day])} style={{ width: 34, height: 28, borderRadius: 5, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: active ? 'transparent' : '#f5f5fa', color: active ? '#6366f1' : '#b0b3c6', border: active ? '1.5px solid #6366f1' : '1px solid #e8e8f0' }}>{day}</button>;
+              })}
+              <button onClick={addManualRule} disabled={!newRuleName.trim()} style={{ marginLeft: 'auto', padding: '0 14px', height: 28, borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: newRuleName.trim() ? 'pointer' : 'not-allowed', background: newRuleName.trim() ? '#6366f1' : '#e8e8f0', color: newRuleName.trim() ? '#fff' : '#b0b3c6' }}>{language === 'cn' ? '+ 添加' : '+ Add'}</button>
+            </div>
+            {manualRules.map(rule => (
+              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: '#fafafa', borderRadius: 8, marginBottom: 6, border: '1px solid #f0f0f6' }}>
+                <span style={{ flex: 1, fontSize: 13, color: '#1a1d2e' }}>{rule.name}</span>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {DAYS.map(day => <span key={day} style={{ width: 24, height: 20, borderRadius: 3, fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.active_days.includes(day) ? '#eef0ff' : '#f5f5fa', color: rule.active_days.includes(day) ? '#6366f1' : '#d0d3e0' }}>{day}</span>)}
+                </div>
+                <button onClick={() => { setManualRules(prev => prev.filter(r => r.id !== rule.id)); setIsDirty(true); }} style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: '#fee2e2', color: '#ff4d6a', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              </div>
+            ))}
+          </div>
+
+          {/* Reset */}
+          <div style={{ padding: '18px 28px 24px', borderTop: '1px solid #f0f0f6' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1d2e', marginBottom: 4 }}>{language === 'cn' ? '重置进度' : 'Reset your progress tracker'}</div>
+            <div style={{ fontSize: 12, color: '#9396aa', marginBottom: 14 }}>{language === 'cn' ? '重新开始，清除所有规则、连续天数和习惯记录。' : 'Start over with new rules, streak and habit building.'}</div>
+            {!showResetConfirm ? (
+              <button onClick={() => setShowResetConfirm(true)} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.02em' }}>
+                {language === 'cn' ? '重置所有进度' : 'Reset all progress'}
+              </button>
+            ) : (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 13, color: '#ff4d6a', fontWeight: 500 }}>{language === 'cn' ? '确认重置？此操作不可撤销。' : 'Confirm reset? This cannot be undone.'}</span>
+                <button onClick={() => { setManualRules([]); setSettings(DEFAULT_SETTINGS); setShowResetConfirm(false); setIsDirty(true); }} style={{ padding: '6px 14px', borderRadius: 6, background: '#ff4d6a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{language === 'cn' ? '确认' : 'Confirm'}</button>
+                <button onClick={() => setShowResetConfirm(false)} style={{ padding: '6px 14px', borderRadius: 6, background: '#f5f5fa', color: '#4a4d6a', border: '1px solid #e8e8f0', fontSize: 12, cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '16px 28px', borderTop: '1px solid #f0f0f6', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+          <button onClick={onClose} style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid #e0e0ea', background: 'transparent', fontSize: 13, fontWeight: 500, color: '#4a4d6a', cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
+          <button onClick={() => { onSave(settings, manualRules); setIsDirty(false); onClose(); }} disabled={!isDirty} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: isDirty ? 'pointer' : 'not-allowed', background: isDirty ? '#6366f1' : '#e8e8f0', color: isDirty ? '#fff' : '#b0b3c6', letterSpacing: '0.02em' }}>{language === 'cn' ? '保存' : 'Save changes'}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
         {/* Header */}
         <div style={{ padding: '20px 24px 14px', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
