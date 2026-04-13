@@ -23,6 +23,10 @@ interface UserContextType {
     isLoading: boolean;
     onboardingCompleted: boolean | null; // null = still loading
     markOnboardingComplete: () => void;
+    userCurrency: string;       // e.g. 'USD', 'CNY' — from profiles
+    userTimezone: string;       // e.g. 'Asia/Shanghai' — from profiles
+    currencySymbol: string;     // e.g. '$', '¥', '€'
+    updateUserPreferences: (currency: string, timezone: string) => void;
     isPricingOpen: boolean;
     isProfileOpen: boolean;
     isReferralOpen: boolean;
@@ -80,6 +84,11 @@ const clearCachedTier = (userId: string) => {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const CURRENCY_SYMBOLS: Record<string, string> = {
+    USD: '$', CNY: '¥', EUR: '€', GBP: '£',
+    JPY: '¥', HKD: 'HK$', AUD: 'A$', CAD: 'C$', SGD: 'S$',
+};
+
 export const UserProvider = ({ children }: { children?: ReactNode }) => {
     const [user, setUser] = useState<UserProfile>({
         name: "Trader",
@@ -91,6 +100,10 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
+    const [userCurrency, setUserCurrency] = useState('USD');
+    const [userTimezone, setUserTimezone] = useState(
+        Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Asia/Shanghai'
+    );
 
     // Listen for Auth Changes
     // 只用 onAuthStateChange，避免与 getSession() 竞态（Chrome 兼容性问题）
@@ -132,14 +145,16 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             createdAt: supabaseUser.created_at,
         }));
 
-        // Check onboarding status immediately (fast, single-field query)
+        // Fetch onboarding status + currency + timezone in one query
         supabase
             .from('profiles')
-            .select('onboarding_completed')
+            .select('onboarding_completed, currency, timezone')
             .eq('id', supabaseUser.id)
             .maybeSingle()
             .then(({ data }) => {
                 setOnboardingCompleted(data?.onboarding_completed === true);
+                if (data?.currency) setUserCurrency(data.currency);
+                if (data?.timezone) setUserTimezone(data.timezone);
             })
             .catch(() => setOnboardingCompleted(false));
 
@@ -239,6 +254,12 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const markOnboardingComplete = () => setOnboardingCompleted(true);
 
+    // Allow WelcomeModal to push the chosen values into context immediately after save
+    const updateUserPreferences = (currency: string, timezone: string) => {
+        setUserCurrency(currency);
+        setUserTimezone(timezone);
+    };
+
     const updateProfile = async (updates: Partial<UserProfile>) => {
         setUser(prev => ({ ...prev, ...updates }));
         try {
@@ -281,6 +302,10 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             isLoading,
             onboardingCompleted,
             markOnboardingComplete,
+            userCurrency,
+            userTimezone,
+            currencySymbol: CURRENCY_SYMBOLS[userCurrency] ?? '$',
+            updateUserPreferences,
             login,
             logout,
             isPricingOpen, 

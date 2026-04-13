@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import { RiskSettings, TradingRule, ReviewStatus, Trade, DisciplineRule, DailyDisciplineRecord } from '../types';
 import { useLanguage } from '../LanguageContext';
+import { useUser } from './UserContext';
 import { Edit2 } from 'lucide-react';
 import { supabase } from '../supabaseClient';
 
@@ -197,6 +198,7 @@ const Psychology: React.FC<PsychologyProps> = ({
   onAddRule, onDeleteRule,
 }) => {
   const { language } = useLanguage();
+  const { currencySymbol, userTimezone } = useUser();
   const todayKey = fmtKey(new Date());
 
   const [ruleSettings, setRuleSettings] = useState<RuleSettings>(() => {
@@ -629,6 +631,7 @@ const RulesModal: React.FC<{
   onSave: (s: RuleSettings, r: ManualRule[]) => void;
   language: string;
 }> = ({ isOpen, onClose, initialSettings, initialManualRules, onSave, language }) => {
+  const { currencySymbol, userTimezone } = useUser();
   const [settings, setSettings] = useState<RuleSettings>(initialSettings);
   const [manualRules, setManualRules] = useState<ManualRule[]>(initialManualRules);
   const [newRuleName, setNewRuleName] = useState('');
@@ -691,7 +694,7 @@ const RulesModal: React.FC<{
           </ToggleRow>
 
           {/* Trading hours */}
-          <ToggleRow enabled={settings.trading_hours_enabled} onToggle={v => update('trading_hours_enabled', v)} title={language === 'cn' ? '限制交易时间' : 'Trading hours'} desc={language === 'cn' ? `以24小时格式设置交易时间。\n当前时区：${Intl.DateTimeFormat().resolvedOptions().timeZone}` : `Set trading hours in a 24-hour format.\nYour timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}`}>
+          <ToggleRow enabled={settings.trading_hours_enabled} onToggle={v => update('trading_hours_enabled', v)} title={language === 'cn' ? '限制交易时间' : 'Trading hours'} desc={language === 'cn' ? `以24小时格式设置交易时间。\n当前时区：${userTimezone}` : `Set trading hours in a 24-hour format.\nYour timezone: ${userTimezone}`}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <select value={settings.trading_hours_from} onChange={e => update('trading_hours_from', e.target.value)} disabled={!settings.trading_hours_enabled} style={selectSt(!settings.trading_hours_enabled)}>
                 {generateTimeOptions().map(t => <option key={t} value={t}>{t}</option>)}
@@ -718,7 +721,7 @@ const RulesModal: React.FC<{
           <ToggleRow enabled={settings.net_max_loss_per_trade_enabled} onToggle={v => update('net_max_loss_per_trade_enabled', v)} title={language === 'cn' ? '单笔最大亏损限制' : 'Net max loss /trade'} desc={language === 'cn' ? '单笔交易的最大亏损金额或账户余额百分比。' : 'The maximum net loss on a trade in amount or percentage of the account balance.'}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               {['%', '$'].map(t => (
-                <button key={t} onClick={() => update('net_max_loss_per_trade_type', t)} style={{ width: 34, height: 34, borderRadius: 6, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: settings.net_max_loss_per_trade_type === t ? '#6366f1' : '#f0f0f6', color: settings.net_max_loss_per_trade_type === t ? '#fff' : '#9396aa' }}>{t}</button>
+                <button key={t} onClick={() => update('net_max_loss_per_trade_type', t)} style={{ width: 34, height: 34, borderRadius: 6, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: settings.net_max_loss_per_trade_type === t ? '#6366f1' : '#f0f0f6', color: settings.net_max_loss_per_trade_type === t ? '#fff' : '#9396aa' }}>{t === '$' ? currencySymbol : t}</button>
               ))}
               <input type="number" value={settings.net_max_loss_per_trade_value} onChange={e => update('net_max_loss_per_trade_value', Number(e.target.value))} disabled={!settings.net_max_loss_per_trade_enabled} style={{ ...inputStyle, width: 80 }} />
             </div>

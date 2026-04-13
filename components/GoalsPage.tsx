@@ -1,6 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { useLanguage } from '../LanguageContext';
+import { useUser } from './UserContext';
 import { Trade, WeeklyGoal } from '../types';
 import { ArrowLeft, Target, Trophy, TrendingUp, Calendar, CheckCircle2, XCircle } from 'lucide-react';
 import { 
@@ -15,6 +16,7 @@ interface GoalsPageProps {
 
 const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) => {
     const { t, language } = useLanguage();
+    const { currencySymbol } = useUser();
 
     // Mock Data Generation for History based on trades
     // In a real app, this would come from a database of saved historical goals
@@ -87,7 +89,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
         return { streak, bestWeek, avgCompletion, totalWeeks };
     }, [historicalData]);
 
-    const unit = currentGoal.type === 'amount' ? '$' : currentGoal.type === 'r_multiple' ? 'R' : '%';
+    const unit = currentGoal.type === 'amount' ? currencySymbol : currentGoal.type === 'r_multiple' ? 'R' : '%';
 
     return (
         <div className="space-y-6 animate-fade-in pb-12">
@@ -128,7 +130,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                     <div className="relative z-10">
                         <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{t.goalsPage.bestWeek}</p>
                         <h3 className="text-3xl font-bold text-emerald-500 font-mono">
-                            {unit === '$' ? unit : ''}{stats.bestWeek?.actual}{unit !== '$' ? unit : ''}
+                            {currentGoal.type === 'amount' ? unit : ''}{stats.bestWeek?.actual}{currentGoal.type !== 'amount' ? unit : ''}
                         </h3>
                         <p className="text-xs text-slate-400 mt-1">{stats.bestWeek?.weekLabel}</p>
                     </div>
@@ -203,10 +205,10 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                                         <span>{week.fullDate}</span>
                                     </td>
                                     <td className="px-6 py-4 font-mono">
-                                        {unit === '$' ? unit : ''}{week.target}{unit !== '$' ? unit : ''}
+                                        {currentGoal.type === 'amount' ? unit : ''}{week.target}{currentGoal.type !== 'amount' ? unit : ''}
                                     </td>
                                     <td className={`px-6 py-4 font-mono font-bold ${week.actual >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-500'}`}>
-                                        {unit === '$' ? unit : ''}{week.actual}{unit !== '$' ? unit : ''}
+                                        {currentGoal.type === 'amount' ? unit : ''}{week.actual}{currentGoal.type !== 'amount' ? unit : ''}
                                     </td>
                                     <td className="px-6 py-4 text-center">
                                         {week.achieved ? (

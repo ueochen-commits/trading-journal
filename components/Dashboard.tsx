@@ -9,6 +9,7 @@ import {
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, Check, Briefcase, Trash2, Circle, RefreshCw, BarChart2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { useUser } from './UserContext';
 import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES, MOCK_ACCOUNTS } from '../constants';
 import MentorWidget from './MentorWidget';
@@ -67,6 +68,7 @@ const TZDots: React.FC<{ w: number; b: number; l: number }> = ({ w, b, l }) => (
 const TZNetPnlCard: React.FC<{ value: number; total: number; label: string }> = ({ value, total, label }) => {
   const pos = value >= 0;
   const c = pos ? '#00c896' : '#ff4d6a';
+  const { currencySymbol } = useUser();
   return (
     <div style={tzCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -75,7 +77,7 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; label: string }> = 
         <span style={{ fontSize: 10, background: '#eef0ff', color: '#6366f1', padding: '1px 6px', borderRadius: 8, fontWeight: 700, marginLeft: 2 }}>{total}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
-        <div style={tzVal(c)}>{pos ? '+' : ''}${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+        <div style={tzVal(c)}>{pos ? '+' : ''}{currencySymbol}{Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         <HalfGauge winPct={pos ? 70 : 0} lossPct={pos ? 0 : 70} singleColor={c} />
       </div>
     </div>
@@ -166,12 +168,13 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   const val = payload[0].value;
   const pos = val >= 0;
+  const { currencySymbol } = useUser();
   return (
     <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 }}>
       <div style={{ fontWeight: 600, color: '#1a1d2e', marginBottom: 5 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 10, height: 10, background: pos ? '#00c896' : '#ff4d6a', borderRadius: 2, display: 'inline-block' }} />
-        <span style={{ color: pos ? '#00c896' : '#ff4d6a', fontWeight: 700 }}>{pos ? '+' : ''}${Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+        <span style={{ color: pos ? '#00c896' : '#ff4d6a', fontWeight: 700 }}>{pos ? '+' : ''}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
       </div>
     </div>
   );
@@ -238,7 +241,7 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
                       <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e', marginBottom: 6 }}>{d.symbol}</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '时间' : 'Time'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{d.timeLabel}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? '#00c896' : '#ff4d6a' }}>{isUp ? '+' : ''}${Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? '#00c896' : '#ff4d6a' }}>{isUp ? '+' : ''}{currencySymbol}{Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: '#4a4d6a' }}>{d.date}</span></div>
                       </div>
                     </div>
@@ -732,6 +735,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology
 }) => {
   const { t, language } = useLanguage();
+  const { currencySymbol } = useUser();
   const isDark = document.documentElement.classList.contains('dark');
   const tooltipStyle = isDark
     ? { backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '0.5rem' }
@@ -1264,7 +1268,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <TZInfoIcon />
                     <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} ${riskSettings.accountSize.toLocaleString()}</div>
+                  <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
                 </div>
                 {/* Chart */}
                 <div style={{ height: 260 }}>
@@ -1294,7 +1298,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <span style={{ width: 10, height: 10, background: '#00c896', borderRadius: 2, display: 'inline-block' }} />
-                                <span>{sign}${Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                <span>{sign}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                               </div>
                             </div>
                           );
@@ -1384,7 +1388,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               <span style={{ fontSize: 12.5, color: '#4a4d6a' }}>{fmtDate(trade.exitDate)}</span>
                               <span style={{ fontSize: 12.5, color: '#4a4d6a', fontWeight: 500, textAlign: 'center' }}>{trade.symbol}</span>
                               <span style={{ fontSize: 12.5, fontWeight: 600, color: netPnl >= 0 ? '#00c896' : '#ff4d6a', textAlign: 'right' }}>
-                                {netPnl >= 0 ? '+' : ''}${Math.abs(netPnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                {netPnl >= 0 ? '+' : ''}{currencySymbol}{Math.abs(netPnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
                           );
@@ -1402,7 +1406,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <GrailScoreWidget composite={grailScore.composite} radarData={grailScore.radarData} language={language} />
               {userProfile && (<div id="dashboard-level" className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-xl relative"><div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -mr-10 -mt-10"></div><div className="absolute top-4 right-4 z-20"><MentorWidget trades={trades} plans={plans} riskSettings={riskSettings} className="flex flex-col items-end" /></div><div className="relative z-10"><div className="flex justify-between items-start mb-4"><div><p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">{t.dashboard.level.current}</p><h2 className="text-4xl font-black flex items-baseline gap-1"><span className="text-2xl text-slate-400">Lv.</span>{userProfile.level}</h2></div></div><div className="mb-2 flex justify-between text-xs font-semibold text-slate-300"><span>{userProfile.currentXp} XP</span><span>{userProfile.nextLevelXp} XP</span></div><div className="h-3 bg-slate-700/50 rounded-full overflow-hidden mb-4 border border-slate-600/50"><div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-700 ease-out" style={{ width: `${(userProfile.currentXp / userProfile.nextLevelXp) * 100}%` }}></div></div><p className="text-xs text-center text-slate-400">{t.dashboard.level.lifetimeXp} {userProfile.totalLifetimeXp.toLocaleString()}</p></div></div>)}
 
-              <div id="dashboard-goal" className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative group cursor-pointer hover:border-pink-500/50 transition-colors" onClick={onViewGoals}><div className="flex justify-between items-start mb-2"><div><h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide"><Target className="w-4 h-4 text-pink-500" />{t.dashboard.goals.title}</h3><p className="text-[10px] text-slate-500 mt-1">{t.dashboard.goals.subtitle}</p></div><button onClick={(e) => { e.stopPropagation(); setIsGoalModalOpen(true); }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-pink-500 transition-colors"><Edit2 className="w-3 h-3" /></button></div><div className="flex items-center gap-4"><div className="relative w-24 h-24 flex items-center justify-center"><ResponsiveContainer width="100%" height="100%"><RadialBarChart innerRadius="70%" outerRadius="100%" barSize={10} data={goalRadialData} startAngle={180} endAngle={-180}><RadialBar background={{ fill: '#f1f5f9' }} dataKey="value" cornerRadius={10} /></RadialBarChart></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center flex-col"><span className="text-lg font-bold text-pink-500">{goalProgress.percent.toFixed(0)}%</span></div></div><div className="flex-1 space-y-2"><div><p className="text-[10px] text-slate-400 uppercase">{t.dashboard.goals.current}</p><p className="font-bold tabular-nums text-slate-800 dark:text-slate-200">{weeklyGoal?.type === 'amount' ? '$' : ''}{goalProgress.current.toFixed(weeklyGoal?.type === 'percentage' ? 1 : 0)}{weeklyGoal?.type === 'percentage' ? '%' : weeklyGoal?.type === 'r_multiple' ? 'R' : ''}</p></div><div><p className="text-[10px] text-slate-400 uppercase">{t.dashboard.goals.target}</p><p className="font-medium tabular-nums text-slate-500">{weeklyGoal?.type === 'amount' ? '$' : ''}{weeklyGoal?.value}{weeklyGoal?.type === 'percentage' ? '%' : weeklyGoal?.type === 'r_multiple' ? 'R' : ''}</p></div></div></div>{goalProgress.percent >= 100 && (<div className="absolute top-4 right-12 animate-bounce"><span className="bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-lg">{t.dashboard.goals.achieved}</span></div>)}<div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end"><button onClick={(e) => { e.stopPropagation(); setIsHistoryModalOpen(true); }} className="text-xs text-pink-500 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">{t.dashboard.goals.history} <ArrowRight className="w-3 h-3" /></button></div></div>
+              <div id="dashboard-goal" className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm relative group cursor-pointer hover:border-pink-500/50 transition-colors" onClick={onViewGoals}><div className="flex justify-between items-start mb-2"><div><h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2 text-sm uppercase tracking-wide"><Target className="w-4 h-4 text-pink-500" />{t.dashboard.goals.title}</h3><p className="text-[10px] text-slate-500 mt-1">{t.dashboard.goals.subtitle}</p></div><button onClick={(e) => { e.stopPropagation(); setIsGoalModalOpen(true); }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-pink-500 transition-colors"><Edit2 className="w-3 h-3" /></button></div><div className="flex items-center gap-4"><div className="relative w-24 h-24 flex items-center justify-center"><ResponsiveContainer width="100%" height="100%"><RadialBarChart innerRadius="70%" outerRadius="100%" barSize={10} data={goalRadialData} startAngle={180} endAngle={-180}><RadialBar background={{ fill: '#f1f5f9' }} dataKey="value" cornerRadius={10} /></RadialBarChart></ResponsiveContainer><div className="absolute inset-0 flex items-center justify-center flex-col"><span className="text-lg font-bold text-pink-500">{goalProgress.percent.toFixed(0)}%</span></div></div><div className="flex-1 space-y-2"><div><p className="text-[10px] text-slate-400 uppercase">{t.dashboard.goals.current}</p><p className="font-bold tabular-nums text-slate-800 dark:text-slate-200">{weeklyGoal?.type === 'amount' ? currencySymbol : ''}{goalProgress.current.toFixed(weeklyGoal?.type === 'percentage' ? 1 : 0)}{weeklyGoal?.type === 'percentage' ? '%' : weeklyGoal?.type === 'r_multiple' ? 'R' : ''}</p></div><div><p className="text-[10px] text-slate-400 uppercase">{t.dashboard.goals.target}</p><p className="font-medium tabular-nums text-slate-500">{weeklyGoal?.type === 'amount' ? currencySymbol : ''}{weeklyGoal?.value}{weeklyGoal?.type === 'percentage' ? '%' : weeklyGoal?.type === 'r_multiple' ? 'R' : ''}</p></div></div></div>{goalProgress.percent >= 100 && (<div className="absolute top-4 right-12 animate-bounce"><span className="bg-emerald-500 text-white text-[10px] px-2 py-1 rounded-full font-bold shadow-lg">{t.dashboard.goals.achieved}</span></div>)}<div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end"><button onClick={(e) => { e.stopPropagation(); setIsHistoryModalOpen(true); }} className="text-xs text-pink-500 font-medium flex items-center gap-1 group-hover:gap-2 transition-all">{t.dashboard.goals.history} <ArrowRight className="w-3 h-3" /></button></div></div>
 
               {/* --- DRAWDOWN CHART --- */}
               {(() => {
@@ -1436,7 +1440,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" vertical={false} />
                             <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} interval="preserveStartEnd" />
                             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} domain={[yMin, 0]} width={58}
-                              tickFormatter={(v: number) => v === 0 ? '$0' : `-$${Math.abs(v).toLocaleString('en-US')}`} />
+                              tickFormatter={(v: number) => v === 0 ? `${currencySymbol}0` : `-${currencySymbol}${Math.abs(v).toLocaleString('en-US')}`} />
                             <Tooltip cursor={{ stroke: '#7b7ef8', strokeWidth: 1, strokeDasharray: '4 4' }}
                               content={({ active, payload, label }: any) => {
                                 if (!active || !payload?.length) return null;
@@ -1447,7 +1451,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                       <span style={{ width: 10, height: 10, background: '#e8a0b4', borderRadius: 2, display: 'inline-block' }} />
                                       <span style={{ color: val < 0 ? '#e05c8a' : '#1a1d2e', fontWeight: 600 }}>
-                                        {val < 0 ? '-' : ''}${Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                                        {val < 0 ? '-' : ''}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                       </span>
                                     </div>
                                   </div>
@@ -1472,7 +1476,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 disciplineRules={disciplineRules}
               />
 
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[300px]"><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 text-sm uppercase tracking-wide"><Users className="w-4 h-4 text-indigo-500" />{t.social.title}</h3><button onClick={() => setIsAddFriendModalOpen(true)} className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"><UserPlus className="w-3 h-3" /></button></div><div className="flex-1 overflow-y-auto pr-1 custom-scrollbar"><table className="w-full text-xs"><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{friends.sort((a,b) => b.pnl - a.pnl).map((friend, index) => { const isSelected = selectedFriends.includes(friend.id); return (<tr key={friend.id} className="group"><td className="py-2.5 w-6 text-center">{index === 0 && <span className="text-base">🥇</span>}{index === 1 && <span className="text-base">🥈</span>}{index === 2 && <span className="text-base">🥉</span>}{index > 2 && <span className="text-slate-400 font-mono">{index + 1}</span>}</td><td className="py-2.5"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{backgroundColor: friend.color}}>{friend.initials}</div><div className="overflow-hidden"><p className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[80px]">{friend.name}</p></div></div></td><td className={`py-2.5 text-right font-bold tabular-nums ${friend.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${friend.pnl.toLocaleString()}</td><td className="py-2.5 text-right"><button onClick={() => toggleFriend(friend.id)} className={`p-1 rounded transition-colors ${isSelected ? 'text-indigo-500' : 'text-slate-300 hover:text-slate-500'}`}>{isSelected ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button></td></tr>); })}</tbody></table></div></div>
+              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[300px]"><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 text-sm uppercase tracking-wide"><Users className="w-4 h-4 text-indigo-500" />{t.social.title}</h3><button onClick={() => setIsAddFriendModalOpen(true)} className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"><UserPlus className="w-3 h-3" /></button></div><div className="flex-1 overflow-y-auto pr-1 custom-scrollbar"><table className="w-full text-xs"><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{friends.sort((a,b) => b.pnl - a.pnl).map((friend, index) => { const isSelected = selectedFriends.includes(friend.id); return (<tr key={friend.id} className="group"><td className="py-2.5 w-6 text-center">{index === 0 && <span className="text-base">🥇</span>}{index === 1 && <span className="text-base">🥈</span>}{index === 2 && <span className="text-base">🥉</span>}{index > 2 && <span className="text-slate-400 font-mono">{index + 1}</span>}</td><td className="py-2.5"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{backgroundColor: friend.color}}>{friend.initials}</div><div className="overflow-hidden"><p className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[80px]">{friend.name}</p></div></div></td><td className={`py-2.5 text-right font-bold tabular-nums ${friend.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{currencySymbol}{friend.pnl.toLocaleString()}</td><td className="py-2.5 text-right"><button onClick={() => toggleFriend(friend.id)} className={`p-1 rounded transition-colors ${isSelected ? 'text-indigo-500' : 'text-slate-300 hover:text-slate-500'}`}>{isSelected ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button></td></tr>); })}</tbody></table></div></div>
           </div>
       </div>
 
