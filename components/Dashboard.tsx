@@ -269,18 +269,23 @@ const heatColor = (v: number | undefined) => {
   return HEAT_COLORS[4];
 };
 
-function buildDashWeeks(n = 18): (string | null)[][] {
+function buildDashWeeks(): (string | null)[][] {
   const today = new Date(); today.setHours(0,0,0,0);
   const start = new Date(today);
-  start.setDate(today.getDate() - today.getDay() - (n - 1) * 7);
+  start.setMonth(start.getMonth() - 2);
+  start.setDate(start.getDate() - start.getDay());
+  const end = new Date(today);
+  end.setMonth(end.getMonth() + 1);
   const weeks: (string | null)[][] = [];
-  for (let w = 0; w < n; w++) {
+  let cur = new Date(start);
+  while (cur <= end) {
     const week: (string | null)[] = [];
     for (let d = 0; d < 7; d++) {
-      const cur = new Date(start); cur.setDate(start.getDate() + w * 7 + d);
-      week.push(cur > today ? null : cur.toISOString().split('T')[0]);
+      const day = new Date(cur); day.setDate(cur.getDate() + d);
+      week.push(day > today ? null : day.toISOString().split('T')[0]);
     }
     weeks.push(week);
+    cur.setDate(cur.getDate() + 7);
   }
   return weeks;
 }
@@ -291,7 +296,7 @@ const DashboardHeatmap: React.FC<{
   disciplineHistory?: any[];
   disciplineRules?: any[];
 }> = ({ language, trades, disciplineHistory = [], disciplineRules = [] }) => {
-  const weeks = useMemo(() => buildDashWeeks(18), []);
+  const weeks = useMemo(() => buildDashWeeks(), []);
   const todayKey = new Date().toISOString().split('T')[0];
   const todayDayAbbr = ['Su','Mo','Tu','We','Th','Fr','Sa'][new Date().getDay()];
   const [tip, setTip] = useState<{ key: string; x: number; y: number } | null>(null);
