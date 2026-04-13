@@ -21,6 +21,8 @@ interface UserContextType {
     user: UserProfile;
     isAuthenticated: boolean;
     isLoading: boolean;
+    onboardingCompleted: boolean | null; // null = still loading
+    markOnboardingComplete: () => void;
     isPricingOpen: boolean;
     isProfileOpen: boolean;
     isReferralOpen: boolean;
@@ -88,6 +90,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
 
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
 
     // Listen for Auth Changes
     // 只用 onAuthStateChange，避免与 getSession() 竞态（Chrome 兼容性问题）
@@ -128,6 +131,17 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             avatarUrl: supabaseUser.user_metadata?.avatar_url,
             createdAt: supabaseUser.created_at,
         }));
+
+        // Check onboarding status immediately (fast, single-field query)
+        supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', supabaseUser.id)
+            .maybeSingle()
+            .then(({ data }) => {
+                setOnboardingCompleted(data?.onboarding_completed === true);
+            })
+            .catch(() => setOnboardingCompleted(false));
 
         // 优先读缓存，命中则跳过数据库查询
         if (!forceRefresh) {
@@ -223,6 +237,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         }
     };
 
+    const markOnboardingComplete = () => setOnboardingCompleted(true);
+
     const updateProfile = async (updates: Partial<UserProfile>) => {
         setUser(prev => ({ ...prev, ...updates }));
         try {
@@ -263,6 +279,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             user,
             isAuthenticated,
             isLoading,
+            onboardingCompleted,
+            markOnboardingComplete,
             login,
             logout,
             isPricingOpen, 

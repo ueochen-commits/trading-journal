@@ -158,7 +158,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 
 // Wrapper to use context
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
-  const { isAuthenticated, isLoading, openProfile, user } = useUser();
+  const { isAuthenticated, isLoading, openProfile, user, onboardingCompleted, markOnboardingComplete } = useUser();
   const { t, language } = useLanguage();
   const { /* startInitialTour */ } = useTour(); // TEMPORARILY DISABLED
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -173,7 +173,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isDataLoading, setIsDataLoading] = useState(false);
   // const [showOnboarding, setShowOnboarding] = useState(false); // TEMPORARILY DISABLED
-  const [showWelcome, setShowWelcome] = useState(false);
+  // showWelcome is derived from context — no separate DB request needed
+  const showWelcome = isAuthenticated && onboardingCompleted === false;
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -253,23 +254,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   //   }
   // }, [isAuthenticated]);
 
-  // New welcome card: check onboarding_completed in profiles table
-  useEffect(() => {
-    if (!isAuthenticated) return;
-    const checkWelcome = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) return;
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', authUser.id)
-        .maybeSingle();
-      if (!profile || !profile.onboarding_completed) {
-        setShowWelcome(true);
-      }
-    };
-    checkWelcome();
-  }, [isAuthenticated]);
+  // New welcome card: onboardingCompleted comes from UserContext (no extra request)
 
   // Realtime：订阅新广播，用户在线时立刻收到通知
   useEffect(() => {
@@ -1028,7 +1013,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   userId={user.id}
                   userEmail={user.email}
                   userMetaUsername={user.name !== 'Trader' ? user.name : undefined}
-                  onComplete={() => setShowWelcome(false)}
+                  onComplete={markOnboardingComplete}
               />
           )}
           <TourOverlay />
