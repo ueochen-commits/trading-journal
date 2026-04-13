@@ -115,19 +115,8 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                 position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
                 zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
             }}>
-                {/* Outer wrapper — logo positioned here, outside overflow:hidden */}
+                {/* Outer wrapper */}
                 <div style={{ position: 'relative', width: '100%', maxWidth: 440 }}>
-
-                    {/* Floating logo — straddles banner/content boundary */}
-                    <div style={{
-                        position: 'absolute', top: 86, left: '50%', transform: 'translateX(-50%)',
-                        width: 64, height: 64, borderRadius: '50%', background: '#fff',
-                        boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        zIndex: 20, border: '3px solid #fff', overflow: 'hidden',
-                    }}>
-                        <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain', display: 'block' }} />
-                    </div>
 
                     {/* Card */}
                     <div style={{
@@ -135,16 +124,17 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                         boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
                         animation: 'ws2-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)',
                     }}>
-                        {/* Top banner */}
+                        {/* Top banner — overflow:visible so logo floats out */}
                         <div style={{
                             background: 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
-                            padding: '28px 32px 48px', textAlign: 'center',
-                            position: 'relative', overflow: 'hidden',
+                            borderRadius: '16px 16px 0 0',
+                            padding: '28px 32px 0', textAlign: 'center',
+                            position: 'relative', overflow: 'visible',
                         }}>
                             <div style={{
                                 position: 'absolute', inset: 0,
                                 background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)',
-                                pointerEvents: 'none',
+                                pointerEvents: 'none', borderRadius: '16px 16px 0 0',
                             }}/>
                             <h2 style={{
                                 fontSize: 20, fontWeight: 700, color: '#fff',
@@ -152,13 +142,24 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                             }}>
                                 谢谢，{userName || '交易者'} 👋
                             </h2>
-                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', position: 'relative', zIndex: 1 }}>
+                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 0, position: 'relative', zIndex: 1 }}>
                                 设置已保存，开始你的交易复盘之旅
                             </p>
+                            {/* Logo — negative margin-bottom floats it onto the boundary */}
+                            <div style={{
+                                width: 64, height: 64, borderRadius: '50%', background: '#fff',
+                                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                margin: '20px auto -32px',
+                                position: 'relative', zIndex: 10,
+                                border: '3px solid #fff', overflow: 'hidden',
+                            }}>
+                                <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain', display: 'block' }} />
+                            </div>
                         </div>
 
                         {/* Content */}
-                        <div style={{ padding: '52px 22px 10px' }}>
+                        <div style={{ padding: '48px 22px 10px' }}>
                             <h3 style={{
                                 fontSize: 16, fontWeight: 700, color: '#1a1d2e',
                                 textAlign: 'center', marginBottom: 22, letterSpacing: '-0.2px',
