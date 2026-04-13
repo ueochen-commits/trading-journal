@@ -1,10 +1,11 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Trade, TradeStatus, RiskSettings, TrackerRule, TrackerRuleType, DailyPlan, Friend, UserLevelProfile, DisciplineRule, DailyDisciplineRecord, WeeklyGoal } from '../types';
-import { 
-  AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+import {
+  AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
   Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend, ComposedChart,
-  RadialBarChart, RadialBar
+  RadialBarChart, RadialBar,
+  ScatterChart, Scatter, ReferenceLine
 } from 'recharts';
 import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, Check, Briefcase, Trash2, Circle, RefreshCw, BarChart2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
@@ -171,6 +172,88 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 10, height: 10, background: pos ? '#00c896' : '#ff4d6a', borderRadius: 2, display: 'inline-block' }} />
         <span style={{ color: pos ? '#00c896' : '#ff4d6a', fontWeight: 700 }}>{pos ? '+' : ''}${Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+      </div>
+    </div>
+  );
+};
+
+// ── Trade Time Performance scatter chart ─────────────────────────────────────
+const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
+  const [mode, setMode] = React.useState<'entry'|'exit'>('entry');
+  const timeToHour = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? null : d.getHours() + d.getMinutes() / 60; };
+  const ttData = useMemo(() => trades.filter(t => {
+    const f = mode === 'entry' ? t.entryDate : t.exitDate;
+    return f && f !== '';
+  }).map(t => {
+    const f = mode === 'entry' ? t.entryDate : t.exitDate;
+    const hour = timeToHour(f);
+    if (hour === null) return null;
+    const d = new Date(f);
+    return { x: parseFloat(hour.toFixed(4)), pnl: parseFloat((t.pnl - t.fees).toFixed(2)), symbol: t.symbol, timeLabel: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`, date: d.toLocaleDateString() };
+  }).filter(Boolean) as { x: number; pnl: number; symbol: string; timeLabel: string; date: string }[], [trades, mode]);
+
+  const pnlVals = ttData.map(d => d.pnl);
+  const maxP = pnlVals.length ? Math.max(...pnlVals) : 1000;
+  const minP = pnlVals.length ? Math.min(...pnlVals) : -1000;
+  const pad = Math.max(Math.abs(maxP), Math.abs(minP)) * 0.2 || 200;
+  const yMax = Math.ceil((maxP + pad) / 500) * 500;
+  const yMin = Math.floor((minP - pad) / 500) * 500;
+
+  const isDark = document.documentElement.classList.contains('dark');
+  const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
+
+  return (
+    <div style={{ background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时间表现' : 'Trade Time Performance'}</span>
+          <TZInfoIcon />
+        </div>
+        <div style={{ display: 'flex', background: isDark ? '#1e293b' : '#f5f5fa', borderRadius: 7, padding: 3, gap: 2 }}>
+          {(['entry', 'exit'] as const).map(key => (
+            <button key={key} onClick={() => setMode(key)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: mode === key ? (isDark ? '#334155' : '#fff') : 'transparent', color: mode === key ? (isDark ? '#f8fafc' : '#1a1d2e') : '#9396aa', boxShadow: mode === key ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>
+              {key === 'entry' ? (language === 'cn' ? '入场' : 'Entry') : (language === 'cn' ? '出场' : 'Exit')}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        {ttData.length === 0 ? (
+          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" />
+              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,4,8,12,16,20,24]} tickFormatter={(h: number) => `${String(h).padStart(2,'0')}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} />
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={46}
+                tickFormatter={(v: number) => v >= 0 ? `$${(v/1000).toFixed(0)}k` : `-$${(Math.abs(v)/1000).toFixed(0)}k`} />
+              <ReferenceLine y={0} stroke="rgba(0,0,0,0.12)" strokeWidth={1} />
+              <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
+                content={({ active, payload }: any) => {
+                  if (!active || !payload?.length) return null;
+                  const d = payload[0]?.payload;
+                  const isUp = d.pnl >= 0;
+                  return (
+                    <div style={ttTooltipStyle}>
+                      <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e', marginBottom: 6 }}>{d.symbol}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '时间' : 'Time'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{d.timeLabel}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? '#00c896' : '#ff4d6a' }}>{isUp ? '+' : ''}${Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: '#4a4d6a' }}>{d.date}</span></div>
+                      </div>
+                    </div>
+                  );
+                }} />
+              <Scatter data={ttData}>
+                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? '#00c896' : '#ff4d6a'} fillOpacity={0.75} />)}
+              </Scatter>
+            </ScatterChart>
+          </ResponsiveContainer>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00c896', display: 'inline-block' }}/><span style={{ fontSize: 11, color: '#9396aa' }}>{language === 'cn' ? '盈利' : 'Profit'}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d6a', display: 'inline-block' }}/><span style={{ fontSize: 11, color: '#9396aa' }}>{language === 'cn' ? '亏损' : 'Loss'}</span></div>
       </div>
     </div>
   );
@@ -1120,7 +1203,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                 );
               })()}
 
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm"><h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide"><Flame className="w-4 h-4 text-orange-500" /> {t.dashboard.discipline.streak}</h3><div className="grid grid-cols-7 gap-1.5">{disciplineCalendarDays?.map((day, idx) => (<div key={idx} className={`aspect-square rounded-md flex items-center justify-center text-[10px] font-medium transition-all ${day.status === 'success' ? 'bg-emerald-500 text-white shadow-sm' : day.status === 'fail' ? 'bg-rose-500/20 text-rose-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-400'}`} title={day.status === 'success' ? t.dashboard.discipline.success : day.status === 'fail' ? t.dashboard.discipline.fail : t.dashboard.discipline.empty}>{day.day}</div>))}</div><div className="flex justify-center gap-4 mt-4 text-[10px] text-slate-400"><div className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-emerald-500"></span> {t.dashboard.discipline.success}</div><div className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-rose-500/20"></span> {t.dashboard.discipline.fail}</div><div className="flex items-center gap-1"><span className="w-2 h-2 rounded bg-slate-200 dark:bg-slate-800"></span> {t.dashboard.discipline.empty}</div></div></div>
+              {/* --- TRADE TIME PERFORMANCE --- */}
+              <TradeTimeChart trades={trades} language={language} />
 
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[400px]"><h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2 text-sm uppercase tracking-wide"><Zap className="w-4 h-4 text-yellow-500" /> {t.dashboard.discipline.rituals}</h3><div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">{disciplineRules?.map(rule => { const todayStr = new Date().toISOString().split('T')[0], todayRecord = disciplineHistory?.find(r => r.date === todayStr), isChecked = todayRecord?.completedRuleIds.includes(rule.id) || false; return (<div key={rule.id} onClick={() => onCheckDisciplineRule && onCheckDisciplineRule(rule.id, !isChecked)} className={`p-3 rounded-xl border flex items-start gap-3 cursor-pointer transition-all group ${isChecked ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-500/30' : 'bg-slate-50 dark:bg-slate-800/50 border-slate-100 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'}`}><div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${isChecked ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-300 dark:border-slate-600'}`}>{isChecked && <CheckCircle2 className="w-3 h-3" />}</div><div className="flex-1"><p className={`text-sm font-medium transition-colors ${isChecked ? 'text-emerald-700 dark:text-emerald-400 line-through opacity-70' : 'text-slate-700 dark:text-slate-300'}`}>{rule.text}</p></div><button onClick={(e) => { e.stopPropagation(); handleDeleteDisciplineRule(rule.id); }} className="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4" /></button></div>); })}</div><div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 flex gap-2"><input type="text" placeholder={t.dashboard.discipline.addRule} value={newDisciplineRuleText} onChange={(e) => setNewDisciplineRuleText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleAddDisciplineRule()} className="flex-1 bg-slate-50 dark:bg-slate-800 border-none rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white outline-none focus:ring-1 focus:ring-indigo-500" /><button onClick={handleAddDisciplineRule} className="p-2 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"><Plus className="w-4 h-4" /></button></div></div>
 
