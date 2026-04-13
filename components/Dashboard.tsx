@@ -269,7 +269,7 @@ const heatColor = (v: number | undefined) => {
   return HEAT_COLORS[4];
 };
 
-function buildDashWeeks(n = 10): (string | null)[][] {
+function buildDashWeeks(n = 18): (string | null)[][] {
   const today = new Date(); today.setHours(0,0,0,0);
   const start = new Date(today);
   start.setDate(today.getDate() - today.getDay() - (n - 1) * 7);
@@ -285,19 +285,82 @@ function buildDashWeeks(n = 10): (string | null)[][] {
   return weeks;
 }
 
+interface DashTodayRule { id: string; name: string; done: boolean }
+
 const DashboardHeatmap: React.FC<{
-  heatmapData: Record<string, number>;
-  todayCompleted: number;
-  todayTotal: number;
-  onNavigate: () => void;
   language: string;
-}> = ({ heatmapData, todayCompleted, todayTotal, onNavigate, language }) => {
-  const weeks = useMemo(() => buildDashWeeks(10), []);
+  trades: any[];
+  disciplineHistory?: any[];
+  disciplineRules?: any[];
+}> = ({ language, trades, disciplineHistory = [], disciplineRules = [] }) => {
+  const weeks = useMemo(() => buildDashWeeks(18), []);
   const todayKey = new Date().toISOString().split('T')[0];
+  const todayDayAbbr = ['Su','Mo','Tu','We','Th','Fr','Sa'][new Date().getDay()];
   const [tip, setTip] = useState<{ key: string; x: number; y: number } | null>(null);
+  const [showChecklist, setShowChecklist] = useState(false);
+  const [heatmapData, setHeatmapData] = useState<Record<string, number>>({});
+  const [ruleSettings, setRuleSettings] = useState<any>(null);
+  const [manualRules, setManualRules] = useState<any[]>([]);
+
+  // Load from Supabase + localStorage on mount
+  useEffect(() => {
+    // Load rule settings from localStorage (written by Psychology page)
+    try {
+      const s = localStorage.getItem('tg_rule_settings');
+      if (s) setRuleSettings(JSON.parse(s));
+      const m = localStorage.getItem('tg_manual_rules');
+      if (m) setManualRules(JSON.parse(m));
+    } catch {}
+
+    // Load heatmap from Supabase
+    const load = async () => {
+      try {
+        const { supabase } = await import('../supabaseClient');
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        const { data } = await supabase.from('rule_execution_logs').select('date, completion_rate').eq('user_id', user.id);
+        if (data) {
+          const hm: Record<string, number> = {};
+          data.forEach((row: any) => { hm[row.date] = parseFloat(row.completion_rate); });
+          setHeatmapData(hm);
+        }
+      } catch {}
+      // Fallback: compute from disciplineHistory
+      if (disciplineHistory.length && disciplineRules.length) {
+        setHeatmapData(prev => {
+          const map = { ...prev };
+          disciplineHistory.forEach((rec: any) => {
+            if (!map[rec.date]) map[rec.date] = rec.completedRuleIds.length / disciplineRules.length;
+          });
+          return map;
+        });
+      }
+    };
+    load();
+  }, [disciplineHistory, disciplineRules]);
+
+  // Build today's rules list (filtered by trading day)
+  const todayRules = useMemo((): DashTodayRule[] => {
+    if (!ruleSettings) return [];
+    const isTradingDay = ruleSettings.trading_days?.includes(todayDayAbbr) ?? true;
+    const todayRecord = disciplineHistory.find((r: any) => r.date === todayKey);
+    const sys: DashTodayRule[] = isTradingDay ? [
+      ruleSettings.start_my_day_enabled && { id: 'start_my_day', name: language === 'cn' ? '开始我的一天' : 'Start my day', done: todayRecord?.completedRuleIds?.includes('start_my_day') ?? false },
+      ruleSettings.link_to_playbook_enabled && { id: 'link_playbook', name: language === 'cn' ? '关联策略手册' : 'Link to playbook', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).every(t => t.setup && t.setup !== '') && trades.filter(t => t.entryDate?.startsWith(todayKey)).length > 0 },
+      ruleSettings.input_stop_loss_enabled && { id: 'stop_loss', name: language === 'cn' ? '设置止损' : 'Input stop loss', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).every(t => t.riskAmount && t.riskAmount > 0) && trades.filter(t => t.entryDate?.startsWith(todayKey)).length > 0 },
+      ruleSettings.net_max_loss_per_trade_enabled && { id: 'max_loss_trade', name: language === 'cn' ? '单笔最大亏损' : 'Max loss /trade', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).every(t => (t.pnl - t.fees) >= -ruleSettings.net_max_loss_per_trade_value) },
+      ruleSettings.net_max_loss_per_day_enabled && { id: 'max_loss_day', name: language === 'cn' ? '单日最大亏损' : 'Max loss /day', done: trades.filter(t => t.entryDate?.startsWith(todayKey)).reduce((a: number, t: any) => a + (t.pnl - t.fees), 0) >= -ruleSettings.net_max_loss_per_day_value },
+    ].filter(Boolean) as DashTodayRule[] : [];
+    const manual: DashTodayRule[] = manualRules.filter((r: any) => r.active_days?.includes(todayDayAbbr)).map((r: any) => ({
+      id: r.id, name: r.name, done: disciplineHistory.find((rec: any) => rec.date === todayKey)?.completedRuleIds?.includes(r.id) ?? false,
+    }));
+    return [...sys, ...manual];
+  }, [ruleSettings, manualRules, trades, todayKey, todayDayAbbr, disciplineHistory, language]);
+
+  const todayCompleted = todayRules.filter(r => r.done).length;
+  const todayTotal = todayRules.length;
   const pct = todayTotal > 0 ? (todayCompleted / todayTotal) * 100 : 0;
 
-  // month labels
   const monthLabels: { col: number; label: string }[] = [];
   weeks.forEach((week, wi) => {
     const first = week.find(d => d !== null);
@@ -314,62 +377,70 @@ const DashboardHeatmap: React.FC<{
           <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
           <TZInfoIcon />
         </div>
-        <button onClick={onNavigate} style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0 }}>
-          {language === 'cn' ? '查看更多 →' : 'View more →'}
-        </button>
       </div>
 
-      {/* Heatmap grid */}
-      <div style={{ overflowX: 'auto' }}>
-        <div style={{ display: 'flex', gap: 3 }}>
-          {/* Day labels */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 18, marginRight: 4 }}>
-            {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-              <div key={d} style={{ height: 14, fontSize: 9, color: '#b0b3c6', lineHeight: '14px', width: 22, textAlign: 'right' }}>
-                {['Mon','Wed','Fri'].includes(d) ? d : ''}
-              </div>
-            ))}
-          </div>
-          <div>
-            {/* Month labels */}
-            <div style={{ display: 'flex', gap: 3, height: 18, position: 'relative' }}>
-              {weeks.map((_, wi) => {
-                const ml = monthLabels.find(m => m.col === wi);
-                return <div key={wi} style={{ width: 14, fontSize: 9, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>;
-              })}
+      {showChecklist ? (
+        /* ── Today's checklist view ── */
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1d2e', marginBottom: 10 }} className="dark:text-white">{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
+          {todayRules.length === 0 ? (
+            <div style={{ fontSize: 12, color: '#b0b3c6', textAlign: 'center', padding: '20px 0' }}>
+              {language === 'cn' ? '今日无生效规则' : 'No rules active today'}
             </div>
-            {/* Cells */}
-            <div style={{ display: 'flex', gap: 3 }}>
-              {weeks.map((week, wi) => (
-                <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                  {week.map((dateKey, di) => (
-                    <div key={di} style={{
-                      width: 14, height: 14, borderRadius: 2,
-                      background: dateKey ? heatColor(heatmapData[dateKey]) : 'transparent',
-                      border: dateKey === todayKey ? '1.5px solid #f97316' : 'none',
-                      cursor: dateKey ? 'pointer' : 'default',
-                    }}
-                      onMouseEnter={e => dateKey && setTip({ key: dateKey, x: e.clientX, y: e.clientY })}
-                      onMouseLeave={() => setTip(null)}
-                    />
-                  ))}
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {todayRules.map(rule => (
+                <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #f5f5fa' }}>
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${rule.done ? '#00c896' : '#e0e0ea'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: rule.done ? '#00c896' : 'transparent' }}>
+                    {rule.done && <span style={{ color: '#fff', fontSize: 10 }}>✓</span>}
+                  </div>
+                  <span style={{ fontSize: 12.5, color: rule.done ? '#9396aa' : '#1a1d2e', textDecoration: rule.done ? 'line-through' : 'none' }} className={rule.done ? '' : 'dark:text-white'}>{rule.name}</span>
+                  <span style={{ marginLeft: 'auto', fontSize: 11, color: rule.done ? '#00c896' : '#ff4d6a', fontWeight: 600 }}>{rule.done ? (language === 'cn' ? '完成' : 'Done') : (language === 'cn' ? '待完成' : 'Pending')}</span>
                 </div>
               ))}
             </div>
-            {/* Legend */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 6, justifyContent: 'flex-end' }}>
-              <span style={{ fontSize: 9, color: '#b0b3c6' }}>Less</span>
-              {HEAT_COLORS.map((c, i) => <span key={i} style={{ width: 11, height: 11, background: c, borderRadius: 2, display: 'inline-block' }} />)}
-              <span style={{ fontSize: 9, color: '#b0b3c6' }}>More</span>
+          )}
+        </div>
+      ) : (
+        /* ── Heatmap view ── */
+        <div style={{ overflowX: 'auto' }}>
+          <div style={{ display: 'flex', gap: 3 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 18, marginRight: 4 }}>
+              {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
+                <div key={d} style={{ height: 14, fontSize: 9, color: '#b0b3c6', lineHeight: '14px', width: 22, textAlign: 'right' }}>
+                  {['Mon','Wed','Fri'].includes(d) ? d : ''}
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{ display: 'flex', gap: 3, height: 18 }}>
+                {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 14, fontSize: 9, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
+              </div>
+              <div style={{ display: 'flex', gap: 3 }}>
+                {weeks.map((week, wi) => (
+                  <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {week.map((dateKey, di) => (
+                      <div key={di} style={{ width: 14, height: 14, borderRadius: 2, background: dateKey ? heatColor(heatmapData[dateKey]) : 'transparent', border: dateKey === todayKey ? '1.5px solid #f97316' : 'none', cursor: dateKey ? 'pointer' : 'default' }}
+                        onMouseEnter={e => dateKey && setTip({ key: dateKey, x: e.clientX, y: e.clientY })}
+                        onMouseLeave={() => setTip(null)} />
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 6, justifyContent: 'flex-end' }}>
+                <span style={{ fontSize: 9, color: '#b0b3c6' }}>Less</span>
+                {HEAT_COLORS.map((c, i) => <span key={i} style={{ width: 11, height: 11, background: c, borderRadius: 2, display: 'inline-block' }} />)}
+                <span style={{ fontSize: 9, color: '#b0b3c6' }}>More</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Divider */}
       <div style={{ height: 1, background: '#f0f0f6', margin: '12px 0' }} />
 
-      {/* Today score + button */}
+      {/* Today score + toggle button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
           <div style={{ fontSize: 11, color: '#9396aa', marginBottom: 5 }}>{language === 'cn' ? '今日得分' : "Today's score"}</div>
@@ -380,12 +451,12 @@ const DashboardHeatmap: React.FC<{
             </div>
           </div>
         </div>
-        <button onClick={onNavigate}
+        <button onClick={() => setShowChecklist(v => !v)}
           style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #e0e0ea', background: '#fff', fontSize: 12, fontWeight: 600, color: '#1a1d2e', cursor: 'pointer' }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#f5f5fa'}
           onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#fff'}
         >
-          {language === 'cn' ? '每日检查清单' : 'Daily checklist'}
+          {showChecklist ? (language === 'cn' ? '← 热力图' : '← Heatmap') : (language === 'cn' ? '每日检查清单' : 'Daily checklist')}
         </button>
       </div>
     </div>
@@ -1364,11 +1435,10 @@ const Dashboard: React.FC<DashboardProps> = ({
               <TradeTimeChart trades={trades} language={language} />
 
               <DashboardHeatmap
-                heatmapData={dashHeatmap}
-                todayCompleted={dashTodayCompleted}
-                todayTotal={dashTodayTotal}
-                onNavigate={() => onViewPsychology?.()}
                 language={language}
+                trades={trades}
+                disciplineHistory={disciplineHistory}
+                disciplineRules={disciplineRules}
               />
 
               <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[300px]"><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 text-sm uppercase tracking-wide"><Users className="w-4 h-4 text-indigo-500" />{t.social.title}</h3><button onClick={() => setIsAddFriendModalOpen(true)} className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"><UserPlus className="w-3 h-3" /></button></div><div className="flex-1 overflow-y-auto pr-1 custom-scrollbar"><table className="w-full text-xs"><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{friends.sort((a,b) => b.pnl - a.pnl).map((friend, index) => { const isSelected = selectedFriends.includes(friend.id); return (<tr key={friend.id} className="group"><td className="py-2.5 w-6 text-center">{index === 0 && <span className="text-base">🥇</span>}{index === 1 && <span className="text-base">🥈</span>}{index === 2 && <span className="text-base">🥉</span>}{index > 2 && <span className="text-slate-400 font-mono">{index + 1}</span>}</td><td className="py-2.5"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{backgroundColor: friend.color}}>{friend.initials}</div><div className="overflow-hidden"><p className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[80px]">{friend.name}</p></div></div></td><td className={`py-2.5 text-right font-bold tabular-nums ${friend.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${friend.pnl.toLocaleString()}</td><td className="py-2.5 text-right"><button onClick={() => toggleFriend(friend.id)} className={`p-1 rounded transition-colors ${isSelected ? 'text-indigo-500' : 'text-slate-300 hover:text-slate-500'}`}>{isSelected ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button></td></tr>); })}</tbody></table></div></div>
