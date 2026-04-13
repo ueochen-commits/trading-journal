@@ -270,19 +270,28 @@ const heatColor = (v: number | undefined) => {
 };
 
 function buildDashWeeks(): (string | null)[][] {
-  const today = new Date(); today.setHours(0,0,0,0);
-  // Start: Sunday of 2 months ago
-  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
-  start.setDate(start.getDate() - start.getDay());
-  // End: last day of next month
-  const end = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+  const now = new Date();
+  const todayStr = now.toISOString().split('T')[0];
+  const todayTs = new Date(todayStr).getTime(); // midnight UTC of today
+
+  // Start: 1st of 2 months ago, then back to Sunday
+  const y = now.getFullYear(), m = now.getMonth();
+  const startBase = new Date(y, m - 2, 1);
+  const startSunday = new Date(startBase);
+  startSunday.setDate(startBase.getDate() - startBase.getDay());
+
+  // End: last day of next month (month+2 day 0 = last day of month+1)
+  const endDate = new Date(y, m + 2, 0);
+
   const weeks: (string | null)[][] = [];
-  let cur = new Date(start);
-  while (cur <= end) {
+  const cur = new Date(startSunday);
+  while (cur.getTime() <= endDate.getTime()) {
     const week: (string | null)[] = [];
     for (let d = 0; d < 7; d++) {
       const day = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + d);
-      week.push(day > today ? null : day.toISOString().split('T')[0]);
+      const dayStr = day.toISOString().split('T')[0];
+      // Show cell if day <= today (include today, hide future)
+      week.push(day.getTime() <= todayTs ? dayStr : null);
     }
     weeks.push(week);
     cur.setDate(cur.getDate() + 7);
