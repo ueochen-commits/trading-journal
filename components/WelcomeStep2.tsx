@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface BadgeProps {
     text: string;
@@ -107,6 +107,16 @@ interface WelcomeStep2Props {
 
 const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNavigate }) => {
     const [showQR, setShowQR] = useState(false);
+    const bannerRef = useRef<HTMLDivElement>(null);
+    const [logoTop, setLogoTop] = useState(80); // fallback
+
+    useEffect(() => {
+        if (bannerRef.current) {
+            // Banner total height - paddingBottom(32) = content height = logo center position
+            const totalHeight = bannerRef.current.getBoundingClientRect().height;
+            setLogoTop(totalHeight - 32); // logo top = banner content height - logo radius
+        }
+    }, []);
 
     return (
         <>
@@ -118,23 +128,23 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                 {/* Outer wrapper */}
                 <div style={{ position: 'relative', width: '100%', maxWidth: 440 }}>
 
-                    {/* Card — no overflow:hidden so logo isn't clipped */}
+                    {/* Card */}
                     <div style={{
-                        background: '#fff', borderRadius: 16,
+                        background: '#fff', borderRadius: 16, overflow: 'hidden',
                         boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
                         animation: 'ws2-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)',
+                        position: 'relative',
                     }}>
-                        {/* Top banner — overflow:visible so logo floats out */}
-                        <div style={{
+                        {/* Top banner — paddingBottom = logo radius (32px) so boundary = logo center */}
+                        <div ref={bannerRef} style={{
                             background: 'linear-gradient(135deg, #0e1428 0%, #1a1040 100%)',
-                            borderRadius: '16px 16px 0 0',
-                            padding: '28px 32px 0', textAlign: 'center',
-                            position: 'relative', overflow: 'visible',
+                            paddingTop: 28, paddingLeft: 32, paddingRight: 32, paddingBottom: 32,
+                            textAlign: 'center', position: 'relative',
                         }}>
                             <div style={{
                                 position: 'absolute', inset: 0,
                                 background: 'radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.3) 0%, transparent 70%)',
-                                pointerEvents: 'none', borderRadius: '16px 16px 0 0',
+                                pointerEvents: 'none',
                             }}/>
                             <h2 style={{
                                 fontSize: 20, fontWeight: 700, color: '#fff',
@@ -142,20 +152,23 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                             }}>
                                 谢谢，{userName || '交易者'} 👋
                             </h2>
-                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginBottom: 0, position: 'relative', zIndex: 1 }}>
+                            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: 0, position: 'relative', zIndex: 1 }}>
                                 设置已保存，开始你的交易复盘之旅
                             </p>
-                            {/* Logo — negative margin-bottom floats it onto the boundary */}
-                            <div style={{
-                                width: 64, height: 64, borderRadius: '50%', background: '#fff',
-                                boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                margin: '20px auto -32px',
-                                position: 'relative', zIndex: 10,
-                                border: '3px solid #fff', overflow: 'hidden',
-                            }}>
-                                <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain', display: 'block' }} />
-                            </div>
+                        </div>
+
+                        {/* Logo — absolutely positioned so center = banner bottom edge */}
+                        <div style={{
+                            position: 'absolute',
+                            top: logoTop,
+                            left: '50%',
+                            transform: 'translate(-50%, -50%)',
+                            width: 64, height: 64, borderRadius: '50%', background: '#fff',
+                            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            zIndex: 10, border: '3px solid #fff', overflow: 'hidden',
+                        }}>
+                            <img src="/lion-logo.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'contain', display: 'block' }} />
                         </div>
 
                         {/* Content */}
