@@ -118,9 +118,9 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                 {/* Outer wrapper */}
                 <div style={{ position: 'relative', width: '100%', maxWidth: 440 }}>
 
-                    {/* Card */}
+                    {/* Card — no overflow:hidden so logo isn't clipped */}
                     <div style={{
-                        background: '#fff', borderRadius: 16, overflow: 'hidden',
+                        background: '#fff', borderRadius: 16,
                         boxShadow: '0 24px 64px rgba(0,0,0,0.22)',
                         animation: 'ws2-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)',
                     }}>
