@@ -215,7 +215,7 @@ const Psychology: React.FC<PsychologyProps> = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       const [{ data: settingsData }, { data: manualData }, { data: logsData }] = await Promise.all([
-        supabase.from('user_rule_settings').select('*').eq('user_id', user.id).single(),
+        supabase.from('user_rule_settings').select('*').eq('user_id', user.id).maybeSingle(),
         supabase.from('manual_rules').select('*').eq('user_id', user.id),
         supabase.from('rule_execution_logs').select('date, completion_rate').eq('user_id', user.id),
       ]);
