@@ -271,17 +271,17 @@ const heatColor = (v: number | undefined) => {
 
 function buildDashWeeks(): (string | null)[][] {
   const today = new Date(); today.setHours(0,0,0,0);
-  const start = new Date(today);
-  start.setMonth(start.getMonth() - 2);
+  // Start: Sunday of 2 months ago
+  const start = new Date(today.getFullYear(), today.getMonth() - 2, 1);
   start.setDate(start.getDate() - start.getDay());
-  const end = new Date(today);
-  end.setMonth(end.getMonth() + 1);
+  // End: last day of next month
+  const end = new Date(today.getFullYear(), today.getMonth() + 2, 0);
   const weeks: (string | null)[][] = [];
   let cur = new Date(start);
   while (cur <= end) {
     const week: (string | null)[] = [];
     for (let d = 0; d < 7; d++) {
-      const day = new Date(cur); day.setDate(cur.getDate() + d);
+      const day = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + d);
       week.push(day > today ? null : day.toISOString().split('T')[0]);
     }
     weeks.push(week);
