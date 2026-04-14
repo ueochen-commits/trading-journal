@@ -158,6 +158,38 @@ const BrokerSyncPage: React.FC<Props> = ({
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       overflowY: 'auto', paddingBottom: 60, boxSizing: 'border-box',
     }}>
+
+      {/* Connecting overlay */}
+      {isConnecting && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 200,
+          background: 'rgba(255,255,255,0.82)',
+          backdropFilter: 'blur(6px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: 20,
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'linear-gradient(135deg, #5b5bd6 0%, #8b5cf6 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 8px 32px rgba(91,91,214,0.35)',
+          }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
+              style={{ animation: 'spin 0.9s linear infinite' }}>
+              <path d="M21 12a9 9 0 11-6.219-8.56"/>
+            </svg>
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#1a1a3a', marginBottom: 6 }}>
+              正在连接 {exchangeName}...
+            </div>
+            <div style={{ fontSize: 13, color: '#8888b0' }}>
+              正在验证 API 密钥并导入交易记录，请稍候
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
       {/* Progress bar */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, display: 'flex', zIndex: 100, height: 3 }}>
         <div style={{ flex: 4, background: '#5b5bd6' }} />
@@ -539,7 +571,6 @@ const BrokerSyncPage: React.FC<Props> = ({
                 </>
               ) : '连接'}
             </button>
-            <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
           </div>
 
           {/* RIGHT: Info panel */}

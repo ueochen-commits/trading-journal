@@ -1227,7 +1227,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 supportedAssets={{ 股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false }}
                 onBack={() => { setShowBrokerSync(false); setShowSelectImportMethod(true); }}
                 onClose={() => setShowBrokerSync(false)}
-                onConnect={(data) => { handleExchangeConnect(data); }}
+                onConnect={async (data) => { await handleExchangeConnect(data); }}
               />
           )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
@@ -1244,17 +1244,19 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               ></div>
           )}
           {/* Toast 通知 */}
-          {toast.visible && (
-            <div style={{
-              position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
-              zIndex: 99999, background: '#1a1a2e', color: '#fff', padding: '12px 24px',
-              borderRadius: 12, fontSize: 14, fontWeight: 500, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-              display: 'flex', alignItems: 'center', gap: 8, animation: 'fadeInUp 0.3s ease',
-            }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
-              {toast.message}
-            </div>
-          )}
+          <div style={{
+            position: 'fixed', bottom: 32, left: '50%', transform: `translateX(-50%) translateY(${toast.visible ? '0' : '12px'})`,
+            zIndex: 99999, background: '#1a1a2e', color: '#fff', padding: '12px 24px',
+            borderRadius: 12, fontSize: 14, fontWeight: 500, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            display: 'flex', alignItems: 'center', gap: 8,
+            opacity: toast.visible ? 1 : 0,
+            pointerEvents: toast.visible ? 'auto' : 'none',
+            transition: 'opacity 0.25s ease, transform 0.25s ease',
+            whiteSpace: 'nowrap',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+            {toast.message}
+          </div>
       </div>
   );
 };

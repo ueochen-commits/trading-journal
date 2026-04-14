@@ -200,6 +200,11 @@ const BrokersPage: React.FC<Props> = ({
   const [syncBtnHov, setSyncBtnHov] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // 当父组件传入新账户数据时同步更新（连接成功后刷新）
+  React.useEffect(() => {
+    if (propAccounts !== undefined) setAccounts(propAccounts);
+  }, [propAccounts]);
+
   const realAccounts = accounts.filter(a => a.type !== 'demo');
   const limit = PLAN_LIMITS[userPlan];
   const isAtLimit = realAccounts.length >= limit;
