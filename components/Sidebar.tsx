@@ -563,7 +563,7 @@ const Sidebar = ({
               <div style={{ height: 0.5, background: 'rgba(255,255,255,0.07)', margin: '4px 8px' }} />
               {[
                 { label: language === 'cn' ? '个人资料' : 'Profile', icon: Icons.User, action: openProfile },
-                { label: language === 'cn' ? '设置与账单' : 'Settings & Billing', icon: Icons.Settings, action: openSettings },
+                { label: language === 'cn' ? '设置与账单' : 'Settings & Billing', icon: Icons.Settings, action: () => setActiveTab('settings') },
               ].map(({ label, icon: Icon, action }) => (
                 <button key={label} onClick={() => { setIsProfileMenuOpen(false); action(); }}
                   style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.6)', borderRadius: 7 }}

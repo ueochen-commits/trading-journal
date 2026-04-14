@@ -52,6 +52,7 @@ import SocialPlaza from './components/SocialPlaza';
 import Academy from './components/Academy';
 import NotificationCenter from './components/NotificationCenter';
 import SettingsModal from './components/SettingsModal';
+import SettingsPage from './components/SettingsPage';
 import PricingModal from './components/PricingModal';
 import AuthPage from './components/AuthPage';
 import UserProfileModal from './components/UserProfileModal';
@@ -912,6 +913,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       />
                   </PageContainer>
               );
+          case 'settings':
+              return <SettingsPage onImportTrades={handleImportTrades} />;
           default:
               return <div className="p-10 text-center">404 - Module Not Found</div>;
       }
