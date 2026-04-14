@@ -1,12 +1,12 @@
-import CryptoJS from 'crypto-js';
+import crypto from 'crypto';
 
 export const config = { runtime: 'nodejs' };
 
 const BINANCE_BASE = 'https://api.binance.com';
 
-// HMAC-SHA256 签名
+// HMAC-SHA256 签名（使用 Node.js 原生 crypto）
 function sign(queryString: string, secret: string): string {
-  return CryptoJS.HmacSHA256(queryString, secret).toString(CryptoJS.enc.Hex);
+  return crypto.createHmac('sha256', secret).update(queryString).digest('hex');
 }
 
 // 带签名的 Binance 请求
@@ -100,7 +100,11 @@ export default async function handler(req: any, res: any) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { apiKey, apiSecret, startDate, skipSpot } = req.body;
+  const { apiKey: rawKey, apiSecret: rawSecret, startDate, skipSpot } = req.body;
+
+  // 去除首尾空白（复制粘贴常见问题）
+  const apiKey = typeof rawKey === 'string' ? rawKey.trim() : '';
+  const apiSecret = typeof rawSecret === 'string' ? rawSecret.trim() : '';
 
   if (!apiKey || !apiSecret) {
     return res.status(400).json({ error: '缺少 API Key 或 Secret' });
@@ -112,6 +116,7 @@ export default async function handler(req: any, res: any) {
     try {
       accountInfo = await binanceRequest('/api/v3/account', apiKey, apiSecret);
     } catch (e: any) {
+      console.error('[Binance Sync] Auth failed:', e.message);
       return res.status(401).json({
         error: 'API 密钥无效或权限不足',
         details: e.message,
@@ -163,8 +168,11 @@ export default async function handler(req: any, res: any) {
     try {
       for (const symbol of FUTURES_SYMBOLS) {
         try {
+          const ts = Date.now();
+          const qs = `symbol=${symbol}&startTime=${startTime}&limit=500&timestamp=${ts}`;
+          const sig = sign(qs, apiSecret);
           const fills = await fetch(
-            `https://fapi.binance.com/fapi/v1/userTrades?symbol=${symbol}&startTime=${startTime}&limit=500&timestamp=${Date.now()}&signature=${sign(`symbol=${symbol}&startTime=${startTime}&limit=500&timestamp=${Date.now()}`, apiSecret)}`,
+            `https://fapi.binance.com/fapi/v1/userTrades?${qs}&signature=${sig}`,
             { headers: { 'X-MBX-APIKEY': apiKey } }
           );
           if (fills.ok) {
