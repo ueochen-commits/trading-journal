@@ -1,6 +1,9 @@
 import ccxt from 'ccxt';
 
-export const config = { runtime: 'nodejs' };
+export const config = {
+  runtime: 'nodejs',
+  regions: ['sin1'],  // 新加坡节点，避免美国 IP 被 Binance 451 屏蔽
+};
 
 // 把 Binance 成交记录配对成完整交易（买入+卖出）
 function pairTrades(fills: any[], symbol: string): any[] {
