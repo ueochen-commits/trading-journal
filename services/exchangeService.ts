@@ -73,8 +73,9 @@ export const fetchTradesFromExchange = async (
     });
 
     if (!response.ok) {
-        const err = await response.json().catch(() => ({ error: '请求失败' }));
-        throw new Error(err.error || `请求失败 (${response.status})`);
+        const err = await response.json().catch(() => null);
+        const msg = err?.error || err?.details || `请求失败 (${response.status})`;
+        throw new Error(msg);
     }
 
     const data = await response.json();

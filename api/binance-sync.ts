@@ -2,7 +2,7 @@ import { createHmac } from 'crypto';
 
 export const config = { runtime: 'nodejs' };
 
-// Binance 官方提供的多个 API 域名，逐个尝试
+// Binance 官方提供的多个 API 域名，并行尝试
 const BINANCE_ENDPOINTS = [
   'https://api.binance.com',
   'https://api1.binance.com',
@@ -12,53 +12,52 @@ const BINANCE_ENDPOINTS = [
   'https://api-gcp.binance.com',
 ];
 
-let activeBinanceBase: string | null = null;
-
-// HMAC-SHA256 签名（使用 Node.js 原生 crypto）
+// HMAC-SHA256 签名
 function sign(queryString: string, secret: string): string {
   return createHmac('sha256', secret).update(queryString).digest('hex');
 }
 
-// 探测可用的 Binance 域名并获取服务器时间
+// 并行探测所有 Binance 域名，返回最快响应的那个
 async function findWorkingEndpoint(): Promise<{ base: string; serverTime: number }> {
-  const errors: string[] = [];
-  for (const base of BINANCE_ENDPOINTS) {
+  const racePromises = BINANCE_ENDPOINTS.map(async (base) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000);
       const res = await fetch(`${base}/api/v3/time`, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (res.ok) {
-        const data = await res.json();
-        console.log(`[Binance] Using endpoint: ${base}`);
-        activeBinanceBase = base;
-        return { base, serverTime: data.serverTime };
-      }
-      errors.push(`${base}: HTTP ${res.status}`);
-    } catch (e: any) {
-      errors.push(`${base}: ${e.message}`);
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return { base, serverTime: data.serverTime as number };
+    } catch (e) {
+      clearTimeout(timer);
+      throw e;
     }
+  });
+
+  try {
+    const result = await Promise.any(racePromises);
+    console.log(`[Binance] Using endpoint: ${result.base}`);
+    return result;
+  } catch {
+    throw new Error('所有 Binance API 域名均不可达（可能被云服务商 IP 屏蔽）');
   }
-  throw new Error(`所有 Binance API 域名均不可达: ${errors.join('; ')}`);
 }
 
 // 带签名的 Binance 请求
 async function binanceRequest(
+  base: string,
+  serverTime: number,
   path: string,
   apiKey: string,
   apiSecret: string,
   params: Record<string, string | number> = {}
 ): Promise<any> {
-  // 获取可用域名和服务器时间
-  const { base, serverTime } = await findWorkingEndpoint();
   const allParams = { ...params, recvWindow: 60000, timestamp: serverTime };
   const queryString = Object.entries(allParams)
     .map(([k, v]) => `${k}=${v}`)
     .join('&');
   const signature = sign(queryString, apiSecret);
   const url = `${base}${path}?${queryString}&signature=${signature}`;
-
-  console.log(`[Binance] ${path} via ${base}, ts=${serverTime}`);
 
   const res = await fetch(url, {
     headers: { 'X-MBX-APIKEY': apiKey },
@@ -148,52 +147,59 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // 1. 验证 API Key 是否有效（获取账户信息）
+    // 1. 探测可用的 Binance 域名
+    let base: string;
+    let serverTime: number;
+    try {
+      const endpoint = await findWorkingEndpoint();
+      base = endpoint.base;
+      serverTime = endpoint.serverTime;
+    } catch (e: any) {
+      return res.status(502).json({
+        error: e.message,
+        details: 'Vercel 服务器无法访问 Binance API。这通常是因为 Binance 屏蔽了云服务商的 IP 地址。',
+      });
+    }
+
+    // 2. 验证 API Key 是否有效（获取账户信息）
     let accountInfo: any;
     try {
-      accountInfo = await binanceRequest('/api/v3/account', apiKey, apiSecret);
+      accountInfo = await binanceRequest(base, serverTime, '/api/v3/account', apiKey, apiSecret);
     } catch (e: any) {
       console.error('[Binance Sync] Auth failed:', e.message);
-      // 区分连接失败和认证失败
-      if (e.message.includes('不可达') || e.message.includes('Cannot')) {
-        return res.status(502).json({
-          error: `无法连接 Binance 服务器: ${e.message}`,
-          details: e.message,
-        });
-      }
       return res.status(401).json({
         error: `API 验证失败: ${e.message}`,
         details: e.message,
       });
     }
 
-    // 2. 获取账户余额（USDT）
+    // 3. 获取账户余额（USDT）
     const usdtBalance = accountInfo.balances?.find((b: any) => b.asset === 'USDT');
     const balance = usdtBalance ? parseFloat(usdtBalance.free) + parseFloat(usdtBalance.locked) : 0;
 
-    // 3. 确定查询起始时间
+    // 4. 确定查询起始时间
     const startTime = startDate
       ? new Date(startDate).getTime()
       : Date.now() - 90 * 24 * 60 * 60 * 1000; // 默认最近 90 天
 
-    // 4. 获取现货交易对列表（取交易量最大的主流币对）
+    // 5. 获取现货交易对列表
     const SPOT_SYMBOLS = [
       'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
       'ADAUSDT', 'DOGEUSDT', 'AVAXUSDT', 'LINKUSDT', 'DOTUSDT',
     ];
 
-    // 5. 获取合约交易对列表
+    // 6. 获取合约交易对列表
     const FUTURES_SYMBOLS = [
       'BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT',
     ];
 
     const allPairedTrades: any[] = [];
 
-    // 6. 拉取现货成交记录
+    // 7. 拉取现货成交记录
     if (!skipSpot) {
       for (const symbol of SPOT_SYMBOLS) {
         try {
-          const fills = await binanceRequest('/api/v3/myTrades', apiKey, apiSecret, {
+          const fills = await binanceRequest(base, serverTime, '/api/v3/myTrades', apiKey, apiSecret, {
             symbol,
             startTime,
             limit: 500,
@@ -208,12 +214,11 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    // 7. 尝试拉取合约成交记录（需要合约权限）
+    // 8. 尝试拉取合约成交记录（需要合约权限）
     try {
       for (const symbol of FUTURES_SYMBOLS) {
         try {
-          const { serverTime: ts } = await findWorkingEndpoint();
-          const qs = `symbol=${symbol}&startTime=${startTime}&limit=500&recvWindow=60000&timestamp=${ts}`;
+          const qs = `symbol=${symbol}&startTime=${startTime}&limit=500&recvWindow=60000&timestamp=${serverTime}`;
           const sig = sign(qs, apiSecret);
           const fills = await fetch(
             `https://fapi.binance.com/fapi/v1/userTrades?${qs}&signature=${sig}`,
@@ -234,7 +239,7 @@ export default async function handler(req: any, res: any) {
       // 合约 API 不可用，忽略
     }
 
-    // 8. 按时间排序
+    // 9. 按时间排序
     allPairedTrades.sort((a, b) => b.entryTime - a.entryTime);
 
     return res.status(200).json({
