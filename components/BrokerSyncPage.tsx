@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface Props {
   exchangeName?: string;
@@ -47,6 +47,7 @@ const BrokerSyncPage: React.FC<Props> = ({
 }) => {
   const [startDate, setStartDate] = useState('');
   const [accountType, setAccountType] = useState('main');
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
   const [apiSecret, setApiSecret] = useState('');
   const [apiSecretVisible, setApiSecretVisible] = useState(false);
@@ -56,6 +57,23 @@ const BrokerSyncPage: React.FC<Props> = ({
   const [closeHovered, setCloseHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
+
+  const ACCOUNT_OPTIONS = [
+    { value: 'main', label: '主账户' },
+    { value: 'demo', label: '演示 Account' },
+  ];
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(e.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const assets = supportedAssets ?? {
     股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false,
@@ -186,11 +204,18 @@ const BrokerSyncPage: React.FC<Props> = ({
             <div>
               <label style={labelStyle}>开始日期</label>
               <div style={{ position: 'relative' }}>
-                <div style={{
-                  ...inputStyle('startDate'),
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  cursor: 'pointer',
-                }}>
+                <div
+                  onClick={() => {
+                    if (dateInputRef.current) {
+                      try { (dateInputRef.current as any).showPicker(); } catch { dateInputRef.current.focus(); }
+                    }
+                  }}
+                  style={{
+                    ...inputStyle('startDate'),
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    cursor: 'pointer',
+                  }}
+                >
                   <span style={{ color: startDate ? '#1a1a3a' : '#a0a0c0', fontSize: 14 }}>
                     {startDate || '导入所有记录'}
                   </span>
@@ -202,47 +227,84 @@ const BrokerSyncPage: React.FC<Props> = ({
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
                 </div>
-                <input type="date" value={startDate}
+                <input
+                  ref={dateInputRef}
+                  type="date"
+                  value={startDate}
                   onChange={e => setStartDate(e.target.value)}
                   onFocus={() => setFocusedField('startDate')}
                   onBlur={() => setFocusedField(null)}
                   style={{
                     position: 'absolute', inset: 0, opacity: 0,
                     cursor: 'pointer', width: '100%', height: '100%',
+                    zIndex: 1,
                   }}
                 />
               </div>
             </div>
 
-            {/* Account type */}
+            {/* Account type — custom dropdown */}
             <div>
               <label style={labelStyle}>账户类型 <span style={{ color: '#e05555' }}>*</span></label>
-              <div style={{ position: 'relative' }}>
-                <select
-                  value={accountType}
-                  onChange={e => setAccountType(e.target.value)}
-                  onFocus={() => setFocusedField('accountType')}
-                  onBlur={() => setFocusedField(null)}
+              <div ref={accountDropdownRef} style={{ position: 'relative' }}>
+                {/* Trigger */}
+                <div
+                  onClick={() => setAccountDropdownOpen(o => !o)}
                   style={{
                     ...inputStyle('accountType'),
-                    appearance: 'none',
-                    WebkitAppearance: 'none',
-                    paddingRight: 36,
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     cursor: 'pointer',
-                  } as React.CSSProperties}
+                    borderRadius: accountDropdownOpen ? '10px 10px 0 0' : 10,
+                    border: accountDropdownOpen ? '1px solid #e0e0ea' : '1px solid #d8d4ee',
+                    boxShadow: accountDropdownOpen ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
+                  }}
                 >
-                  <option value="main">主账户</option>
-                  <option value="demo">演示 Account</option>
-                </select>
-                <div style={{
-                  position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                  pointerEvents: 'none',
-                }}>
+                  <span style={{ fontSize: 14, color: '#1a1a3a' }}>
+                    {ACCOUNT_OPTIONS.find(o => o.value === accountType)?.label}
+                  </span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke="#8888b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    stroke="#8888b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                    style={{ transform: accountDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s' }}>
                     <polyline points="6 9 12 15 18 9"/>
                   </svg>
                 </div>
+
+                {/* Dropdown panel */}
+                {accountDropdownOpen && (
+                  <div style={{
+                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
+                    background: '#ffffff',
+                    border: '1px solid #e0e0ea', borderTop: 'none',
+                    borderRadius: '0 0 10px 10px',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
+                    overflow: 'hidden',
+                  }}>
+                    {ACCOUNT_OPTIONS.map(opt => (
+                      <div
+                        key={opt.value}
+                        onClick={() => { setAccountType(opt.value); setAccountDropdownOpen(false); }}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '11px 14px', cursor: 'pointer', fontSize: 14,
+                          color: accountType === opt.value ? '#5b5bd6' : '#1a1a3a',
+                          background: accountType === opt.value ? '#f5f5ff' : 'transparent',
+                          transition: 'background 0.1s',
+                          fontWeight: accountType === opt.value ? 500 : 400,
+                        }}
+                        onMouseEnter={e => { if (accountType !== opt.value) e.currentTarget.style.background = '#f8f8ff'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = accountType === opt.value ? '#f5f5ff' : 'transparent'; }}
+                      >
+                        {opt.label}
+                        {accountType === opt.value && (
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                            stroke="#5b5bd6" strokeWidth="2.5" strokeLinecap="round">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
