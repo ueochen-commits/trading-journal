@@ -174,8 +174,8 @@ const BrokerSyncPage: React.FC<Props> = ({
 
         {/* Two-column layout */}
         <div style={{
-          width: '100%', maxWidth: '94vw',
-          display: 'flex', gap: 36, alignItems: 'flex-start',
+          width: '100%', maxWidth: '97vw',
+          display: 'flex', gap: 32, alignItems: 'flex-start',
           flexWrap: 'wrap',
         }}>
 
@@ -366,7 +366,7 @@ const BrokerSyncPage: React.FC<Props> = ({
           </div>
 
           {/* RIGHT: Info panel */}
-          <div style={{ width: 380, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ width: 400, minWidth: 400, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
             {/* Exchange header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -400,14 +400,17 @@ const BrokerSyncPage: React.FC<Props> = ({
               <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a', marginBottom: 8 }}>
                 支持的资产类型：
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', flexWrap: 'nowrap', gap: '4px 10px', alignItems: 'center', width: '100%', overflow: 'visible' }}>
                 {ASSET_ORDER.map(asset => {
                   const supported = assets[asset] ?? false;
                   return (
-                    <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', flexShrink: 0 }}>
-                      {supported ? <CheckIcon16 /> : <CrossIcon16 />}
+                    <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap', flexShrink: 0 }}>
+                      {supported
+                        ? <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#5b5bd6"/><polyline points="4,8 7,11 12,5" stroke="white" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        : <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="#c8c8d8" strokeWidth="1.5"/><line x1="5" y1="5" x2="11" y2="11" stroke="#c0c0d0" strokeWidth="1.5" strokeLinecap="round"/><line x1="11" y1="5" x2="5" y2="11" stroke="#c0c0d0" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      }
                       <span style={{
-                        fontSize: 13, whiteSpace: 'nowrap',
+                        fontSize: 12, whiteSpace: 'nowrap', lineHeight: 1,
                         fontWeight: supported ? 500 : 400,
                         color: supported ? '#1a1a3a' : '#b8b8d0',
                       }}>
@@ -430,13 +433,18 @@ const BrokerSyncPage: React.FC<Props> = ({
                 请按照以下步骤创建您的 API 密钥：
               </p>
 
-              {/* Always-visible steps */}
+              {/* Always-visible steps: 3 */}
               <StepItem text={`登录 ${exchangeName} 网页版`}>
                 <SubItem text="请使用网页版登录，无法通过移动应用创建 API 密钥。" />
               </StepItem>
               <StepItem text="导航至 API 管理">
                 <SubItem text="点击右上角的个人资料图标。" />
                 <SubItem text="从下拉菜单中选择「API 管理」。" />
+              </StepItem>
+              <StepItem text="创建新的 API 密钥">
+                <SubItem text="点击 API 管理页面右侧的「创建新密钥」。" />
+                <SubItem text="在弹出窗口中选择「系统生成的 API 密钥」。" />
+                <SubItem text="将名称设置为「TradeGrail」。" />
               </StepItem>
 
               {/* Expandable steps */}
@@ -446,11 +454,6 @@ const BrokerSyncPage: React.FC<Props> = ({
                 opacity: expanded ? 1 : 0,
                 transition: 'max-height 0.3s ease, opacity 0.3s ease',
               }}>
-                <StepItem text="创建新的 API 密钥">
-                  <SubItem text="点击 API 管理页面右侧的「创建新密钥」。" />
-                  <SubItem text="在弹出窗口中选择「系统生成的 API 密钥」。" />
-                  <SubItem text="将名称设置为「TradeGrail」。" />
-                </StepItem>
                 <StepItem text="在「API 密钥权限」下选择：">
                   <SubItem text="勾选「只读」访问权限。" />
                   <SubItem text="选择「无 IP 限制」。" />
