@@ -76,7 +76,7 @@ import { TourProvider, useTour } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
-import { fetchTradesFromExchange, generateAccountName } from './services/exchangeService';
+import { fetchTradesFromExchange, fetchAccountBalance, generateAccountName } from './services/exchangeService';
 import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
@@ -675,7 +675,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         return;
       }
 
-      // 2. 生成账户名 & 创建 trading_account
+      // 2. 生成账户名 & 创建 trading_account（先用余额 0，后面更新）
       const accountName = generateAccountName(connectingExchange.name);
       const { data: accountData, error: accountError } = await userDataService.saveTradingAccount({
         name: accountName,
@@ -696,7 +696,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         return;
       }
 
-      // 3. 拉取交易数据（当前为 mock，后续替换为真实 API）
+      // 3. 调用真实 Binance API 拉取交易数据
       const importedTrades = await fetchTradesFromExchange(
         connectingExchange.name,
         data.apiKey,
@@ -705,6 +705,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         accountData.id,
         data.startDate,
       );
+
+      // 3b. 同时获取真实余额
+      const balanceInfo = await fetchAccountBalance(data.apiKey, data.apiSecret);
 
       // 4. 写入 trading_journals（带 account_id）
       if (importedTrades.length > 0) {
@@ -734,10 +737,11 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         setTrades(prev => [...tradesWithAccount, ...prev]);
       }
 
-      // 5. 更新账户同步状态
+      // 5. 更新账户同步状态 + 真实余额
       await userDataService.updateTradingAccount(accountData.id, {
         syncStatus: 'synced',
         lastSync: new Date().toISOString(),
+        ...(balanceInfo ? { balance: balanceInfo.balance, currency: balanceInfo.currency } : {}),
       });
 
       // 6. 刷新本地账户列表（先更新，再跳转，确保 SettingsPage 拿到最新数据）
