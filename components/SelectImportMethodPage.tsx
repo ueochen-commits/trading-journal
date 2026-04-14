@@ -100,7 +100,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
       position: 'fixed',
       inset: 0,
       zIndex: 9999,
-      background: 'linear-gradient(135deg, #e2dcf0 0%, #ece8f8 25%, #f2f0f9 55%, #f5f4fb 100%)',
+      background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -236,9 +236,9 @@ const SelectImportMethodPage: React.FC<Props> = ({
             width: '100%', maxWidth: '92vw', height: 50,
             borderRadius: 12, border: 'none',
             background: selectedMethod
-              ? (btnHovered ? '#4a4ac4' : '#5b5bd6')
-              : '#e0ddf0',
-            color: selectedMethod ? '#ffffff' : '#a8a8c8',
+              ? (btnHovered ? '#312e81' : '#3730a3')
+              : '#e8e8f0',
+            color: selectedMethod ? '#ffffff' : '#b0b3c6',
             fontSize: 16, fontWeight: 700,
             cursor: selectedMethod ? 'pointer' : 'not-allowed',
             transition: 'background 0.15s ease',
