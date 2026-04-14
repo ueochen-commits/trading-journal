@@ -65,11 +65,11 @@ const SelectImportMethodPage: React.FC<Props> = ({
     return {
       position: 'relative',
       flex: 1,
-      minHeight: 160,
+      minHeight: 190,
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '36px 20px 28px',
+      padding: '40px 24px 32px',
       borderRadius: 14,
       cursor: 'pointer',
       transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -77,7 +77,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
         ? 'linear-gradient(160deg, #ffffff 60%, #f3f1ff 100%)'
         : '#ffffff',
       border: isSelected
-        ? '1.5px solid rgba(99, 91, 255, 0.25)'
+        ? '1px solid rgba(99, 91, 255, 0.2)'
         : isHovered
         ? '1px solid #c8c0f0'
         : '1px solid #ebe8f5',
@@ -206,15 +206,15 @@ const SelectImportMethodPage: React.FC<Props> = ({
                   </div>
                 )}
                 <div style={{
-                  width: 64, height: 64, borderRadius: '50%',
+                  width: 72, height: 72, borderRadius: '50%',
                   background: isSelected ? '#ebe7ff' : '#f0eefb',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   marginBottom: 18,
                   transition: 'background 0.22s ease',
                 }}>
                   {isSelected
-                    ? React.cloneElement(icon as React.ReactElement, { style: { filter: 'brightness(0.82)' } })
-                    : icon
+                    ? React.cloneElement(icon as React.ReactElement, { width: 32, height: 32, style: { opacity: 0.75 } })
+                    : React.cloneElement(icon as React.ReactElement, { width: 32, height: 32, style: { opacity: 0.82 } })
                   }
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a', marginBottom: 8, textAlign: 'center' }}>
@@ -238,14 +238,14 @@ const SelectImportMethodPage: React.FC<Props> = ({
             width: '100%', maxWidth: '92vw', height: 50,
             borderRadius: 12, border: 'none',
             background: selectedMethod
-              ? (btnHovered ? '#4a4ac8' : '#5b5bd6')
+              ? (btnHovered ? '#312e81' : '#3730a3')
               : '#e8e8f0',
             color: selectedMethod ? '#ffffff' : '#b0b3c6',
             fontSize: 16, fontWeight: 700,
             cursor: selectedMethod ? 'pointer' : 'not-allowed',
             transition: 'all 0.18s ease',
             boxShadow: selectedMethod
-              ? (btnHovered ? '0 6px 24px rgba(91,91,214,0.45)' : '0 4px 20px rgba(91,91,214,0.35)')
+              ? (btnHovered ? '0 6px 20px rgba(55,48,163,0.4)' : '0 4px 16px rgba(55,48,163,0.3)')
               : 'none',
             transform: selectedMethod && btnHovered ? 'translateY(-1px)' : 'translateY(0)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
