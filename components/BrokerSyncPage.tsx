@@ -12,7 +12,7 @@ interface Props {
     apiSecret: string;
     skipSpot: boolean;
     startDate: string;
-  }) => void;
+  }) => Promise<void> | void;
   onBack?: () => void;
   onClose?: () => void;
 }
@@ -56,6 +56,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const [apiSecretVisible, setApiSecretVisible] = useState(false);
   const [skipSpot, setSkipSpot] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
   const [backHovered, setBackHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
@@ -502,25 +503,43 @@ const BrokerSyncPage: React.FC<Props> = ({
 
             {/* Connect button */}
             <button
-              disabled={!canConnect}
-              onClick={() => canConnect && onConnect?.({ accountType, apiKey, apiSecret, skipSpot, startDate })}
+              disabled={!canConnect || isConnecting}
+              onClick={async () => {
+                if (!canConnect || isConnecting) return;
+                setIsConnecting(true);
+                try {
+                  await onConnect?.({ accountType, apiKey, apiSecret, skipSpot, startDate });
+                } finally {
+                  setIsConnecting(false);
+                }
+              }}
               onMouseEnter={() => setBtnHovered(true)}
               onMouseLeave={() => setBtnHovered(false)}
               style={{
                 width: '100%', height: 48, borderRadius: 10,
                 fontSize: 15, fontWeight: 600, border: 'none', marginTop: 4,
                 transition: 'all 0.18s ease',
-                background: canConnect ? (btnHovered ? '#4a4ac8' : '#5b5bd6') : '#e0ddf0',
-                color: canConnect ? '#ffffff' : '#a8a8c8',
-                cursor: canConnect ? 'pointer' : 'not-allowed',
-                boxShadow: canConnect
+                background: (!canConnect || isConnecting) ? (isConnecting ? '#5b5bd6' : '#e0ddf0') : (btnHovered ? '#4a4ac8' : '#5b5bd6'),
+                color: (!canConnect && !isConnecting) ? '#a8a8c8' : '#ffffff',
+                cursor: (!canConnect || isConnecting) ? 'not-allowed' : 'pointer',
+                boxShadow: canConnect && !isConnecting
                   ? (btnHovered ? '0 6px 20px rgba(91,91,214,0.40)' : '0 4px 16px rgba(91,91,214,0.30)')
                   : 'none',
-                transform: canConnect && btnHovered ? 'translateY(-1px)' : 'translateY(0)',
+                transform: canConnect && !isConnecting && btnHovered ? 'translateY(-1px)' : 'translateY(0)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               }}
             >
-              连接
+              {isConnecting ? (
+                <>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round"
+                    style={{ animation: 'spin 0.8s linear infinite' }}>
+                    <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                  </svg>
+                  正在连接...
+                </>
+              ) : '连接'}
             </button>
+            <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
           </div>
 
           {/* RIGHT: Info panel */}

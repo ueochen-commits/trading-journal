@@ -509,11 +509,12 @@ interface SettingsPageProps {
   onAddAccount?: () => void;
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
+  initialSection?: string;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount, initialSection }) => {
   const { user, updateProfile } = useUser();
-  const [activeSection, setActiveSection] = useState('profile');
+  const [activeSection, setActiveSection] = useState(initialSection || 'profile');
   const [toast, setToast] = useState<string | null>(null);
 
   const showToast = (msg = '设置保存成功') => {

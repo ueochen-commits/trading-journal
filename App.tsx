@@ -222,6 +222,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   // Trading Accounts (从 Supabase 加载)
   const [tradingAccounts, setTradingAccounts] = useState<TradingAccount[]>([]);
 
+  // 控制 SettingsPage 打开时默认显示哪个 section
+  const [settingsInitialSection, setSettingsInitialSection] = useState<string | undefined>(undefined);
+
   // Toast 通知
   const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
   const showToast = (message: string) => {
@@ -737,7 +740,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         lastSync: new Date().toISOString(),
       });
 
-      // 6. 刷新本地账户列表
+      // 6. 刷新本地账户列表（先更新，再跳转，确保 SettingsPage 拿到最新数据）
       const freshAccounts = await userDataService.loadTradingAccounts();
       setTradingAccounts(freshAccounts);
 
@@ -747,11 +750,16 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       setShowConnectExchange(false);
       setConnectingExchange(null);
 
-      // 8. 跳转到设置页面的经纪商 tab
-      setActiveTab('settings');
-
-      // 9. 显示成功 Toast
+      // 8. 显示成功 Toast（先显示，再跳转，避免跳转后 toast 消失）
       showToast(`连接成功！已导入 ${importedTrades.length} 笔交易到 ${accountName}`);
+
+      // 9. 延迟一帧跳转，确保 React 已将 tradingAccounts 更新刷入 SettingsPage
+      setTimeout(() => {
+        setSettingsInitialSection('brokers');
+        setActiveTab('settings');
+        // 跳转后清除 initialSection，避免下次进入设置页时仍跳到 brokers
+        setTimeout(() => setSettingsInitialSection(undefined), 200);
+      }, 50);
 
     } catch (error) {
       console.error('连接流程出错:', error);
@@ -1048,6 +1056,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               return <SettingsPage
                 onImportTrades={handleImportTrades}
                 tradingAccounts={tradingAccounts}
+                initialSection={settingsInitialSection}
                 onAddAccount={() => setShowConnectExchange(true)}
                 onDeleteAccount={async (id) => {
                   await userDataService.deleteTradingAccount(id);
