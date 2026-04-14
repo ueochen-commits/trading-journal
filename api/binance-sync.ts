@@ -66,18 +66,22 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // 用 CCXT 初始化 Binance（自动处理签名、限流、端点选择）
+    // 用 CCXT 初始化 Binance
+    // fetchCurrencies: false 跳过 /sapi/v1/capital/config/getall（该端点有地理限制）
     const exchange = new ccxt.binance({
       apiKey,
       secret: apiSecret,
       enableRateLimit: true,
       timeout: 15000,
+      options: {
+        fetchCurrencies: false,
+      },
     });
 
-    // 1. 验证 API Key + 获取余额
+    // 1. 验证 API Key + 获取余额（使用 /api/v3/account，无地理限制）
     let balance: any;
     try {
-      balance = await exchange.fetchBalance();
+      balance = await exchange.fetchBalance({ type: 'spot' });
     } catch (e: any) {
       console.error('[CCXT] Auth failed:', e.constructor.name, e.message);
       return res.status(401).json({
@@ -122,6 +126,9 @@ export default async function handler(req: any, res: any) {
         secret: apiSecret,
         enableRateLimit: true,
         timeout: 15000,
+        options: {
+          fetchCurrencies: false,
+        },
       });
       const FUTURES_SYMBOLS = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT'];
       for (const symbol of FUTURES_SYMBOLS) {
