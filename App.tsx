@@ -158,7 +158,8 @@ const formatTradeFromDB = (trade: any): Trade => {
     images: trade.screenshot_url ? [trade.screenshot_url] : [],
     rating: trade.rating || undefined,
     compliance: trade.compliance || undefined,
-    executionGrade: trade.execution_grade || undefined
+    executionGrade: trade.execution_grade || undefined,
+    accountId: trade.account_id || undefined,
   };
 };
 
@@ -261,6 +262,32 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
         if (result.riskSettings) setRiskSettings(result.riskSettings);
         if (result.tradingAccounts) setTradingAccounts(result.tradingAccounts);
+
+        // 确保至少有一个默认账户，并迁移 account_id 为 NULL 的旧交易
+        if (!result.tradingAccounts || result.tradingAccounts.length === 0) {
+          const defaultAccount = await userDataService.ensureDefaultAccount();
+          if (defaultAccount) {
+            setTradingAccounts([defaultAccount]);
+            // 旧交易已迁移，重新格式化以获取 accountId
+            const refreshedTrades = (result.trades || []).map((t: any) => ({
+              ...t,
+              account_id: t.account_id || defaultAccount.id,
+            })).map(formatTradeFromDB);
+            setTrades(refreshedTrades);
+          }
+        } else {
+          // 已有账户，仍需迁移可能存在的 NULL account_id 旧交易
+          await userDataService.ensureDefaultAccount();
+          // 如果有旧交易被迁移了，用第一个账户的 id 补上
+          const firstAccountId = result.tradingAccounts[0]?.id;
+          if (firstAccountId) {
+            const refreshedTrades = (result.trades || []).map((t: any) => ({
+              ...t,
+              account_id: t.account_id || firstAccountId,
+            })).map(formatTradeFromDB);
+            setTrades(refreshedTrades);
+          }
+        }
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
@@ -392,6 +419,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: authUser.id,
+      account_id: trade.accountId || null,
       date: trade.entryDate,
       exit_date: trade.exitDate || null,
       symbol: trade.symbol,

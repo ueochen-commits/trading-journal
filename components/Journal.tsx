@@ -13,7 +13,6 @@ import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
 import { useTour } from './TourContext';
 import { Trade, TradeStatus, Direction, DailyPlan, ChecklistItem, RiskSettings, Strategy, TradingAccount } from '../types';
-import { MOCK_ACCOUNTS } from '../constants';
 import TradeReviewModal from './TradeReviewModal';
 
 // Helper to compress image
@@ -142,7 +141,7 @@ const Journal: React.FC<JournalProps> = ({
   const { user, openPricing } = useUser();
   const { registerStepAction, unregisterStepAction } = useTour();
 
-  const accounts = tradingAccounts && tradingAccounts.length > 0 ? tradingAccounts : MOCK_ACCOUNTS;
+  const accounts = tradingAccounts || [];
 
   // Remembered fee rate from last trade
   const [lastFeeRate, setLastFeeRate] = useState<string>(() => localStorage.getItem('tg_last_fee_rate') || '');

@@ -11,7 +11,7 @@ import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, 
 import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
 import CalendarView from './CalendarView';
-import { MOCK_FRIENDS, MOCK_INDICES, MOCK_ACCOUNTS } from '../constants';
+import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
 import MentorWidget from './MentorWidget';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
@@ -739,7 +739,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 }) => {
   const { t, language } = useLanguage();
   const { currencySymbol } = useUser();
-  const accounts = tradingAccounts && tradingAccounts.length > 0 ? tradingAccounts : MOCK_ACCOUNTS;
+  const accounts = tradingAccounts || [];
   const isDark = document.documentElement.classList.contains('dark');
   const tooltipStyle = isDark
     ? { backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '0.5rem' }
