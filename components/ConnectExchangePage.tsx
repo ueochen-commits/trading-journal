@@ -164,7 +164,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
                             border: '1.5px solid #6366f1', borderTop: '1px solid #f0f0f6',
                             borderRadius: '0 0 10px 10px',
                             boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
-                            zIndex: 50, overflow: 'hidden', maxHeight: 320, overflowY: 'auto',
+                            zIndex: 50, overflow: 'hidden', maxHeight: 360, overflowY: 'auto',
                         }}>
                             <div style={{ padding: '8px 16px 4px', fontSize: 11, fontWeight: 600, color: '#b0b3c6', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                                 已支持
@@ -198,6 +198,50 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
                                     <span style={{ fontSize: 14, color: '#9396aa' }}>{e.name}</span>
                                 </div>
                             ))}
+
+                            {/* Divider */}
+                            <div style={{ height: 1, background: '#f0f0f6', margin: '4px 0' }}/>
+
+                            {/* Fallback row */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                padding: '12px 16px', background: '#fafafa', transition: 'background 0.1s',
+                            }}
+                                onMouseEnter={e => { e.currentTarget.style.background = '#f5f5ff'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = '#fafafa'; }}
+                            >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div style={{
+                                        width: 28, height: 28, borderRadius: '50%',
+                                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                    }}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                                        </svg>
+                                    </div>
+                                    <span style={{ fontSize: 13, fontWeight: 500, color: '#4a4d6a' }}>找不到你的交易所？</span>
+                                </div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <button
+                                        onClick={e => { e.stopPropagation(); setDropdownOpen(false); }}
+                                        style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 5, transition: 'background 0.1s', whiteSpace: 'nowrap' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = '#eef0ff'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                    >
+                                        使用通用模板
+                                    </button>
+                                    <span style={{ color: '#d0d3e0', fontSize: 12 }}>或</span>
+                                    <button
+                                        onClick={e => { e.stopPropagation(); setDropdownOpen(false); }}
+                                        style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 5, transition: 'background 0.1s', whiteSpace: 'nowrap' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = '#eef0ff'; }}
+                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                    >
+                                        手动添加交易
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     )}
                 </div>
