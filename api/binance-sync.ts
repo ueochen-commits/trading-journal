@@ -100,14 +100,17 @@ export default async function handler(req: any, res: any) {
       ? new Date(startDate).getTime()
       : Date.now() - 90 * 24 * 60 * 60 * 1000;
 
-    // 3. 拉取现货交易记录
+    // 3. 拉取现货交易记录（覆盖主流交易对）
     const SPOT_SYMBOLS = [
       'BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT',
       'ADA/USDT', 'DOGE/USDT', 'AVAX/USDT', 'LINK/USDT', 'DOT/USDT',
+      'MATIC/USDT', 'UNI/USDT', 'ATOM/USDT', 'FIL/USDT', 'LTC/USDT',
+      'NEAR/USDT', 'APT/USDT', 'ARB/USDT', 'OP/USDT', 'SUI/USDT',
+      'PEPE/USDT', 'WIF/USDT', 'BONK/USDT', 'SHIB/USDT', 'TRX/USDT',
     ];
 
     const allPairedTrades: any[] = [];
-    const debugLog: string[] = [];
+    const debugLog: string[] = [`since: ${new Date(since).toISOString()}`];
 
     if (!skipSpot) {
       for (const symbol of SPOT_SYMBOLS) {
@@ -135,13 +138,14 @@ export default async function handler(req: any, res: any) {
           fetchCurrencies: false,
         },
       });
-      const FUTURES_SYMBOLS = ['BTC/USDT', 'ETH/USDT', 'BNB/USDT', 'SOL/USDT', 'XRP/USDT'];
+      const FUTURES_SYMBOLS = ['BTC/USDT:USDT', 'ETH/USDT:USDT', 'BNB/USDT:USDT', 'SOL/USDT:USDT', 'XRP/USDT:USDT'];
       for (const symbol of FUTURES_SYMBOLS) {
         try {
           const trades = await futuresExchange.fetchMyTrades(symbol, since, 500);
+          const cleanSymbol = symbol.split(':')[0].replace('/', '') + '_PERP';
           debugLog.push(`FUTURES ${symbol}: ${trades?.length ?? 0} fills`);
           if (trades && trades.length > 0) {
-            const paired = pairTrades(trades, symbol.replace('/', '') + '_PERP');
+            const paired = pairTrades(trades, cleanSymbol);
             allPairedTrades.push(...paired);
           }
         } catch (e: any) {
