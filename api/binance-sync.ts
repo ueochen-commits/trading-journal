@@ -168,7 +168,7 @@ export default async function handler(req: any, res: any) {
       }
     }
 
-    // 4. 自动发现合约品种（通过 fetchPositions 获取所有有过持仓的品种）
+    // 4. 自动发现合约品种（通过 income history 获取所有交易过的品种）
     try {
       const futuresExchange = new ccxt.binanceusdm({
         apiKey,
@@ -179,35 +179,64 @@ export default async function handler(req: any, res: any) {
           fetchCurrencies: false,
         },
       });
+      await futuresExchange.loadMarkets();
 
-      // fetchPositions 返回所有品种的持仓信息（包括已平仓的，size=0）
-      // 我们从中筛选出有过交易的品种
+      // 方法1: 用 /fapi/v1/income 获取所有收入记录（手续费、已实现盈亏等），从中提取交易过的品种
       let futuresSymbols: string[] = [];
       try {
-        const positions = await futuresExchange.fetchPositions();
-        // 筛选出有持仓或有过未实现盈亏的品种
-        futuresSymbols = positions
-          .filter((p: any) => {
-            const size = parseFloat(p.contracts || '0');
-            const notional = parseFloat(p.notional || '0');
-            const unrealizedPnl = parseFloat(p.unrealizedPnl || '0');
-            // 有持仓，或有未实现盈亏记录
-            return size !== 0 || notional !== 0 || unrealizedPnl !== 0;
-          })
-          .map((p: any) => p.symbol)
-          .filter((s: string) => !!s);
-        debugLog.push(`FUTURES positions: ${positions.length} total, ${futuresSymbols.length} with activity`);
+        const incomeRecords = await futuresExchange.fapiPrivateGetIncome({
+          startTime: since,
+          limit: 1000,
+        });
+        // 从 income 记录中提取唯一的 symbol（Binance 原始格式如 ETHUSDT）
+        const rawSymbols = new Set<string>();
+        for (const record of (incomeRecords || [])) {
+          if (record.symbol) rawSymbols.add(record.symbol);
+        }
+        debugLog.push(`FUTURES income: ${incomeRecords?.length ?? 0} records, ${rawSymbols.size} unique symbols: ${[...rawSymbols].join(',')}`);
+
+        // 把 Binance 原始 symbol（如 ETHUSDT）转换为 CCXT 格式（如 ETH/USDT:USDT）
+        for (const raw of rawSymbols) {
+          // 在 CCXT 已加载的 markets 中查找匹配的 symbol
+          const market = futuresExchange.markets_by_id?.[raw]?.[0];
+          if (market) {
+            futuresSymbols.push(market.symbol);
+          } else {
+            // fallback: 尝试手动构建（去掉末尾 USDT，加上 /USDT:USDT）
+            const base = raw.replace(/USDT$/, '');
+            if (base && base !== raw) {
+              futuresSymbols.push(`${base}/USDT:USDT`);
+            }
+          }
+        }
       } catch (e: any) {
-        debugLog.push(`FUTURES fetchPositions ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
-        // fallback: 用默认列表
-        futuresSymbols = ['BTC/USDT:USDT', 'ETH/USDT:USDT', 'SOL/USDT:USDT'];
+        debugLog.push(`FUTURES income ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
       }
 
-      // 如果 fetchPositions 没发现活跃品种，也用默认列表兜底
+      // 方法2: 同时检查当前持仓（补充 income 可能遗漏的）
+      try {
+        const positions = await futuresExchange.fetchPositions();
+        const activeSymbols = positions
+          .filter((p: any) => parseFloat(p.contracts || '0') !== 0)
+          .map((p: any) => p.symbol)
+          .filter((s: string) => !!s);
+        if (activeSymbols.length > 0) {
+          debugLog.push(`FUTURES active positions: ${activeSymbols.join(',')}`);
+          for (const s of activeSymbols) {
+            if (!futuresSymbols.includes(s)) futuresSymbols.push(s);
+          }
+        }
+      } catch (e: any) {
+        debugLog.push(`FUTURES positions ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
+      }
+
+      // fallback: 默认列表兜底
       if (futuresSymbols.length === 0) {
         futuresSymbols = ['BTC/USDT:USDT', 'ETH/USDT:USDT', 'SOL/USDT:USDT'];
-        debugLog.push('FUTURES: no active positions, using defaults');
+        debugLog.push('FUTURES: no symbols discovered, using defaults');
       }
+
+      debugLog.push(`FUTURES querying ${futuresSymbols.length} symbols: ${futuresSymbols.join(',')}`);
 
       for (const symbol of futuresSymbols) {
         try {
