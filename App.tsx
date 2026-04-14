@@ -261,32 +261,21 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
         if (result.riskSettings) setRiskSettings(result.riskSettings);
-        if (result.tradingAccounts) setTradingAccounts(result.tradingAccounts);
 
-        // 确保至少有一个默认账户，并迁移 account_id 为 NULL 的旧交易
-        if (!result.tradingAccounts || result.tradingAccounts.length === 0) {
-          const defaultAccount = await userDataService.ensureDefaultAccount();
-          if (defaultAccount) {
-            setTradingAccounts([defaultAccount]);
-            // 旧交易已迁移，重新格式化以获取 accountId
-            const refreshedTrades = (result.trades || []).map((t: any) => ({
-              ...t,
-              account_id: t.account_id || defaultAccount.id,
-            })).map(formatTradeFromDB);
-            setTrades(refreshedTrades);
-          }
-        } else {
-          // 已有账户，仍需迁移可能存在的 NULL account_id 旧交易
-          await userDataService.ensureDefaultAccount();
-          // 如果有旧交易被迁移了，用第一个账户的 id 补上
-          const firstAccountId = result.tradingAccounts[0]?.id;
-          if (firstAccountId) {
-            const refreshedTrades = (result.trades || []).map((t: any) => ({
-              ...t,
-              account_id: t.account_id || firstAccountId,
-            })).map(formatTradeFromDB);
-            setTrades(refreshedTrades);
-          }
+        // 确保 Demo Account 存在，并将 NULL account_id 的旧交易迁移过去
+        const demoAccount = await userDataService.ensureDefaultAccount();
+
+        // 重新加载账户列表（可能新增了 Demo Account）
+        const freshAccounts = await userDataService.loadTradingAccounts();
+        setTradingAccounts(freshAccounts);
+
+        // 用 Demo Account id 补全旧交易的 accountId
+        if (demoAccount) {
+          const refreshedTrades = (result.trades || []).map((t: any) => ({
+            ...t,
+            account_id: t.account_id || demoAccount.id,
+          })).map(formatTradeFromDB);
+          setTrades(refreshedTrades);
         }
       } catch (error) {
         console.error('Error loading user data:', error);

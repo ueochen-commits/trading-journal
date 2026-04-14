@@ -708,44 +708,40 @@ export const userDataService = {
     return { error };
   },
 
-  // 确保用户至少有一个默认账户，并将 account_id 为 NULL 的旧交易迁移过去
+  // 确保用户有一个 Demo Account，并将 account_id 为 NULL 的旧交易迁移到 Demo Account
   async ensureDefaultAccount(): Promise<TradingAccount | null> {
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
-    const { data: existing } = await supabase.from('trading_accounts')
-      .select('*').eq('user_id', userId).limit(1);
+    // 查找是否已有 Demo Account（按 name 匹配）
+    const { data: demoAccounts } = await supabase.from('trading_accounts')
+      .select('*').eq('user_id', userId).eq('name', 'Demo Account').limit(1);
 
-    if (existing && existing.length > 0) {
-      // 已有账户，用第一个作为默认账户来迁移旧数据
-      const defaultAccount = dbToTradingAccount(existing[0]);
-      await supabase.from('trading_journals')
-        .update({ account_id: existing[0].id })
-        .eq('user_id', userId)
-        .is('account_id', null);
-      return defaultAccount;
+    let demoAccount = demoAccounts && demoAccounts.length > 0 ? demoAccounts[0] : null;
+
+    if (!demoAccount) {
+      // 创建 Demo Account
+      const { data: newAccount, error } = await supabase.from('trading_accounts').insert({
+        user_id: userId,
+        name: 'Demo Account',
+        account_type: 'demo',
+        balance: 10000,
+        currency: 'USD',
+      }).select().single();
+
+      if (error || !newAccount) {
+        console.error('[ensureDefaultAccount] Error creating Demo Account:', error);
+        return null;
+      }
+      demoAccount = newAccount;
     }
 
-    // 没有账户，创建默认 Demo Account
-    const { data: newAccount, error } = await supabase.from('trading_accounts').insert({
-      user_id: userId,
-      name: 'Demo Account',
-      account_type: 'manual',
-      balance: 0,
-      currency: 'USD',
-    }).select().single();
-
-    if (error || !newAccount) {
-      console.error('[ensureDefaultAccount] Error creating default account:', error);
-      return null;
-    }
-
-    // 迁移旧交易
+    // 将所有 account_id 为 NULL 的旧交易迁移到 Demo Account
     await supabase.from('trading_journals')
-      .update({ account_id: newAccount.id })
+      .update({ account_id: demoAccount.id })
       .eq('user_id', userId)
       .is('account_id', null);
 
-    return dbToTradingAccount(newAccount);
+    return dbToTradingAccount(demoAccount);
   },
 };
