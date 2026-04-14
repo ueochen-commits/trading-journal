@@ -503,12 +503,17 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
     const data = imported.map(trade => {
       const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
+      // Direction enum 是 '做多'/'做空'，需要转换为 'long'/'short'
+      const direction = trade.direction === '做多' || (trade.direction as any) === 'long'
+        ? 'long'
+        : 'short';
       return {
         user_id: user.id,
+        account_id: trade.accountId || null,
         date: trade.entryDate,
         exit_date: trade.exitDate || null,
         symbol: trade.symbol,
-        direction: trade.direction,
+        direction,
         entry_price: trade.entryPrice,
         exit_price: trade.exitPrice,
         quantity: trade.quantity || 1,
@@ -526,7 +531,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
     const { error } = await supabase.from('trading_journals').insert(data);
 
-    if (!error) {
+    if (error) {
+      console.error('Error importing trades:', error);
+    } else {
       setTrades([...imported, ...trades]);
     }
   };
