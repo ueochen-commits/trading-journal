@@ -1,6 +1,12 @@
 
 import { Trade, Direction, TradeStatus } from '../types';
 
+// 生成账户名称：交易所名 + 5位随机数
+export const generateAccountName = (exchange: string): string => {
+    const num = Math.floor(10000 + Math.random() * 90000);
+    return `${exchange}-${num}`;
+};
+
 // Helper to get real current price from Coinbase (CORS friendly)
 export const getRealCryptoPrice = async (symbol: string): Promise<number | null> => {
     try {
@@ -14,10 +20,12 @@ export const getRealCryptoPrice = async (symbol: string): Promise<number | null>
 };
 
 export const fetchTradesFromExchange = async (
-    exchange: string, 
-    apiKey: string, 
+    exchange: string,
+    apiKey: string,
     apiSecret: string,
-    onLog?: (msg: string) => void
+    onLog?: (msg: string) => void,
+    accountId?: string,
+    startDate?: string,
 ): Promise<Trade[]> => {
     
     // 1. Simulation: Authentication
@@ -122,7 +130,8 @@ export const fetchTradesFromExchange = async (
             setup: 'API Import',
             notes: `Auto-imported from ${exchange} OrderID: #${Math.floor(Math.random()*1000000)}`,
             fees: 2.5,
-            mistakes: []
+            mistakes: [],
+            accountId: accountId,
         });
     }
 

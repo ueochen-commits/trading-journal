@@ -12,7 +12,7 @@ import { AreaChart, Area, ResponsiveContainer, YAxis, XAxis, Tooltip as Recharts
 import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
 import { useTour } from './TourContext';
-import { Trade, TradeStatus, Direction, DailyPlan, ChecklistItem, RiskSettings, Strategy } from '../types';
+import { Trade, TradeStatus, Direction, DailyPlan, ChecklistItem, RiskSettings, Strategy, TradingAccount } from '../types';
 import { MOCK_ACCOUNTS } from '../constants';
 import TradeReviewModal from './TradeReviewModal';
 
@@ -86,6 +86,7 @@ interface JournalProps {
   strategies: Strategy[];
   onNavigateToNote?: (noteId: string) => void;
   onCreateNoteIntent?: (date: string, tradeIds: string[]) => void;
+  tradingAccounts?: TradingAccount[];
 }
 
 const initialFormState: Partial<Trade> = {
@@ -131,15 +132,17 @@ const getChecklistPreference = () => {
     return localStorage.getItem('tg_enable_checklist') !== 'false';
 };
 
-const Journal: React.FC<JournalProps> = ({ 
-    trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade, 
+const Journal: React.FC<JournalProps> = ({
+    trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade,
     checklist, onUpdateChecklist, onImportTrades, onShare,
     riskSettings, onSavePlan, autoOpen, onResetAutoOpen, strategies,
-    onNavigateToNote, onCreateNoteIntent
+    onNavigateToNote, onCreateNoteIntent, tradingAccounts
 }) => {
   const { t, language } = useLanguage();
   const { user, openPricing } = useUser();
   const { registerStepAction, unregisterStepAction } = useTour();
+
+  const accounts = tradingAccounts && tradingAccounts.length > 0 ? tradingAccounts : MOCK_ACCOUNTS;
 
   // Remembered fee rate from last trade
   const [lastFeeRate, setLastFeeRate] = useState<string>(() => localStorage.getItem('tg_last_fee_rate') || '');
@@ -711,7 +714,7 @@ const Journal: React.FC<JournalProps> = ({
   ];
   const selectedMoodObj = MOODS.find(m => m.id === preTradeMood);
   const isRiskyMood = selectedMoodObj?.isRisky;
-  const currentAccountName = selectedAccountId === 'all' ? (language === 'cn' ? '所有账户' : 'All Accounts') : MOCK_ACCOUNTS.find(a => a.id === selectedAccountId)?.name || 'Unknown';
+  const currentAccountName = selectedAccountId === 'all' ? (language === 'cn' ? '所有账户' : 'All Accounts') : accounts.find(a => a.id === selectedAccountId)?.name || 'Unknown';
 
   const getAlertMessage = () => {
       if (!stopTradingAlert) return '';
@@ -1009,7 +1012,7 @@ const Journal: React.FC<JournalProps> = ({
                             <div className="p-2 space-y-1">
                                 <button onClick={() => { setSelectedAccountId('all'); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === 'all' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>All Accounts{selectedAccountId === 'all' && <Check className="w-4 h-4" />}</button>
                                 <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                                {MOCK_ACCOUNTS.map(acc => (
+                                {accounts.map(acc => (
                                     <button key={acc.id} onClick={() => { setSelectedAccountId(acc.id); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === acc.id ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${acc.isReal ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>{acc.name}</div>{selectedAccountId === acc.id && <Check className="w-4 h-4" />}</button>
                                 ))}
                             </div>

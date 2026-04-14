@@ -1,22 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-
-interface Account {
-  id: string;
-  name: string;
-  brokerName: string;
-  brokerLogoUrl?: string;
-  brokerBrandColor?: string;
-  balance: number;
-  currency: string;
-  profitMethod: 'FIFO' | 'LIFO' | 'WAVG';
-  lastUpdate?: string;
-  nextUpdate?: string;
-  type: 'demo' | 'auto_sync' | 'manual';
-  syncStatus?: 'synced' | 'syncing' | 'error';
-}
+import { TradingAccount } from '../types';
 
 interface Props {
-  accounts?: Account[];
+  accounts?: TradingAccount[];
   userPlan?: 'free' | 'pro' | 'elite';
   onAddAccount?: () => void;
   onEditAccount?: (id: string) => void;
@@ -27,22 +13,6 @@ interface Props {
 }
 
 const PLAN_LIMITS = { free: 1, pro: 3, elite: Infinity };
-
-const MOCK_ACCOUNTS: Account[] = [
-  {
-    id: 'demo-1', name: 'Demo 账户', brokerName: 'TradeGrail',
-    brokerBrandColor: '#5050c8', balance: 10000, currency: 'USD',
-    profitMethod: 'FIFO', lastUpdate: '2026-04-15 10:23', nextUpdate: '—',
-    type: 'demo', syncStatus: 'synced',
-  },
-  {
-    id: 'binance-1', name: 'Binance 主账户', brokerName: 'Binance',
-    brokerLogoUrl: '/exchanges/binance.png', brokerBrandColor: '#f5a500',
-    balance: 24680.5, currency: 'USDT', profitMethod: 'FIFO',
-    lastUpdate: '2026-04-15 09:00', nextUpdate: '2026-04-15 21:00',
-    type: 'auto_sync', syncStatus: 'synced',
-  },
-];
 
 // ─── Icons ────────────────────────────────────────────────────────────────────
 const IconRefresh = ({ color = '#8080b8' }) => (
@@ -97,7 +67,7 @@ const IconEmpty = () => (
 
 // ─── Row menu ─────────────────────────────────────────────────────────────────
 const RowMenu: React.FC<{
-  account: Account;
+  account: TradingAccount;
   onEdit?: () => void;
   onDelete?: () => void;
   onSync?: () => void;
@@ -193,7 +163,7 @@ const RowMenu: React.FC<{
 };
 
 // ─── Type badge ───────────────────────────────────────────────────────────────
-const TypeBadge: React.FC<{ account: Account }> = ({ account }) => {
+const TypeBadge: React.FC<{ account: TradingAccount }> = ({ account }) => {
   if (account.type === 'demo') {
     return <span style={{ background: '#f0eeff', color: '#5050a0', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>演示</span>;
   }
@@ -225,7 +195,7 @@ const BrokersPage: React.FC<Props> = ({
   onViewHistory,
   onUpgrade,
 }) => {
-  const [accounts, setAccounts] = useState<Account[]>(propAccounts ?? MOCK_ACCOUNTS);
+  const [accounts, setAccounts] = useState<TradingAccount[]>(propAccounts ?? []);
   const [addBtnHov, setAddBtnHov] = useState(false);
   const [syncBtnHov, setSyncBtnHov] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -374,7 +344,7 @@ const BrokersPage: React.FC<Props> = ({
 
 // ─── Account row ──────────────────────────────────────────────────────────────
 const AccountRow: React.FC<{
-  account: Account;
+  account: TradingAccount;
   selected?: boolean;
   onToggleSelect?: () => void;
   onEdit?: () => void;
@@ -387,6 +357,8 @@ const AccountRow: React.FC<{
 
   const fmt = (n: number, cur: string) =>
     new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' ' + cur;
+
+  const brokerName = account.exchange || account.name;
 
   return (
     <tr
@@ -412,11 +384,11 @@ const AccountRow: React.FC<{
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {account.brokerLogoUrl
-              ? <img src={account.brokerLogoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt={account.brokerName} />
-              : <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{account.brokerName[0]}</span>
+              ? <img src={account.brokerLogoUrl} style={{ width: '100%', height: '100%', objectFit: 'contain' }} alt={brokerName} />
+              : <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{brokerName[0]}</span>
             }
           </div>
-          <span style={{ color: '#2a2a40' }}>{account.brokerName}</span>
+          <span style={{ color: '#2a2a40' }}>{brokerName}</span>
         </div>
       </td>
 
@@ -437,13 +409,13 @@ const AccountRow: React.FC<{
 
       {/* Last update */}
       <td style={{ padding: '0 16px', color: '#8080a8', fontSize: 12, verticalAlign: 'middle' }}>
-        {account.lastUpdate ?? <span style={{ color: '#c0bcd8' }}>—</span>}
+        {account.lastSync ?? <span style={{ color: '#c0bcd8' }}>—</span>}
       </td>
 
       {/* Next update */}
       <td style={{ padding: '0 16px', color: '#8080a8', fontSize: 12, verticalAlign: 'middle' }}>
-        {account.nextUpdate && account.nextUpdate !== '—'
-          ? account.nextUpdate
+        {account.nextSync && account.nextSync !== '—'
+          ? account.nextSync
           : <span style={{ color: '#c0bcd8' }}>—</span>
         }
       </td>

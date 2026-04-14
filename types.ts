@@ -15,6 +15,17 @@ export interface TradingAccount {
     id: string;
     name: string;
     isReal: boolean;
+    exchange?: string;
+    brokerLogoUrl?: string;
+    brokerBrandColor?: string;
+    balance: number;
+    currency: string;
+    profitMethod: 'FIFO' | 'LIFO' | 'WAVG';
+    type: 'demo' | 'auto_sync' | 'manual';
+    syncStatus?: 'synced' | 'syncing' | 'error';
+    lastSync?: string;
+    nextSync?: string;
+    exchangeConnectionId?: string;
 }
 
 export interface Trade {
@@ -260,10 +271,13 @@ export interface PositionPlan {
 // --- API Sync Types ---
 export interface ExchangeConnection {
     id: string;
-    exchange: 'Binance' | 'Bybit' | 'OKX' | 'Coinbase';
+    exchange: string;
     apiKey: string;
-    apiSecret: string; // In real app, never store secret in frontend storage like this
+    apiSecret: string;
     label?: string;
+    accountType?: 'main' | 'demo';
+    skipSpot?: boolean;
+    startDate?: string;
     lastSync?: string;
     isConnected: boolean;
 }

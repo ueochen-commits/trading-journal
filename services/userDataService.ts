@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings } from '../types';
+import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, TradingAccount, ExchangeConnection } from '../types';
 
 // 获取当前用户ID
 async function getCurrentUserId(): Promise<string | null> {
@@ -79,6 +79,40 @@ function dbToDisciplineRecord(row: any): DailyDisciplineRecord {
   };
 }
 
+function dbToTradingAccount(row: any): TradingAccount {
+  return {
+    id: row.id,
+    name: row.name || '',
+    isReal: row.account_type !== 'demo',
+    exchange: row.exchange || undefined,
+    brokerLogoUrl: row.broker_logo_url || undefined,
+    brokerBrandColor: row.broker_brand_color || undefined,
+    balance: row.balance ?? 0,
+    currency: row.currency || 'USD',
+    profitMethod: row.profit_method || 'FIFO',
+    type: row.account_type || 'manual',
+    syncStatus: row.sync_status || 'synced',
+    lastSync: row.last_sync || undefined,
+    nextSync: row.next_sync || undefined,
+    exchangeConnectionId: row.exchange_connection_id || undefined,
+  };
+}
+
+function dbToExchangeConnection(row: any): ExchangeConnection {
+  return {
+    id: row.id,
+    exchange: row.exchange || '',
+    apiKey: row.api_key_encrypted || '',
+    apiSecret: row.api_secret_encrypted || '',
+    label: row.label || undefined,
+    accountType: row.account_type || 'main',
+    skipSpot: row.skip_spot ?? false,
+    startDate: row.start_date || undefined,
+    lastSync: row.last_sync || undefined,
+    isConnected: row.is_active ?? true,
+  };
+}
+
 // ============ 用户数据服务 ============
 export const userDataService = {
   // 加载用户数据
@@ -86,7 +120,7 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
-    const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, settingsRes, profilesRes] = await Promise.all([
+    const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, settingsRes, profilesRes, accountsRes, connectionsRes] = await Promise.all([
       supabase.from('trading_journals').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('checklist_items').select('*').eq('user_id', userId).order('order_index'),
@@ -96,7 +130,9 @@ export const userDataService = {
       supabase.from('discipline_rules').select('*').eq('user_id', userId),
       supabase.from('daily_discipline_records').select('*').eq('user_id', userId).order('date', { ascending: false }),
       supabase.from('user_settings').select('settings, risk_settings').eq('user_id', userId).maybeSingle(),
-      supabase.from('profiles').select('*').eq('id', userId).maybeSingle()
+      supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+      supabase.from('trading_accounts').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('exchange_connections').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
     ]);
 
     // 过滤软删除的笔记（在应用层处理，避免依赖 DB 列）
@@ -113,7 +149,9 @@ export const userDataService = {
       disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
       weeklyGoal: settingsRes.data?.settings?.weeklyGoal || null,
       riskSettings: settingsRes.data?.risk_settings || null,
-      profile: profilesRes?.data || null
+      profile: profilesRes?.data || null,
+      tradingAccounts: (accountsRes.data || []).map(dbToTradingAccount),
+      exchangeConnections: (connectionsRes.data || []).map(dbToExchangeConnection),
     };
   },
 
@@ -508,5 +546,159 @@ export const userDataService = {
     }, { onConflict: 'id' });
 
     return { error };
-  }
+  },
+
+  // ============ 交易所连接 ============
+
+  async saveExchangeConnection(conn: {
+    exchange: string;
+    apiKey: string;
+    apiSecret: string;
+    label?: string;
+    accountType?: string;
+    skipSpot?: boolean;
+    startDate?: string;
+  }) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { data: null, error: 'Not authenticated' };
+
+    const { data, error } = await supabase.from('exchange_connections').insert({
+      user_id: userId,
+      exchange: conn.exchange,
+      api_key_encrypted: conn.apiKey,
+      api_secret_encrypted: conn.apiSecret,
+      label: conn.label || null,
+      account_type: conn.accountType || 'main',
+      skip_spot: conn.skipSpot ?? false,
+      start_date: conn.startDate || null,
+      is_active: true,
+    }).select().single();
+
+    return { data, error };
+  },
+
+  async loadExchangeConnections(): Promise<ExchangeConnection[]> {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const { data } = await supabase.from('exchange_connections')
+      .select('*').eq('user_id', userId).order('created_at', { ascending: false });
+
+    return (data || []).map(dbToExchangeConnection);
+  },
+
+  async deleteExchangeConnection(id: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const { error } = await supabase.from('exchange_connections').delete().eq('id', id).eq('user_id', userId);
+    return { error };
+  },
+
+  // ============ 交易账户 ============
+
+  async saveTradingAccount(account: {
+    name: string;
+    exchange?: string;
+    brokerLogoUrl?: string;
+    brokerBrandColor?: string;
+    balance?: number;
+    currency?: string;
+    profitMethod?: string;
+    accountType?: string;
+    syncStatus?: string;
+    exchangeConnectionId?: string;
+  }) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { data: null, error: 'Not authenticated' };
+
+    const { data, error } = await supabase.from('trading_accounts').insert({
+      user_id: userId,
+      name: account.name,
+      exchange: account.exchange || null,
+      broker_logo_url: account.brokerLogoUrl || null,
+      broker_brand_color: account.brokerBrandColor || null,
+      balance: account.balance ?? 0,
+      currency: account.currency || 'USD',
+      profit_method: account.profitMethod || 'FIFO',
+      account_type: account.accountType || 'manual',
+      sync_status: account.syncStatus || 'synced',
+      exchange_connection_id: account.exchangeConnectionId || null,
+    }).select().single();
+
+    return { data, error };
+  },
+
+  async loadTradingAccounts(): Promise<TradingAccount[]> {
+    const userId = await getCurrentUserId();
+    if (!userId) return [];
+
+    const { data } = await supabase.from('trading_accounts')
+      .select('*').eq('user_id', userId).order('created_at', { ascending: false });
+
+    return (data || []).map(dbToTradingAccount);
+  },
+
+  async updateTradingAccount(id: string, updates: Partial<{
+    name: string;
+    balance: number;
+    currency: string;
+    profitMethod: string;
+    syncStatus: string;
+    lastSync: string;
+    nextSync: string;
+  }>) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const dbUpdates: any = { updated_at: new Date().toISOString() };
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.balance !== undefined) dbUpdates.balance = updates.balance;
+    if (updates.currency !== undefined) dbUpdates.currency = updates.currency;
+    if (updates.profitMethod !== undefined) dbUpdates.profit_method = updates.profitMethod;
+    if (updates.syncStatus !== undefined) dbUpdates.sync_status = updates.syncStatus;
+    if (updates.lastSync !== undefined) dbUpdates.last_sync = updates.lastSync;
+    if (updates.nextSync !== undefined) dbUpdates.next_sync = updates.nextSync;
+
+    const { error } = await supabase.from('trading_accounts').update(dbUpdates).eq('id', id).eq('user_id', userId);
+    return { error };
+  },
+
+  async deleteTradingAccount(id: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const { error } = await supabase.from('trading_accounts').delete().eq('id', id).eq('user_id', userId);
+    return { error };
+  },
+
+  // 批量导入交易（带 account_id）
+  async importTradesWithAccount(trades: any[], accountId: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const data = trades.map(trade => ({
+      user_id: userId,
+      account_id: accountId,
+      date: trade.date,
+      exit_date: trade.exitDate || null,
+      symbol: trade.symbol,
+      direction: trade.direction,
+      entry_price: trade.entryPrice,
+      exit_price: trade.exitPrice,
+      quantity: trade.quantity || 1,
+      leverage: trade.leverage || 1,
+      risk_amount: trade.riskAmount || 0,
+      fees: trade.fees || 0,
+      pnl: trade.pnl,
+      pnl_percent: trade.pnlPercent,
+      setup: trade.setup,
+      notes: trade.notes,
+      review_notes: trade.reviewNotes || '',
+      mistakes: JSON.stringify(trade.mistakes || []),
+    }));
+
+    const { error } = await supabase.from('trading_journals').insert(data);
+    return { error };
+  },
 };

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { Trade } from '../types';
+import { Trade, TradingAccount } from '../types';
 import BrokersPage from './BrokersPage';
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -505,9 +505,13 @@ const PlaceholderPage: React.FC<{ title: string }> = ({ title }) => (
 // ─── Main SettingsPage ────────────────────────────────────────────────────────
 interface SettingsPageProps {
   onImportTrades?: (trades: Trade[]) => void;
+  tradingAccounts?: TradingAccount[];
+  onAddAccount?: () => void;
+  onDeleteAccount?: (id: string) => void;
+  onSyncAccount?: (id: string) => void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount }) => {
   const { user, updateProfile } = useUser();
   const [activeSection, setActiveSection] = useState('profile');
   const [toast, setToast] = useState<string | null>(null);
@@ -529,7 +533,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades }) => {
     switch (activeSection) {
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
       case 'account': return <AccountPage showToast={showToast} />;
-      case 'brokers': return <BrokersPage userPlan="free" />;
+      case 'brokers': return <BrokersPage userPlan="free" accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
       case 'tags': return <TagsPage />;

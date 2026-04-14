@@ -76,6 +76,7 @@ import { TourProvider, useTour } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
+import { fetchTradesFromExchange, generateAccountName } from './services/exchangeService';
 import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
@@ -83,10 +84,11 @@ import {
   DEFAULT_TRACKER_RULES, MOCK_POSTS, MOCK_NOTIFICATIONS, 
   DEFAULT_DISCIPLINE_RULES 
 } from './constants';
-import { 
-  Trade, Strategy, ChecklistItem, RiskSettings, DailyPlan, 
-  TrackerRule, Post, Notification, ShareIntent, DisciplineRule, 
-  DailyDisciplineRecord, WeeklyGoal, TradeStatus, Direction
+import {
+  Trade, Strategy, ChecklistItem, RiskSettings, DailyPlan,
+  TrackerRule, Post, Notification, ShareIntent, DisciplineRule,
+  DailyDisciplineRecord, WeeklyGoal, TradeStatus, Direction,
+  TradingAccount
 } from './types';
 
 const PageContainer = ({ children }: { children?: React.ReactNode }) => (
@@ -217,6 +219,16 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     maxOpenPositions: 2
   });
 
+  // Trading Accounts (从 Supabase 加载)
+  const [tradingAccounts, setTradingAccounts] = useState<TradingAccount[]>([]);
+
+  // Toast 通知
+  const [toast, setToast] = useState<{ message: string; visible: boolean }>({ message: '', visible: false });
+  const showToast = (message: string) => {
+    setToast({ message, visible: true });
+    setTimeout(() => setToast({ message: '', visible: false }), 4000);
+  };
+
   // 从 Supabase 加载所有用户数据
   useEffect(() => {
     const loadAllData = async () => {
@@ -245,6 +257,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
         if (result.riskSettings) setRiskSettings(result.riskSettings);
+        if (result.tradingAccounts) setTradingAccounts(result.tradingAccounts);
       } catch (error) {
         console.error('Error loading user data:', error);
       } finally {
@@ -631,6 +644,121 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     }
   };
 
+  // ============ 交易所连接完整流程 ============
+  const handleExchangeConnect = async (data: {
+    accountType: string;
+    apiKey: string;
+    apiSecret: string;
+    skipSpot: boolean;
+    startDate: string;
+  }) => {
+    if (!connectingExchange) return;
+
+    try {
+      // 1. 保存 exchange_connection 到 Supabase
+      const { data: connData, error: connError } = await userDataService.saveExchangeConnection({
+        exchange: connectingExchange.name,
+        apiKey: data.apiKey,
+        apiSecret: data.apiSecret,
+        label: connectingExchange.name,
+        accountType: data.accountType,
+        skipSpot: data.skipSpot,
+        startDate: data.startDate,
+      });
+
+      if (connError || !connData) {
+        console.error('保存连接失败:', connError);
+        showToast('连接失败，请重试');
+        return;
+      }
+
+      // 2. 生成账户名 & 创建 trading_account
+      const accountName = generateAccountName(connectingExchange.name);
+      const { data: accountData, error: accountError } = await userDataService.saveTradingAccount({
+        name: accountName,
+        exchange: connectingExchange.name,
+        brokerLogoUrl: connectingExchange.logoUrl,
+        brokerBrandColor: connectingExchange.brandColor,
+        balance: 0,
+        currency: 'USDT',
+        profitMethod: 'FIFO',
+        accountType: 'auto_sync',
+        syncStatus: 'syncing',
+        exchangeConnectionId: connData.id,
+      });
+
+      if (accountError || !accountData) {
+        console.error('创建账户失败:', accountError);
+        showToast('创建账户失败，请重试');
+        return;
+      }
+
+      // 3. 拉取交易数据（当前为 mock，后续替换为真实 API）
+      const importedTrades = await fetchTradesFromExchange(
+        connectingExchange.name,
+        data.apiKey,
+        data.apiSecret,
+        undefined,
+        accountData.id,
+        data.startDate,
+      );
+
+      // 4. 写入 trading_journals（带 account_id）
+      if (importedTrades.length > 0) {
+        await userDataService.importTradesWithAccount(
+          importedTrades.map(t => ({
+            date: t.entryDate,
+            exitDate: t.exitDate,
+            symbol: t.symbol,
+            direction: t.direction,
+            entryPrice: t.entryPrice,
+            exitPrice: t.exitPrice,
+            quantity: t.quantity,
+            leverage: t.leverage,
+            riskAmount: t.riskAmount,
+            fees: t.fees,
+            pnl: t.pnl,
+            setup: t.setup,
+            notes: t.notes,
+            reviewNotes: t.reviewNotes,
+            mistakes: t.mistakes,
+          })),
+          accountData.id,
+        );
+
+        // 更新本地 trades 状态
+        const tradesWithAccount = importedTrades.map(t => ({ ...t, accountId: accountData.id }));
+        setTrades(prev => [...tradesWithAccount, ...prev]);
+      }
+
+      // 5. 更新账户同步状态
+      await userDataService.updateTradingAccount(accountData.id, {
+        syncStatus: 'synced',
+        lastSync: new Date().toISOString(),
+      });
+
+      // 6. 刷新本地账户列表
+      const freshAccounts = await userDataService.loadTradingAccounts();
+      setTradingAccounts(freshAccounts);
+
+      // 7. 关闭所有 overlay
+      setShowBrokerSync(false);
+      setShowSelectImportMethod(false);
+      setShowConnectExchange(false);
+      setConnectingExchange(null);
+
+      // 8. 跳转到设置页面的经纪商 tab
+      setActiveTab('settings');
+
+      // 9. 显示成功 Toast
+      showToast(`连接成功！已导入 ${importedTrades.length} 笔交易到 ${accountName}`);
+
+    } catch (error) {
+      console.error('连接流程出错:', error);
+      showToast('连接过程中出现错误，请重试');
+    }
+  };
+
   const handleCheckDisciplineRule = (ruleId: string, isChecked: boolean) => {
     const todayStr = new Date().toISOString().split('T')[0];
     const todayRecord = disciplineHistory.find(r => r.date === todayStr);
@@ -759,6 +887,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           disciplineRules={disciplineRules}
                           onUpdateDisciplineRules={handleUpdateDisciplineRules}
                           onCheckDisciplineRule={handleCheckDisciplineRule}
+                          tradingAccounts={tradingAccounts}
+                          onManageAccounts={() => handleSetActiveTab('settings')}
                       />
                   </PageContainer>
               );
@@ -769,11 +899,11 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           case 'journal':
               return (
                   <PageContainer>
-                      <Journal 
-                          trades={trades} 
+                      <Journal
+                          trades={trades}
                           plans={plans}
-                          onAddTrade={handleAddTrade} 
-                          onUpdateTrade={handleUpdateTrade} 
+                          onAddTrade={handleAddTrade}
+                          onUpdateTrade={handleUpdateTrade}
                           onDeleteTrade={handleDeleteTrade}
                           checklist={checklist}
                           onUpdateChecklist={handleUpdateChecklist}
@@ -784,6 +914,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           autoOpen={journalAutoOpen}
                           onResetAutoOpen={() => journalAutoOpen && setJournalAutoOpen(false)}
                           strategies={strategies}
+                          tradingAccounts={tradingAccounts}
                           onNavigateToNote={(id) => {
                               setNoteSelectionIntent(id);
                               handleSetActiveTab('plans');
@@ -914,7 +1045,21 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   </PageContainer>
               );
           case 'settings':
-              return <SettingsPage onImportTrades={handleImportTrades} />;
+              return <SettingsPage
+                onImportTrades={handleImportTrades}
+                tradingAccounts={tradingAccounts}
+                onAddAccount={() => setShowConnectExchange(true)}
+                onDeleteAccount={async (id) => {
+                  await userDataService.deleteTradingAccount(id);
+                  setTradingAccounts(prev => prev.filter(a => a.id !== id));
+                }}
+                onSyncAccount={async (id) => {
+                  const account = tradingAccounts.find(a => a.id === id);
+                  if (!account || !account.exchangeConnectionId) return;
+                  showToast('正在同步...');
+                  // 后续可以在这里调用真实同步逻辑
+                }}
+              />;
           default:
               return <div className="p-10 text-center">404 - Module Not Found</div>;
       }
@@ -1073,7 +1218,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 supportedAssets={{ 股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false }}
                 onBack={() => { setShowBrokerSync(false); setShowSelectImportMethod(true); }}
                 onClose={() => setShowBrokerSync(false)}
-                onConnect={(data) => { console.log('连接数据：', data); }}
+                onConnect={(data) => { handleExchangeConnect(data); }}
               />
           )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
@@ -1084,10 +1229,22 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               />
           )}
           {isFabOpen && (
-              <div 
+              <div
                 className="fixed inset-0 bg-slate-900/20 z-30 transition-opacity duration-300"
                 onClick={() => setIsFabOpen(false)}
               ></div>
+          )}
+          {/* Toast 通知 */}
+          {toast.visible && (
+            <div style={{
+              position: 'fixed', bottom: 32, left: '50%', transform: 'translateX(-50%)',
+              zIndex: 99999, background: '#1a1a2e', color: '#fff', padding: '12px 24px',
+              borderRadius: 12, fontSize: 14, fontWeight: 500, boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              display: 'flex', alignItems: 'center', gap: 8, animation: 'fadeInUp 0.3s ease',
+            }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5" strokeLinecap="round"><path d="M20 6L9 17l-5-5"/></svg>
+              {toast.message}
+            </div>
           )}
       </div>
   );

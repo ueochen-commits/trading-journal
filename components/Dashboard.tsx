@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { Trade, TradeStatus, RiskSettings, TrackerRule, TrackerRuleType, DailyPlan, Friend, UserLevelProfile, DisciplineRule, DailyDisciplineRecord, WeeklyGoal } from '../types';
+import { Trade, TradeStatus, RiskSettings, TrackerRule, TrackerRuleType, DailyPlan, Friend, UserLevelProfile, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, TradingAccount } from '../types';
 import {
   AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
@@ -707,6 +707,8 @@ interface DashboardProps {
   onViewGoals?: () => void;
   onViewLeaderboard?: () => void;
   onViewPsychology?: () => void;
+  tradingAccounts?: TradingAccount[];
+  onManageAccounts?: () => void;
 }
 
 const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
@@ -732,10 +734,12 @@ const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
 const Dashboard: React.FC<DashboardProps> = ({
     trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
-    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology
+    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology,
+    tradingAccounts, onManageAccounts
 }) => {
   const { t, language } = useLanguage();
   const { currencySymbol } = useUser();
+  const accounts = tradingAccounts && tradingAccounts.length > 0 ? tradingAccounts : MOCK_ACCOUNTS;
   const isDark = document.documentElement.classList.contains('dark');
   const tooltipStyle = isDark
     ? { backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '0.5rem' }
@@ -1225,8 +1229,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div></div>}
             </div>
             <div className="relative z-30" ref={accountSwitcherRef}>
-                <button onClick={() => setIsAccountSwitcherOpen(!isAccountSwitcherOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all min-w-[200px]"><div className="flex items-center gap-2.5"><Briefcase className="w-4 h-4 flex-shrink-0 text-slate-400" /><div className="text-left flex-1"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Trading Account</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none truncate max-w-[120px]">{selectedAccountId === 'all' ? (language === 'cn' ? '所有账户' : 'All Accounts') : MOCK_ACCOUNTS.find(a => a.id === selectedAccountId)?.name || 'Unknown'}</p></div></div><ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} /></button>
-                {isAccountSwitcherOpen && <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in-up z-50 origin-top-right"><div className="p-2 space-y-1"><button onClick={() => { setSelectedAccountId('all'); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === 'all' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>All Accounts{selectedAccountId === 'all' && <Check className="w-4 h-4" />}</button><div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>{MOCK_ACCOUNTS.map(acc => (<button key={acc.id} onClick={() => { setSelectedAccountId(acc.id); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === acc.id ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${acc.isReal ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>{acc.name}</div>{selectedAccountId === acc.id && <Check className="w-4 h-4" />}</button>))}</div><div className="border-t border-slate-100 dark:border-slate-800 p-2 bg-slate-50 dark:bg-slate-950/50"><button className="w-full text-center text-xs font-bold text-slate-500 hover:text-indigo-600 py-1.5 flex items-center justify-center gap-2"><Settings className="w-3 h-3" /> Manage Accounts</button></div></div>}
+                <button onClick={() => setIsAccountSwitcherOpen(!isAccountSwitcherOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all min-w-[200px]"><div className="flex items-center gap-2.5"><Briefcase className="w-4 h-4 flex-shrink-0 text-slate-400" /><div className="text-left flex-1"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Trading Account</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none truncate max-w-[120px]">{selectedAccountId === 'all' ? (language === 'cn' ? '所有账户' : 'All Accounts') : accounts.find(a => a.id === selectedAccountId)?.name || 'Unknown'}</p></div></div><ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} /></button>
+                {isAccountSwitcherOpen && <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in-up z-50 origin-top-right"><div className="p-2 space-y-1"><button onClick={() => { setSelectedAccountId('all'); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === 'all' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>All Accounts{selectedAccountId === 'all' && <Check className="w-4 h-4" />}</button><div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>{accounts.map(acc => (<button key={acc.id} onClick={() => { setSelectedAccountId(acc.id); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === acc.id ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${acc.isReal ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>{acc.name}</div>{selectedAccountId === acc.id && <Check className="w-4 h-4" />}</button>))}</div><div className="border-t border-slate-100 dark:border-slate-800 p-2 bg-slate-50 dark:bg-slate-950/50"><button onClick={() => onManageAccounts?.()} className="w-full text-center text-xs font-bold text-slate-500 hover:text-indigo-600 py-1.5 flex items-center justify-center gap-2"><Settings className="w-3 h-3" /> Manage Accounts</button></div></div>}
             </div>
         </div>
       </div>

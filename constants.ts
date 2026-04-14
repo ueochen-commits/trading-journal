@@ -3,10 +3,10 @@ import { Trade, TradeStatus, Direction, Strategy, ChecklistItem, TrackerRule, Fr
 
 // Mock Accounts
 export const MOCK_ACCOUNTS: TradingAccount[] = [
-    { id: 'acc_1', name: '2023 TradingUA', isReal: true },
-    { id: 'acc_2', name: 'Umar Account', isReal: false },
-    { id: 'acc_3', name: 'Challenge Phase 1', isReal: false },
-    { id: 'acc_4', name: 'MT4 7473', isReal: true },
+    { id: 'acc_1', name: '2023 TradingUA', isReal: true, balance: 10000, currency: 'USD', profitMethod: 'FIFO', type: 'manual' },
+    { id: 'acc_2', name: 'Umar Account', isReal: false, balance: 5000, currency: 'USD', profitMethod: 'FIFO', type: 'demo' },
+    { id: 'acc_3', name: 'Challenge Phase 1', isReal: false, balance: 25000, currency: 'USD', profitMethod: 'FIFO', type: 'manual' },
+    { id: 'acc_4', name: 'MT4 7473', isReal: true, balance: 8500, currency: 'USD', profitMethod: 'FIFO', type: 'auto_sync' },
 ];
 
 // Helper to generate realistic crypto trades for a specific month
