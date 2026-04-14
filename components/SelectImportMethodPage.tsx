@@ -11,11 +11,33 @@ interface Props {
   onClose?: () => void;
 }
 
-const ASSET_TAGS: Record<Method, string[]> = {
-  auto:   ['现货', '合约', '期货', '杠杆', '期权'],
-  file:   ['现货', '合约', '期货'],
-  manual: ['现货', '合约', '期货', '杠杆', '期权', '其他'],
+const ASSET_CONFIG: Record<Method, Record<string, boolean>> = {
+  auto: {
+    股票: false, 期货: true, 期权: false, 外汇: false, 加密货币: false, 差价合约: false,
+  },
+  file: {
+    股票: false, 期货: true, 期权: false, 外汇: false, 加密货币: false, 差价合约: false,
+  },
+  manual: {
+    股票: true, 期货: true, 期权: true, 外汇: true, 加密货币: true, 差价合约: true,
+  },
 };
+
+const CheckIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18">
+    <circle cx="9" cy="9" r="9" fill="#5b5bd6"/>
+    <polyline points="5,9 8,12 13,6" stroke="white" strokeWidth="1.8"
+      fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const CrossIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 18 18">
+    <circle cx="9" cy="9" r="8" fill="none" stroke="#c8c8d8" strokeWidth="1.5"/>
+    <line x1="6" y1="6" x2="12" y2="12" stroke="#b0b0c8" strokeWidth="1.5" strokeLinecap="round"/>
+    <line x1="12" y1="6" x2="6" y2="12" stroke="#b0b0c8" strokeWidth="1.5" strokeLinecap="round"/>
+  </svg>
+);
 
 const SelectImportMethodPage: React.FC<Props> = ({
   exchangeName = 'Binance',
@@ -33,7 +55,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
 
   useEffect(() => {
     const style = document.createElement('style');
-    const keyframes = '@keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }';
+    const keyframes = '@keyframes fadeInUp { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }';
     style.appendChild(document.createTextNode(keyframes));
     document.head.appendChild(style);
     return () => { document.head.removeChild(style); };
@@ -46,7 +68,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
       desc: '连接您的经纪商账户',
       recommended: true,
       icon: (
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="#5b5bd6">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#5b5bd6" style={{ opacity: 0.82 }}>
           <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/>
         </svg>
       ),
@@ -56,7 +78,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
       title: '上传文件',
       desc: '上传经纪商提供的交易记录文件',
       icon: (
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="#5b5bd6">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#5b5bd6" style={{ opacity: 0.82 }}>
           <path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zm-1 4l-3 3h2v3h2v-3h2l-3-3z"/>
         </svg>
       ),
@@ -66,7 +88,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
       title: '手动添加',
       desc: '通过界面逐笔添加交易记录',
       icon: (
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="#5b5bd6">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="#5b5bd6" style={{ opacity: 0.82 }}>
           <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
         </svg>
       ),
@@ -86,35 +108,28 @@ const SelectImportMethodPage: React.FC<Props> = ({
       padding: '40px 24px 32px',
       borderRadius: 14,
       cursor: 'pointer',
-      transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
-      background: isSelected
-        ? 'linear-gradient(160deg, #ffffff 60%, #f3f1ff 100%)'
-        : '#ffffff',
+      transition: 'all 0.2s ease',
+      background: isSelected ? '#f0eeff' : '#ffffff',
       border: isSelected
-        ? '1px solid transparent'
+        ? '2px solid #5b5bd6'
         : isHovered
         ? '1px solid #c8c0f0'
         : '1px solid #ebe8f5',
       boxShadow: isSelected
-        ? '0 0 0 3px rgba(99,91,255,0.13), 0 0 20px 6px rgba(99,91,255,0.10), 0 8px 24px rgba(99,91,255,0.10)'
+        ? '0 4px 20px rgba(91,91,214,0.15)'
         : isHovered
         ? '0 4px 16px rgba(90,80,160,0.10)'
         : '0 2px 8px rgba(90,80,160,0.06)',
-      transform: isSelected ? 'translateY(-3px)' : isHovered ? 'translateY(-2px)' : 'translateY(0)',
+      transform: isSelected ? 'translateY(-2px)' : isHovered ? 'translateY(-2px)' : 'translateY(0)',
     };
   };
 
   return (
     <div style={{
-      position: 'fixed',
-      inset: 0,
-      zIndex: 9999,
+      position: 'fixed', inset: 0, zIndex: 9999,
       background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      overflowY: 'auto',
-      paddingBottom: 60,
+      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      overflowY: 'auto', paddingBottom: 48,
     }}>
       {/* Progress bar */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, display: 'flex', zIndex: 100, height: 3 }}>
@@ -123,10 +138,8 @@ const SelectImportMethodPage: React.FC<Props> = ({
       </div>
 
       {/* Back button */}
-      <button
-        onClick={onBack}
-        onMouseEnter={() => setBackHovered(true)}
-        onMouseLeave={() => setBackHovered(false)}
+      <button onClick={onBack}
+        onMouseEnter={() => setBackHovered(true)} onMouseLeave={() => setBackHovered(false)}
         style={{
           position: 'fixed', top: 28, left: 32,
           background: 'transparent', border: 'none', cursor: 'pointer',
@@ -143,10 +156,8 @@ const SelectImportMethodPage: React.FC<Props> = ({
       </button>
 
       {/* Close button */}
-      <button
-        onClick={onClose}
-        onMouseEnter={() => setCloseHovered(true)}
-        onMouseLeave={() => setCloseHovered(false)}
+      <button onClick={onClose}
+        onMouseEnter={() => setCloseHovered(true)} onMouseLeave={() => setCloseHovered(false)}
         style={{
           position: 'fixed', top: 28, right: 32,
           background: 'transparent', border: 'none', cursor: 'pointer',
@@ -193,17 +204,11 @@ const SelectImportMethodPage: React.FC<Props> = ({
         </div>
 
         {/* Cards */}
-        <div style={{
-          display: 'flex', gap: 14,
-          width: '100%', maxWidth: '92vw',
-          marginBottom: 0,
-        }}>
+        <div style={{ display: 'flex', gap: 14, width: '100%', maxWidth: '92vw', marginBottom: 0 }}>
           {cards.map(({ method, title, desc, recommended, icon }) => {
             const isSelected = selectedMethod === method;
             return (
-              <div
-                key={method}
-                style={getCardStyle(method)}
+              <div key={method} style={getCardStyle(method)}
                 onClick={() => setSelectedMethod(method)}
                 onMouseEnter={() => setHoveredCard(method)}
                 onMouseLeave={() => setHoveredCard(null)}
@@ -213,23 +218,18 @@ const SelectImportMethodPage: React.FC<Props> = ({
                     position: 'absolute', top: -1, left: -1,
                     background: '#5b5bd6', color: '#fff',
                     fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
-                    padding: '4px 12px',
-                    borderRadius: '15px 0 10px 0',
+                    padding: '4px 12px', borderRadius: '15px 0 10px 0',
                   }}>
                     推荐
                   </div>
                 )}
                 <div style={{
                   width: 72, height: 72, borderRadius: '50%',
-                  background: isSelected ? '#ebe7ff' : '#f0eefb',
+                  background: isSelected ? '#e4e0ff' : '#f0eefb',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: 18,
-                  transition: 'background 0.22s ease',
+                  marginBottom: 18, transition: 'background 0.2s ease',
                 }}>
-                  {isSelected
-                    ? React.cloneElement(icon as React.ReactElement, { width: 32, height: 32, style: { opacity: 0.75 } })
-                    : React.cloneElement(icon as React.ReactElement, { width: 32, height: 32, style: { opacity: 0.82 } })
-                  }
+                  {icon}
                 </div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a', marginBottom: 8, textAlign: 'center' }}>
                   {title}
@@ -242,38 +242,33 @@ const SelectImportMethodPage: React.FC<Props> = ({
           })}
         </div>
 
-        {/* Dynamic asset tags area */}
+        {/* Asset types area — fixed height 90px */}
         <div style={{
           width: '100%', maxWidth: '92vw',
-          minHeight: 110,
-          marginTop: 24,
-          marginBottom: 20,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
+          minHeight: 90,
+          marginTop: 24, marginBottom: 20,
+          display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
         }}>
           {selectedMethod && (
-            <div
-              key={selectedMethod}
-              style={{ animation: 'fadeInUp 0.25s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            <div key={selectedMethod}
+              style={{ animation: 'fadeInUp 0.2s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
             >
-              <div style={{ fontSize: 12, color: '#9090b8', fontWeight: 400, marginBottom: 12 }}>
-                支持的资产类型
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a' }}>
+                支持的资产类型：
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-                {ASSET_TAGS[selectedMethod].map(tag => (
-                  <span key={tag} style={{
-                    padding: '5px 14px',
-                    borderRadius: 20,
-                    fontSize: 12,
-                    fontWeight: 500,
-                    background: 'rgba(91,91,214,0.08)',
-                    color: '#5b5bd6',
-                    border: '1px solid rgba(91,91,214,0.18)',
-                  }}>
-                    {tag}
-                  </span>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 20px' }}>
+                {Object.entries(ASSET_CONFIG[selectedMethod]).map(([asset, supported]) => (
+                  <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    {supported ? <CheckIcon /> : <CrossIcon />}
+                    <span style={{
+                      fontSize: 13,
+                      fontWeight: supported ? 500 : 400,
+                      color: supported ? '#1a1a3a' : '#b0b0c8',
+                    }}>
+                      {asset}
+                    </span>
+                  </div>
                 ))}
               </div>
             </div>
@@ -289,9 +284,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
           style={{
             width: '100%', maxWidth: '92vw', height: 50,
             borderRadius: 12, border: 'none',
-            background: selectedMethod
-              ? (btnHovered ? '#312e81' : '#3730a3')
-              : '#e8e8f0',
+            background: selectedMethod ? (btnHovered ? '#312e81' : '#3730a3') : '#e8e8f0',
             color: selectedMethod ? '#ffffff' : '#b0b3c6',
             fontSize: 16, fontWeight: 700,
             cursor: selectedMethod ? 'pointer' : 'not-allowed',
