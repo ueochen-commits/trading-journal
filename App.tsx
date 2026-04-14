@@ -64,6 +64,7 @@ import TourOverlay from './components/TourOverlay';
 import WelcomeModal from './components/WelcomeModal';
 import ConnectExchangePage from './components/ConnectExchangePage';
 import SelectImportMethodPage from './components/SelectImportMethodPage';
+import BrokerSyncPage from './components/BrokerSyncPage';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
@@ -180,6 +181,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const showWelcome = isAuthenticated && onboardingCompleted === false && !welcomeDismissed;
   const [showConnectExchange, setShowConnectExchange] = useState(false);
   const [showSelectImportMethod, setShowSelectImportMethod] = useState(false);
+  const [showBrokerSync, setShowBrokerSync] = useState(false);
   const [connectingExchange, setConnectingExchange] = useState<{ id: string; name: string; logoUrl?: string; brandColor?: string } | null>(null);
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
@@ -1050,9 +1052,25 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onBack={() => { setShowSelectImportMethod(false); setShowConnectExchange(true); }}
                 onClose={() => setShowSelectImportMethod(false)}
                 onContinue={(method) => {
-                  console.log('导入方式：', method, '交易所：', connectingExchange.name);
-                  setShowSelectImportMethod(false);
+                  if (method === 'auto') {
+                    setShowSelectImportMethod(false);
+                    setShowBrokerSync(true);
+                  } else {
+                    console.log('导入方式：', method, '交易所：', connectingExchange.name);
+                    setShowSelectImportMethod(false);
+                  }
                 }}
+              />
+          )}
+          {showBrokerSync && connectingExchange && (
+              <BrokerSyncPage
+                exchangeName={connectingExchange.name}
+                exchangeLogoUrl={connectingExchange.logoUrl}
+                exchangeBrandColor={connectingExchange.brandColor}
+                supportedAssets={{ 股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false }}
+                onBack={() => { setShowBrokerSync(false); setShowSelectImportMethod(true); }}
+                onClose={() => setShowBrokerSync(false)}
+                onConnect={(data) => { console.log('连接数据：', data); }}
               />
           )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
