@@ -46,6 +46,9 @@ const BrokerSyncPage: React.FC<Props> = ({
   onClose,
 }) => {
   const [startDate, setStartDate] = useState('');
+  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [calendarYear, setCalendarYear] = useState(() => new Date().getFullYear());
+  const [calendarMonth, setCalendarMonth] = useState(() => new Date().getMonth());
   const [accountType, setAccountType] = useState('main');
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [apiKey, setApiKey] = useState('');
@@ -57,7 +60,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const [closeHovered, setCloseHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
   const [focusedField, setFocusedField] = useState<string | null>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
   const accountDropdownRef = useRef<HTMLDivElement>(null);
 
   const ACCOUNT_OPTIONS = [
@@ -65,8 +68,14 @@ const BrokerSyncPage: React.FC<Props> = ({
     { value: 'demo', label: '演示 Account' },
   ];
 
+  const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
+  const MONTHS = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
   useEffect(() => {
     const handler = (e: MouseEvent) => {
+      if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+        setCalendarOpen(false);
+      }
       if (accountDropdownRef.current && !accountDropdownRef.current.contains(e.target as Node)) {
         setAccountDropdownOpen(false);
       }
@@ -74,6 +83,18 @@ const BrokerSyncPage: React.FC<Props> = ({
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+  const formatDate = (y: number, m: number, d: number) =>
+    `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+  const displayDate = (val: string) => {
+    if (!val) return '导入所有记录';
+    const [y, m, d] = val.split('-');
+    return `${y}年${parseInt(m)}月${parseInt(d)}日`;
+  };
 
   const assets = supportedAssets ?? {
     股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false,
@@ -200,24 +221,31 @@ const BrokerSyncPage: React.FC<Props> = ({
           {/* LEFT: Form */}
           <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 18 }}>
 
-            {/* Start date */}
+            {/* Start date — custom calendar */}
             <div>
               <label style={labelStyle}>开始日期</label>
-              <div style={{ position: 'relative' }}>
+              <div ref={calendarRef} style={{ position: 'relative' }}>
+                {/* Trigger */}
                 <div
                   onClick={() => {
-                    if (dateInputRef.current) {
-                      try { (dateInputRef.current as any).showPicker(); } catch { dateInputRef.current.focus(); }
+                    if (!calendarOpen && startDate) {
+                      const [y, m] = startDate.split('-');
+                      setCalendarYear(parseInt(y));
+                      setCalendarMonth(parseInt(m) - 1);
                     }
+                    setCalendarOpen(o => !o);
                   }}
                   style={{
                     ...inputStyle('startDate'),
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     cursor: 'pointer',
+                    borderRadius: calendarOpen ? '10px 10px 0 0' : 10,
+                    border: calendarOpen ? '1px solid #e0e0ea' : '1px solid #d8d4ee',
+                    boxShadow: calendarOpen ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                   }}
                 >
                   <span style={{ color: startDate ? '#1a1a3a' : '#a0a0c0', fontSize: 14 }}>
-                    {startDate || '导入所有记录'}
+                    {displayDate(startDate)}
                   </span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
                     stroke="#8888b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -227,19 +255,87 @@ const BrokerSyncPage: React.FC<Props> = ({
                     <line x1="3" y1="10" x2="21" y2="10"/>
                   </svg>
                 </div>
-                <input
-                  ref={dateInputRef}
-                  type="date"
-                  value={startDate}
-                  onChange={e => setStartDate(e.target.value)}
-                  onFocus={() => setFocusedField('startDate')}
-                  onBlur={() => setFocusedField(null)}
-                  style={{
-                    position: 'absolute', inset: 0, opacity: 0,
-                    cursor: 'pointer', width: '100%', height: '100%',
-                    zIndex: 1,
-                  }}
-                />
+
+                {/* Calendar panel */}
+                {calendarOpen && (() => {
+                  const daysInMonth = getDaysInMonth(calendarYear, calendarMonth);
+                  const firstDay = getFirstDayOfMonth(calendarYear, calendarMonth);
+                  const today = new Date();
+                  const todayStr = formatDate(today.getFullYear(), today.getMonth(), today.getDate());
+                  const cells: (number | null)[] = [...Array(firstDay).fill(null), ...Array.from({length: daysInMonth}, (_, i) => i + 1)];
+                  while (cells.length % 7 !== 0) cells.push(null);
+
+                  return (
+                    <div style={{
+                      position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
+                      background: '#ffffff',
+                      border: '1px solid #e0e0ea', borderTop: 'none',
+                      borderRadius: '0 0 12px 12px',
+                      boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
+                      padding: '12px 14px 14px',
+                    }}>
+                      {/* Month nav */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                        <button onClick={() => {
+                          if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(y => y - 1); }
+                          else setCalendarMonth(m => m - 1);
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8888b0', padding: '2px 6px', borderRadius: 6, fontSize: 16, lineHeight: 1 }}>‹</button>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a3a' }}>
+                          {calendarYear}年 {MONTHS[calendarMonth]}
+                        </span>
+                        <button onClick={() => {
+                          if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(y => y + 1); }
+                          else setCalendarMonth(m => m + 1);
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8888b0', padding: '2px 6px', borderRadius: 6, fontSize: 16, lineHeight: 1 }}>›</button>
+                      </div>
+
+                      {/* Weekday headers */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
+                        {WEEKDAYS.map(d => (
+                          <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#b0b0c8', padding: '2px 0' }}>{d}</div>
+                        ))}
+                      </div>
+
+                      {/* Day cells */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 2 }}>
+                        {cells.map((day, i) => {
+                          if (!day) return <div key={i} />;
+                          const dateStr = formatDate(calendarYear, calendarMonth, day);
+                          const isSelected = dateStr === startDate;
+                          const isToday = dateStr === todayStr;
+                          return (
+                            <div key={i}
+                              onClick={() => { setStartDate(dateStr); setCalendarOpen(false); }}
+                              style={{
+                                textAlign: 'center', fontSize: 13, padding: '5px 0',
+                                borderRadius: 7, cursor: 'pointer',
+                                background: isSelected ? '#5b5bd6' : 'transparent',
+                                color: isSelected ? '#fff' : isToday ? '#5b5bd6' : '#1a1a3a',
+                                fontWeight: isSelected || isToday ? 600 : 400,
+                                border: isToday && !isSelected ? '1px solid #c8c4f0' : '1px solid transparent',
+                                transition: 'background 0.1s',
+                              }}
+                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f0eeff'; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = isSelected ? '#5b5bd6' : 'transparent'; }}
+                            >
+                              {day}
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Clear */}
+                      {startDate && (
+                        <div style={{ marginTop: 10, textAlign: 'center' }}>
+                          <button onClick={() => { setStartDate(''); setCalendarOpen(false); }}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#9090b8' }}>
+                            清除日期（导入所有记录）
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             </div>
 
