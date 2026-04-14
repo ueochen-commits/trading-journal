@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const EXCHANGES = [
-    { id: 'binance', name: 'Binance', nameCN: '币安',       available: true,  logo: '/exchanges/binance.png'  },
-    { id: 'okx',     name: 'OKX',     nameCN: 'OKX',        available: true,  logo: '/exchanges/okx.png'      },
-    { id: 'bitget',  name: 'Bitget',  nameCN: 'Bitget',     available: true,  logo: '/exchanges/bitget.png'   },
-    { id: 'bybit',   name: 'Bybit',   nameCN: 'Bybit',      available: false, logo: '/exchanges/bybit.png'    },
-    { id: 'htx',     name: 'HTX',     nameCN: 'HTX（火币）', available: false, logo: '/exchanges/htx.png'      },
-    { id: 'gate',    name: 'Gate.io', nameCN: 'Gate.io',    available: false, logo: '/exchanges/gate.png'     },
-    { id: 'mexc',    name: 'MEXC',    nameCN: 'MEXC',       available: false, logo: '/exchanges/mexc.png'     },
-    { id: 'kucoin',  name: 'KuCoin',  nameCN: 'KuCoin',     available: false, logo: '/exchanges/kucoin.png'   },
+    { id: 'binance', name: 'Binance', nameCN: '币安',       available: true,  logo: '/exchanges/binance.png', brandColor: '#f5a500' },
+    { id: 'okx',     name: 'OKX',     nameCN: 'OKX',        available: true,  logo: '/exchanges/okx.png',     brandColor: '#000000' },
+    { id: 'bitget',  name: 'Bitget',  nameCN: 'Bitget',     available: true,  logo: '/exchanges/bitget.png',  brandColor: '#00c0a3' },
+    { id: 'bybit',   name: 'Bybit',   nameCN: 'Bybit',      available: false, logo: '/exchanges/bybit.png',   brandColor: '#f7a600' },
+    { id: 'htx',     name: 'HTX',     nameCN: 'HTX（火币）', available: false, logo: '/exchanges/htx.png',     brandColor: '#1a56db' },
+    { id: 'gate',    name: 'Gate.io', nameCN: 'Gate.io',    available: false, logo: '/exchanges/gate.png',    brandColor: '#2354e6' },
+    { id: 'mexc',    name: 'MEXC',    nameCN: 'MEXC',       available: false, logo: '/exchanges/mexc.png',    brandColor: '#2aab5a' },
+    { id: 'kucoin',  name: 'KuCoin',  nameCN: 'KuCoin',     available: false, logo: '/exchanges/kucoin.png',  brandColor: '#00a3a3' },
 ];
 
 interface Exchange {
@@ -17,6 +17,7 @@ interface Exchange {
     nameCN: string;
     available: boolean;
     logo: string;
+    brandColor: string;
 }
 
 const ExchangeLogo: React.FC<{ exchange: Exchange; size: number }> = ({ exchange, size }) => {
@@ -38,9 +39,10 @@ const ExchangeLogo: React.FC<{ exchange: Exchange; size: number }> = ({ exchange
 
 interface ConnectExchangePageProps {
     onClose: () => void;
+    onContinue?: (exchange: { id: string; name: string; logoUrl?: string; brandColor?: string }) => void;
 }
 
-const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) => {
+const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onContinue }) => {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<string | null>(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -74,7 +76,14 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
 
     const handleContinue = () => {
         if (!selected) return;
-        alert(`即将跳转到 ${selected} 的 API Key 填写页面`);
+        const exchange = EXCHANGES.find(e => e.id === selected);
+        if (!exchange) return;
+        onContinue?.({
+            id: exchange.id,
+            name: exchange.name,
+            logoUrl: exchange.logo,
+            brandColor: exchange.brandColor,
+        });
     };
 
     return (

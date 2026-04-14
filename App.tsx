@@ -63,6 +63,7 @@ import TourOverlay from './components/TourOverlay';
 // import OnboardingModal from './components/OnboardingModal'; // TEMPORARILY DISABLED
 import WelcomeModal from './components/WelcomeModal';
 import ConnectExchangePage from './components/ConnectExchangePage';
+import SelectImportMethodPage from './components/SelectImportMethodPage';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
@@ -178,6 +179,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
   const showWelcome = isAuthenticated && onboardingCompleted === false && !welcomeDismissed;
   const [showConnectExchange, setShowConnectExchange] = useState(false);
+  const [showSelectImportMethod, setShowSelectImportMethod] = useState(false);
+  const [connectingExchange, setConnectingExchange] = useState<{ id: string; name: string; logoUrl?: string; brandColor?: string } | null>(null);
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -1030,7 +1033,27 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           )}
           <TourOverlay />
           {showConnectExchange && (
-              <ConnectExchangePage onClose={() => setShowConnectExchange(false)} />
+              <ConnectExchangePage
+                onClose={() => setShowConnectExchange(false)}
+                onContinue={(exchange) => {
+                  setConnectingExchange(exchange);
+                  setShowConnectExchange(false);
+                  setShowSelectImportMethod(true);
+                }}
+              />
+          )}
+          {showSelectImportMethod && connectingExchange && (
+              <SelectImportMethodPage
+                exchangeName={connectingExchange.name}
+                exchangeLogoUrl={connectingExchange.logoUrl}
+                exchangeBrandColor={connectingExchange.brandColor}
+                onBack={() => { setShowSelectImportMethod(false); setShowConnectExchange(true); }}
+                onClose={() => setShowSelectImportMethod(false)}
+                onContinue={(method) => {
+                  console.log('导入方式：', method, '交易所：', connectingExchange.name);
+                  setShowSelectImportMethod(false);
+                }}
+              />
           )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
               <TradeShareModal 
