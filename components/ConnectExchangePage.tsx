@@ -129,13 +129,13 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
                 <div style={{ position: 'relative', marginBottom: 32 }}>
                     <div ref={inputRef} style={{
                         position: 'relative',
+                        border: dropdownOpen ? '1px solid #e0e0ea' : '1px solid #e8e8f0',
+                        background: '#ffffff',
                         borderRadius: dropdownOpen ? '10px 10px 0 0' : 10,
-                        border: `1.5px solid ${dropdownOpen ? '#6366f1' : '#e0e0ea'}`,
-                        background: '#fff',
                         boxShadow: dropdownOpen
-                            ? '0 0 0 3px rgba(99,102,241,0.1), 0 4px 16px rgba(0,0,0,0.08)'
-                            : '0 2px 8px rgba(0,0,0,0.06)',
-                        transition: 'all 0.15s',
+                            ? '0 2px 8px rgba(0,0,0,0.08)'
+                            : '0 1px 4px rgba(0,0,0,0.06)',
+                        transition: 'border-color 0.15s, box-shadow 0.15s',
                     }}>
                         <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#b0b3c6', pointerEvents: 'none' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -160,10 +160,10 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
                     {dropdownOpen && (
                         <div ref={dropdownRef} style={{
                             position: 'absolute', top: '100%', left: 0, right: 0,
-                            background: '#fff',
-                            border: '1.5px solid #6366f1', borderTop: '1px solid #f0f0f6',
+                            background: '#ffffff',
+                            border: '1px solid #e0e0ea', borderTop: 'none',
                             borderRadius: '0 0 10px 10px',
-                            boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+                            boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
                             zIndex: 50, overflow: 'hidden', maxHeight: 360, overflowY: 'auto',
                         }}>
                             <div style={{ padding: '8px 16px 4px', fontSize: 11, fontWeight: 600, color: '#b0b3c6', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
@@ -211,14 +211,20 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose }) =>
                                 onMouseLeave={e => { e.currentTarget.style.background = '#fafafa'; }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{
-                                        width: 28, height: 28, borderRadius: '50%',
-                                        background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                                <div style={{
+                                      width: 28,
+                                      height: 28,
+                                      flexShrink: 0,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
                                     }}>
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
-                                        </svg>
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+                                        stroke="#b0b3c6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"/>
+                                        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/>
+                                        <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                      </svg>
                                     </div>
                                     <span style={{ fontSize: 13, fontWeight: 500, color: '#4a4d6a' }}>找不到你的交易所？</span>
                                 </div>
