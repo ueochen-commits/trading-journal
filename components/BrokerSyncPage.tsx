@@ -96,7 +96,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const StepItem = ({ text, children }: { text: string; children?: React.ReactNode }) => (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
       {bulletDot(6, '#5b5bd6')}
-      <div style={{ fontSize: 13, color: '#6b6b9a', lineHeight: 1.7 }}>
+      <div style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.7 }}>
         {text}
         {children}
       </div>
@@ -106,7 +106,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const SubItem = ({ text }: { text: string }) => (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, paddingLeft: 14, marginTop: 4 }}>
       {bulletDot(4, '#c0c0d8')}
-      <span style={{ fontSize: 13, color: '#6b6b9a', lineHeight: 1.7 }}>{text}</span>
+      <span style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.7 }}>{text}</span>
     </div>
   );
 
@@ -400,7 +400,7 @@ const BrokerSyncPage: React.FC<Props> = ({
               <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a', marginBottom: 8 }}>
                 支持的资产类型：
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px 14px' }}>
+              <div style={{ display: 'flex', flexWrap: 'nowrap', gap: '6px 10px', overflowX: 'auto' }}>
                 {ASSET_ORDER.map(asset => {
                   const supported = assets[asset] ?? false;
                   return (
@@ -424,7 +424,7 @@ const BrokerSyncPage: React.FC<Props> = ({
               <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a3a', marginBottom: 6 }}>
                 链接 {exchangeName}
               </div>
-              <p style={{ fontSize: 13, color: '#6b6b9a', lineHeight: 1.75, margin: '0 0 12px 0' }}>
+              <p style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.75, margin: '0 0 12px 0' }}>
                 要同步您在 {exchangeName} 上的交易，您需要从您的 {exchangeName} 账户创建 API 密钥和 API Secret。
                 <br /><br />
                 请按照以下步骤创建您的 API 密钥：
@@ -467,7 +467,7 @@ const BrokerSyncPage: React.FC<Props> = ({
                 onClick={() => setExpanded(v => !v)}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  color: '#5b5bd6', fontSize: 13, fontWeight: 500,
+                  color: '#5b5bd6', fontSize: 14, fontWeight: 500,
                   cursor: 'pointer', background: 'none', border: 'none',
                   padding: 0, marginTop: 2,
                 }}
