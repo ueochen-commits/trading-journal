@@ -97,12 +97,14 @@ const SelectImportMethodPage: React.FC<Props> = ({
 
   return (
     <div style={{
-      minHeight: '100vh',
+      position: 'fixed',
+      inset: 0,
+      zIndex: 9999,
       background: 'linear-gradient(135deg, #e2dcf0 0%, #ece8f8 25%, #f2f0f9 55%, #f5f4fb 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      position: 'relative',
+      overflowY: 'auto',
       paddingBottom: 60,
     }}>
       {/* Progress bar */}
