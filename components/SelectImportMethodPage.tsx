@@ -13,10 +13,10 @@ interface Props {
 
 const ASSET_CONFIG: Record<Method, Record<string, boolean>> = {
   auto: {
-    股票: false, 期货: true, 期权: false, 外汇: false, 加密货币: false, 差价合约: false,
+    股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false,
   },
   file: {
-    股票: false, 期货: true, 期权: false, 外汇: false, 加密货币: false, 差价合约: false,
+    股票: false, 期货: false, 期权: false, 外汇: false, 加密货币: true, 差价合约: false,
   },
   manual: {
     股票: true, 期货: true, 期权: true, 外汇: true, 加密货币: true, 差价合约: true,
