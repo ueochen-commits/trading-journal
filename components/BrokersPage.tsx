@@ -227,6 +227,8 @@ const BrokersPage: React.FC<Props> = ({
 }) => {
   const [accounts, setAccounts] = useState<Account[]>(propAccounts ?? MOCK_ACCOUNTS);
   const [addBtnHov, setAddBtnHov] = useState(false);
+  const [syncBtnHov, setSyncBtnHov] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
   const realAccounts = accounts.filter(a => a.type !== 'demo');
   const limit = PLAN_LIMITS[userPlan];
@@ -234,7 +236,16 @@ const BrokersPage: React.FC<Props> = ({
 
   const handleDelete = (id: string) => {
     setAccounts(a => a.filter(x => x.id !== id));
+    setSelectedIds(s => s.filter(x => x !== id));
     onDeleteAccount?.(id);
+  };
+
+  const handleSelectAll = () => {
+    setSelectedIds(selectedIds.length === accounts.length ? [] : accounts.map(a => a.id));
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
   const COLS = ['账户名称', '经纪商', '余额', '盈利计算方式', '最后更新', '下次更新', '类型', '操作'];
@@ -243,23 +254,47 @@ const BrokersPage: React.FC<Props> = ({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#ffffff' }}>
 
+      {/* Page title */}
+      <div style={{ padding: '28px 40px 20px' }}>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', margin: 0 }}>我的交易账户</h1>
+      </div>
+
       {/* Top bar */}
       <div style={{
         height: 52, borderBottom: '1px solid #f0edf8', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e' }}>经纪商账户</span>
-          <a style={{ fontSize: 12, color: '#8080b8', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-            <IconQuestion />了解更多
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <a style={{ fontSize: 12, color: '#8080b8', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', textDecoration: 'none' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="16" x2="12" y2="12"/>
+              <line x1="12" y1="8" x2="12.01" y2="8"/>
+            </svg>
+            了解更多
           </a>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <button
+            disabled={selectedIds.length === 0}
+            onMouseEnter={() => selectedIds.length > 0 && setSyncBtnHov(true)}
+            onMouseLeave={() => setSyncBtnHov(false)}
+            onClick={() => selectedIds.forEach(id => onSyncAccount?.(id))}
+            style={{
+              height: 34, padding: '0 14px', borderRadius: 8, fontSize: 13, fontWeight: 500,
+              border: '1px solid #e4e0f4', transition: 'all 0.14s',
+              background: selectedIds.length > 0 ? (syncBtnHov ? '#f5f2fc' : '#ffffff') : '#f5f3fc',
+              color: selectedIds.length > 0 ? '#5050a0' : '#b0a8d0',
+              cursor: selectedIds.length > 0 ? 'pointer' : 'not-allowed',
+            }}
+          >
+            同步已选
+          </button>
           {isAtLimit && userPlan !== 'elite' && (
             <div style={{
               fontSize: 12, color: '#8080b8', background: '#f5f3fc',
               border: '1px solid #e4e0f4', borderRadius: 8, padding: '5px 12px',
-              display: 'flex', alignItems: 'center', gap: 6,
+              display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
             }}>
               已达到 {limit} 个账户上限 —
               <span onClick={onUpgrade} style={{ color: '#5050c8', fontWeight: 600, cursor: 'pointer' }}>升级到 Pro ↗</span>
@@ -291,41 +326,46 @@ const BrokersPage: React.FC<Props> = ({
             <IconEmpty />
             <div style={{ fontSize: 16, fontWeight: 500, color: '#6060a0' }}>还没有连接任何账户</div>
             <div style={{ fontSize: 13, color: '#a0a0b8' }}>添加您的第一个经纪商账户，开始追踪交易</div>
-            <button
-              onClick={onAddAccount}
-              style={{ marginTop: 8, height: 34, padding: '0 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', background: '#5050c8', color: '#fff', cursor: 'pointer' }}
-            >
+            <button onClick={onAddAccount} style={{ marginTop: 8, height: 34, padding: '0 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', background: '#5050c8', color: '#fff', cursor: 'pointer' }}>
               + 添加账户
             </button>
           </div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-            <thead>
-              <tr style={{ height: 38, borderBottom: '1px solid #f0edf8', background: '#faf8ff' }}>
-                {COLS.map((col, i) => (
-                  <th key={col} style={{
-                    padding: '0 16px', fontSize: 11, fontWeight: 600, color: '#b0aac8',
-                    letterSpacing: '0.05em', textTransform: 'uppercase', textAlign: 'left',
-                    whiteSpace: 'nowrap', width: COL_WIDTHS[i],
-                  }}>
-                    {col}
+          <>
+            {/* Group label */}
+            <div style={{ padding: '16px 40px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: '#4a4a6a' }}>活跃账户</span>
+              <span style={{ fontSize: 12, color: '#b0aac8' }}>共 {accounts.length} 个账户</span>
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead>
+                <tr style={{ height: 38, borderBottom: '1px solid #f0edf8', background: '#faf8ff' }}>
+                  <th style={{ width: 40, padding: '0 0 0 40px' }}>
+                    <input type="checkbox" checked={selectedIds.length === accounts.length && accounts.length > 0} onChange={handleSelectAll} style={{ cursor: 'pointer', accentColor: '#5050c8' }} />
                   </th>
+                  {COLS.map((col, i) => (
+                    <th key={col} style={{ padding: '0 16px', fontSize: 11, fontWeight: 600, color: '#b0aac8', letterSpacing: '0.05em', textTransform: 'uppercase', textAlign: 'left', whiteSpace: 'nowrap', width: COL_WIDTHS[i] }}>
+                      {col}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {accounts.map(account => (
+                  <AccountRow
+                    key={account.id}
+                    account={account}
+                    selected={selectedIds.includes(account.id)}
+                    onToggleSelect={() => handleToggleSelect(account.id)}
+                    onEdit={() => onEditAccount?.(account.id)}
+                    onDelete={() => handleDelete(account.id)}
+                    onSync={() => onSyncAccount?.(account.id)}
+                    onHistory={() => onViewHistory?.(account.id)}
+                  />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map(account => (
-                <AccountRow
-                  key={account.id}
-                  account={account}
-                  onEdit={() => onEditAccount?.(account.id)}
-                  onDelete={() => handleDelete(account.id)}
-                  onSync={() => onSyncAccount?.(account.id)}
-                  onHistory={() => onViewHistory?.(account.id)}
-                />
-              ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </>
         )}
       </div>
     </div>
@@ -335,11 +375,13 @@ const BrokersPage: React.FC<Props> = ({
 // ─── Account row ──────────────────────────────────────────────────────────────
 const AccountRow: React.FC<{
   account: Account;
+  selected?: boolean;
+  onToggleSelect?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
   onSync?: () => void;
   onHistory?: () => void;
-}> = ({ account, onEdit, onDelete, onSync, onHistory }) => {
+}> = ({ account, selected, onToggleSelect, onEdit, onDelete, onSync, onHistory }) => {
   const [hov, setHov] = useState(false);
   const [balHov, setBalHov] = useState(false);
 
@@ -349,8 +391,13 @@ const AccountRow: React.FC<{
   return (
     <tr
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ height: 52, borderBottom: '1px solid #f5f2fc', background: hov ? '#faf8ff' : '#ffffff', transition: 'background 0.12s' }}
+      style={{ height: 52, borderBottom: '1px solid #f5f2fc', background: selected ? '#f5f2ff' : (hov ? '#faf8ff' : '#ffffff'), transition: 'background 0.12s' }}
     >
+      {/* Checkbox */}
+      <td style={{ padding: '0 0 0 40px', verticalAlign: 'middle' }}>
+        <input type="checkbox" checked={!!selected} onChange={onToggleSelect} style={{ cursor: 'pointer', accentColor: '#5050c8' }} />
+      </td>
+
       {/* Name */}
       <td style={{ padding: '0 16px', color: '#1a1a2e', fontWeight: 500, verticalAlign: 'middle' }}>
         {account.name}
