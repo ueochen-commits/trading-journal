@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from './UserContext';
 import { Trade } from '../types';
+import BrokersPage from './BrokersPage';
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
 const compressImage = (file: File): Promise<string> =>
@@ -521,7 +522,6 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades }) => {
     profile: [{ id: 'profile', label: '个人信息' }, { id: 'security', label: '安全设置' }],
     security: [{ id: 'profile', label: '个人信息' }, { id: 'security', label: '安全设置' }],
     account: [{ id: 'account', label: '账户设置' }, { id: 'brokers', label: '经纪商账户' }],
-    brokers: [{ id: 'account', label: '账户设置' }, { id: 'brokers', label: '经纪商账户' }],
   };
   const currentTabs = TABS[activeSection] ?? [];
 
@@ -529,6 +529,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades }) => {
     switch (activeSection) {
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
       case 'account': return <AccountPage showToast={showToast} />;
+      case 'brokers': return <BrokersPage userPlan="free" />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
       case 'tags': return <TagsPage />;
@@ -599,7 +600,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades }) => {
         )}
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '36px 48px', background: '#ffffff' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: activeSection === 'brokers' ? 0 : '36px 48px', background: '#ffffff' }}>
           {renderContent()}
         </div>
       </div>
