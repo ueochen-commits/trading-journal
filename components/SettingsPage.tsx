@@ -207,8 +207,10 @@ const NI: Record<string, React.ReactNode> = {
 const NAV_GROUPS = [
   { label: '个人资料', items: [
     { id: 'profile', label: '个人信息' },
-    { id: 'publicProfile', label: '公开主页' },
     { id: 'security', label: '安全设置' },
+  ]},
+  { label: '订阅与账单', items: [
+    { id: 'subscription', label: '订阅方案' },
   ]},
   { label: '账户', items: [
     { id: 'account', label: '账户设置' },
@@ -219,10 +221,6 @@ const NAV_GROUPS = [
     { id: 'ptsl', label: '止盈止损' },
     { id: 'commissions', label: '手续费设置' },
     { id: 'tags', label: '标签管理' },
-  ]},
-  { label: '订阅与账单', items: [
-    { id: 'subscription', label: '订阅方案' },
-    { id: 'billing', label: '支付方式' },
   ]},
   { label: '通知', items: [
     { id: 'notifications', label: '消息提醒' },
@@ -520,9 +518,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades }) => {
 
   // Tab bar config per section
   const TABS: Record<string, { id: string; label: string }[]> = {
-    profile: [{ id: 'profile', label: '个人信息' }, { id: 'publicProfile', label: '公开主页' }, { id: 'security', label: '安全设置' }],
-    publicProfile: [{ id: 'profile', label: '个人信息' }, { id: 'publicProfile', label: '公开主页' }, { id: 'security', label: '安全设置' }],
-    security: [{ id: 'profile', label: '个人信息' }, { id: 'publicProfile', label: '公开主页' }, { id: 'security', label: '安全设置' }],
+    profile: [{ id: 'profile', label: '个人信息' }, { id: 'security', label: '安全设置' }],
+    security: [{ id: 'profile', label: '个人信息' }, { id: 'security', label: '安全设置' }],
     account: [{ id: 'account', label: '账户设置' }, { id: 'brokers', label: '经纪商账户' }],
     brokers: [{ id: 'account', label: '账户设置' }, { id: 'brokers', label: '经纪商账户' }],
   };
