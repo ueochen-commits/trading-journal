@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 type Method = 'auto' | 'file' | 'manual';
 
@@ -10,6 +10,12 @@ interface Props {
   onBack?: () => void;
   onClose?: () => void;
 }
+
+const ASSET_TAGS: Record<Method, string[]> = {
+  auto:   ['现货', '合约', '期货', '杠杆', '期权'],
+  file:   ['现货', '合约', '期货'],
+  manual: ['现货', '合约', '期货', '杠杆', '期权', '其他'],
+};
 
 const SelectImportMethodPage: React.FC<Props> = ({
   exchangeName = 'Binance',
@@ -24,6 +30,14 @@ const SelectImportMethodPage: React.FC<Props> = ({
   const [backHovered, setBackHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
+
+  useEffect(() => {
+    const style = document.createElement('style');
+    const keyframes = '@keyframes fadeInUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }';
+    style.appendChild(document.createTextNode(keyframes));
+    document.head.appendChild(style);
+    return () => { document.head.removeChild(style); };
+  }, []);
 
   const cards: { method: Method; title: string; desc: string; recommended?: boolean; icon: React.ReactNode }[] = [
     {
@@ -182,7 +196,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
         <div style={{
           display: 'flex', gap: 14,
           width: '100%', maxWidth: '92vw',
-          marginBottom: 32,
+          marginBottom: 0,
         }}>
           {cards.map(({ method, title, desc, recommended, icon }) => {
             const isSelected = selectedMethod === method;
@@ -226,6 +240,44 @@ const SelectImportMethodPage: React.FC<Props> = ({
               </div>
             );
           })}
+        </div>
+
+        {/* Dynamic asset tags area */}
+        <div style={{
+          width: '100%', maxWidth: '92vw',
+          minHeight: 110,
+          marginTop: 24,
+          marginBottom: 20,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          {selectedMethod && (
+            <div
+              key={selectedMethod}
+              style={{ animation: 'fadeInUp 0.25s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
+              <div style={{ fontSize: 12, color: '#9090b8', fontWeight: 400, marginBottom: 12 }}>
+                支持的资产类型
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                {ASSET_TAGS[selectedMethod].map(tag => (
+                  <span key={tag} style={{
+                    padding: '5px 14px',
+                    borderRadius: 20,
+                    fontSize: 12,
+                    fontWeight: 500,
+                    background: 'rgba(91,91,214,0.08)',
+                    color: '#5b5bd6',
+                    border: '1px solid rgba(91,91,214,0.18)',
+                  }}>
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Continue button */}
