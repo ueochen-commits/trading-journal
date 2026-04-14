@@ -160,7 +160,7 @@ const BrokerSyncPage: React.FC<Props> = ({
       </button>
 
       {/* Main content */}
-      <div style={{ width: '100%', maxWidth: 780, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
 
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
@@ -366,7 +366,7 @@ const BrokerSyncPage: React.FC<Props> = ({
           </div>
 
           {/* RIGHT: Info panel */}
-          <div style={{ width: 300, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <div style={{ width: 380, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
 
             {/* Exchange header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -400,14 +400,14 @@ const BrokerSyncPage: React.FC<Props> = ({
               <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a', marginBottom: 8 }}>
                 支持的资产类型：
               </div>
-              <div style={{ display: 'flex', flexWrap: 'nowrap', gap: '6px 10px', overflowX: 'auto' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px 16px', alignItems: 'center' }}>
                 {ASSET_ORDER.map(asset => {
                   const supported = assets[asset] ?? false;
                   return (
-                    <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', flexShrink: 0 }}>
                       {supported ? <CheckIcon16 /> : <CrossIcon16 />}
                       <span style={{
-                        fontSize: 13,
+                        fontSize: 13, whiteSpace: 'nowrap',
                         fontWeight: supported ? 500 : 400,
                         color: supported ? '#1a1a3a' : '#b8b8d0',
                       }}>
