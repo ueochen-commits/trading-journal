@@ -5,10 +5,42 @@ export const config = {
   regions: ['sin1'],  // 新加坡节点，避免美国 IP 被 Binance 451 屏蔽
 };
 
+// 把同一 orderId + 同一 side 的多条 fill 合并为一条（加权平均价 + 总数量 + 总手续费）
+function mergeOrderFills(fills: any[]): any[] {
+  const groups = new Map<string, any[]>();
+  for (const fill of fills) {
+    const key = `${fill.order ?? fill.id}_${fill.side}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(fill);
+  }
+  const merged: any[] = [];
+  for (const group of groups.values()) {
+    if (group.length === 1) { merged.push(group[0]); continue; }
+    let totalQty = 0, totalCost = 0, totalFee = 0;
+    let earliest = Infinity;
+    for (const f of group) {
+      totalQty += f.amount;
+      totalCost += f.price * f.amount;
+      totalFee += f.fee?.cost ?? 0;
+      if (f.timestamp < earliest) earliest = f.timestamp;
+    }
+    const base = group[0];
+    merged.push({
+      ...base,
+      amount: totalQty,
+      price: totalCost / totalQty,
+      fee: { cost: totalFee, currency: base.fee?.currency },
+      timestamp: earliest,
+    });
+  }
+  return merged;
+}
+
 // 把 Binance 成交记录配对成完整交易（支持 LONG 和 SHORT）
 function pairTrades(fills: any[], symbol: string): any[] {
   const trades: any[] = [];
-  const sorted = [...fills].sort((a, b) => a.timestamp - b.timestamp);
+  const merged = mergeOrderFills(fills);
+  const sorted = [...merged].sort((a, b) => a.timestamp - b.timestamp);
 
   const openBuys: any[] = [];   // 未配对的买入（做多开仓）
   const openSells: any[] = [];  // 未配对的卖出（做空开仓）
@@ -181,28 +213,40 @@ export default async function handler(req: any, res: any) {
       });
       await futuresExchange.loadMarkets();
 
-      // 方法1: 用 /fapi/v1/income 获取所有收入记录（手续费、已实现盈亏等），从中提取交易过的品种
+      // 方法1: 用 /fapi/v1/income 获取所有收入记录（分页），从中提取交易过的品种
       let futuresSymbols: string[] = [];
+      const rawSymbols = new Set<string>();
       try {
-        const incomeRecords = await futuresExchange.fapiPrivateGetIncome({
-          startTime: since,
-          limit: 1000,
-        });
-        // 从 income 记录中提取唯一的 symbol（Binance 原始格式如 ETHUSDT）
-        const rawSymbols = new Set<string>();
-        for (const record of (incomeRecords || [])) {
-          if (record.symbol) rawSymbols.add(record.symbol);
+        let incomeStartTime = since;
+        let totalRecords = 0;
+        let page = 0;
+        while (true) {
+          const incomeRecords = await futuresExchange.fapiPrivateGetIncome({
+            startTime: incomeStartTime,
+            limit: 1000,
+          });
+          const batch = incomeRecords || [];
+          totalRecords += batch.length;
+          for (const record of batch) {
+            if (record.symbol) rawSymbols.add(record.symbol);
+          }
+          page++;
+          // 不足 1000 条说明已经拿完，或者空结果
+          if (batch.length < 1000) break;
+          // 用最后一条的时间 +1ms 作为下一页起点
+          const lastTime = parseInt(batch[batch.length - 1].time, 10);
+          if (!lastTime || lastTime <= incomeStartTime) break;
+          incomeStartTime = lastTime + 1;
+          if (page >= 10) break; // 安全上限，防止无限循环
         }
-        debugLog.push(`FUTURES income: ${incomeRecords?.length ?? 0} records, ${rawSymbols.size} unique symbols: ${[...rawSymbols].join(',')}`);
+        debugLog.push(`FUTURES income: ${totalRecords} records (${page} pages), ${rawSymbols.size} unique symbols: ${[...rawSymbols].join(',')}`);
 
         // 把 Binance 原始 symbol（如 ETHUSDT）转换为 CCXT 格式（如 ETH/USDT:USDT）
         for (const raw of rawSymbols) {
-          // 在 CCXT 已加载的 markets 中查找匹配的 symbol
           const market = futuresExchange.markets_by_id?.[raw]?.[0];
           if (market) {
             futuresSymbols.push(market.symbol);
           } else {
-            // fallback: 尝试手动构建（去掉末尾 USDT，加上 /USDT:USDT）
             const base = raw.replace(/USDT$/, '');
             if (base && base !== raw) {
               futuresSymbols.push(`${base}/USDT:USDT`);
@@ -230,10 +274,22 @@ export default async function handler(req: any, res: any) {
         debugLog.push(`FUTURES positions ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
       }
 
-      // fallback: 默认列表兜底
+      // fallback: 扩展的热门合约品种列表兜底
+      const DEFAULT_FUTURES = [
+        'BTC/USDT:USDT', 'ETH/USDT:USDT', 'SOL/USDT:USDT', 'DOGE/USDT:USDT',
+        'XRP/USDT:USDT', 'PEPE/USDT:USDT', '1000PEPE/USDT:USDT', 'WIF/USDT:USDT',
+        'ORDI/USDT:USDT', 'SUI/USDT:USDT', 'AVAX/USDT:USDT', 'LINK/USDT:USDT',
+        'ADA/USDT:USDT', 'ARB/USDT:USDT', 'OP/USDT:USDT', 'DOGS/USDT:USDT',
+        'BNB/USDT:USDT', 'TRX/USDT:USDT', 'TON/USDT:USDT', 'NEAR/USDT:USDT',
+      ];
       if (futuresSymbols.length === 0) {
-        futuresSymbols = ['BTC/USDT:USDT', 'ETH/USDT:USDT', 'SOL/USDT:USDT'];
-        debugLog.push('FUTURES: no symbols discovered, using defaults');
+        futuresSymbols = [...DEFAULT_FUTURES];
+        debugLog.push('FUTURES: no symbols discovered, using expanded defaults');
+      } else {
+        // 把默认列表中未被发现的品种也加上，确保覆盖面
+        for (const s of DEFAULT_FUTURES) {
+          if (!futuresSymbols.includes(s)) futuresSymbols.push(s);
+        }
       }
 
       debugLog.push(`FUTURES querying ${futuresSymbols.length} symbols: ${futuresSymbols.join(',')}`);
