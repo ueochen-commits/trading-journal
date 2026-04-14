@@ -77,7 +77,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
         ? 'linear-gradient(160deg, #ffffff 60%, #f3f1ff 100%)'
         : '#ffffff',
       border: isSelected
-        ? '1px solid rgba(99, 91, 255, 0.2)'
+        ? '0.5px solid rgba(99, 91, 255, 0.18)'
         : isHovered
         ? '1px solid #c8c0f0'
         : '1px solid #ebe8f5',
