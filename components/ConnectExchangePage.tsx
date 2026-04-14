@@ -19,11 +19,22 @@ interface Exchange {
     logo: string;
 }
 
-const ExchangeLogo: React.FC<{ exchange: Exchange; size: number }> = ({ exchange, size }) => (
-    <img src={exchange.logo} alt={exchange.name}
-        style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }}
-    />
-);
+const ExchangeLogo: React.FC<{ exchange: Exchange; size: number }> = ({ exchange, size }) => {
+    const [failed, setFailed] = useState(false);
+    if (failed) {
+        return (
+            <span style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.45, fontWeight: 700, color: '#6366f1', flexShrink: 0 }}>
+                {exchange.name[0]}
+            </span>
+        );
+    }
+    return (
+        <img src={exchange.logo} alt={exchange.name}
+            style={{ width: size, height: size, objectFit: 'contain', display: 'block', flexShrink: 0 }}
+            onError={() => setFailed(true)}
+        />
+    );
+};
 
 interface ConnectExchangePageProps {
     onClose: () => void;
