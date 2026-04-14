@@ -2,19 +2,44 @@ import { createHmac } from 'crypto';
 
 export const config = { runtime: 'nodejs' };
 
-const BINANCE_BASE = 'https://api.binance.com';
+// Binance 官方提供的多个 API 域名，逐个尝试
+const BINANCE_ENDPOINTS = [
+  'https://api.binance.com',
+  'https://api1.binance.com',
+  'https://api2.binance.com',
+  'https://api3.binance.com',
+  'https://api4.binance.com',
+  'https://api-gcp.binance.com',
+];
+
+let activeBinanceBase: string | null = null;
 
 // HMAC-SHA256 签名（使用 Node.js 原生 crypto）
 function sign(queryString: string, secret: string): string {
   return createHmac('sha256', secret).update(queryString).digest('hex');
 }
 
-// 获取 Binance 服务器时间（用于校准时间戳）
-async function getBinanceServerTime(): Promise<number> {
-  const res = await fetch(`${BINANCE_BASE}/api/v3/time`);
-  if (!res.ok) throw new Error('Cannot reach Binance server');
-  const data = await res.json();
-  return data.serverTime;
+// 探测可用的 Binance 域名并获取服务器时间
+async function findWorkingEndpoint(): Promise<{ base: string; serverTime: number }> {
+  const errors: string[] = [];
+  for (const base of BINANCE_ENDPOINTS) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(`${base}/api/v3/time`, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (res.ok) {
+        const data = await res.json();
+        console.log(`[Binance] Using endpoint: ${base}`);
+        activeBinanceBase = base;
+        return { base, serverTime: data.serverTime };
+      }
+      errors.push(`${base}: HTTP ${res.status}`);
+    } catch (e: any) {
+      errors.push(`${base}: ${e.message}`);
+    }
+  }
+  throw new Error(`所有 Binance API 域名均不可达: ${errors.join('; ')}`);
 }
 
 // 带签名的 Binance 请求
@@ -24,16 +49,16 @@ async function binanceRequest(
   apiSecret: string,
   params: Record<string, string | number> = {}
 ): Promise<any> {
-  // 使用 Binance 服务器时间，避免时间戳偏差导致签名失败
-  const timestamp = await getBinanceServerTime();
-  const allParams = { ...params, recvWindow: 60000, timestamp };
+  // 获取可用域名和服务器时间
+  const { base, serverTime } = await findWorkingEndpoint();
+  const allParams = { ...params, recvWindow: 60000, timestamp: serverTime };
   const queryString = Object.entries(allParams)
     .map(([k, v]) => `${k}=${v}`)
     .join('&');
   const signature = sign(queryString, apiSecret);
-  const url = `${BINANCE_BASE}${path}?${queryString}&signature=${signature}`;
+  const url = `${base}${path}?${queryString}&signature=${signature}`;
 
-  console.log(`[Binance] Requesting ${path}, timestamp=${timestamp}, params:`, Object.keys(params));
+  console.log(`[Binance] ${path} via ${base}, ts=${serverTime}`);
 
   const res = await fetch(url, {
     headers: { 'X-MBX-APIKEY': apiKey },
@@ -123,23 +148,19 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
-    // 0. 先检查能否连接 Binance 服务器
-    try {
-      await getBinanceServerTime();
-      console.log('[Binance Sync] Server reachable');
-    } catch (e: any) {
-      return res.status(502).json({
-        error: '无法连接 Binance 服务器，请稍后重试',
-        details: e.message,
-      });
-    }
-
     // 1. 验证 API Key 是否有效（获取账户信息）
     let accountInfo: any;
     try {
       accountInfo = await binanceRequest('/api/v3/account', apiKey, apiSecret);
     } catch (e: any) {
       console.error('[Binance Sync] Auth failed:', e.message);
+      // 区分连接失败和认证失败
+      if (e.message.includes('不可达') || e.message.includes('Cannot')) {
+        return res.status(502).json({
+          error: `无法连接 Binance 服务器: ${e.message}`,
+          details: e.message,
+        });
+      }
       return res.status(401).json({
         error: `API 验证失败: ${e.message}`,
         details: e.message,
@@ -191,7 +212,7 @@ export default async function handler(req: any, res: any) {
     try {
       for (const symbol of FUTURES_SYMBOLS) {
         try {
-          const ts = await getBinanceServerTime();
+          const { serverTime: ts } = await findWorkingEndpoint();
           const qs = `symbol=${symbol}&startTime=${startTime}&limit=500&recvWindow=60000&timestamp=${ts}`;
           const sig = sign(qs, apiSecret);
           const fills = await fetch(
