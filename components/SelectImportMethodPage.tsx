@@ -108,19 +108,17 @@ const SelectImportMethodPage: React.FC<Props> = ({
       padding: '40px 24px 32px',
       borderRadius: 14,
       cursor: 'pointer',
-      transition: 'all 0.2s ease',
-      background: isSelected ? '#f0eeff' : '#ffffff',
-      border: isSelected
-        ? '2px solid #5b5bd6'
-        : isHovered
-        ? '1px solid #c8c0f0'
-        : '1px solid #ebe8f5',
+      transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
+      background: isSelected
+        ? 'linear-gradient(160deg, #ffffff 60%, #f3f1ff 100%)'
+        : '#ffffff',
+      border: '1px solid transparent',
       boxShadow: isSelected
-        ? '0 4px 20px rgba(91,91,214,0.15)'
+        ? '0 0 0 3px rgba(99,91,255,0.13), 0 0 20px 6px rgba(99,91,255,0.10), 0 8px 24px rgba(99,91,255,0.10)'
         : isHovered
-        ? '0 4px 16px rgba(90,80,160,0.10)'
-        : '0 2px 8px rgba(90,80,160,0.06)',
-      transform: isSelected ? 'translateY(-2px)' : isHovered ? 'translateY(-2px)' : 'translateY(0)',
+        ? '0 4px 16px rgba(90,80,160,0.10), 0 0 0 1px #c8c0f0'
+        : '0 2px 8px rgba(90,80,160,0.06), 0 0 0 1px #ebe8f5',
+      transform: isSelected ? 'translateY(-3px)' : isHovered ? 'translateY(-2px)' : 'translateY(0)',
     };
   };
 
@@ -242,37 +240,38 @@ const SelectImportMethodPage: React.FC<Props> = ({
           })}
         </div>
 
-        {/* Asset types area — fixed height 90px */}
+        {/* Asset types area — fixed height, always rendered */}
         <div style={{
           width: '100%', maxWidth: '92vw',
-          minHeight: 90,
+          height: 90,
           marginTop: 24, marginBottom: 20,
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
+          visibility: selectedMethod ? 'visible' : 'hidden',
         }}>
-          {selectedMethod && (
-            <div key={selectedMethod}
-              style={{ animation: 'fadeInUp 0.2s ease forwards', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
-            >
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a' }}>
-                支持的资产类型：
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 20px' }}>
-                {Object.entries(ASSET_CONFIG[selectedMethod]).map(([asset, supported]) => (
-                  <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a' }}>
+              支持的资产类型：
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 20px' }}>
+              {Object.keys(ASSET_CONFIG.manual).map(asset => {
+                const supported = selectedMethod ? ASSET_CONFIG[selectedMethod][asset] : false;
+                return (
+                  <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 6, transition: 'opacity 0.2s ease' }}>
                     {supported ? <CheckIcon /> : <CrossIcon />}
                     <span style={{
                       fontSize: 13,
                       fontWeight: supported ? 500 : 400,
                       color: supported ? '#1a1a3a' : '#b0b0c8',
+                      transition: 'color 0.2s ease',
                     }}>
                       {asset}
                     </span>
                   </div>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          )}
+          </div>
         </div>
 
         {/* Continue button */}
