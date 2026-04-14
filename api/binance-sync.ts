@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import { createHmac } from 'crypto';
 
 export const config = { runtime: 'nodejs' };
 
@@ -6,7 +6,15 @@ const BINANCE_BASE = 'https://api.binance.com';
 
 // HMAC-SHA256 签名（使用 Node.js 原生 crypto）
 function sign(queryString: string, secret: string): string {
-  return crypto.createHmac('sha256', secret).update(queryString).digest('hex');
+  return createHmac('sha256', secret).update(queryString).digest('hex');
+}
+
+// 获取 Binance 服务器时间（用于校准时间戳）
+async function getBinanceServerTime(): Promise<number> {
+  const res = await fetch(`${BINANCE_BASE}/api/v3/time`);
+  if (!res.ok) throw new Error('Cannot reach Binance server');
+  const data = await res.json();
+  return data.serverTime;
 }
 
 // 带签名的 Binance 请求
@@ -16,21 +24,25 @@ async function binanceRequest(
   apiSecret: string,
   params: Record<string, string | number> = {}
 ): Promise<any> {
-  const timestamp = Date.now();
-  const allParams = { ...params, timestamp };
+  // 使用 Binance 服务器时间，避免时间戳偏差导致签名失败
+  const timestamp = await getBinanceServerTime();
+  const allParams = { ...params, recvWindow: 60000, timestamp };
   const queryString = Object.entries(allParams)
     .map(([k, v]) => `${k}=${v}`)
     .join('&');
   const signature = sign(queryString, apiSecret);
   const url = `${BINANCE_BASE}${path}?${queryString}&signature=${signature}`;
 
+  console.log(`[Binance] Requesting ${path}, timestamp=${timestamp}, params:`, Object.keys(params));
+
   const res = await fetch(url, {
     headers: { 'X-MBX-APIKEY': apiKey },
   });
 
   if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Binance API ${path} failed (${res.status}): ${err}`);
+    const errText = await res.text();
+    console.error(`[Binance] ${path} failed (${res.status}):`, errText);
+    throw new Error(`Binance ${path} (${res.status}): ${errText}`);
   }
   return res.json();
 }
@@ -111,6 +123,17 @@ export default async function handler(req: any, res: any) {
   }
 
   try {
+    // 0. 先检查能否连接 Binance 服务器
+    try {
+      await getBinanceServerTime();
+      console.log('[Binance Sync] Server reachable');
+    } catch (e: any) {
+      return res.status(502).json({
+        error: '无法连接 Binance 服务器，请稍后重试',
+        details: e.message,
+      });
+    }
+
     // 1. 验证 API Key 是否有效（获取账户信息）
     let accountInfo: any;
     try {
@@ -118,7 +141,7 @@ export default async function handler(req: any, res: any) {
     } catch (e: any) {
       console.error('[Binance Sync] Auth failed:', e.message);
       return res.status(401).json({
-        error: 'API 密钥无效或权限不足',
+        error: `API 验证失败: ${e.message}`,
         details: e.message,
       });
     }
@@ -168,8 +191,8 @@ export default async function handler(req: any, res: any) {
     try {
       for (const symbol of FUTURES_SYMBOLS) {
         try {
-          const ts = Date.now();
-          const qs = `symbol=${symbol}&startTime=${startTime}&limit=500&timestamp=${ts}`;
+          const ts = await getBinanceServerTime();
+          const qs = `symbol=${symbol}&startTime=${startTime}&limit=500&recvWindow=60000&timestamp=${ts}`;
           const sig = sign(qs, apiSecret);
           const fills = await fetch(
             `https://fapi.binance.com/fapi/v1/userTrades?${qs}&signature=${sig}`,
