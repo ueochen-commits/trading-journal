@@ -107,17 +107,19 @@ export default async function handler(req: any, res: any) {
     ];
 
     const allPairedTrades: any[] = [];
+    const debugLog: string[] = [];
 
     if (!skipSpot) {
       for (const symbol of SPOT_SYMBOLS) {
         try {
           const trades = await exchange.fetchMyTrades(symbol, since, 500);
+          debugLog.push(`${symbol}: ${trades?.length ?? 0} fills`);
           if (trades && trades.length > 0) {
             const paired = pairTrades(trades, symbol.replace('/', ''));
             allPairedTrades.push(...paired);
           }
-        } catch {
-          // 该交易对无记录或无权限，跳过
+        } catch (e: any) {
+          debugLog.push(`${symbol}: ERROR ${e.constructor.name} - ${e.message?.slice(0, 100)}`);
         }
       }
     }
@@ -137,20 +139,23 @@ export default async function handler(req: any, res: any) {
       for (const symbol of FUTURES_SYMBOLS) {
         try {
           const trades = await futuresExchange.fetchMyTrades(symbol, since, 500);
+          debugLog.push(`FUTURES ${symbol}: ${trades?.length ?? 0} fills`);
           if (trades && trades.length > 0) {
             const paired = pairTrades(trades, symbol.replace('/', '') + '_PERP');
             allPairedTrades.push(...paired);
           }
-        } catch {
-          // 无合约权限或无记录
+        } catch (e: any) {
+          debugLog.push(`FUTURES ${symbol}: ERROR ${e.constructor.name} - ${e.message?.slice(0, 100)}`);
         }
       }
-    } catch {
-      // 合约 API 不可用
+    } catch (e: any) {
+      debugLog.push(`FUTURES init ERROR: ${e.constructor.name} - ${e.message?.slice(0, 100)}`);
     }
 
     // 5. 按时间排序
     allPairedTrades.sort((a, b) => b.entryTime - a.entryTime);
+
+    console.log('[CCXT] Debug:', debugLog.join(' | '));
 
     return res.status(200).json({
       success: true,
@@ -158,6 +163,7 @@ export default async function handler(req: any, res: any) {
       currency: 'USDT',
       tradeCount: allPairedTrades.length,
       trades: allPairedTrades,
+      debug: debugLog,
     });
 
   } catch (error: any) {

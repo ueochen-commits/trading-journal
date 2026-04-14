@@ -86,6 +86,11 @@ export const fetchTradesFromExchange = async (
 
     if (onLog) onLog(`[${new Date().toLocaleTimeString()}] 验证成功，正在解析 ${data.tradeCount} 笔交易...`);
 
+    // 输出调试信息到控制台
+    if (data.debug) {
+        console.log('[Binance Sync Debug]', data.debug);
+    }
+
     const trades: Trade[] = (data.trades || []).map((raw: any) => mapBinanceTrade(raw, accountId));
 
     if (onLog) onLog(`[${new Date().toLocaleTimeString()}] 导入完成，共 ${trades.length} 笔交易`);
