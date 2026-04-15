@@ -698,30 +698,31 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
       {/* Pure SVG Radar */}
       <div className="flex justify-center">
         <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
-          <defs>
-            <radialGradient id="grailRadialGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="rgba(109,40,217,0.35)" />
-              <stop offset="100%" stopColor="rgba(167,139,250,0.08)" />
-            </radialGradient>
-          </defs>
 
-          {/* Hexagonal grid layers */}
-          {Array.from({ length: layers }, (_, i) => (
-            <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill="none" stroke="#ebebf0" strokeWidth={1} />
-          ))}
+          {/* Hexagonal grid layers (outer to inner, so inner paints on top) */}
+          {(() => {
+            const layerFills = ['#eaeaf2', '#f4f4f8', '#eaeaf2', '#f4f4f8', '#ffffff'];
+            return [...Array(layers)].map((_, idx) => {
+              const i = layers - 1 - idx;
+              return <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill={layerFills[i]} stroke="#dddde8" strokeWidth={1} />;
+            });
+          })()}
 
           {/* Axis lines from center to vertices */}
           {Array.from({ length: sides }, (_, i) => {
             const [px, py] = hexPoint(maxR, i);
-            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="#ebebf0" strokeWidth={1} />;
+            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="#dddde8" strokeWidth={1} />;
           })}
 
-          {/* Filled data area */}
-          <path d={dataPath} fill="url(#grailRadialGrad)" stroke="#7c3aed" strokeWidth={1} />
+          {/* Filled data area — no stroke */}
+          <path d={dataPath} fill="rgba(180,168,220,0.32)" stroke="none" />
 
-          {/* Data points */}
+          {/* Data points — two-layer: outer glow + inner dot */}
           {dataPoints.map((p, i) => (
-            <circle key={`dot-${i}`} cx={p[0]} cy={p[1]} r={3.5} fill="#ffffff" stroke="#7c3aed" strokeWidth={1.5} />
+            <g key={`dot-${i}`}>
+              <circle cx={p[0]} cy={p[1]} r={6} fill="rgba(139,92,246,0.15)" />
+              <circle cx={p[0]} cy={p[1]} r={2.5} fill="#ffffff" stroke="#8b72d4" strokeWidth={1.5} />
+            </g>
           ))}
 
           {/* Labels */}
