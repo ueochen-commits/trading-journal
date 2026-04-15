@@ -820,14 +820,15 @@ const Journal: React.FC<JournalProps> = ({
   };
 
   const handleBatchDelete = () => {
-    selectedIds.forEach(id => onDeleteTrade(id));
+    const idsToDelete = Array.from(selectedIds);
     setSelectedIds(new Set());
+    idsToDelete.forEach(id => onDeleteTrade(id));
   };
 
   // Clear selection when viewMode or filters change
   useEffect(() => {
     setSelectedIds(new Set());
-  }, [viewMode, filteredTrades.length, selectedAccountId, activeDatePreset]);
+  }, [viewMode, selectedAccountId, activeDatePreset]);
 
   // --- SMART NAVIGATION HANDLER ---
   const handleDailyNoteAction = (e: React.MouseEvent, day: any) => {
@@ -1118,8 +1119,8 @@ const Journal: React.FC<JournalProps> = ({
               <table className="w-full text-left text-sm text-slate-500 dark:text-slate-400">
                 <thead className="bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 uppercase font-semibold text-xs tracking-wider border-b border-slate-100 dark:border-slate-800">
                   <tr>
-                    {isSelecting && (
-                      <th className="w-10 px-3 py-5">
+                    <th className="w-10 pl-4 pr-1 py-5">
+                      {isSelecting && (
                         <div
                           onClick={handleSelectAll}
                           className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
@@ -1132,9 +1133,9 @@ const Journal: React.FC<JournalProps> = ({
                             <Check className="w-3 h-3 text-white" strokeWidth={3} />
                           )}
                         </div>
-                      </th>
-                    )}
-                    <th className="px-6 py-5">{t.journal.date}</th>
+                      )}
+                    </th>
+                    <th className="px-4 py-5">{t.journal.date}</th>
                     <th className="px-6 py-5">{t.journal.symbol}</th>
                     <th className="px-6 py-5">{t.journal.direction}</th>
                     <th className="px-6 py-5">{t.journal.setup}</th>
@@ -1153,21 +1154,21 @@ const Journal: React.FC<JournalProps> = ({
                     const isTradeOpen = !trade.exitDate || trade.status === TradeStatus.OPEN;
                     return (
                     <tr key={trade.id} ref={(el) => { if (el) rowRefs.current.set(trade.id, el); else rowRefs.current.delete(trade.id); }} onClick={() => handleRowClick(trade)} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all group cursor-pointer ${selectedIds.has(trade.id) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''} ${highlightedTradeId === trade.id ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500 animate-pulse' : ''}`}>
-                      <td className={`px-3 py-4 w-10 ${isSelecting ? '' : 'hidden group-hover:table-cell'}`} onClick={(e) => e.stopPropagation()}>
+                      <td className="w-10 pl-4 pr-1 py-4" onClick={(e) => e.stopPropagation()}>
                         <div
                           onClick={() => handleToggleSelect(trade.id)}
                           className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
                             selectedIds.has(trade.id)
-                              ? 'bg-indigo-500 border-indigo-500'
+                              ? 'bg-indigo-500 border-indigo-500 opacity-100'
                               : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
-                          } ${!isSelecting && !selectedIds.has(trade.id) ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}
+                          } ${isSelecting || selectedIds.has(trade.id) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
                         >
                           {selectedIds.has(trade.id) && (
                             <Check className="w-3 h-3 text-white" strokeWidth={3} />
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap font-medium">{new Date(trade.entryDate).toLocaleDateString()}</td>
+                      <td className="px-4 py-4 whitespace-nowrap font-medium">{new Date(trade.entryDate).toLocaleDateString()}</td>
                       <td className="px-6 py-4"><div className="flex flex-col"><div className="flex items-center gap-2"><span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs w-fit">{trade.symbol}</span>{hasReview ? <div className="text-[10px] text-emerald-500 flex items-center gap-0.5" title={t.journal.reviewed}><BookCheck className="w-3 h-3" /></div> : <div className="text-[10px] text-amber-500 flex items-center gap-0.5" title={t.journal.pendingReview}><Hourglass className="w-3 h-3" /></div>}</div></div></td>
                       <td className="px-6 py-4"><span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${trade.direction === Direction.LONG ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'}`}>{trade.direction === Direction.LONG ? t.journal.long : t.journal.short}</span></td>
                       <td className="px-6 py-4"><div className="text-slate-700 dark:text-slate-300">{trade.setup}</div></td>
