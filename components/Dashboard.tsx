@@ -673,7 +673,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
 
   // Label positions (pushed outward)
-  const labelOffset = 22;
+  const labelOffset = 18;
   const labelPositions = Array.from({ length: sides }, (_, i) => {
     const angle = angleOffset + (2 * Math.PI * i) / sides;
     return [cx + (maxR + labelOffset) * Math.cos(angle), cy + (maxR + labelOffset) * Math.sin(angle)] as [number, number];
@@ -697,34 +697,31 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
 
       {/* Pure SVG Radar */}
       <div className="flex justify-center">
-        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`} style={{ backgroundColor: '#f8f8fc', borderRadius: 8 }}>
+        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
           <defs>
-            <filter id="grailDotShadow" x="-50%" y="-50%" width="200%" height="200%">
-              <feDropShadow dx="0" dy="1" stdDeviation="1.5" floodColor="rgba(124,58,237,0.3)" />
-            </filter>
+            <radialGradient id="grailRadialGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(109,40,217,0.35)" />
+              <stop offset="100%" stopColor="rgba(167,139,250,0.08)" />
+            </radialGradient>
           </defs>
 
-          {/* Hexagonal grid layers (outer to inner so inner paints on top) */}
-          {(() => {
-            const layerFills = ['#f0f0f6', '#f3f3f8', '#f6f6fa', '#f9f9fc', '#ffffff'];
-            return [...Array(layers)].map((_, idx) => {
-              const i = layers - 1 - idx; // draw from outermost to innermost
-              return <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill={layerFills[i]} stroke="#e2e2ec" strokeWidth={1} />;
-            });
-          })()}
+          {/* Hexagonal grid layers */}
+          {Array.from({ length: layers }, (_, i) => (
+            <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill="none" stroke="#ebebf0" strokeWidth={1} />
+          ))}
 
           {/* Axis lines from center to vertices */}
           {Array.from({ length: sides }, (_, i) => {
             const [px, py] = hexPoint(maxR, i);
-            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="#e2e2ec" strokeWidth={1} />;
+            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="#ebebf0" strokeWidth={1} />;
           })}
 
           {/* Filled data area */}
-          <path d={dataPath} fill="rgba(139,92,246,0.18)" stroke="#7c3aed" strokeWidth={1} strokeLinejoin="round" />
+          <path d={dataPath} fill="url(#grailRadialGrad)" stroke="#7c3aed" strokeWidth={1} />
 
           {/* Data points */}
           {dataPoints.map((p, i) => (
-            <circle key={`dot-${i}`} cx={p[0]} cy={p[1]} r={4.5} fill="#ffffff" stroke="#7c3aed" strokeWidth={2} filter="url(#grailDotShadow)" />
+            <circle key={`dot-${i}`} cx={p[0]} cy={p[1]} r={3.5} fill="#ffffff" stroke="#7c3aed" strokeWidth={1.5} />
           ))}
 
           {/* Labels */}
@@ -737,7 +734,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
               dy={labelDy[i]}
               fontSize={12}
               fill="#888"
-              fontWeight={300}
+              fontWeight={400}
             >
               {label}
             </text>
