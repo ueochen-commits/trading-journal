@@ -1134,6 +1134,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   showToast('正在同步...');
                   // 后续可以在这里调用真实同步逻辑
                 }}
+                riskSettings={riskSettings}
+                onSaveRiskSettings={handleSaveRiskSettings}
               />;
           default:
               return <div className="p-10 text-center">404 - Module Not Found</div>;

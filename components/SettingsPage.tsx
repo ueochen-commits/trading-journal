@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { Trade, TradingAccount } from '../types';
+import { Trade, TradingAccount, RiskSettings } from '../types';
 import BrokersPage from './BrokersPage';
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -407,11 +407,11 @@ const AccountPage: React.FC<{ showToast: (m?: string) => void }> = ({ showToast 
 };
 
 // ─── Trade settings page ──────────────────────────────────────────────────────
-const TradeSettingsPage: React.FC<{ showToast: (m?: string) => void }> = ({ showToast }) => {
+const TradeSettingsPage: React.FC<{ showToast: (m?: string) => void; riskSettings?: RiskSettings; onSaveRiskSettings?: (s: RiskSettings) => void }> = ({ showToast, riskSettings, onSaveRiskSettings }) => {
   const [positionMethod, setPositionMethod] = useState('fixed');
   const [riskRatio, setRiskRatio] = useState('1');
   const [maxTradeLoss, setMaxTradeLoss] = useState('');
-  const [maxDailyLoss, setMaxDailyLoss] = useState('');
+  const [maxDailyLoss, setMaxDailyLoss] = useState(riskSettings?.maxDailyLoss?.toString() || '');
   return (
     <div style={{ maxWidth: 640 }}>
       <div style={{ marginTop: 4, marginBottom: 40 }}>
@@ -431,7 +431,12 @@ const TradeSettingsPage: React.FC<{ showToast: (m?: string) => void }> = ({ show
         </FieldRow>
       </div>
       <div style={{ paddingTop: 20, borderTop: `1px solid ${T.border}`, display: 'flex', justifyContent: 'flex-end' }}>
-        <button onClick={() => showToast()} style={{ height: 34, padding: '0 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', background: T.primary, color: '#fff' }}>保存更改</button>
+        <button onClick={() => {
+          if (riskSettings && onSaveRiskSettings) {
+            onSaveRiskSettings({ ...riskSettings, maxDailyLoss: Number(maxDailyLoss) || riskSettings.maxDailyLoss });
+          }
+          showToast();
+        }} style={{ height: 34, padding: '0 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', background: T.primary, color: '#fff' }}>保存更改</button>
       </div>
     </div>
   );
@@ -510,9 +515,11 @@ interface SettingsPageProps {
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
   initialSection?: string;
+  riskSettings?: RiskSettings;
+  onSaveRiskSettings?: (s: RiskSettings) => void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount, initialSection }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount, initialSection, riskSettings, onSaveRiskSettings }) => {
   const { user, updateProfile } = useUser();
   const [activeSection, setActiveSection] = useState(initialSection || 'profile');
   const [toast, setToast] = useState<string | null>(null);
@@ -535,7 +542,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAcco
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
       case 'account': return <AccountPage showToast={showToast} />;
       case 'brokers': return <BrokersPage userPlan="free" accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} />;
-      case 'tradeSettings': return <TradeSettingsPage showToast={showToast} />;
+      case 'tradeSettings': return <TradeSettingsPage showToast={showToast} riskSettings={riskSettings} onSaveRiskSettings={onSaveRiskSettings} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
       case 'tags': return <TagsPage />;
       default: return <PlaceholderPage title={NAV_GROUPS.flatMap(g => g.items).find(i => i.id === activeSection)?.label ?? activeSection} />;
