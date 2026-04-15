@@ -809,6 +809,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       setShowConnectExchange(false);
       setConnectingExchange(null);
 
+      // 自动切换到新账户，确保交易日志等页面能看到新导入的数据
+      setSelectedAccountId(accountData.id);
+
       // 8. 显示成功 Toast（先显示，再跳转，避免跳转后 toast 消失）
       showToast(`连接成功！已导入 ${importedTrades.length} 笔交易到 ${accountName}`);
 
@@ -969,7 +972,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               return (
                   <PageContainer>
                       <Journal
-                          trades={filteredTrades}
+                          trades={trades}
                           plans={plans}
                           onAddTrade={handleAddTrade}
                           onUpdateTrade={handleUpdateTrade}
