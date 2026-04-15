@@ -98,6 +98,16 @@ export const fetchTradesFromExchange = async (
     return trades;
 };
 
+// 静默拉取新交易（自动同步用，不输出日志到 UI）
+export const fetchNewTrades = async (
+    apiKey: string,
+    apiSecret: string,
+    sinceDate: string,
+    accountId?: string,
+): Promise<Trade[]> => {
+    return fetchTradesFromExchange('Binance', apiKey, apiSecret, undefined, accountId, sinceDate);
+};
+
 // 返回账户余额（从 binance-sync 响应中提取）
 export const fetchAccountBalance = async (
     apiKey: string,

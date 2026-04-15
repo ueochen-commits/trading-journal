@@ -77,6 +77,7 @@ import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
 import { fetchTradesFromExchange, fetchAccountBalance, generateAccountName } from './services/exchangeService';
+import { useAutoSync } from './hooks/useAutoSync';
 import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
@@ -555,6 +556,15 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       setTrades([...imported, ...trades]);
     }
   };
+
+  // 付费用户自动轮询同步币安交易
+  const isPaidUser = user.tier === 'pro' || user.tier === 'elite';
+  useAutoSync({
+    enabled: isPaidUser && (user.exchangeConnections ?? []).length > 0,
+    exchangeConnections: user.exchangeConnections ?? [],
+    existingTrades: trades,
+    onNewTrades: handleImportTrades,
+  });
 
   const handleAddStrategy = async (strategy: Strategy) => {
     const { data, error } = await userDataService.saveStrategy(strategy);
