@@ -968,6 +968,8 @@ interface DashboardProps {
   onViewPsychology?: () => void;
   tradingAccounts?: TradingAccount[];
   onManageAccounts?: () => void;
+  selectedAccountId?: string;
+  onAccountChange?: (id: string) => void;
 }
 
 const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
@@ -994,7 +996,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
     weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology,
-    tradingAccounts, onManageAccounts
+    tradingAccounts, onManageAccounts, selectedAccountId: externalAccountId, onAccountChange
 }) => {
   const { t, language } = useLanguage();
   const { currencySymbol } = useUser();
@@ -1025,7 +1027,8 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [tempGoal, setTempGoal] = useState<WeeklyGoal>(weeklyGoal || { type: 'amount', value: 1000, isActive: true });
   const [timeToMidnight, setTimeToMidnight] = useState('');
   const [greeting, setGreeting] = useState('');
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
+  const selectedAccountId = externalAccountId ?? 'all';
+  const setSelectedAccountId = (id: string) => onAccountChange?.(id);
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
   const accountSwitcherRef = useRef<HTMLDivElement>(null);
   const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(getRange('last30'));

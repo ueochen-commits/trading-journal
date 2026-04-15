@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 // 上传图片到 Supabase Storage
 const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
@@ -222,6 +222,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
   // Trading Accounts (从 Supabase 加载)
   const [tradingAccounts, setTradingAccounts] = useState<TradingAccount[]>([]);
+
+  // 全局账户选择（持久化，跨页面同步）
+  const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
+  const filteredTrades = useMemo(
+    () => selectedAccountId === 'all' ? trades : trades.filter(t => t.accountId === selectedAccountId),
+    [trades, selectedAccountId]
+  );
 
   // 控制 SettingsPage 打开时默认显示哪个 section
   const [settingsInitialSection, setSettingsInitialSection] = useState<string | undefined>(undefined);
@@ -948,6 +955,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onUpdateDisciplineRules={handleUpdateDisciplineRules}
                           onCheckDisciplineRule={handleCheckDisciplineRule}
                           tradingAccounts={tradingAccounts}
+                          selectedAccountId={selectedAccountId}
+                          onAccountChange={setSelectedAccountId}
                           onManageAccounts={() => { setSettingsInitialSection('brokers'); handleSetActiveTab('settings'); setTimeout(() => setSettingsInitialSection(undefined), 200); }}
                       />
                   </PageContainer>
@@ -960,7 +969,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               return (
                   <PageContainer>
                       <Journal
-                          trades={trades}
+                          trades={filteredTrades}
                           plans={plans}
                           onAddTrade={handleAddTrade}
                           onUpdateTrade={handleUpdateTrade}
@@ -989,9 +998,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           case 'playbook':
               return (
                   <div className="h-full overflow-hidden">
-                      <PlaybookPage 
+                      <PlaybookPage
                           strategies={strategies}
-                          trades={trades}
+                          trades={filteredTrades}
                           onAddStrategy={handleAddStrategy}
                           onUpdateStrategy={handleUpdateStrategy}
                           onDeleteStrategy={handleDeleteStrategy}
@@ -1016,7 +1025,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               return (
                   <PageContainer>
                       <Reports
-                          trades={trades}
+                          trades={filteredTrades}
                           accountSize={riskSettings.accountSize}
                           plans={plans}
                           onSavePlan={handleSavePlan}
@@ -1058,7 +1067,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onDeleteRule={() => {}}
                           reviewStatus={reviewStatus}
                           onUpdateReview={() => {}}
-                          trades={trades}
+                          trades={filteredTrades}
                           disciplineRules={disciplineRules}
                           disciplineHistory={disciplineHistory}
                       />
@@ -1067,8 +1076,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           case 'calendar':
               return (
                   <PageContainer>
-                      <CalendarView 
-                          trades={trades} 
+                      <CalendarView
+                          trades={filteredTrades}
                           plans={plans}
                           onSavePlan={handleSavePlan}
                       />
