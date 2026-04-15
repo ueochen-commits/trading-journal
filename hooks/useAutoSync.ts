@@ -25,30 +25,51 @@ export function useAutoSync({
     tradesRef.current = existingTrades;
 
     const syncOnce = useCallback(async () => {
-        if (isSyncing.current || exchangeConnections.length === 0) return;
+        if (isSyncing.current) {
+            console.log('[AutoSync] 跳过：正在同步中');
+            return;
+        }
+        if (exchangeConnections.length === 0) {
+            console.log('[AutoSync] 跳过：没有 exchangeConnections');
+            return;
+        }
         isSyncing.current = true;
-        console.log('[AutoSync] 开始同步...');
 
         // sinceDate: use last sync time, or fallback to 7 days ago
         const sinceDate = lastSyncRef.current
             ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
+        console.log('[AutoSync] 开始同步...', {
+            connections: exchangeConnections.length,
+            sinceDate,
+            existingTrades: tradesRef.current.length,
+        });
+
         try {
             const allNew: Trade[] = [];
 
             for (const conn of exchangeConnections) {
-                if (!conn.isConnected || !conn.apiKey || !conn.apiSecret) continue;
+                const hasKey = conn.apiKey && conn.apiKey.length > 10 && !conn.apiKey.includes('...');
+                const hasSecret = conn.apiSecret && conn.apiSecret !== '***' && conn.apiSecret.length > 10;
+                console.log(`[AutoSync] 连接 ${conn.exchange}: isConnected=${conn.isConnected}, hasValidKey=${hasKey}, hasValidSecret=${hasSecret}, keyPreview=${conn.apiKey?.slice(0, 6)}...`);
+
+                if (!conn.isConnected || !hasKey || !hasSecret) {
+                    console.log(`[AutoSync] 跳过 ${conn.exchange}：凭证无效或未连接`);
+                    continue;
+                }
                 try {
                     const trades = await fetchNewTrades(
                         conn.apiKey,
                         conn.apiSecret,
                         sinceDate,
                     );
+                    console.log(`[AutoSync] ${conn.exchange} 返回 ${trades.length} 笔交易`);
                     allNew.push(...trades);
                 } catch (err) {
                     console.warn(`[AutoSync] ${conn.exchange} 同步失败:`, err);
                 }
             }
+
             if (allNew.length > 0) {
                 // Dedup: DB trades have UUID ids, Binance trades have "binance-*" ids
                 // Use symbol+entryDate+direction+entryPrice as composite key
@@ -57,10 +78,14 @@ export function useAutoSync({
                 const existingKeys = new Set(tradesRef.current.map(tradeKey));
                 const unique = allNew.filter(t => !existingKeys.has(tradeKey(t)));
 
+                console.log(`[AutoSync] 去重结果: ${allNew.length} 总计, ${unique.length} 新交易`);
+
                 if (unique.length > 0) {
-                    console.log(`[AutoSync] 发现 ${unique.length} 笔新交易`);
+                    console.log(`[AutoSync] 导入 ${unique.length} 笔新交易`);
                     onNewTrades(unique);
                 }
+            } else {
+                console.log('[AutoSync] 没有获取到任何交易');
             }
 
             lastSyncRef.current = new Date().toISOString();
@@ -86,6 +111,7 @@ export function useAutoSync({
     }, []);
 
     useEffect(() => {
+        console.log('[AutoSync] Effect 触发:', { enabled, connectionsCount: exchangeConnections.length });
         if (!enabled) {
             stopPolling();
             return;

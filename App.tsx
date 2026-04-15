@@ -265,6 +265,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
         // 把 exchangeConnections 同步到 UserContext，供 useAutoSync 使用
         if (result.exchangeConnections && result.exchangeConnections.length > 0) {
+          console.log('[loadAllData] 同步 exchangeConnections 到 UserContext:', result.exchangeConnections.map(c => ({
+            exchange: c.exchange,
+            hasKey: !!c.apiKey && c.apiKey.length > 10,
+            hasSecret: !!c.apiSecret && c.apiSecret.length > 10,
+            isConnected: c.isConnected,
+          })));
           updateProfile({ exchangeConnections: result.exchangeConnections });
         }
 
