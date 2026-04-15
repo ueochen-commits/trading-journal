@@ -1,10 +1,11 @@
 import { useEffect, useRef, useCallback } from 'react';
-import { Trade, ExchangeConnection } from '../types';
+import { Trade, ExchangeConnection, TradingAccount } from '../types';
 import { fetchNewTrades } from '../services/exchangeService';
 
 interface UseAutoSyncOptions {
     enabled: boolean;
     exchangeConnections: ExchangeConnection[];
+    tradingAccounts: TradingAccount[];
     existingTrades: Trade[];
     onNewTrades: (trades: Trade[]) => void;
     intervalMs?: number;
@@ -13,6 +14,7 @@ interface UseAutoSyncOptions {
 export function useAutoSync({
     enabled,
     exchangeConnections,
+    tradingAccounts,
     existingTrades,
     onNewTrades,
     intervalMs = 30_000,
@@ -20,9 +22,10 @@ export function useAutoSync({
     const isSyncing = useRef(false);
     const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const lastSyncRef = useRef<string | null>(null);
-    // Keep a ref to existingTrades so the sync callback always sees latest
     const tradesRef = useRef(existingTrades);
     tradesRef.current = existingTrades;
+    const accountsRef = useRef(tradingAccounts);
+    accountsRef.current = tradingAccounts;
 
     const syncOnce = useCallback(async () => {
         if (isSyncing.current) {
@@ -35,7 +38,6 @@ export function useAutoSync({
         }
         isSyncing.current = true;
 
-        // sinceDate: use last sync time, or fallback to 7 days ago
         const sinceDate = lastSyncRef.current
             ?? new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -51,17 +53,23 @@ export function useAutoSync({
             for (const conn of exchangeConnections) {
                 const hasKey = conn.apiKey && conn.apiKey.length > 10 && !conn.apiKey.includes('...');
                 const hasSecret = conn.apiSecret && conn.apiSecret !== '***' && conn.apiSecret.length > 10;
-                console.log(`[AutoSync] 连接 ${conn.exchange}: isConnected=${conn.isConnected}, hasValidKey=${hasKey}, hasValidSecret=${hasSecret}, keyPreview=${conn.apiKey?.slice(0, 6)}...`);
 
                 if (!conn.isConnected || !hasKey || !hasSecret) {
                     console.log(`[AutoSync] 跳过 ${conn.exchange}：凭证无效或未连接`);
                     continue;
                 }
+
+                // 通过 exchangeConnectionId 找到对应的 trading account
+                const account = accountsRef.current.find(a => a.exchangeConnectionId === conn.id);
+                const accountId = account?.id;
+                console.log(`[AutoSync] 连接 ${conn.exchange}: accountId=${accountId || '未找到'}`);
+
                 try {
                     const trades = await fetchNewTrades(
                         conn.apiKey,
                         conn.apiSecret,
                         sinceDate,
+                        accountId,
                     );
                     console.log(`[AutoSync] ${conn.exchange} 返回 ${trades.length} 笔交易`);
                     allNew.push(...trades);
@@ -71,8 +79,6 @@ export function useAutoSync({
             }
 
             if (allNew.length > 0) {
-                // Dedup: DB trades have UUID ids, Binance trades have "binance-*" ids
-                // Use symbol+entryDate+direction+entryPrice as composite key
                 const tradeKey = (t: Trade) =>
                     `${t.symbol}|${t.entryDate}|${t.direction}|${t.entryPrice}`;
                 const existingKeys = new Set(tradesRef.current.map(tradeKey));
@@ -81,7 +87,7 @@ export function useAutoSync({
                 console.log(`[AutoSync] 去重结果: ${allNew.length} 总计, ${unique.length} 新交易`);
 
                 if (unique.length > 0) {
-                    console.log(`[AutoSync] 导入 ${unique.length} 笔新交易`);
+                    console.log('[AutoSync] 导入新交易:', unique.map(t => `${t.symbol} ${t.direction} ${t.entryDate}`));
                     onNewTrades(unique);
                 }
             } else {

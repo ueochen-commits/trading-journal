@@ -529,7 +529,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   // 导入交易到 Supabase
   const handleImportTrades = async (imported: Trade[]) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) {
+      console.error('[handleImportTrades] 用户未登录，跳过导入');
+      return;
+    }
+
+    console.log(`[handleImportTrades] 准备导入 ${imported.length} 笔交易, accountIds:`, imported.map(t => t.accountId));
 
     const data = imported.map(trade => {
       const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
@@ -562,8 +567,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     const { error } = await supabase.from('trading_journals').insert(data);
 
     if (error) {
-      console.error('Error importing trades:', error);
+      console.error('[handleImportTrades] 插入失败:', error);
     } else {
+      console.log(`[handleImportTrades] 成功导入 ${imported.length} 笔交易`);
       setTrades([...imported, ...trades]);
     }
   };
@@ -573,6 +579,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   useAutoSync({
     enabled: isPaidUser && (user.exchangeConnections ?? []).length > 0,
     exchangeConnections: user.exchangeConnections ?? [],
+    tradingAccounts,
     existingTrades: trades,
     onNewTrades: handleImportTrades,
   });
