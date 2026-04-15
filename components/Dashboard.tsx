@@ -1627,9 +1627,9 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, width: '100%', alignItems: 'stretch' }}>
 
-              <div id="dashboard-equity" style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
+              <div id="dashboard-equity" style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', minHeight: 320, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
                 {/* Header */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '累计净盈亏' : 'Daily net cumulative P&L'}</span>
                     <TZInfoIcon />
@@ -1638,7 +1638,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
                 </div>
                 {/* Chart */}
-                <div style={{ height: 280 }}>
+                <div style={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={mergedEquityData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                       <defs>
@@ -1702,22 +1702,31 @@ const Dashboard: React.FC<DashboardProps> = ({
                   const avgLoss = losses.length > 0 ? losses.reduce((s, t) => s + (t.pnl - t.fees), 0) / losses.length : 0;
                   return { date: new Date(_.entryDate).toLocaleDateString(), winPct: parseFloat(winPct.toFixed(1)), avgWin: parseFloat(avgWin.toFixed(2)), avgLoss: parseFloat(avgLoss.toFixed(2)) };
                 });
+                // Dynamic right-axis domain
+                const allAmts = winRateData.flatMap(d => [d.avgWin, d.avgLoss]).filter(v => v !== 0);
+                const amtMin = allAmts.length ? Math.min(...allAmts) : -40;
+                const amtMax = allAmts.length ? Math.max(...allAmts) : 20;
+                const amtRange = amtMax - amtMin || 1;
+                const stepSize = amtRange < 50 ? 5 : amtRange < 200 ? 20 : 50;
+                const yAmtMin = Math.floor(amtMin / stepSize) * stepSize - stepSize;
+                const yAmtMax = Math.ceil(amtMax / stepSize) * stepSize + stepSize;
+                const tickCount = Math.round((yAmtMax - yAmtMin) / stepSize) + 1;
                 const legendItems = [{ color: '#4A6CF7', label: 'Win %' }, { color: '#1D9E75', label: 'Avg win' }, { color: '#E24B4A', label: 'Avg loss' }];
                 return (
-                  <div style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}>
+                  <div style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', minHeight: 320 }} className="dark:bg-slate-900 dark:border-slate-800">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
                       <TZInfoIcon />
                     </div>
-                    <div style={{ height: 280, flex: 1 }}>
+                    <div style={{ flex: 1, minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={winRateData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
                           <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                           <YAxis yAxisId="pct" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={38}
-                            domain={[0, 70]} tickFormatter={(v: number) => `${v}%`} />
+                            domain={[0, 80]} ticks={[0,10,20,30,40,50,60,70,80]} tickFormatter={(v: number) => `${v}%`} />
                           <YAxis yAxisId="amt" orientation="right" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={42}
-                            domain={[-40, 20]} tickFormatter={(v: number) => `$${v}`} />
+                            domain={[yAmtMin, yAmtMax]} tickCount={tickCount} tickFormatter={(v: number) => `$${v}`} />
                           <Tooltip
                             mode="index"
                             content={({ active, payload, label }: any) => {
