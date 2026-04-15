@@ -963,6 +963,194 @@ const Journal: React.FC<JournalProps> = ({
           </div>
        )}
 
+      {/* ── Journal Stat Cards ─────────────────────────────────────────── */}
+      {(() => {
+        const wins = filteredTrades.filter(t => t.pnl > 0);
+        const losses = filteredTrades.filter(t => t.pnl < 0);
+        const breakEvens = filteredTrades.filter(t => t.pnl === 0);
+        const totalPnl = filteredTrades.reduce((s, t) => s + t.pnl, 0);
+        const grossProfit = wins.reduce((s, t) => s + t.pnl, 0);
+        const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
+        const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
+        const winRate = filteredTrades.length > 0 ? wins.length / filteredTrades.length : 0;
+        const avgWin = wins.length > 0 ? grossProfit / wins.length : 0;
+        const avgLoss = losses.length > 0 ? grossLoss / losses.length : 0;
+        const rrRatio = avgLoss > 0 ? avgWin / avgLoss : 0;
+
+        // Cumulative PnL sparkline data
+        const sorted = [...filteredTrades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
+        let cum = 0;
+        const cumPoints = sorted.map(t => { cum += t.pnl; return cum; });
+        const sparkColor = totalPnl >= 0 ? '#1D9E75' : '#E24B4A';
+        const sparkGradId = `jsc-grad-${totalPnl >= 0 ? 'g' : 'r'}`;
+
+        // SVG sparkline path
+        let sparkPath = '', sparkArea = '';
+        if (cumPoints.length > 1) {
+          const minV = Math.min(...cumPoints, 0);
+          const maxV = Math.max(...cumPoints, 0);
+          const range = maxV - minV || 1;
+          const W = 300, H = 52;
+          const pts = cumPoints.map((v, i) => [
+            (i / (cumPoints.length - 1)) * W,
+            H - ((v - minV) / range) * (H - 4) - 2,
+          ]);
+          sparkPath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+          sparkArea = `${sparkPath} L${W},${H} L0,${H} Z`;
+        }
+
+        // Profit factor ring
+        const pfCirc = 2 * Math.PI * 24;
+        const pfFill = Math.min(profitFactor === Infinity ? 1 : profitFactor / 3, 1);
+        const pfGreen = pfFill * pfCirc;
+
+        // Win rate semicircle
+        const arcLen = Math.PI * 38; // half-circle circumference r=38
+        const winArc = (wins.length / (filteredTrades.length || 1)) * arcLen;
+        const beArc = (breakEvens.length / (filteredTrades.length || 1)) * arcLen;
+        const lossArc = (losses.length / (filteredTrades.length || 1)) * arcLen;
+
+        const cardStyle: React.CSSProperties = {
+          background: 'var(--bg-primary, #fff)',
+          border: '0.5px solid var(--border-tertiary, #e8e8f0)',
+          borderRadius: 14,
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: 110,
+        };
+        const labelStyle: React.CSSProperties = { fontSize: 12, color: 'var(--text-secondary, #6b7280)', fontWeight: 400, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 5 };
+        const infoIcon = <span style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid var(--border-secondary, #d1d5db)', fontSize: 9, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary, #9ca3af)', flexShrink: 0 }}>i</span>;
+        const contentPad: React.CSSProperties = { padding: '18px 20px 0 20px' };
+
+        return (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: 10, marginBottom: 16 }}>
+
+            {/* Card 1: Net Cumulative P&L */}
+            <div style={cardStyle} className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+              <div style={contentPad}>
+                <div style={labelStyle} className="text-slate-500 dark:text-slate-400">
+                  Net Cumulative P&L
+                  <span style={{ background: 'var(--bg-tertiary, #f3f4f6)', color: 'var(--text-secondary, #6b7280)', padding: '1px 6px', borderRadius: 20, fontSize: 10 }} className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                    {filteredTrades.length}
+                  </span>
+                </div>
+                <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: totalPnl >= 0 ? '#0F6E56' : '#A32D2D', paddingBottom: 10 }}>
+                  {totalPnl >= 0 ? '+' : ''}{totalPnl.toFixed(2)}
+                </div>
+              </div>
+              <div style={{ marginTop: 'auto', height: 52, flexShrink: 0 }}>
+                {cumPoints.length > 1 ? (
+                  <svg width="100%" height="52" viewBox="0 0 300 52" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id={sparkGradId} x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor={sparkColor} stopOpacity="0.35" />
+                        <stop offset="100%" stopColor={sparkColor} stopOpacity="0" />
+                      </linearGradient>
+                    </defs>
+                    <path d={sparkArea} fill={`url(#${sparkGradId})`} />
+                    <path d={sparkPath} fill="none" stroke={sparkColor} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <div style={{ height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>--</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Card 2: Profit Factor */}
+            <div style={cardStyle} className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+              <div style={{ ...contentPad, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1, paddingBottom: 18 }}>
+                <div>
+                  <div style={labelStyle} className="text-slate-500 dark:text-slate-400">Profit Factor {infoIcon}</div>
+                  <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--text-primary, #111827)' }} className="text-slate-900 dark:text-white">
+                    {profitFactor === Infinity ? '∞' : profitFactor === 0 ? '--' : profitFactor.toFixed(2)}
+                  </div>
+                </div>
+                <svg width="64" height="64" viewBox="0 0 64 64" style={{ flexShrink: 0, marginRight: 4 }}>
+                  <circle cx="32" cy="32" r="24" fill="none" stroke="#E24B4A" strokeWidth="6" />
+                  {pfFill > 0 && (
+                    <circle cx="32" cy="32" r="24" fill="none" stroke="#1D9E75" strokeWidth="6"
+                      strokeDasharray={`${pfGreen} ${pfCirc - pfGreen}`}
+                      strokeDashoffset={pfCirc / 4}
+                      strokeLinecap="butt"
+                      transform="rotate(-90 32 32)"
+                    />
+                  )}
+                </svg>
+              </div>
+            </div>
+
+            {/* Card 3: Trade Win % */}
+            <div style={cardStyle} className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+              <div style={{ ...contentPad, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1, paddingBottom: 18 }}>
+                <div>
+                  <div style={labelStyle} className="text-slate-500 dark:text-slate-400">Trade Win % {infoIcon}</div>
+                  <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--text-primary, #111827)' }} className="text-slate-900 dark:text-white">
+                    {filteredTrades.length === 0 ? '--' : `${(winRate * 100).toFixed(2)}%`}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                  <svg width="88" height="52" viewBox="0 0 88 52">
+                    {/* Track */}
+                    <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#e5e7eb" strokeWidth="7" strokeLinecap="round" />
+                    {/* Win segment */}
+                    {wins.length > 0 && (
+                      <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#1D9E75" strokeWidth="7" strokeLinecap="round"
+                        strokeDasharray={`${winArc} ${arcLen}`} strokeDashoffset="0" />
+                    )}
+                    {/* BE segment */}
+                    {breakEvens.length > 0 && (
+                      <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#7F77DD" strokeWidth="7" strokeLinecap="round"
+                        strokeDasharray={`${beArc} ${arcLen}`} strokeDashoffset={-winArc} />
+                    )}
+                    {/* Loss segment */}
+                    {losses.length > 0 && (
+                      <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#E24B4A" strokeWidth="7" strokeLinecap="round"
+                        strokeDasharray={`${lossArc} ${arcLen}`} strokeDashoffset={-(winArc + beArc)} />
+                    )}
+                  </svg>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', width: 88, marginTop: 2 }}>
+                    <span style={{ fontSize: 11, color: '#1D9E75', fontWeight: 600 }}>{wins.length}</span>
+                    <span style={{ fontSize: 11, color: '#7F77DD', fontWeight: 600 }}>{breakEvens.length}</span>
+                    <span style={{ fontSize: 11, color: '#E24B4A', fontWeight: 600 }}>{losses.length}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Card 4: Avg Win/Loss */}
+            <div style={cardStyle} className="bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700">
+              <div style={contentPad}>
+                <div style={labelStyle} className="text-slate-500 dark:text-slate-400">Avg Win/Loss Trade {infoIcon}</div>
+                <div style={{ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: 'var(--text-primary, #111827)', paddingBottom: 12 }} className="text-slate-900 dark:text-white">
+                  {rrRatio === 0 ? '--' : rrRatio.toFixed(2)}
+                </div>
+              </div>
+              <div style={{ marginTop: 'auto', padding: '0 20px 18px 20px' }}>
+                {(avgWin > 0 || avgLoss > 0) ? (
+                  <>
+                    <div style={{ width: '100%', height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex' }}>
+                      <div style={{ background: '#1D9E75', width: `${avgWin / (avgWin + avgLoss) * 100}%` }} />
+                      <div style={{ background: '#E24B4A', flex: 1 }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 5 }}>
+                      <span style={{ fontSize: 11, color: '#1D9E75' }}>${avgWin.toFixed(2)}</span>
+                      <span style={{ fontSize: 11, color: '#E24B4A' }}>-${avgLoss.toFixed(2)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ height: 8, borderRadius: 4, background: '#e5e7eb' }} />
+                )}
+              </div>
+            </div>
+
+          </div>
+        );
+      })()}
+      {/* ── End Journal Stat Cards ─────────────────────────────────────── */}
+
       <div id="journal-toolbar" className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-4 items-center bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm transition-colors">
             <div className="relative flex-1 min-w-[300px] max-w-md">
