@@ -1535,11 +1535,82 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <div className="absolute top-0 right-0 p-8 opacity-20"><rankData.icon className="w-32 h-32 text-white" /></div>
                     <div className="relative z-10 flex flex-col h-full justify-between"><div className="flex justify-between items-start"><div><h3 className="text-sm font-bold uppercase tracking-widest opacity-80 mb-1">{t.dashboard.rank.title}</h3><h2 className="text-3xl md:text-4xl font-black tracking-tight flex items-baseline gap-3"><rankData.icon className="w-8 h-8 md:w-10 md:h-10" />{rankData.currentTier}</h2></div><button onClick={onViewLeaderboard} className="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm transition-colors border border-white/20 flex items-center gap-1"><Trophy className="w-3 h-3" />{t.dashboard.rank.viewLeaderboard}</button></div><div className="mt-6 max-w-md"><div className="flex justify-between text-xs font-semibold mb-2 opacity-90"><span>{t.dashboard.rank.progress}</span><span>{rankData.nextTier}</span></div><div className="h-2.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm"><div className="h-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000 ease-out" style={{ width: `${rankData.progress}%` }}></div></div></div></div>
                 </div>
-                 {riskAlert ? (
-                    <div id="dashboard-risk" className="bg-rose-500 text-white p-5 rounded-2xl shadow-lg shadow-rose-500/30 flex flex-col justify-between animate-pulse-slow relative overflow-hidden h-full"><div className="absolute -right-6 -top-6 bg-white/10 w-32 h-32 rounded-full blur-2xl pointer-events-none"></div><div className="relative z-10"><div className="flex items-center gap-3 mb-3"><div className="p-2 bg-white/20 rounded-lg backdrop-blur-md shrink-0"><AlertOctagon className="w-5 h-5" /></div><h3 className="font-bold text-lg leading-tight">{t.dashboard.riskAlert}</h3></div><p className="text-xs text-rose-50 opacity-90 leading-relaxed mb-4">{t.dashboard.riskAlertDesc.replace('${current}', Math.abs(stats.todayPnl).toFixed(2)).replace('${limit}', riskSettings.maxDailyLoss.toString())}</p></div><div className="bg-black/20 rounded-lg p-3 flex items-center justify-between backdrop-blur-sm relative z-10 border border-white/5 mt-auto"><span className="text-[10px] font-bold opacity-80 flex items-center gap-1.5 uppercase tracking-wider"><Clock className="w-3.5 h-3.5" />{language === 'cn' ? '距离重置' : 'Reset in'}</span><span className="font-mono text-sm font-bold tracking-widest bg-white/10 px-2 py-0.5 rounded border border-white/10">{timeToMidnight}</span></div></div>
-                 ) : (
-                    <div id="dashboard-risk" className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col justify-center"><div className="flex items-center gap-3 mb-4"><div className="p-3 bg-emerald-100 dark:bg-emerald-50/20 rounded-xl text-emerald-600 dark:text-emerald-400"><ShieldCheck className="w-6 h-6" /></div><div><h3 className="font-bold text-slate-900 dark:text-white">{t.dashboard.riskStatus.ok}</h3><p className="text-xs text-slate-500 dark:text-slate-400">{t.dashboard.riskStatus.okDesc}</p></div></div><div className="space-y-2"><div className="flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">{t.dashboard.riskStatus.dailyPnl}</span><span className={`font-bold tabular-nums ${stats.todayPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${stats.todayPnl.toFixed(2)}</span></div><div className="flex justify-between text-sm"><span className="text-slate-500 dark:text-slate-400">{t.dashboard.riskStatus.limit}</span><span className="font-medium tabular-nums text-slate-700 dark:text-slate-300">-${riskSettings.maxDailyLoss}</span></div><div className="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mt-1"><div className="h-full bg-emerald-500" style={{ width: `${Math.min(100, (Math.abs(stats.todayPnl)/riskSettings.maxDailyLoss)*100)}%` }}></div></div></div></div>
-                 )}
+                 {(() => {
+                    const todayLoss = Math.abs(Math.min(stats.todayPnl, 0));
+                    const limit = Math.abs(riskSettings.maxDailyLoss);
+                    const riskRatio = limit > 0 ? todayLoss / limit : 0;
+                    const pct = Math.round(riskRatio * 100);
+                    const filledCells = Math.min(Math.round(riskRatio * 10), 10);
+                    const status = riskRatio >= 1 ? 'danger' : riskRatio >= 0.5 ? 'warn' : 'safe';
+                    const dotColor = status === 'danger' ? '#E24B4A' : status === 'warn' ? '#EF9F27' : '#1D9E75';
+                    const cellColor = dotColor;
+                    const pctColor = dotColor;
+                    const cardStyle: React.CSSProperties = {
+                      borderRadius: 14,
+                      padding: '16px 18px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 0,
+                      ...(status === 'danger'
+                        ? { background: '#FFF5F5', border: '1px solid #E24B4A' }
+                        : status === 'warn'
+                        ? { background: '#FFFBF5', border: '1px solid #EF9F27' }
+                        : { background: '#ffffff', border: '0.5px solid #e8e8f0' }),
+                    };
+                    return (
+                      <div id="dashboard-risk" style={cardStyle} className={status === 'danger' ? 'dark:!bg-[rgba(226,75,74,0.08)]' : status === 'warn' ? 'dark:!bg-[rgba(239,159,39,0.08)]' : 'dark:!bg-slate-900 dark:!border-slate-700'}>
+                        {/* Title row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                          <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }} className="dark:text-white">
+                            {language === 'cn' ? '风控状态' : 'Risk Status'}
+                          </span>
+                          <span style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, display: 'inline-block' }} />
+                        </div>
+                        {/* Data rows */}
+                        <div style={{ borderBottom: '0.5px solid #e8e8f0', padding: '4px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 11, color: '#6b7280' }} className="dark:text-slate-400">
+                            {status === 'danger' ? (language === 'cn' ? '今日亏损' : 'Today loss') : (language === 'cn' ? '今日盈亏' : 'Today P&L')}
+                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: stats.todayPnl >= 0 && status === 'safe' ? '#1D9E75' : '#E24B4A' }}>
+                            {stats.todayPnl >= 0 ? '+' : ''}{stats.todayPnl.toFixed(2)}
+                          </span>
+                        </div>
+                        <div style={{ padding: '4px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 11, color: '#6b7280' }} className="dark:text-slate-400">
+                            {status === 'danger' ? (language === 'cn' ? '超出限额' : 'Over limit') : (language === 'cn' ? '日亏损限额' : 'Daily limit')}
+                          </span>
+                          <span style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: status === 'danger' ? '#E24B4A' : '#111827' }} className={status !== 'danger' ? 'dark:text-white' : ''}>
+                            {status === 'danger'
+                              ? `+$${(todayLoss - limit).toFixed(2)}`
+                              : `-$${riskSettings.maxDailyLoss}`}
+                          </span>
+                        </div>
+                        {/* Battery */}
+                        <div style={{ marginTop: 14 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
+                            <span style={{ fontSize: 10, letterSpacing: '0.03em', color: '#9ca3af' }}>{language === 'cn' ? '风险用量' : 'Risk used'}</span>
+                            <span style={{ fontSize: 11, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: pctColor }}>{pct}%</span>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                            <div style={{ display: 'flex', gap: 3, flex: 1 }}>
+                              {Array.from({ length: 10 }, (_, i) => (
+                                <div key={i} style={{ flex: 1, height: 14, borderRadius: 2, background: i < filledCells ? cellColor : '#e8e8f0' }} />
+                              ))}
+                            </div>
+                            <div style={{ width: 4, height: 8, borderRadius: '0 2px 2px 0', background: filledCells > 0 ? cellColor : '#e8e8f0' }} />
+                          </div>
+                        </div>
+                        {/* Countdown — danger only */}
+                        {status === 'danger' && (
+                          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#E24B4A', flexShrink: 0 }} />
+                            <span style={{ fontSize: 11, color: '#6b7280' }} className="dark:text-slate-400">{language === 'cn' ? '距账户重置' : 'Reset in'}</span>
+                            <span style={{ fontSize: 11, fontWeight: 500, color: '#E24B4A', fontVariantNumeric: 'tabular-nums' }}>{timeToMidnight}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
               </div>
 
               <div id="dashboard-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, minmax(0, 1fr))', gap: 10 }}>
