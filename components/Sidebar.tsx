@@ -19,8 +19,10 @@ interface SidebarProps {
 const Icons = {
   Dashboard: () => (
     <svg viewBox="0 0 20 20" fill="currentColor" width="17" height="17">
-      <path d="M2 10a8 8 0 1116 0A8 8 0 012 10zm6-3v4l3 1.5-.5 1L7 12V7h1z"/>
-      <path fillRule="evenodd" d="M3 5a1 1 0 011-1h3a1 1 0 010 2H6.414l2.293 2.293a1 1 0 01-1.414 1.414L5 7.414V9a1 1 0 01-2 0V5zm13 0a1 1 0 00-1-1h-3a1 1 0 000 2h1.586l-2.293 2.293a1 1 0 001.414 1.414L15 7.414V9a1 1 0 002 0V5z" clipRule="evenodd"/>
+      <rect x="2" y="2" width="7" height="7" rx="1.5" />
+      <rect x="11" y="2" width="7" height="7" rx="1.5" />
+      <rect x="2" y="11" width="7" height="7" rx="1.5" />
+      <rect x="11" y="11" width="7" height="7" rx="1.5" />
     </svg>
   ),
   Chart: () => (
