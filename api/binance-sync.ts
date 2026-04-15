@@ -138,7 +138,7 @@ export default async function handler(req: any, res: any) {
       },
     });
 
-    // 1. 验证 API Key + 获取余额（使用 /api/v3/account，无地理限制）
+    // 1. 验证 API Key + 获取现货余额（使用 /api/v3/account，无地理限制）
     let balance: any;
     try {
       balance = await exchange.fetchBalance({ type: 'spot' });
@@ -150,7 +150,34 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    const usdtTotal = balance?.USDT?.total ?? balance?.total?.USDT ?? 0;
+    // 计算现货总资产（USDT + 所有持币折算为 USDT）
+    let spotUsdtTotal = 0;
+    try {
+      // 先拿 ticker 价格用于折算
+      const tickers = await exchange.fetchTickers();
+      if (balance?.info?.balances) {
+        for (const b of balance.info.balances) {
+          const asset = b.asset;
+          const total = parseFloat(b.free || '0') + parseFloat(b.locked || '0');
+          if (total <= 0) continue;
+          if (asset === 'USDT') {
+            spotUsdtTotal += total;
+          } else {
+            // 尝试用 XXX/USDT ticker 折算
+            const pair = `${asset}/USDT`;
+            if (tickers[pair]?.last) {
+              spotUsdtTotal += total * tickers[pair].last;
+            }
+          }
+        }
+      }
+    } catch {
+      // fallback: 只用 USDT 余额
+      spotUsdtTotal = balance?.USDT?.total ?? balance?.total?.USDT ?? 0;
+    }
+
+    // 合约余额稍后在初始化 futuresExchange 后获取
+    let futuresUsdtTotal = 0;
 
     // 2. 确定查询起始时间
     const since = startDate
@@ -212,6 +239,14 @@ export default async function handler(req: any, res: any) {
         },
       });
       await futuresExchange.loadMarkets();
+
+      // 获取合约账户余额
+      try {
+        const futuresBalance = await futuresExchange.fetchBalance();
+        futuresUsdtTotal = futuresBalance?.USDT?.total ?? futuresBalance?.total?.USDT ?? 0;
+      } catch (e: any) {
+        debugLog.push(`FUTURES balance ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
+      }
 
       // 方法1: 用 /fapi/v1/income 获取所有收入记录（分页），从中提取交易过的品种
       let futuresSymbols: string[] = [];
@@ -413,7 +448,7 @@ export default async function handler(req: any, res: any) {
 
     return res.status(200).json({
       success: true,
-      balance: usdtTotal,
+      balance: parseFloat((spotUsdtTotal + futuresUsdtTotal).toFixed(2)),
       currency: 'USDT',
       tradeCount: allPairedTrades.length,
       trades: allPairedTrades,
