@@ -574,7 +574,7 @@ const Sidebar = ({
                   <Icon />{label}
                 </button>
               ))}
-              <button onClick={() => { setIsProfileMenuOpen(false); openReferral(); }}
+              <button onClick={() => { setIsProfileMenuOpen(false); setActiveTab('referrals'); }}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.6)', borderRadius: 7 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}>

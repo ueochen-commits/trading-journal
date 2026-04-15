@@ -56,7 +56,7 @@ import SettingsPage from './components/SettingsPage';
 import PricingModal from './components/PricingModal';
 import AuthPage from './components/AuthPage';
 import UserProfileModal from './components/UserProfileModal';
-import ReferralModal from './components/ReferralModal';
+import ReferralCenter from './components/ReferralCenter';
 import ChatAssistant from './components/ChatAssistant';
 import ChatWindow from './components/ChatWindow';
 import FriendListDrawer from './components/FriendListDrawer';
@@ -1087,6 +1087,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       />
                   </PageContainer>
               );
+          case 'referrals':
+              return (
+                  <div className="h-full overflow-hidden">
+                      <ReferralCenter />
+                  </div>
+              );
           case 'plaza':
               return (
                   <PageContainer>
@@ -1236,7 +1242,6 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           <SettingsModal onImportTrades={handleImportTrades} />
           <PricingModal />
           <UserProfileModal />
-          <ReferralModal />
           {/* TEMPORARILY DISABLED — OnboardingModal replaced by new first-login flow */}
           {/* {showOnboarding && (
               <OnboardingModal onComplete={() => { setShowOnboarding(false); startInitialTour(); }} />
