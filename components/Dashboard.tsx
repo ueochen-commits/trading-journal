@@ -25,39 +25,37 @@ const TZInfoIcon = () => (
   }}>i</span>
 );
 
-// Shared card shell styles
 const tzCardShell: React.CSSProperties = {
   background: '#ffffff',
   border: '0.5px solid #e8e8f0',
   borderRadius: 14,
-  padding: '16px 18px 14px',
+  padding: '14px 16px 12px',
   display: 'flex',
   flexDirection: 'column',
-  gap: 0,
-  minHeight: 108,
+  minHeight: 90,
   overflow: 'hidden',
   flex: 1,
   minWidth: 0,
 };
-const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280', fontWeight: 400, marginBottom: 8 };
-const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: c, marginTop: 0 });
+const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280', fontWeight: 400, marginBottom: 6 };
+const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: c });
 
-// Semi-circle gauge (88×52, path-length 119.38)
+// Semi-circle gauge (100×58, path-length 138.16)
 const SemiGauge: React.FC<{ wins: number; bes: number; losses: number }> = ({ wins, bes, losses }) => {
   const total = wins + bes + losses || 1;
-  const PL = 119.38;
+  const PL = 138.16;
   const wLen = (wins / total) * PL;
   const bLen = (bes / total) * PL;
   const lLen = (losses / total) * PL;
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-      <svg width="88" height="52" viewBox="0 0 88 52">
-        <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#e5e7eb" strokeWidth="7" strokeLinecap="round" pathLength={PL} />
-        {wLen > 0 && <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#1D9E75" strokeWidth="7" strokeLinecap="round" pathLength={PL} strokeDasharray={`${wLen} ${PL}`} strokeDashoffset="0" />}
-        {bLen > 0 && <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#7F77DD" strokeWidth="7" strokeLinecap="round" pathLength={PL} strokeDasharray={`${bLen} ${PL}`} strokeDashoffset={-wLen} />}
-        {lLen > 0 && <path d="M6,48 A38,38 0 0,1 82,48" fill="none" stroke="#E24B4A" strokeWidth="7" strokeLinecap="round" pathLength={PL} strokeDasharray={`${lLen} ${PL}`} strokeDashoffset={-(wLen + bLen)} />}
+      <svg width="100" height="58" viewBox="0 0 100 58">
+        <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#e5e7eb" strokeWidth="8" strokeLinecap="round" pathLength={PL} />
+        {wLen > 0 && <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#1D9E75" strokeWidth="8" strokeLinecap="round" pathLength={PL} strokeDasharray={`${wLen} ${PL}`} strokeDashoffset="0" />}
+        {bLen > 0 && <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#7F77DD" strokeWidth="8" strokeLinecap="round" pathLength={PL} strokeDasharray={`${bLen} ${PL}`} strokeDashoffset={-wLen} />}
+        {lLen > 0 && <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#E24B4A" strokeWidth="8" strokeLinecap="round" pathLength={PL} strokeDasharray={`${lLen} ${PL}`} strokeDashoffset={-(wLen + bLen)} />}
       </svg>
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: 88, marginTop: 2 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', width: 100, marginTop: 3 }}>
         <span style={{ fontSize: 11, fontWeight: 500, color: '#1D9E75', fontVariantNumeric: 'tabular-nums' }}>{wins}</span>
         <span style={{ fontSize: 11, fontWeight: 500, color: '#7F77DD', fontVariantNumeric: 'tabular-nums', flex: 1, textAlign: 'center' }}>{bes}</span>
         <span style={{ fontSize: 11, fontWeight: 500, color: '#E24B4A', fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>{losses}</span>
@@ -72,14 +70,14 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; wins: number; losse
   const formatted = Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      {/* Layer 1: label */}
       <div style={tzLabelRow} className="dark:text-slate-400">
         {label}<TZInfoIcon />
         <span style={{ fontSize: 12, color: '#6b7280', fontVariantNumeric: 'tabular-nums' }} className="dark:text-slate-400">{total}</span>
       </div>
-      {/* Layer 2: value */}
-      <div style={tzBigVal(pos ? '#1D9E75' : '#E24B4A')}>
-        {pos ? '+' : '-'}{currencySymbol}{formatted}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
+        <div style={tzBigVal(pos ? '#1D9E75' : '#E24B4A')}>
+          {pos ? '+' : '-'}{currencySymbol}{formatted}
+        </div>
       </div>
     </div>
   );
@@ -89,41 +87,39 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
   const total = wins + losses + breakEven;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      {/* Layer 1: label */}
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
-      {/* Layer 2+3: value left, gauge right — aligned to top */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
         <div style={tzBigVal('#111827')} className="dark:text-white">
           {total === 0 ? '--' : `${winRate.toFixed(2)}%`}
         </div>
-        <SemiGauge wins={wins} bes={breakEven} losses={losses} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+          <SemiGauge wins={wins} bes={breakEven} losses={losses} />
+        </div>
       </div>
     </div>
   );
 };
 
 const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
-  const circ = 2 * Math.PI * 26;
+  const circ = 2 * Math.PI * 28; // 175.93
   const fill = Math.min(value === Infinity ? 1 : value / 3, 1);
   const greenLen = fill * circ;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      {/* Layer 1: label */}
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
-      {/* Layer 2+3: value+subtitle left, ring right — aligned to top */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
         <div>
           <div style={tzBigVal('#111827')} className="dark:text-white">
             {value === 0 ? '--' : value === Infinity ? '∞' : value.toFixed(2)}
           </div>
           <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>综合盈亏比</div>
         </div>
-        <svg width="68" height="68" viewBox="0 0 68 68" style={{ flexShrink: 0 }}>
-          <circle cx="34" cy="34" r="26" fill="none" stroke="#E24B4A" strokeWidth="6" />
+        <svg width="72" height="72" viewBox="0 0 72 72" style={{ flexShrink: 0 }}>
+          <circle cx="36" cy="36" r="28" fill="none" stroke="#E24B4A" strokeWidth="7" />
           {fill > 0 && (
-            <circle cx="34" cy="34" r="26" fill="none" stroke="#1D9E75" strokeWidth="6"
+            <circle cx="36" cy="36" r="28" fill="none" stroke="#1D9E75" strokeWidth="7"
               strokeDasharray={`${greenLen} ${circ}`} strokeLinecap="butt"
-              transform="rotate(-90 34 34)" />
+              transform="rotate(-90 36 36)" />
           )}
         </svg>
       </div>
@@ -135,14 +131,14 @@ const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: nu
   const total = winDays + lossDays + breakEvenDays;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      {/* Layer 1: label */}
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
-      {/* Layer 2+3: value left, gauge right — aligned to top */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
         <div style={tzBigVal('#111827')} className="dark:text-white">
           {total === 0 ? '--' : `${dayWinRate.toFixed(2)}%`}
         </div>
-        <SemiGauge wins={winDays} bes={breakEvenDays} losses={lossDays} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+          <SemiGauge wins={winDays} bes={breakEvenDays} losses={lossDays} />
+        </div>
       </div>
     </div>
   );
@@ -154,19 +150,17 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
   const winPct = total > 0 ? (avgWin / total) * 100 : 50;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      {/* Layer 1: label */}
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
-      {/* Layer 2+3: value left-top, bar right */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
         <div style={{ ...tzBigVal('#111827'), flexShrink: 0 }} className="dark:text-white">
           {ratio === 0 ? '--' : ratio.toFixed(2)}
         </div>
-        <div style={{ flex: 1, paddingTop: 4 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4 }}>
           <div style={{ width: '100%', height: 8, borderRadius: 4, overflow: 'hidden', display: 'flex' }}>
             <div style={{ background: '#1D9E75', width: `${winPct}%` }} />
             <div style={{ background: '#E24B4A', flex: 1 }} />
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
             <span style={{ fontSize: 11, color: '#1D9E75', fontVariantNumeric: 'tabular-nums' }}>${avgWin.toFixed(2)}</span>
             <span style={{ fontSize: 11, color: '#E24B4A', fontVariantNumeric: 'tabular-nums' }}>-${absLoss.toFixed(2)}</span>
           </div>
@@ -174,6 +168,8 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
       </div>
     </div>
   );
+};
+
 };
 
 
