@@ -549,6 +549,86 @@ const MARKET_ABBR: Record<string, string> = {
   sydney: 'SYD', tokyo: 'TYO', hongkong: 'HKG', frankfurt: 'FRA', london: 'LON', newyork: 'NYC',
 };
 
+const FlagJP = () => (
+  <svg viewBox="0 0 3 2" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <rect width="3" height="2" fill="#ffffff" />
+    <circle cx="1.5" cy="1" r="0.6" fill="#BC002D" />
+  </svg>
+);
+
+const FlagGB = () => (
+  <svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <rect width="60" height="30" fill="#012169" />
+    <line x1="0" y1="0" x2="60" y2="30" stroke="#ffffff" strokeWidth="6" />
+    <line x1="60" y1="0" x2="0" y2="30" stroke="#ffffff" strokeWidth="6" />
+    <line x1="0" y1="0" x2="60" y2="30" stroke="#C8102E" strokeWidth="3.5" />
+    <line x1="60" y1="0" x2="0" y2="30" stroke="#C8102E" strokeWidth="3.5" />
+    <line x1="30" y1="0" x2="30" y2="30" stroke="#ffffff" strokeWidth="10" />
+    <line x1="0" y1="15" x2="60" y2="15" stroke="#ffffff" strokeWidth="10" />
+    <line x1="30" y1="0" x2="30" y2="30" stroke="#C8102E" strokeWidth="6" />
+    <line x1="0" y1="15" x2="60" y2="15" stroke="#C8102E" strokeWidth="6" />
+  </svg>
+);
+
+const FlagUS = () => (
+  <svg viewBox="0 0 19 10" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <rect width="19" height="10" fill="#ffffff" />
+    {[0,1,2,3,4,5,6].map(i => <rect key={i} x="0" y={i * 1.54} width="19" height="0.77" fill="#B22234" />)}
+    <rect x="0" y="0" width="7.6" height="5.38" fill="#3C3B6E" />
+    {[0.95,2.85,4.75,6.65].map(x => <text key={x} x={x} y="1.7" fontSize="1.3" fill="#fff" textAnchor="middle">★</text>)}
+    {[1.9,3.8,5.7].map(x => <text key={x} x={x} y="3.1" fontSize="1.3" fill="#fff" textAnchor="middle">★</text>)}
+    {[0.95,2.85,4.75,6.65].map(x => <text key={x} x={x} y="4.5" fontSize="1.3" fill="#fff" textAnchor="middle">★</text>)}
+  </svg>
+);
+
+const FlagHK = () => (
+  <svg viewBox="0 0 4 3" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <rect width="4" height="3" fill="#DE2910" />
+    <g transform="translate(2,1.5) scale(0.9)">
+      {[0,72,144,216,288].map(deg => (
+        <path key={deg} transform={`rotate(${deg})`}
+          d="M0,-0.55 C0.18,-0.28 0.05,0.1 -0.2,0.28 C-0.45,0.45 -0.55,0.1 -0.35,-0.1 C-0.55,0.05 -0.55,-0.3 -0.3,-0.42 C-0.05,-0.55 0.1,-0.2 0,-0.55Z"
+          fill="#ffffff" />
+      ))}
+    </g>
+  </svg>
+);
+
+const FlagAU = () => (
+  <svg viewBox="0 0 60 30" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <rect width="60" height="30" fill="#00008B" />
+    <line x1="0" y1="0" x2="30" y2="30" stroke="#fff" strokeWidth="4" />
+    <line x1="30" y1="0" x2="0" y2="30" stroke="#fff" strokeWidth="4" />
+    <line x1="0" y1="0" x2="30" y2="30" stroke="#CC0000" strokeWidth="2.5" />
+    <line x1="30" y1="0" x2="0" y2="30" stroke="#CC0000" strokeWidth="2.5" />
+    <line x1="15" y1="0" x2="15" y2="30" stroke="#fff" strokeWidth="6" />
+    <line x1="0" y1="15" x2="30" y2="15" stroke="#fff" strokeWidth="6" />
+    <line x1="15" y1="0" x2="15" y2="30" stroke="#CC0000" strokeWidth="3.5" />
+    <line x1="0" y1="15" x2="30" y2="15" stroke="#CC0000" strokeWidth="3.5" />
+    <polygon points="44,22 45,25 48,25 45.5,27 46.5,30 44,28 41.5,30 42.5,27 40,25 43,25" fill="#fff" transform="scale(0.5) translate(42,-10)" />
+    <polygon points="51,4 52,7 55,7 52.5,9 53.5,12 51,10 48.5,12 49.5,9 47,7 50,7" fill="#fff" transform="scale(0.42) translate(48,4)" />
+    <polygon points="55,16 56,19 59,19 56.5,21 57.5,24 55,22 52.5,24 53.5,21 51,19 54,19" fill="#fff" transform="scale(0.38) translate(60,-4)" />
+    <polygon points="44,10 44.6,12 46.6,12 45,13.2 45.6,15.2 44,14 42.4,15.2 43,13.2 41.4,12 43.4,12" fill="#fff" transform="scale(0.4) translate(52,8)" />
+  </svg>
+);
+
+const FlagDE = () => (
+  <svg viewBox="0 0 5 3" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: '100%' }}>
+    <rect x="0" y="0" width="5" height="1" fill="#000000" />
+    <rect x="0" y="1" width="5" height="1" fill="#DD0000" />
+    <rect x="0" y="2" width="5" height="1" fill="#FFCE00" />
+  </svg>
+);
+
+const FLAG_MAP: Record<string, React.FC> = {
+  tokyo: FlagJP,
+  london: FlagGB,
+  newyork: FlagUS,
+  hongkong: FlagHK,
+  sydney: FlagAU,
+  frankfurt: FlagDE,
+};
+
 const MarketSessionCard: React.FC<{
   label: string;
   marketId: string;
@@ -559,6 +639,13 @@ const MarketSessionCard: React.FC<{
   const { t } = useLanguage();
   const cityName = count === 4 ? (MARKET_ABBR[marketId] || label) : label;
   const fontSize = count <= 3 ? 26 : 20;
+  const flagW = count <= 3 ? 130 : 110;
+  const flagH = count <= 3 ? 90 : 76;
+  const FlagComp = FLAG_MAP[marketId];
+  const maskStyle = {
+    WebkitMaskImage: 'radial-gradient(ellipse 78% 75% at 68% 68%, black 25%, transparent 75%)',
+    maskImage: 'radial-gradient(ellipse 78% 75% at 68% 68%, black 25%, transparent 75%)',
+  };
   return (
     <div style={{
       flex: 1,
@@ -569,9 +656,27 @@ const MarketSessionCard: React.FC<{
       flexDirection: 'column',
       gap: 0,
       minWidth: 0,
+      position: 'relative',
+      overflow: 'hidden',
     }}
     className={data.isOpen ? 'dark:bg-slate-900' : 'dark:bg-slate-950'}
     >
+      {/* Flag watermark */}
+      {FlagComp && (
+        <div style={{
+          position: 'absolute',
+          right: -10,
+          bottom: -10,
+          width: flagW,
+          height: flagH,
+          zIndex: 1,
+          opacity: data.isOpen ? 0.25 : 0.07,
+          ...maskStyle,
+        }}>
+          <FlagComp />
+        </div>
+      )}
+
       {/* City name */}
       <span style={{
         fontSize: 11,
@@ -583,6 +688,8 @@ const MarketSessionCard: React.FC<{
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
+        position: 'relative',
+        zIndex: 2,
       }} className="dark:text-slate-500">
         {cityName}
       </span>
@@ -595,11 +702,13 @@ const MarketSessionCard: React.FC<{
         lineHeight: 1,
         margin: '3px 0',
         color: data.isOpen ? '#1a1d2e' : '#9b9bb0',
+        position: 'relative',
+        zIndex: 2,
       }} className={data.isOpen ? 'dark:text-white' : 'dark:text-slate-500'}>
         {data.time}
       </span>
       {/* Status row */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5, position: 'relative', zIndex: 2 }}>
         <span style={{
           width: 5,
           height: 5,
