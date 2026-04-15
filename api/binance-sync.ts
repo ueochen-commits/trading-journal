@@ -260,16 +260,21 @@ export default async function handler(req: any, res: any) {
       }
 
       // 方法2: 同时检查当前持仓（补充 income 可能遗漏的）
+      // 保存完整持仓数据，后续用于填充开仓均价、持仓量等字段
+      const positionMap = new Map<string, any>();
       try {
         const positions = await futuresExchange.fetchPositions();
-        const activeSymbols = positions
-          .filter((p: any) => parseFloat(p.contracts || '0') !== 0)
-          .map((p: any) => p.symbol)
-          .filter((s: string) => !!s);
-        if (activeSymbols.length > 0) {
+        const activePositions = positions.filter((p: any) => parseFloat(p.contracts || '0') !== 0);
+        if (activePositions.length > 0) {
+          const activeSymbols = activePositions.map((p: any) => p.symbol).filter((s: string) => !!s);
           debugLog.push(`FUTURES active positions: ${activeSymbols.join(',')}`);
-          for (const s of activeSymbols) {
-            if (!futuresSymbols.includes(s)) futuresSymbols.push(s);
+          for (const p of activePositions) {
+            if (p.symbol) {
+              if (!futuresSymbols.includes(p.symbol)) futuresSymbols.push(p.symbol);
+              // 用 Binance 原始 symbol（如 ETHUSDT）作为 key，方便后续匹配 income 记录
+              const rawSymbol = p.info?.symbol || p.symbol.split(':')[0].replace('/', '');
+              positionMap.set(rawSymbol, p);
+            }
           }
         }
       } catch (e: any) {
@@ -311,15 +316,15 @@ export default async function handler(req: any, res: any) {
       }
 
       // Fallback: 如果 fetchMyTrades 没拿到任何合约交易（可能缺少 Enable Futures 权限），
-      // 用 income 记录中的 REALIZED_PNL + COMMISSION 构建交易记录
+      // 用 income 记录 + fetchPositions 持仓数据构建交易记录
       const futuresTradeCount = allPairedTrades.filter(t => t.symbol?.endsWith('_PERP')).length;
-      if (futuresTradeCount === 0 && incomeRecords.length > 0) {
-        debugLog.push('FUTURES fetchMyTrades returned 0 trades, falling back to income records');
+      if (futuresTradeCount === 0 && (incomeRecords.length > 0 || positionMap.size > 0)) {
+        debugLog.push('FUTURES fetchMyTrades returned 0 trades, falling back to income + position data');
 
+        // --- 已平仓交易：从 income 记录构建 ---
         const pnlRecords = incomeRecords.filter(r => r.incomeType === 'REALIZED_PNL' && parseFloat(r.income) !== 0);
         const commissionRecords = incomeRecords.filter(r => r.incomeType === 'COMMISSION');
 
-        // 按 symbol + 秒级时间戳分组，合并同一笔交易的多条记录
         const tradeGroups = new Map<string, { pnl: number; fees: number; time: number; symbol: string }>();
 
         for (const rec of pnlRecords) {
@@ -358,7 +363,44 @@ export default async function handler(req: any, res: any) {
           });
         }
 
-        debugLog.push(`FUTURES income fallback: ${tradeGroups.size} trades constructed`);
+        debugLog.push(`FUTURES income fallback: ${tradeGroups.size} closed trades constructed`);
+
+        // --- 当前持仓：从 fetchPositions 构建，包含完整数据 ---
+        const openSymbolsFromIncome = new Set<string>();
+        for (const [, pos] of positionMap) {
+          const rawSymbol = pos.info?.symbol || pos.symbol?.split(':')[0].replace('/', '');
+          const base = rawSymbol.replace(/USDT$/, '');
+          const cleanSymbol = base ? `${base}_PERP` : rawSymbol;
+          openSymbolsFromIncome.add(cleanSymbol);
+
+          const entryPrice = parseFloat(pos.entryPrice || pos.info?.entryPrice || '0');
+          const quantity = Math.abs(parseFloat(pos.contracts || pos.info?.positionAmt || '0'));
+          const side = pos.side || (parseFloat(pos.info?.positionAmt || '0') >= 0 ? 'long' : 'short');
+          const margin = parseFloat(pos.initialMargin || pos.info?.isolatedMargin || pos.info?.initialMargin || '0');
+          const unrealizedPnl = parseFloat(pos.unrealizedPnl || pos.info?.unRealizedProfit || '0');
+          const leverage = parseInt(pos.leverage || pos.info?.leverage || '1', 10);
+
+          allPairedTrades.push({
+            symbol: cleanSymbol,
+            entryTime: Date.now(),
+            exitTime: null,
+            direction: side === 'short' ? 'SHORT' : 'LONG',
+            entryPrice,
+            exitPrice: 0,
+            quantity,
+            pnl: parseFloat(unrealizedPnl.toFixed(4)),
+            fees: 0,
+            orderId: `position_${rawSymbol}_${Date.now()}`,
+            isOpen: true,
+            riskAmount: parseFloat(margin.toFixed(4)),
+            leverage,
+            fromPosition: true,
+          });
+        }
+
+        if (positionMap.size > 0) {
+          debugLog.push(`FUTURES position data: ${positionMap.size} open positions with full details`);
+        }
       }
     } catch (e: any) {
       debugLog.push(`FUTURES init ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
