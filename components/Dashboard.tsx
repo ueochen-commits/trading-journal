@@ -518,15 +518,14 @@ const MOCK_GOAL_HISTORY = [
 const useMarketHours = () => {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
-    const timer = setInterval(() => setNow(new Date()), 1000);
+    const timer = setInterval(() => setNow(new Date()), 60000);
     return () => clearInterval(timer);
   }, []);
   const getMarketStatus = (config: typeof MARKET_OPTIONS[0]) => {
     const format = new Intl.DateTimeFormat('en-US', {
       timeZone: config.zone,
-      hour: 'numeric',
-      minute: 'numeric',
-      second: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
       hour12: false,
       weekday: 'short'
     });
@@ -539,32 +538,81 @@ const useMarketHours = () => {
     const endTimeVal = config.end[0] * 60 + config.end[1];
     const isWeekend = weekday === 'Sat' || weekday === 'Sun';
     const isOpen = !isWeekend && currentTimeVal >= startTimeVal && currentTimeVal < endTimeVal;
-    const timeString = parts.filter(p => ['hour', 'minute', 'second', 'literal'].includes(p.type)).map(p => p.value).join('');
-    return { time: timeString, isOpen };
+    const hh = String(h).padStart(2, '0');
+    const mm = String(m).padStart(2, '0');
+    return { time: `${hh}:${mm}`, isOpen };
   };
   return { getMarketStatus };
 };
 
-const MarketSessionCard: React.FC<{ label: string, data: any, color: string, icon: React.ElementType }> = ({ label, data, color, icon: Icon }) => {
-    const { t } = useLanguage();
-    return (
-        <div className={`relative flex items-center justify-between p-3 rounded-xl border transition-all ${data.isOpen ? `bg-${color}-50 dark:bg-${color}-900/10 border-${color}-200 dark:border-${color}-500/30` : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800 opacity-70'}`}>
-            <div className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${data.isOpen ? `bg-${color}-100 dark:bg-${color}-500/20 text-${color}-600 dark:text-${color}-400` : 'bg-slate-200 dark:bg-slate-800 text-slate-400'}`}>
-                    <Icon className="w-4 h-4" />
-                </div>
-                <div>
-                    <p className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{label}</p>
-                    <p className="font-mono text-sm font-bold text-slate-900 dark:text-white tabular-nums">{data.time}</p>
-                </div>
-            </div>
-            <div className="text-right">
-                <span className={`text-[10px] font-bold px-2 py-1 rounded-full uppercase ${data.isOpen ? `bg-${color}-500 text-white` : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
-                    {data.isOpen ? t.dashboard.marketHours.open : t.dashboard.marketHours.closed}
-                </span>
-            </div>
-        </div>
-    );
+const MARKET_ABBR: Record<string, string> = {
+  sydney: 'SYD', tokyo: 'TYO', hongkong: 'HKG', frankfurt: 'FRA', london: 'LON', newyork: 'NYC',
+};
+
+const MarketSessionCard: React.FC<{
+  label: string;
+  marketId: string;
+  data: { time: string; isOpen: boolean };
+  count: number;
+  isFirst: boolean;
+}> = ({ label, marketId, data, count, isFirst }) => {
+  const { t } = useLanguage();
+  const cityName = count === 4 ? (MARKET_ABBR[marketId] || label) : label;
+  const fontSize = count <= 3 ? 26 : 20;
+  return (
+    <div style={{
+      flex: 1,
+      padding: '10px 14px',
+      backgroundColor: data.isOpen ? '#ffffff' : '#f7f7f9',
+      borderLeft: isFirst ? 'none' : '0.5px solid #e4e4ec',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 0,
+      minWidth: 0,
+    }}
+    className={data.isOpen ? 'dark:bg-slate-900' : 'dark:bg-slate-950'}
+    >
+      {/* City name */}
+      <span style={{
+        fontSize: 11,
+        fontWeight: 400,
+        letterSpacing: '0.08em',
+        textTransform: 'uppercase',
+        color: '#9b9bb0',
+        lineHeight: 1.2,
+        whiteSpace: 'nowrap',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis',
+      }} className="dark:text-slate-500">
+        {cityName}
+      </span>
+      {/* Time */}
+      <span style={{
+        fontSize,
+        fontWeight: 500,
+        fontVariantNumeric: 'tabular-nums',
+        letterSpacing: '-0.02em',
+        lineHeight: 1,
+        margin: '3px 0',
+        color: data.isOpen ? '#1a1d2e' : '#9b9bb0',
+      }} className={data.isOpen ? 'dark:text-white' : 'dark:text-slate-500'}>
+        {data.time}
+      </span>
+      {/* Status row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+        <span style={{
+          width: 5,
+          height: 5,
+          borderRadius: '50%',
+          flexShrink: 0,
+          backgroundColor: data.isOpen ? '#639922' : 'rgba(155,155,176,0.3)',
+        }} />
+        <span style={{ fontSize: 11, color: '#9b9bb0' }} className="dark:text-slate-500">
+          {data.isOpen ? t.dashboard.marketHours.open : t.dashboard.marketHours.closed}
+        </span>
+      </div>
+    </div>
+  );
 };
 
 const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: boolean, onClose: () => void, history: any[], language: string }) => {
@@ -1342,8 +1390,24 @@ const Dashboard: React.FC<DashboardProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-8 xl:col-span-9 space-y-6">
               <div id="dashboard-timezone" className="relative group/config">
-                  <div className={`grid grid-cols-1 md:grid-cols-${selectedMarketIds.length === 4 ? '2 lg:grid-cols-4' : selectedMarketIds.length === 2 ? '2' : '3'} gap-4 transition-all duration-300`}>
-                      {MARKET_OPTIONS.filter(m => selectedMarketIds.includes(m.id)).map(market => (<MarketSessionCard key={market.id} label={t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey} data={getMarketStatus(market)} color={market.color} icon={market.icon} />))}
+                  <div style={{
+                    display: 'flex',
+                    flexWrap: 'nowrap',
+                    border: '0.5px solid #e4e4ec',
+                    borderRadius: 12,
+                    overflow: 'hidden',
+                    backgroundColor: '#ffffff',
+                  }} className="dark:border-slate-700 dark:bg-slate-900">
+                    {MARKET_OPTIONS.filter(m => selectedMarketIds.includes(m.id)).map((market, idx) => (
+                      <MarketSessionCard
+                        key={market.id}
+                        label={t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}
+                        marketId={market.id}
+                        data={getMarketStatus(market)}
+                        count={selectedMarketIds.length}
+                        isFirst={idx === 0}
+                      />
+                    ))}
                   </div>
                   <button onClick={() => setIsMarketConfigOpen(true)} className="absolute -top-3 -right-2 p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-500 opacity-0 group-hover/config:opacity-100 transition-all hover:scale-110 z-10" title={t.dashboard.marketHours.configure}><Settings className="w-3.5 h-3.5" /></button>
               </div>
@@ -1588,7 +1652,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           </div>
       </div>
 
-      {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); return (<button key={market.id} onClick={() => toggleMarket(market.id)} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}
+      {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); const isDisabled = !isSelected && selectedMarketIds.length >= 4; return (<button key={market.id} onClick={() => toggleMarket(market.id)} disabled={isDisabled} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isDisabled ? 'opacity-40 cursor-not-allowed bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}
 
       {isGoalModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Target className="w-5 h-5 text-pink-500" />{t.dashboard.goals.modalTitle}</h3><button onClick={() => setIsGoalModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-4"><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.type}</label><select value={tempGoal.type} onChange={(e) => setTempGoal({...tempGoal, type: e.target.value as any})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500"><option value="amount">{t.dashboard.goals.types.amount}</option><option value="percentage">{t.dashboard.goals.types.percentage}</option><option value="r_multiple">{t.dashboard.goals.types.r_multiple}</option></select></div><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.target}</label><input type="number" value={tempGoal.value} onChange={(e) => setTempGoal({...tempGoal, value: Number(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500 font-mono" /></div><div className="flex items-center gap-2 mt-2"><input type="checkbox" checked={tempGoal.isActive} onChange={(e) => setTempGoal({...tempGoal, isActive: e.target.checked})} className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500 border-gray-300" /><label className="text-sm text-slate-600 dark:text-slate-400">{t.dashboard.discipline.active}</label></div><button onClick={() => { if (onSetWeeklyGoal) onSetWeeklyGoal(tempGoal); setIsGoalModalOpen(false); }} className="w-full mt-4 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-bold transition-colors shadow-lg shadow-pink-500/20">{t.dashboard.tracker.save}</button></div></div></div>)}
 
