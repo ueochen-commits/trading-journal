@@ -173,7 +173,7 @@ export default async function handler(req: any, res: any) {
       }
     } catch {
       // fallback: 只用 USDT 余额
-      spotUsdtTotal = balance?.USDT?.total ?? balance?.total?.USDT ?? 0;
+      spotUsdtTotal = (balance as any)?.USDT?.total ?? (balance as any)?.total?.USDT ?? 0;
     }
 
     // 合约余额稍后在初始化 futuresExchange 后获取
@@ -243,7 +243,7 @@ export default async function handler(req: any, res: any) {
       // 获取合约账户余额
       try {
         const futuresBalance = await futuresExchange.fetchBalance();
-        futuresUsdtTotal = futuresBalance?.USDT?.total ?? futuresBalance?.total?.USDT ?? 0;
+        futuresUsdtTotal = (futuresBalance as any)?.USDT?.total ?? (futuresBalance as any)?.total?.USDT ?? 0;
       } catch (e: any) {
         debugLog.push(`FUTURES balance ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
       }
