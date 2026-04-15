@@ -154,7 +154,8 @@ export const userDataService = {
         const ruleDaily = ruleSettingsRes.data?.net_max_loss_per_day_enabled && ruleSettingsRes.data?.net_max_loss_per_day_value > 0
           ? ruleSettingsRes.data.net_max_loss_per_day_value : null;
         if (!base && !ruleDaily) return null;
-        return { ...(base || {}), ...(ruleDaily ? { maxDailyLoss: ruleDaily } : {}) };
+        const defaults = { accountSize: 10000, maxDailyLoss: 500, maxTradeRisk: 100, maxConsecutiveLosses: 3, maxOpenPositions: 2 };
+        return { ...defaults, ...(base || {}), ...(ruleDaily ? { maxDailyLoss: ruleDaily } : {}) };
       })(),
       profile: profilesRes?.data || null,
       tradingAccounts: (accountsRes.data || []).map(dbToTradingAccount),
