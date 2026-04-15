@@ -701,7 +701,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
 
           {/* Hexagonal grid layers (outer to inner, so inner paints on top) */}
           {(() => {
-            const layerFills = ['#eaeaf2', '#f4f4f8', '#eaeaf2', '#f4f4f8', '#eaeaf2'];
+            const layerFills = ['#f0f0f6', '#f8f8fc', '#f0f0f6', '#f8f8fc', '#f0f0f6'];
             return [...Array(layers)].map((_, idx) => {
               const i = layers - 1 - idx;
               return <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill={layerFills[i]} stroke="#dddde8" strokeWidth={1} />;
