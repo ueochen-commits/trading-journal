@@ -1625,7 +1625,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <TZAvgWinLossCard ratio={stats.avgWinLossRatio} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, width: '100%', alignItems: 'stretch' }}>
 
               <div id="dashboard-equity" style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
                 {/* Header */}
@@ -1638,9 +1638,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
                 </div>
                 {/* Chart */}
-                <div style={{ height: 130 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mergedEquityData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <div style={{ height: 280 }}> margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="pnlGradientPos" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#1D9E75" stopOpacity={0.3}/>
@@ -1709,7 +1707,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
                       <TZInfoIcon />
                     </div>
-                    <div style={{ height: 130, flex: 1 }}>
+                    <div style={{ height: 280, flex: 1 }}>
                       <ResponsiveContainer width="100%" height="100%">
                         <ComposedChart data={winRateData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                           <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
