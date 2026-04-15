@@ -1160,7 +1160,11 @@ const Dashboard: React.FC<DashboardProps> = ({
     const grossLoss = lossTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
     const profitFactor = Math.abs(grossLoss) > 0 ? Math.abs(grossProfit / grossLoss) : grossProfit > 0 ? grossProfit : 0;
     const today = new Date().toDateString();
-    const todayPnl = trades.filter(t => new Date(t.entryDate).toDateString() === today).reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+    const todayTrades = allTrades.filter(t =>
+      new Date(t.entryDate).toDateString() === today &&
+      (selectedAccountId === 'all' || t.accountId === selectedAccountId)
+    );
+    const todayPnl = todayTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
     // Sparkline: last 12 trades cumulative PnL
     const sorted = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).slice(-12);
     let cum = 0;
@@ -1180,7 +1184,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     return { totalTrades, winRate, netPnl, profitFactor, todayPnl, pnlSpark, wrSpark,
       winCount: winTrades.length, lossCount: lossTrades.length, breakEvenCount: breakEvenTrades.length,
       avgWin, avgLoss, avgWinLossRatio, winDays, lossDays, breakEvenDays, dayWinRate };
-  }, [trades]);
+  }, [trades, allTrades, selectedAccountId]);
 
   const grailScore = useMemo(() => {
     const { winRate, profitFactor, totalTrades } = stats;
