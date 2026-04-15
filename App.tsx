@@ -77,7 +77,6 @@ import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
 import { fetchTradesFromExchange, fetchAccountBalance, generateAccountName } from './services/exchangeService';
-import { useAutoSync } from './hooks/useAutoSync';
 import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
@@ -166,7 +165,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 
 // Wrapper to use context
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
-  const { isAuthenticated, isLoading, openProfile, user, onboardingCompleted, markOnboardingComplete, updateProfile } = useUser();
+  const { isAuthenticated, isLoading, openProfile, user, onboardingCompleted, markOnboardingComplete } = useUser();
   const { t, language } = useLanguage();
   const { /* startInitialTour */ } = useTour(); // TEMPORARILY DISABLED
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -262,17 +261,6 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
         if (result.riskSettings) setRiskSettings(result.riskSettings);
-
-        // 把 exchangeConnections 同步到 UserContext，供 useAutoSync 使用
-        if (result.exchangeConnections && result.exchangeConnections.length > 0) {
-          console.log('[loadAllData] 同步 exchangeConnections 到 UserContext:', result.exchangeConnections.map(c => ({
-            exchange: c.exchange,
-            hasKey: !!c.apiKey && c.apiKey.length > 10,
-            hasSecret: !!c.apiSecret && c.apiSecret.length > 10,
-            isConnected: c.isConnected,
-          })));
-          updateProfile({ exchangeConnections: result.exchangeConnections });
-        }
 
         // 确保 Demo Account 存在，并将 NULL account_id 的旧交易迁移过去
         const demoAccount = await userDataService.ensureDefaultAccount();
@@ -529,12 +517,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   // 导入交易到 Supabase
   const handleImportTrades = async (imported: Trade[]) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      console.error('[handleImportTrades] 用户未登录，跳过导入');
-      return;
-    }
-
-    console.log(`[handleImportTrades] 准备导入 ${imported.length} 笔交易, accountIds:`, imported.map(t => t.accountId));
+    if (!user) return;
 
     const data = imported.map(trade => {
       const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
@@ -567,22 +550,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     const { error } = await supabase.from('trading_journals').insert(data);
 
     if (error) {
-      console.error('[handleImportTrades] 插入失败:', error);
+      console.error('Error importing trades:', error);
     } else {
-      console.log(`[handleImportTrades] 成功导入 ${imported.length} 笔交易`);
       setTrades([...imported, ...trades]);
     }
   };
 
-  // 付费用户自动轮询同步币安交易
-  const isPaidUser = user.tier === 'pro' || user.tier === 'elite';
-  useAutoSync({
-    enabled: isPaidUser && (user.exchangeConnections ?? []).length > 0,
-    exchangeConnections: user.exchangeConnections ?? [],
-    tradingAccounts,
-    existingTrades: trades,
-    onNewTrades: handleImportTrades,
-  });
 
   const handleAddStrategy = async (strategy: Strategy) => {
     const { data, error } = await userDataService.saveStrategy(strategy);
