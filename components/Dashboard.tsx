@@ -3,7 +3,7 @@ import { Trade, TradeStatus, RiskSettings, TrackerRule, TrackerRuleType, DailyPl
 import {
   AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
-  Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Legend, ComposedChart,
+  Legend, ComposedChart,
   RadialBarChart, RadialBar,
   ScatterChart, Scatter, ReferenceLine
 } from 'recharts';
@@ -622,64 +622,160 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
     );
 };
 
+const grailScoreColorStops = ['#ff4d4d', '#ff9500', '#ffcd00', '#7ecb3a', '#3dbf7a'];
+function interpolateGrailColor(score: number): string {
+  const t = Math.min(100, Math.max(0, score)) / 100;
+  const seg = t * (grailScoreColorStops.length - 1);
+  const i = Math.min(Math.floor(seg), grailScoreColorStops.length - 2);
+  const f = seg - i;
+  const parse = (hex: string) => [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+  const c0 = parse(grailScoreColorStops[i]), c1 = parse(grailScoreColorStops[i + 1]);
+  const r = Math.round(c0[0] + (c1[0] - c0[0]) * f);
+  const g = Math.round(c0[1] + (c1[1] - c0[1]) * f);
+  const b = Math.round(c0[2] + (c1[2] - c0[2]) * f);
+  return `rgb(${r},${g},${b})`;
+}
+
+const GRAIL_LABELS = ['Win %', 'Profit factor', 'Avg win/loss', 'Recovery factor', 'Max drawdown', 'Consistency'];
+
 const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData }) => {
   const clampedScore = Math.min(100, Math.max(0, composite));
+  const indicatorColor = interpolateGrailColor(clampedScore);
+
+  // SVG radar geometry
+  const svgW = 280, svgH = 260;
+  const cx = svgW / 2, cy = svgH / 2;
+  const maxR = 95;
+  const layers = 5;
+  const sides = 6;
+  const angleOffset = -Math.PI / 2; // start from top
+
+  const hexPoint = (r: number, idx: number) => {
+    const angle = angleOffset + (2 * Math.PI * idx) / sides;
+    return [cx + r * Math.cos(angle), cy + r * Math.sin(angle)] as [number, number];
+  };
+
+  const hexPath = (r: number) => {
+    const pts = Array.from({ length: sides }, (_, i) => hexPoint(r, i));
+    return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
+  };
+
+  // Map radarData values to points (order: Win%, Profit factor, Avg win/loss, Recovery factor, Max drawdown, Consistency)
+  const dataValues = GRAIL_LABELS.map(label => {
+    const found = radarData.find(d => d.subject === label);
+    return found ? Math.min(found.value / found.fullMark, 1) : 0;
+  });
+
+  const dataPoints = dataValues.map((v, i) => hexPoint(maxR * v, i));
+  const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
+
+  // Label positions (pushed outward)
+  const labelOffset = 18;
+  const labelPositions = Array.from({ length: sides }, (_, i) => {
+    const angle = angleOffset + (2 * Math.PI * i) / sides;
+    return [cx + (maxR + labelOffset) * Math.cos(angle), cy + (maxR + labelOffset) * Math.sin(angle)] as [number, number];
+  });
+
+  const labelAnchors: Array<'middle' | 'start' | 'end'> = ['middle', 'start', 'start', 'middle', 'end', 'end'];
+  const labelDy = ['-0.3em', '0.35em', '0.35em', '1em', '0.35em', '0.35em'];
+
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#f0f0f0] dark:border-slate-800 p-6">
       {/* Title row */}
-      <div className="flex items-center justify-between px-5 pt-5 pb-3">
-        <span className="text-sm font-bold text-slate-800 dark:text-slate-100 tracking-tight">Grail Score</span>
-        <div className="w-5 h-5 rounded-full border border-slate-300 dark:border-slate-600 flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors">
-          <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 leading-none">i</span>
+      <div className="flex items-center justify-between">
+        <span className="text-[15px] font-semibold" style={{ color: '#1a1a2e' }}>
+          <span className="dark:text-slate-100">Grail Score</span>
+        </span>
+        <div className="w-5 h-5 rounded-full border border-[#ccc] dark:border-slate-600 flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors">
+          <span className="text-[10px] font-bold leading-none" style={{ color: '#aaa' }}>i</span>
         </div>
       </div>
-      <div className="h-px bg-slate-100 dark:bg-slate-800 mx-5" />
+      <div className="h-px mt-3 mb-2" style={{ backgroundColor: '#f0f0f0' }} />
 
-      {/* Radar chart */}
-      <div className="px-4 pt-2 pb-1" style={{ height: 240 }}>
-        <ResponsiveContainer width="100%" height="100%">
-          <RadarChart data={radarData} margin={{ top: 18, right: 30, bottom: 18, left: 30 }}>
-            <PolarGrid stroke="#e8eaf0" strokeDasharray="0" className="dark:stroke-slate-700/50" />
-            <PolarAngleAxis
-              dataKey="subject"
-              tick={{ fontSize: 9.5, fill: '#94a3b8', fontWeight: 600 }}
-              tickLine={false}
-            />
-            <PolarRadiusAxis domain={[0, 100]} tick={false} axisLine={false} />
-            <Radar
-              dataKey="value"
-              stroke="#6d28d9"
-              fill="rgba(167,139,250,0.18)"
-              strokeWidth={1.5}
-              dot={{ r: 3, fill: '#6d28d9', strokeWidth: 0 }}
-            />
-          </RadarChart>
-        </ResponsiveContainer>
+      {/* Pure SVG Radar */}
+      <div className="flex justify-center">
+        <svg width={svgW} height={svgH} viewBox={`0 0 ${svgW} ${svgH}`}>
+          <defs>
+            <radialGradient id="grailRadialGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(109,40,217,0.35)" />
+              <stop offset="100%" stopColor="rgba(167,139,250,0.08)" />
+            </radialGradient>
+          </defs>
+
+          {/* Hexagonal grid layers */}
+          {Array.from({ length: layers }, (_, i) => (
+            <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill="none" stroke="#ebebf0" strokeWidth={1} />
+          ))}
+
+          {/* Axis lines from center to vertices */}
+          {Array.from({ length: sides }, (_, i) => {
+            const [px, py] = hexPoint(maxR, i);
+            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="#ebebf0" strokeWidth={1} />;
+          })}
+
+          {/* Filled data area */}
+          <path d={dataPath} fill="url(#grailRadialGrad)" stroke="#7c3aed" strokeWidth={1.5} />
+
+          {/* Data points */}
+          {dataPoints.map((p, i) => (
+            <circle key={`dot-${i}`} cx={p[0]} cy={p[1]} r={3.5} fill="#ffffff" stroke="#7c3aed" strokeWidth={1.5} />
+          ))}
+
+          {/* Labels */}
+          {GRAIL_LABELS.map((label, i) => (
+            <text
+              key={`label-${i}`}
+              x={labelPositions[i][0]}
+              y={labelPositions[i][1]}
+              textAnchor={labelAnchors[i]}
+              dy={labelDy[i]}
+              fontSize={12}
+              fill="#888"
+              fontWeight={400}
+            >
+              {label}
+            </text>
+          ))}
+        </svg>
       </div>
 
-      {/* Score + gradient bar */}
-      <div className="px-5 pb-5">
-        <div className="flex items-end justify-between mb-2">
-          <div>
-            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">Your Grail Score</p>
-            <span className="text-3xl font-black tabular-nums text-slate-900 dark:text-white leading-none">{clampedScore.toFixed(2)}</span>
+      {/* Score + progress bar (side by side) */}
+      <div className="flex items-center gap-5 mt-2">
+        {/* Left: score */}
+        <div className="flex-shrink-0">
+          <p className="uppercase text-[11px] font-semibold tracking-[1px]" style={{ color: '#999' }}>YOUR GRAIL SCORE</p>
+          <span className="text-[40px] font-bold tabular-nums leading-none" style={{ color: '#1a1a2e' }}>
+            <span className="dark:text-white">{clampedScore.toFixed(2)}</span>
+          </span>
+        </div>
+
+        {/* Right: progress bar */}
+        <div className="flex-1 flex flex-col justify-center">
+          <div className="relative">
+            {/* Bar track */}
+            <div className="h-[5px] w-full rounded-full overflow-hidden" style={{ backgroundColor: '#e5e5e5' }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${clampedScore}%`,
+                  background: `linear-gradient(to right, ${grailScoreColorStops.join(', ')})`
+                }}
+              />
+            </div>
+            {/* Indicator dot */}
+            <div
+              className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full transition-all duration-700"
+              style={{
+                left: `calc(${clampedScore}% - 6px)`,
+                backgroundColor: indicatorColor,
+                boxShadow: '0 1px 5px rgba(0,0,0,0.2)'
+              }}
+            />
           </div>
-        </div>
-
-        {/* Gradient bar */}
-        <div className="relative mt-3">
-          <div className="h-2.5 w-full rounded-full overflow-hidden" style={{
-            background: 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e, #06b6d4)'
-          }} />
-          {/* Indicator dot */}
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white border-2 border-slate-700 shadow-md transition-all duration-700"
-            style={{ left: `calc(${clampedScore}% - 8px)` }}
-          />
           {/* Tick labels */}
           <div className="flex justify-between mt-1.5">
             {[0, 20, 40, 60, 80, 100].map(n => (
-              <span key={n} className="text-[9px] text-slate-400 font-medium tabular-nums">{n}</span>
+              <span key={n} className="text-[11px] tabular-nums" style={{ color: '#ccc' }}>{n}</span>
             ))}
           </div>
         </div>
