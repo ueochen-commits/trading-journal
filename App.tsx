@@ -950,7 +950,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onUpdateDisciplineRules={handleUpdateDisciplineRules}
                           onCheckDisciplineRule={handleCheckDisciplineRule}
                           tradingAccounts={tradingAccounts}
-                          onManageAccounts={() => handleSetActiveTab('settings')}
+                          onManageAccounts={() => { setSettingsInitialSection('brokers'); handleSetActiveTab('settings'); setTimeout(() => setSettingsInitialSection(undefined), 200); }}
                       />
                   </PageContainer>
               );
