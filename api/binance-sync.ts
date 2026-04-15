@@ -216,19 +216,21 @@ export default async function handler(req: any, res: any) {
       // 方法1: 用 /fapi/v1/income 获取所有收入记录（分页），从中提取交易过的品种
       let futuresSymbols: string[] = [];
       const rawSymbols = new Set<string>();
+      const incomeRecords: any[] = [];
       try {
         let incomeStartTime = since;
         let totalRecords = 0;
         let page = 0;
         while (true) {
-          const incomeRecords = await futuresExchange.fapiPrivateGetIncome({
+          const incomeBatch = await futuresExchange.fapiPrivateGetIncome({
             startTime: incomeStartTime,
             limit: 1000,
           });
-          const batch = incomeRecords || [];
+          const batch = incomeBatch || [];
           totalRecords += batch.length;
           for (const record of batch) {
             if (record.symbol) rawSymbols.add(record.symbol);
+            incomeRecords.push(record);
           }
           page++;
           // 不足 1000 条说明已经拿完，或者空结果
@@ -306,6 +308,57 @@ export default async function handler(req: any, res: any) {
         } catch (e: any) {
           debugLog.push(`FUTURES ${symbol}: ERROR ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
         }
+      }
+
+      // Fallback: 如果 fetchMyTrades 没拿到任何合约交易（可能缺少 Enable Futures 权限），
+      // 用 income 记录中的 REALIZED_PNL + COMMISSION 构建交易记录
+      const futuresTradeCount = allPairedTrades.filter(t => t.symbol?.endsWith('_PERP')).length;
+      if (futuresTradeCount === 0 && incomeRecords.length > 0) {
+        debugLog.push('FUTURES fetchMyTrades returned 0 trades, falling back to income records');
+
+        const pnlRecords = incomeRecords.filter(r => r.incomeType === 'REALIZED_PNL' && parseFloat(r.income) !== 0);
+        const commissionRecords = incomeRecords.filter(r => r.incomeType === 'COMMISSION');
+
+        // 按 symbol + 秒级时间戳分组，合并同一笔交易的多条记录
+        const tradeGroups = new Map<string, { pnl: number; fees: number; time: number; symbol: string }>();
+
+        for (const rec of pnlRecords) {
+          const timeKey = Math.floor(parseInt(rec.time) / 1000);
+          const key = `${rec.symbol}_${timeKey}`;
+          if (!tradeGroups.has(key)) {
+            tradeGroups.set(key, { pnl: 0, fees: 0, time: parseInt(rec.time), symbol: rec.symbol });
+          }
+          tradeGroups.get(key)!.pnl += parseFloat(rec.income);
+        }
+
+        for (const rec of commissionRecords) {
+          const timeKey = Math.floor(parseInt(rec.time) / 1000);
+          const key = `${rec.symbol}_${timeKey}`;
+          if (tradeGroups.has(key)) {
+            tradeGroups.get(key)!.fees += Math.abs(parseFloat(rec.income));
+          }
+        }
+
+        for (const [, group] of tradeGroups) {
+          const base = group.symbol.replace(/USDT$/, '');
+          const cleanSymbol = base ? `${base}_PERP` : group.symbol;
+
+          allPairedTrades.push({
+            symbol: cleanSymbol,
+            entryTime: group.time,
+            exitTime: group.time,
+            direction: 'LONG',
+            entryPrice: 0,
+            exitPrice: 0,
+            quantity: 0,
+            pnl: parseFloat(group.pnl.toFixed(4)),
+            fees: parseFloat(group.fees.toFixed(4)),
+            orderId: `income_${group.time}`,
+            fromIncome: true,
+          });
+        }
+
+        debugLog.push(`FUTURES income fallback: ${tradeGroups.size} trades constructed`);
       }
     } catch (e: any) {
       debugLog.push(`FUTURES init ERROR: ${e.constructor.name} - ${e.message?.slice(0, 80)}`);
