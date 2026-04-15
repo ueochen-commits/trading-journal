@@ -669,6 +669,9 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
+    // 先删除该账户下的所有交易记录
+    await supabase.from('trading_journals').delete().eq('account_id', id).eq('user_id', userId);
+
     const { error } = await supabase.from('trading_accounts').delete().eq('id', id).eq('user_id', userId);
     return { error };
   },

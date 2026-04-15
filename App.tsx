@@ -1115,6 +1115,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onDeleteAccount={async (id) => {
                   await userDataService.deleteTradingAccount(id);
                   setTradingAccounts(prev => prev.filter(a => a.id !== id));
+                  setTrades(prev => prev.filter(t => t.accountId !== id));
                 }}
                 onSyncAccount={async (id) => {
                   const account = tradingAccounts.find(a => a.id === id);
