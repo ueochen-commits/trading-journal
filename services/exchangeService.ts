@@ -54,7 +54,7 @@ export const fetchTradesFromExchange = async (
     onLog?: (msg: string) => void,
     accountId?: string,
     startDate?: string,
-): Promise<Trade[]> => {
+): Promise<{ trades: Trade[]; balance: number; currency: string }> => {
 
     if (!apiKey || !apiSecret) {
         throw new Error('缺少 API 凭证');
@@ -95,7 +95,7 @@ export const fetchTradesFromExchange = async (
 
     if (onLog) onLog(`[${new Date().toLocaleTimeString()}] 导入完成，共 ${trades.length} 笔交易`);
 
-    return trades;
+    return { trades, balance: data.balance ?? 0, currency: data.currency ?? 'USDT' };
 };
 
 // 返回账户余额（从 binance-sync 响应中提取）

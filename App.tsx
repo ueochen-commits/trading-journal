@@ -76,7 +76,7 @@ import { TourProvider, useTour } from './components/TourContext';
 import { SocialProvider } from './components/SocialContext';
 import { supabase } from './supabaseClient';
 import { userDataService } from './services/userDataService';
-import { fetchTradesFromExchange, fetchAccountBalance, generateAccountName } from './services/exchangeService';
+import { fetchTradesFromExchange, generateAccountName } from './services/exchangeService';
 import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
@@ -741,8 +741,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         return;
       }
 
-      // 3. 调用真实 Binance API 拉取交易数据
-      const importedTrades = await fetchTradesFromExchange(
+      // 3. 调用真实 Binance API 拉取交易数据 + 余额
+      const { trades: importedTrades, balance: fetchedBalance, currency: fetchedCurrency } = await fetchTradesFromExchange(
         connectingExchange.name,
         data.apiKey,
         data.apiSecret,
@@ -750,9 +750,6 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         accountData.id,
         data.startDate,
       );
-
-      // 3b. 同时获取真实余额
-      const balanceInfo = await fetchAccountBalance(data.apiKey, data.apiSecret);
 
       // 4. 写入 trading_journals（带 account_id）
       if (importedTrades.length > 0) {
@@ -791,7 +788,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       await userDataService.updateTradingAccount(accountData.id, {
         syncStatus: 'synced',
         lastSync: new Date().toISOString(),
-        ...(balanceInfo ? { balance: balanceInfo.balance, currency: balanceInfo.currency } : {}),
+        balance: fetchedBalance,
+        currency: fetchedCurrency,
       });
 
       // 6. 刷新本地账户列表（先更新，再跳转，确保 SettingsPage 拿到最新数据）
