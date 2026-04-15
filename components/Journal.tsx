@@ -1,9 +1,9 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { 
-    Plus, Search, Trash2, Edit2, 
-    X, Check, ChevronRight, AlertTriangle, 
-    ShieldCheck, Smile, Meh, Frown, Zap, Flame, Clock, 
-    Calendar, TrendingUp, TrendingDown, Briefcase, Image as ImageIcon, 
+import {
+    Plus, Search, Trash2, Edit2,
+    X, Check, ChevronRight, AlertTriangle,
+    ShieldCheck, Smile, Meh, Frown, Zap, Flame, Clock,
+    Calendar, TrendingUp, TrendingDown, Briefcase, Image as ImageIcon,
     FileText, BookCheck, Hourglass, Power, Share2, FileUp, ListFilter,
     AlertOctagon, Info, Sparkles, ChevronDown, LayoutGrid, List, BookOpen,
     Upload, RefreshCw
@@ -209,6 +209,10 @@ const Journal: React.FC<JournalProps> = ({
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [filterRules, setFilterRules] = useState<FilterRule[]>([]);
   const [showDuration, setShowDuration] = useState(false);
+
+  // Batch selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const isSelecting = selectedIds.size > 0;
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -797,6 +801,34 @@ const Journal: React.FC<JournalProps> = ({
       return 'text-slate-400';
   };
 
+  // --- Batch Selection Handlers ---
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedIds.size === filteredTrades.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredTrades.map(t => t.id)));
+    }
+  };
+
+  const handleBatchDelete = () => {
+    selectedIds.forEach(id => onDeleteTrade(id));
+    setSelectedIds(new Set());
+  };
+
+  // Clear selection when viewMode or filters change
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [viewMode, filteredTrades.length, selectedAccountId, activeDatePreset]);
+
   // --- SMART NAVIGATION HANDLER ---
   const handleDailyNoteAction = (e: React.MouseEvent, day: any) => {
       e.stopPropagation();
@@ -1045,11 +1077,63 @@ const Journal: React.FC<JournalProps> = ({
       </div>
 
       {viewMode === 'list' ? (
-          <div id="journal-list" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm transition-colors animate-fade-in">
+          <div id="journal-list" className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden shadow-sm transition-colors animate-fade-in relative">
+            {isSelecting && (
+              <div className="sticky top-0 z-10 bg-indigo-50 dark:bg-indigo-900/20 border border-indigo-200 dark:border-indigo-500/30 rounded-xl mx-3 mt-3 px-4 py-3 flex items-center justify-between animate-fade-in">
+                <div className="flex items-center gap-3">
+                  <div
+                    onClick={handleSelectAll}
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
+                      selectedIds.size === filteredTrades.length && filteredTrades.length > 0
+                        ? 'bg-indigo-500 border-indigo-500'
+                        : 'border-indigo-300 dark:border-indigo-500 hover:border-indigo-500'
+                    }`}
+                  >
+                    {selectedIds.size === filteredTrades.length && filteredTrades.length > 0 && (
+                      <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                    )}
+                  </div>
+                  <span className="text-sm font-bold text-indigo-700 dark:text-indigo-300">
+                    {language === 'cn' ? `已选 ${selectedIds.size} 条` : `${selectedIds.size} selected`}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleBatchDelete}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg transition-all shadow-sm"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    {language === 'cn' ? '批量删除' : 'Delete'}
+                  </button>
+                  <button
+                    onClick={() => setSelectedIds(new Set())}
+                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800/50 rounded-lg transition-all"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm text-slate-500 dark:text-slate-400">
                 <thead className="bg-slate-50/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 uppercase font-semibold text-xs tracking-wider border-b border-slate-100 dark:border-slate-800">
                   <tr>
+                    {isSelecting && (
+                      <th className="w-10 px-3 py-5">
+                        <div
+                          onClick={handleSelectAll}
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
+                            selectedIds.size === filteredTrades.length && filteredTrades.length > 0
+                              ? 'bg-indigo-500 border-indigo-500'
+                              : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
+                          }`}
+                        >
+                          {selectedIds.size === filteredTrades.length && filteredTrades.length > 0 && (
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                          )}
+                        </div>
+                      </th>
+                    )}
                     <th className="px-6 py-5">{t.journal.date}</th>
                     <th className="px-6 py-5">{t.journal.symbol}</th>
                     <th className="px-6 py-5">{t.journal.direction}</th>
@@ -1068,7 +1152,21 @@ const Journal: React.FC<JournalProps> = ({
                     const hasReview = !!trade.reviewNotes;
                     const isTradeOpen = !trade.exitDate || trade.status === TradeStatus.OPEN;
                     return (
-                    <tr key={trade.id} ref={(el) => { if (el) rowRefs.current.set(trade.id, el); else rowRefs.current.delete(trade.id); }} onClick={() => handleRowClick(trade)} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all group cursor-pointer ${highlightedTradeId === trade.id ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500 animate-pulse' : ''}`}>
+                    <tr key={trade.id} ref={(el) => { if (el) rowRefs.current.set(trade.id, el); else rowRefs.current.delete(trade.id); }} onClick={() => handleRowClick(trade)} className={`hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-all group cursor-pointer ${selectedIds.has(trade.id) ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''} ${highlightedTradeId === trade.id ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-indigo-500 animate-pulse' : ''}`}>
+                      <td className={`px-3 py-4 w-10 ${isSelecting ? '' : 'hidden group-hover:table-cell'}`} onClick={(e) => e.stopPropagation()}>
+                        <div
+                          onClick={() => handleToggleSelect(trade.id)}
+                          className={`w-4 h-4 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
+                            selectedIds.has(trade.id)
+                              ? 'bg-indigo-500 border-indigo-500'
+                              : 'border-slate-300 dark:border-slate-600 hover:border-indigo-400'
+                          } ${!isSelecting && !selectedIds.has(trade.id) ? 'opacity-0 group-hover:opacity-100' : 'opacity-100'}`}
+                        >
+                          {selectedIds.has(trade.id) && (
+                            <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                          )}
+                        </div>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap font-medium">{new Date(trade.entryDate).toLocaleDateString()}</td>
                       <td className="px-6 py-4"><div className="flex flex-col"><div className="flex items-center gap-2"><span className="font-bold text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-xs w-fit">{trade.symbol}</span>{hasReview ? <div className="text-[10px] text-emerald-500 flex items-center gap-0.5" title={t.journal.reviewed}><BookCheck className="w-3 h-3" /></div> : <div className="text-[10px] text-amber-500 flex items-center gap-0.5" title={t.journal.pendingReview}><Hourglass className="w-3 h-3" /></div>}</div></div></td>
                       <td className="px-6 py-4"><span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${trade.direction === Direction.LONG ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-500/20' : 'bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-200 dark:border-orange-500/20'}`}>{trade.direction === Direction.LONG ? t.journal.long : t.journal.short}</span></td>
