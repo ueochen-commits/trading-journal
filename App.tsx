@@ -987,6 +987,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onResetAutoOpen={() => journalAutoOpen && setJournalAutoOpen(false)}
                           strategies={strategies}
                           tradingAccounts={tradingAccounts}
+                          initialAccountId={selectedAccountId}
                           onNavigateToNote={(id) => {
                               setNoteSelectionIntent(id);
                               handleSetActiveTab('plans');

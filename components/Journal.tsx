@@ -86,6 +86,7 @@ interface JournalProps {
   onNavigateToNote?: (noteId: string) => void;
   onCreateNoteIntent?: (date: string, tradeIds: string[]) => void;
   tradingAccounts?: TradingAccount[];
+  initialAccountId?: string;
 }
 
 const initialFormState: Partial<Trade> = {
@@ -135,7 +136,7 @@ const Journal: React.FC<JournalProps> = ({
     trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade,
     checklist, onUpdateChecklist, onImportTrades, onShare,
     riskSettings, onSavePlan, autoOpen, onResetAutoOpen, strategies,
-    onNavigateToNote, onCreateNoteIntent, tradingAccounts
+    onNavigateToNote, onCreateNoteIntent, tradingAccounts, initialAccountId
 }) => {
   const { t, language } = useLanguage();
   const { user, openPricing } = useUser();
@@ -155,7 +156,7 @@ const Journal: React.FC<JournalProps> = ({
   const [isManualPnl, setIsManualPnl] = useState(false);
   
   // Dashboard-style filtering states
-  const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
+  const [selectedAccountId, setSelectedAccountId] = useState<string>(initialAccountId || 'all');
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(getRange('last30'));
   const [activeDatePreset, setActiveDatePreset] = useState<string>('All Time');
