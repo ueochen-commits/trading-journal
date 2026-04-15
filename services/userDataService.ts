@@ -120,7 +120,7 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
-    const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, settingsRes, profilesRes, accountsRes, connectionsRes] = await Promise.all([
+    const [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, settingsRes, profilesRes, accountsRes, connectionsRes, ruleSettingsRes] = await Promise.all([
       supabase.from('trading_journals').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('strategies').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('checklist_items').select('*').eq('user_id', userId).order('order_index'),
@@ -133,6 +133,7 @@ export const userDataService = {
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('trading_accounts').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('exchange_connections').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('user_rule_settings').select('net_max_loss_per_day_enabled, net_max_loss_per_day_value').eq('user_id', userId).maybeSingle(),
     ]);
 
     // 过滤软删除的笔记（在应用层处理，避免依赖 DB 列）
@@ -148,7 +149,13 @@ export const userDataService = {
       disciplineRules: (disciplineRulesRes.data || []).map(dbToDisciplineRule),
       disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
       weeklyGoal: settingsRes.data?.settings?.weeklyGoal || null,
-      riskSettings: settingsRes.data?.risk_settings || null,
+      riskSettings: (() => {
+        const base = settingsRes.data?.risk_settings || null;
+        const ruleDaily = ruleSettingsRes.data?.net_max_loss_per_day_enabled && ruleSettingsRes.data?.net_max_loss_per_day_value > 0
+          ? ruleSettingsRes.data.net_max_loss_per_day_value : null;
+        if (!base && !ruleDaily) return null;
+        return { ...(base || {}), ...(ruleDaily ? { maxDailyLoss: ruleDaily } : {}) };
+      })(),
       profile: profilesRes?.data || null,
       tradingAccounts: (accountsRes.data || []).map(dbToTradingAccount),
       exchangeConnections: (connectionsRes.data || []).map(dbToExchangeConnection),
