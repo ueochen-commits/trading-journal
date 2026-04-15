@@ -1266,16 +1266,22 @@ const Dashboard: React.FC<DashboardProps> = ({
   }, [stats, t]);
 
   const mergedEquityData = useMemo(() => {
-    let currentEquity = riskSettings.accountSize || 0;
     const initialEquity = riskSettings.accountSize || 1;
+    const fmtDate = (d: string) => { const dt = new Date(d); return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}`; };
     const sortedTrades = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
-    const data: any[] = [{ date: 'Start', equity: riskSettings.accountSize, returnPct: 0, cumulativePnl: 0 }];
-    sortedTrades.forEach((t, i) => {
-        currentEquity += (t.pnl - t.fees);
-        const cumulativePnl = parseFloat((currentEquity - initialEquity).toFixed(2));
-        const dataPoint: any = { date: new Date(t.entryDate).toLocaleDateString(), equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl };
-        selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend) dataPoint[friendId] = friend.equityCurve[Math.min(i + 1, friend.equityCurve.length - 1)]; });
-        data.push(dataPoint);
+    // Group by date
+    const grouped: Record<string, typeof trades> = {};
+    sortedTrades.forEach(t => { const d = fmtDate(t.entryDate); if (!grouped[d]) grouped[d] = []; grouped[d].push(t); });
+    const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+    const data: any[] = [{ date: 'Start', equity: initialEquity, returnPct: 0, cumulativePnl: 0 }];
+    let currentEquity = initialEquity;
+    sortedDates.forEach((date, i) => {
+      const dayTrades = grouped[date];
+      dayTrades.forEach(t => { currentEquity += (t.pnl - t.fees); });
+      const cumulativePnl = parseFloat((currentEquity - initialEquity).toFixed(2));
+      const dataPoint: any = { date, equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl };
+      selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend) dataPoint[friendId] = friend.equityCurve[Math.min(i + 1, friend.equityCurve.length - 1)]; });
+      data.push(dataPoint);
     });
     selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend && data[0]) data[0][friendId] = friend.equityCurve[0]; });
     return data;
@@ -1692,15 +1698,22 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               {/* Win Rate · Avg Win · Avg Loss chart */}
               {(() => {
-                const sortedTrades = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
-                const winRateData = sortedTrades.map((_, i) => {
-                  const slice = sortedTrades.slice(0, i + 1);
-                  const wins = slice.filter(t => (t.pnl - t.fees) > 0);
-                  const losses = slice.filter(t => (t.pnl - t.fees) < 0);
-                  const winPct = slice.length > 0 ? (wins.length / slice.length) * 100 : 0;
-                  const avgWin = wins.length > 0 ? wins.reduce((s, t) => s + (t.pnl - t.fees), 0) / wins.length : 0;
-                  const avgLoss = losses.length > 0 ? losses.reduce((s, t) => s + (t.pnl - t.fees), 0) / losses.length : 0;
-                  return { date: new Date(_.entryDate).toLocaleDateString(), winPct: parseFloat(winPct.toFixed(1)), avgWin: parseFloat(avgWin.toFixed(2)), avgLoss: parseFloat(avgLoss.toFixed(2)) };
+                const fmtDate = (d: string) => { const dt = new Date(d); return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}`; };
+                const sorted = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
+                // Group by date
+                const grouped: Record<string, typeof trades> = {};
+                sorted.forEach(t => { const d = fmtDate(t.entryDate); if (!grouped[d]) grouped[d] = []; grouped[d].push(t); });
+                const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+                // Rolling calculation per date
+                let cumTrades: typeof trades = [];
+                const winRateData = sortedDates.map(date => {
+                  cumTrades = cumTrades.concat(grouped[date]);
+                  const wins = cumTrades.filter(t => (t.pnl - t.fees) > 0);
+                  const losses = cumTrades.filter(t => (t.pnl - t.fees) < 0);
+                  const winPct = cumTrades.length > 0 ? parseFloat((wins.length / cumTrades.length * 100).toFixed(1)) : 0;
+                  const avgWin = wins.length > 0 ? parseFloat((wins.reduce((s, t) => s + (t.pnl - t.fees), 0) / wins.length).toFixed(2)) : 0;
+                  const avgLoss = losses.length > 0 ? parseFloat((losses.reduce((s, t) => s + (t.pnl - t.fees), 0) / losses.length).toFixed(2)) : 0;
+                  return { date, winPct, avgWin, avgLoss };
                 });
                 // Dynamic right-axis domain
                 const allAmts = winRateData.flatMap(d => [d.avgWin, d.avgLoss]).filter(v => v !== 0);
