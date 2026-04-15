@@ -643,9 +643,9 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
   const indicatorColor = interpolateGrailColor(clampedScore);
 
   // SVG radar geometry
-  const svgW = 320, svgH = 300;
+  const svgW = 360, svgH = 340;
   const cx = svgW / 2, cy = svgH / 2;
-  const maxR = 85;
+  const maxR = 110;
   const layers = 5;
   const sides = 6;
   const angleOffset = -Math.PI / 2; // start from top
@@ -673,7 +673,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
   const dataPath = dataPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
 
   // Label positions (pushed outward)
-  const labelOffset = 18;
+  const labelOffset = 22;
   const labelPositions = Array.from({ length: sides }, (_, i) => {
     const angle = angleOffset + (2 * Math.PI * i) / sides;
     return [cx + (maxR + labelOffset) * Math.cos(angle), cy + (maxR + labelOffset) * Math.sin(angle)] as [number, number];
