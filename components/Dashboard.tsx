@@ -1484,7 +1484,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
-        <div><h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">{greeting} <span className="text-2xl">👋</span></h2><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t.sidebar.dashboard}</p></div>
+        <div><h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">{greeting}</h2><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t.sidebar.dashboard}</p></div>
         <div className="flex flex-col sm:flex-row gap-3 relative z-30">
             <div className="relative z-30" ref={datePickerRef}>
                 <button onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group min-w-[220px]"><div className="flex items-center gap-2.5"><Calendar className="w-4 h-4 flex-shrink-0 text-slate-400" /><div className="text-left"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">{(datePresets.find(p => p.id === activeDatePreset)?.label || (activeDatePreset === 'Custom' ? 'Custom Range' : activeDatePreset)).toUpperCase()}</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none">
