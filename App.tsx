@@ -493,7 +493,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       screenshot_url: screenshotUrl,
       rating: updated.rating || null,
       compliance: updated.compliance || null,
-      execution_grade: updated.executionGrade || null
+      execution_grade: updated.executionGrade || null,
+      account_id: updated.accountId || null
     }).eq('id', updated.id).eq('user_id', user.id);
 
     if (!error) {
