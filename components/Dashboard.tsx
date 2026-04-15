@@ -1638,7 +1638,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
                 </div>
                 {/* Chart */}
-                <div style={{ height: 280 }}> margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                <div style={{ height: 280 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={mergedEquityData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="pnlGradientPos" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#1D9E75" stopOpacity={0.3}/>
