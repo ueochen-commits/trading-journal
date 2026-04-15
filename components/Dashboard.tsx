@@ -170,8 +170,6 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
   );
 };
 
-};
-
 
 
 const DailyPnlTooltip = ({ active, payload, label }: any) => {
