@@ -703,9 +703,9 @@ export const userDataService = {
       };
     });
 
-    const { error } = await supabase.from('trading_journals').insert(data);
+    const { data: inserted, error } = await supabase.from('trading_journals').insert(data).select();
     if (error) console.error('[importTradesWithAccount] Insert error:', error);
-    return { error };
+    return { error, data: inserted };
   },
 
   // 确保用户有一个 Demo Account，并将 account_id 为 NULL 的旧交易迁移到 Demo Account

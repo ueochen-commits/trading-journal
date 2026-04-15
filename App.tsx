@@ -507,11 +507,30 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // 尝试用 id 直接删除（适用于 UUID id）
     const { error } = await supabase.from('trading_journals').delete().eq('id', id).eq('user_id', user.id);
 
-    if (!error) {
-      setTrades(prev => prev.filter(t => t.id !== id));
+    if (error) {
+      // 如果 id 不是合法 UUID（如 binance-xxx），Supabase 会返回 400
+      // 此时尝试通过匹配字段来定位并删除
+      const trade = trades.find(t => t.id === id);
+      if (trade) {
+        const { error: fallbackError } = await supabase
+          .from('trading_journals')
+          .delete()
+          .eq('user_id', user.id)
+          .eq('symbol', trade.symbol)
+          .eq('date', trade.entryDate)
+          .eq('pnl', trade.pnl);
+
+        if (fallbackError) {
+          console.error('Fallback delete failed:', fallbackError);
+        }
+      }
     }
+
+    // 无论数据库删除是否成功，都从本地移除
+    setTrades(prev => prev.filter(t => t.id !== id));
   };
 
   // 导入交易到 Supabase
@@ -737,7 +756,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
       // 4. 写入 trading_journals（带 account_id）
       if (importedTrades.length > 0) {
-        await userDataService.importTradesWithAccount(
+        const importResult = await userDataService.importTradesWithAccount(
           importedTrades.map(t => ({
             date: t.entryDate,
             exitDate: t.exitDate,
@@ -758,8 +777,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           accountData.id,
         );
 
-        // 更新本地 trades 状态
-        const tradesWithAccount = importedTrades.map(t => ({ ...t, accountId: accountData.id }));
+        // 更新本地 trades 状态 — 优先使用数据库返回的真实 UUID
+        let tradesWithAccount: Trade[];
+        if (importResult.data && importResult.data.length > 0) {
+          tradesWithAccount = importResult.data.map(formatTradeFromDB);
+        } else {
+          tradesWithAccount = importedTrades.map(t => ({ ...t, accountId: accountData.id }));
+        }
         setTrades(prev => [...tradesWithAccount, ...prev]);
       }
 
