@@ -271,7 +271,11 @@ const Psychology: React.FC<PsychologyProps> = ({
     if (newManualRules.length > 0) {
       await supabase.from('manual_rules').insert(newManualRules.map(r => ({ user_id: user.id, name: r.name, active_days: r.active_days, enabled: r.enabled })));
     }
-  }, []);
+    // 同步单日最大亏损到 riskSettings，让仪表盘风控卡片联动
+    if (newSettings.net_max_loss_per_day_enabled && newSettings.net_max_loss_per_day_value > 0) {
+      onSaveSettings({ ...riskSettings, maxDailyLoss: newSettings.net_max_loss_per_day_value });
+    }
+  }, [riskSettings, onSaveSettings]);
 
   // Write today's execution log to Supabase whenever trade data changes
   const writeExecutionLog = useCallback(async (ruleResults: Record<string, boolean>, total: number, completed: number) => {
