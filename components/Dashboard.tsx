@@ -65,10 +65,12 @@ const TZDots: React.FC<{ w: number; b: number; l: number }> = ({ w, b, l }) => (
   </div>
 );
 
-const TZNetPnlCard: React.FC<{ value: number; total: number; label: string }> = ({ value, total, label }) => {
+const TZNetPnlCard: React.FC<{ value: number; total: number; wins: number; losses: number; label: string }> = ({ value, total, wins, losses, label }) => {
   const pos = value >= 0;
   const c = pos ? '#00c896' : '#ff4d6a';
   const { currencySymbol } = useUser();
+  const wPct = total > 0 ? (wins / total) * 100 : 0;
+  const lPct = total > 0 ? (losses / total) * 100 : 0;
   return (
     <div style={tzCard}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -78,7 +80,7 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; label: string }> = 
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6 }}>
         <div style={tzVal(c)}>{pos ? '+' : ''}{currencySymbol}{Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-        <HalfGauge winPct={pos ? 70 : 0} lossPct={pos ? 0 : 70} singleColor={c} />
+        <HalfGauge winPct={wPct} lossPct={lPct} singleColor={c} />
       </div>
     </div>
   );
@@ -103,7 +105,7 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
 };
 
 const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
-  const pct = Math.min(100, (value / 3) * 100);
+  const pct = Math.min(100, (value / 5) * 100);
   const c = value >= 1.5 ? '#00c896' : value >= 1 ? '#f59e0b' : '#ff4d6a';
   return (
     <div style={tzCard}>
@@ -982,22 +984,24 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const stats = useMemo(() => {
     const totalTrades = trades.length;
-    const wins = trades.filter(t => t.status === TradeStatus.WIN).length;
+    const winTrades = trades.filter(t => (t.pnl - t.fees) > 0);
+    const lossTrades = trades.filter(t => (t.pnl - t.fees) < 0);
+    const breakEvenTrades = trades.filter(t => (t.pnl - t.fees) === 0);
+    const wins = winTrades.length;
     const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
     const netPnl = trades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
-    const profitFactor = Math.abs(trades.filter(t => t.pnl > 0).reduce((acc, t) => acc + t.pnl, 0) / (trades.filter(t => t.pnl < 0).reduce((acc, t) => acc + t.pnl, 0) || 1));
+    const grossProfit = winTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+    const grossLoss = lossTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+    const profitFactor = Math.abs(grossLoss) > 0 ? Math.abs(grossProfit / grossLoss) : grossProfit > 0 ? grossProfit : 0;
     const today = new Date().toDateString();
     const todayPnl = trades.filter(t => new Date(t.entryDate).toDateString() === today).reduce((acc, t) => acc + (t.pnl - t.fees), 0);
     // Sparkline: last 12 trades cumulative PnL
     const sorted = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).slice(-12);
     let cum = 0;
     const pnlSpark = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
-    const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => t.pnl > 0).length / slice.length * 100; });
-    const winTrades = trades.filter(t => t.pnl > 0);
-    const lossTrades = trades.filter(t => t.pnl < 0);
-    const breakEvenTrades = trades.filter(t => t.pnl === 0);
-    const avgWin = winTrades.length > 0 ? winTrades.reduce((a, t) => a + t.pnl, 0) / winTrades.length : 0;
-    const avgLoss = lossTrades.length > 0 ? lossTrades.reduce((a, t) => a + t.pnl, 0) / lossTrades.length : 0;
+    const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => (t.pnl - t.fees) > 0).length / slice.length * 100; });
+    const avgWin = winTrades.length > 0 ? winTrades.reduce((a, t) => a + (t.pnl - t.fees), 0) / winTrades.length : 0;
+    const avgLoss = lossTrades.length > 0 ? lossTrades.reduce((a, t) => a + (t.pnl - t.fees), 0) / lossTrades.length : 0;
     const avgWinLossRatio = avgWin > 0 && Math.abs(avgLoss) > 0 ? avgWin / Math.abs(avgLoss) : 0;
     // Day stats
     const dayMap: Record<string, number> = {};
@@ -1014,16 +1018,16 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const grailScore = useMemo(() => {
     const { winRate, profitFactor, totalTrades } = stats;
-    const wins = trades.filter(t => t.status === TradeStatus.WIN);
-    const losses = trades.filter(t => t.status !== TradeStatus.WIN && t.pnl < 0);
-    const avgWin = wins.length > 0 ? wins.reduce((a, t) => a + t.pnl, 0) / wins.length : 0;
-    const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((a, t) => a + t.pnl, 0) / losses.length) : 1;
+    const wins = trades.filter(t => (t.pnl - t.fees) > 0);
+    const losses = trades.filter(t => (t.pnl - t.fees) < 0);
+    const avgWin = wins.length > 0 ? wins.reduce((a, t) => a + (t.pnl - t.fees), 0) / wins.length : 0;
+    const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((a, t) => a + (t.pnl - t.fees), 0) / losses.length) : 1;
     const rr = avgWin / avgLoss;
 
     // Max consecutive losses
     let maxConsecLoss = 0, curConsec = 0;
     [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).forEach(t => {
-      if (t.pnl < 0) { curConsec++; maxConsecLoss = Math.max(maxConsecLoss, curConsec); } else curConsec = 0;
+      if ((t.pnl - t.fees) < 0) { curConsec++; maxConsecLoss = Math.max(maxConsecLoss, curConsec); } else curConsec = 0;
     });
 
     // Std dev of daily trade counts
@@ -1357,7 +1361,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div id="dashboard-stats" className="grid grid-cols-2 md:flex gap-2.5 w-full">
-                <TZNetPnlCard value={stats.netPnl} total={stats.totalTrades} label={language === 'cn' ? '净盈亏' : 'Net P&L'} />
+                <TZNetPnlCard value={stats.netPnl} total={stats.totalTrades} wins={stats.winCount} losses={stats.lossCount} label={language === 'cn' ? '净盈亏' : 'Net P&L'} />
                 <TZWinRateCard winRate={stats.winRate} wins={stats.winCount} losses={stats.lossCount} breakEven={stats.breakEvenCount} label={language === 'cn' ? '胜率' : 'Trade win %'} />
                 <TZProfitFactorCard value={stats.profitFactor} label={language === 'cn' ? '盈利因子' : 'Profit factor'} />
                 <TZDayWinCard dayWinRate={stats.dayWinRate} winDays={stats.winDays} lossDays={stats.lossDays} breakEvenDays={stats.breakEvenDays} label={language === 'cn' ? '日胜率' : 'Day win %'} />
