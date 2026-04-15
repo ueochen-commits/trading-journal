@@ -1724,9 +1724,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                           <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
                           <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                           <YAxis yAxisId="pct" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={38}
-                            domain={[0, 80]} ticks={[0,10,20,30,40,50,60,70,80]} tickFormatter={(v: number) => `${v}%`} />
+                            domain={[0, 80]} tickCount={9} tickFormatter={(v: number) => `${v}%`} />
                           <YAxis yAxisId="amt" orientation="right" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={42}
-                            domain={[yAmtMin, yAmtMax]} tickCount={tickCount} tickFormatter={(v: number) => `$${v}`} />
+                            domain={[yAmtMin, yAmtMax]} tickCount={9} tickFormatter={(v: number) => `$${v}`} />
                           <Tooltip
                             mode="index"
                             content={({ active, payload, label }: any) => {
