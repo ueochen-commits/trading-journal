@@ -194,6 +194,7 @@ const HeatmapCalendar: React.FC<{ data: Record<string, number> }> = ({ data }) =
 // ── Main Psychology component ─────────────────────────────────────────────────
 
 const Psychology: React.FC<PsychologyProps> = ({
+  riskSettings, onSaveSettings,
   disciplineHistory = [], trades = [],
   onAddRule, onDeleteRule,
 }) => {
