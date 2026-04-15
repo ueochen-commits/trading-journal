@@ -1625,7 +1625,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <TZAvgWinLossCard ratio={stats.avgWinLossRatio} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%' }}>
 
               <div id="dashboard-equity" style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
                 {/* Header */}
