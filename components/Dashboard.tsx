@@ -1646,7 +1646,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {/* Chart */}
                 <div style={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mergedEquityData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart data={mergedEquityData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
                       <defs>
                         <linearGradient id="pnlGradientPos" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#1D9E75" stopOpacity={0.3}/>
@@ -1733,13 +1733,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                     <div style={{ flex: 1, minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={winRateData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+                        <ComposedChart data={winRateData} margin={{ top: 5, right: 10, left: 0, bottom: 20 }}>
                           <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} yAxisId="pct" />
                           <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                           <YAxis yAxisId="pct" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={38}
-                            domain={[0, 80]} tickCount={9} tickFormatter={(v: number) => `${v}%`} />
+                            domain={[0, 100]} tickCount={6} tickFormatter={(v: number) => `${v}%`} />
                           <YAxis yAxisId="amt" orientation="right" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={42}
-                            domain={[yAmtMin, yAmtMax]} tickCount={9} tickFormatter={(v: number) => `$${v}`} />
+                            domain={[Math.min(yAmtMin, -10), Math.max(yAmtMax, 10)]} tickCount={6} tickFormatter={(v: number) => `$${v}`} />
                           <Tooltip
                             mode="index"
                             content={({ active, payload, label }: any) => {
