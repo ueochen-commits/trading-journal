@@ -636,16 +636,16 @@ function interpolateGrailColor(score: number): string {
   return `rgb(${r},${g},${b})`;
 }
 
-const GRAIL_LABELS = ['Win %', 'Profit factor', 'Avg win/loss', 'Recovery factor', 'Max drawdown', 'Consistency'];
+const GRAIL_LABELS = ['胜率', '盈利因子', '盈亏比', '恢复因子', '最大回撤', '稳定性'];
 
 const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: string; value: number; fullMark: number }[]; language: string }> = ({ composite, radarData }) => {
   const clampedScore = Math.min(100, Math.max(0, composite));
   const indicatorColor = interpolateGrailColor(clampedScore);
 
   // SVG radar geometry
-  const svgW = 280, svgH = 260;
+  const svgW = 320, svgH = 300;
   const cx = svgW / 2, cy = svgH / 2;
-  const maxR = 95;
+  const maxR = 85;
   const layers = 5;
   const sides = 6;
   const angleOffset = -Math.PI / 2; // start from top
@@ -660,9 +660,12 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
     return pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(' ') + ' Z';
   };
 
-  // Map radarData values to points (order: Win%, Profit factor, Avg win/loss, Recovery factor, Max drawdown, Consistency)
-  const dataValues = GRAIL_LABELS.map(label => {
-    const found = radarData.find(d => d.subject === label);
+  // English keys matching radarData.subject, in same order as GRAIL_LABELS
+  const GRAIL_KEYS = ['Win %', 'Profit factor', 'Avg win/loss', 'Recovery factor', 'Max drawdown', 'Consistency'];
+
+  // Map radarData values to points
+  const dataValues = GRAIL_KEYS.map(key => {
+    const found = radarData.find(d => d.subject === key);
     return found ? Math.min(found.value / found.fullMark, 1) : 0;
   });
 
@@ -714,7 +717,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
           })}
 
           {/* Filled data area */}
-          <path d={dataPath} fill="url(#grailRadialGrad)" stroke="#7c3aed" strokeWidth={1.5} />
+          <path d={dataPath} fill="url(#grailRadialGrad)" stroke="#7c3aed" strokeWidth={1} />
 
           {/* Data points */}
           {dataPoints.map((p, i) => (
@@ -743,7 +746,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
       <div className="flex items-center gap-5 mt-2">
         {/* Left: score */}
         <div className="flex-shrink-0">
-          <p className="uppercase text-[11px] font-semibold tracking-[1px]" style={{ color: '#999' }}>YOUR GRAIL SCORE</p>
+          <p className="uppercase text-[11px] font-semibold tracking-[1px]" style={{ color: '#999' }}>YOUR GRAIL 分数</p>
           <span className="text-[40px] font-bold tabular-nums leading-none" style={{ color: '#1a1a2e' }}>
             <span className="dark:text-white">{clampedScore.toFixed(2)}</span>
           </span>
