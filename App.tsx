@@ -510,7 +510,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     const { error } = await supabase.from('trading_journals').delete().eq('id', id).eq('user_id', user.id);
 
     if (!error) {
-      setTrades(trades.filter(t => t.id !== id));
+      setTrades(prev => prev.filter(t => t.id !== id));
     }
   };
 
