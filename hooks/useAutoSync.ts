@@ -27,6 +27,7 @@ export function useAutoSync({
     const syncOnce = useCallback(async () => {
         if (isSyncing.current || exchangeConnections.length === 0) return;
         isSyncing.current = true;
+        console.log('[AutoSync] 开始同步...');
 
         // sinceDate: use last sync time, or fallback to 7 days ago
         const sinceDate = lastSyncRef.current
@@ -49,9 +50,12 @@ export function useAutoSync({
                 }
             }
             if (allNew.length > 0) {
-                // Dedup: filter out trades already in state by id
-                const existingIds = new Set(tradesRef.current.map(t => t.id));
-                const unique = allNew.filter(t => !existingIds.has(t.id));
+                // Dedup: DB trades have UUID ids, Binance trades have "binance-*" ids
+                // Use symbol+entryDate+direction+entryPrice as composite key
+                const tradeKey = (t: Trade) =>
+                    `${t.symbol}|${t.entryDate}|${t.direction}|${t.entryPrice}`;
+                const existingKeys = new Set(tradesRef.current.map(tradeKey));
+                const unique = allNew.filter(t => !existingKeys.has(tradeKey(t)));
 
                 if (unique.length > 0) {
                     console.log(`[AutoSync] 发现 ${unique.length} 笔新交易`);

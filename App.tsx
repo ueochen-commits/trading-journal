@@ -166,7 +166,7 @@ const formatTradeFromDB = (trade: any): Trade => {
 
 // Wrapper to use context
 const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) => void }> = ({ onSetActiveTabReady }) => {
-  const { isAuthenticated, isLoading, openProfile, user, onboardingCompleted, markOnboardingComplete } = useUser();
+  const { isAuthenticated, isLoading, openProfile, user, onboardingCompleted, markOnboardingComplete, updateProfile } = useUser();
   const { t, language } = useLanguage();
   const { /* startInitialTour */ } = useTour(); // TEMPORARILY DISABLED
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -262,6 +262,11 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
         if (result.riskSettings) setRiskSettings(result.riskSettings);
+
+        // 把 exchangeConnections 同步到 UserContext，供 useAutoSync 使用
+        if (result.exchangeConnections && result.exchangeConnections.length > 0) {
+          updateProfile({ exchangeConnections: result.exchangeConnections });
+        }
 
         // 确保 Demo Account 存在，并将 NULL account_id 的旧交易迁移过去
         const demoAccount = await userDataService.ensureDefaultAccount();
