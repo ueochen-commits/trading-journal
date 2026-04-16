@@ -1387,6 +1387,26 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                         <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${adjustedCost.toFixed(2)}</span>
                                     </div>
 
+                                    {/* 执行评分 — 持仓成本下方 */}
+                                    <div className="py-2 border-b border-slate-100 dark:border-white/[0.04]">
+                                        <div className="flex justify-between items-center mb-2">
+                                            <span className="text-[13px] flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                                <Trophy className="w-3.5 h-3.5" fill="#818cf8" strokeWidth={0} />
+                                                {labels.stats.grailScale}
+                                            </span>
+                                            <span className={`text-[16px] font-bold font-mono leading-none ${getGradeColorClass(currentTrade.executionGrade)}`}>
+                                                {currentTrade.executionGrade || '-'}
+                                            </span>
+                                        </div>
+                                        <div className="relative h-[6px] rounded-full overflow-hidden mb-1.5 bg-slate-100 dark:bg-white/[0.06]">
+                                            <div className="h-full transition-all duration-700 ease-out rounded-full" style={{ width: `${executionStats.percent}%`, background: '#818cf8' }}></div>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500">
+                                            <span>Based on Playbook rules</span>
+                                            <span className="font-mono font-medium">{executionStats.checked}/{executionStats.total} Rules</span>
+                                        </div>
+                                    </div>
+
                                     {/* ── Price Info ── */}
                                     <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '价格信息' : 'PRICE INFO'}</p>
                                     <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
@@ -1416,6 +1436,18 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             onBlur={() => onUpdateTrade({ ...currentTrade })}
                                             className="w-24 text-right text-[13px] font-mono font-medium outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-700 dark:text-slate-200"
                                         />
+                                    </div>
+
+                                    {/* 交易评分 — 计划止损价格下方 */}
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.rating}</span>
+                                        <div className="flex gap-0.5">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button key={star} onClick={() => setRating(star)} className="p-0.5 transition-transform hover:scale-110">
+                                                    <Star className={`w-[18px] h-[18px] fill-current ${(currentTrade.rating || 0) >= star ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'}`} />
+                                                </button>
+                                            ))}
+                                        </div>
                                     </div>
 
                                     {/* ── P&L Details ── */}
@@ -1450,44 +1482,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                     <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
                                         <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.realizedR}</span>
                                         <span className={`text-[13px] font-medium font-mono ${realizedRFromTarget !== 'N/A' ? (isWin ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-300 dark:text-slate-600'}`}>{realizedRFromTarget}</span>
-                                    </div>
-
-                                    {/* ── Scoring ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '评分' : 'SCORING'}</p>
-                                    <div className="py-2">
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[13px] flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
-                                                <Trophy className="w-3.5 h-3.5" fill="#818cf8" strokeWidth={0} />
-                                                {labels.stats.grailScale}
-                                            </span>
-                                            <span className={`text-[16px] font-bold font-mono leading-none ${getGradeColorClass(currentTrade.executionGrade)}`}>
-                                                {currentTrade.executionGrade || '-'}
-                                            </span>
-                                        </div>
-                                        <div className="relative h-[6px] rounded-full overflow-hidden mb-1.5 bg-slate-100 dark:bg-white/[0.06]">
-                                            <div
-                                                className="h-full transition-all duration-700 ease-out rounded-full"
-                                                style={{ width: `${executionStats.percent}%`, background: '#818cf8' }}
-                                            ></div>
-                                        </div>
-                                        <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500">
-                                            <span>Based on Playbook rules</span>
-                                            <span className="font-mono font-medium">{executionStats.checked}/{executionStats.total} Rules</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-between items-center h-[38px]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.rating}</span>
-                                        <div className="flex gap-0.5">
-                                            {[1, 2, 3, 4, 5].map((star) => (
-                                                <button
-                                                    key={star}
-                                                    onClick={() => setRating(star)}
-                                                    className="p-0.5 transition-transform hover:scale-110"
-                                                >
-                                                    <Star className={`w-[18px] h-[18px] fill-current ${(currentTrade.rating || 0) >= star ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'}`} />
-                                                </button>
-                                            ))}
-                                        </div>
                                     </div>
 
                                     {/* CATEGORIES SECTION */}
