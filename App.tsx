@@ -1147,9 +1147,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onUpdateAccount={async (id, updates) => {
                   await userDataService.updateTradingAccount(id, updates);
                   setTradingAccounts(prev => prev.map(a => a.id === id
-                    ? { ...a, manualBalance: updates.manualBalance ?? undefined }
+                    ? { ...a, ...(updates.manualBalance !== undefined ? { manualBalance: updates.manualBalance ?? undefined } : {}), ...(updates.balance !== undefined ? { balance: updates.balance } : {}) }
                     : a
                   ));
+                }}
+                onClearTrades={async (accountId) => {
+                  await userDataService.clearAccountTrades(accountId);
+                  setTrades(prev => prev.filter(t => t.accountId !== accountId));
                 }}
                 riskSettings={riskSettings}
                 onSaveRiskSettings={handleSaveRiskSettings}

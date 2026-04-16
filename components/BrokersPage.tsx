@@ -8,7 +8,8 @@ interface Props {
   onEditAccount?: (id: string) => void;
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
-  onUpdateAccount?: (id: string, updates: { manualBalance?: number | null }) => void;
+  onUpdateAccount?: (id: string, updates: { manualBalance?: number | null; balance?: number }) => void;
+  onClearTrades?: (id: string) => void;
   onViewHistory?: (id: string) => void;
   onUpgrade?: () => void;
 }
@@ -65,6 +66,17 @@ const IconEmpty = () => (
     <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/>
   </svg>
 );
+const IconClear = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c04040" strokeWidth="2" strokeLinecap="round">
+    <path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+    <line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+  </svg>
+);
+const IconBalance = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a2a40" strokeWidth="2" strokeLinecap="round">
+    <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+  </svg>
+);
 
 // ─── Row menu ─────────────────────────────────────────────────────────────────
 const RowMenu: React.FC<{
@@ -73,7 +85,9 @@ const RowMenu: React.FC<{
   onDelete?: () => void;
   onSync?: () => void;
   onHistory?: () => void;
-}> = ({ account, onEdit, onDelete, onSync, onHistory }) => {
+  onClearTrades?: () => void;
+  onEditBalance?: () => void;
+}> = ({ account, onEdit, onDelete, onSync, onHistory, onClearTrades, onEditBalance }) => {
   const [open, setOpen] = useState(false);
   const [syncHov, setSyncHov] = useState(false);
   const [dotsHov, setDotsHov] = useState(false);
@@ -146,11 +160,13 @@ const RowMenu: React.FC<{
           padding: 6, minWidth: 160, marginTop: 4,
         }}>
           <MenuItem icon={<IconEdit />} label="编辑账户" onClick={onEdit} />
+          <MenuItem icon={<IconBalance />} label="编辑余额" onClick={onEditBalance} />
           <MenuItem icon={<IconHistory />} label="查看导入历史" onClick={onHistory} />
           {account.type === 'auto_sync' && (
             <MenuItem icon={<IconLink />} label="重新连接" onClick={() => {}} />
           )}
           <div style={{ borderTop: '1px solid #f0edf8', margin: '4px 0' }} />
+          <MenuItem icon={<IconClear />} label="清除交易" danger onClick={onClearTrades} />
           <MenuItem
             icon={<IconTrash />} label="删除账户" danger
             onClick={onDelete}
@@ -354,6 +370,15 @@ const BrokersPage: React.FC<Props> = ({
                     onDelete={() => handleDelete(account.id)}
                     onSync={() => onSyncAccount?.(account.id)}
                     onHistory={() => onViewHistory?.(account.id)}
+                    onClearTrades={() => {
+                      if (window.confirm(`确定要清除「${account.name}」下的所有交易数据吗？此操作不可撤销。`)) {
+                        onClearTrades?.(account.id);
+                      }
+                    }}
+                    onEditBalance={(newBalance) => {
+                      setAccounts(a => a.map(x => x.id === account.id ? { ...x, balance: newBalance } : x));
+                      onUpdateAccount?.(account.id, { balance: newBalance });
+                    }}
                   />
                 ))}
               </tbody>
@@ -410,9 +435,12 @@ const AccountRow: React.FC<{
   onDelete?: () => void;
   onSync?: () => void;
   onHistory?: () => void;
-}> = ({ account, selected, onToggleSelect, onEdit, onDelete, onSync, onHistory }) => {
+  onClearTrades?: () => void;
+  onEditBalance?: (newBalance: number) => void;
+}> = ({ account, selected, onToggleSelect, onEdit, onDelete, onSync, onHistory, onClearTrades, onEditBalance }) => {
   const [hov, setHov] = useState(false);
-  const [balHov, setBalHov] = useState(false);
+  const [editingBalance, setEditingBalance] = useState(false);
+  const [balanceInput, setBalanceInput] = useState('');
 
   const fmt = (n: number, cur: string) =>
     new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n) + ' ' + cur;
@@ -453,12 +481,34 @@ const AccountRow: React.FC<{
 
       {/* Balance */}
       <td style={{ padding: '0 16px', verticalAlign: 'middle' }}>
-        <span
-          onMouseEnter={() => setBalHov(true)} onMouseLeave={() => setBalHov(false)}
-          style={{ color: '#5050c8', fontWeight: 500, cursor: 'pointer', textDecoration: balHov ? 'underline' : 'none' }}
-        >
-          {fmt(account.balance, account.currency)}
-        </span>
+        {editingBalance ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <input
+              type="number" step="any" autoFocus
+              value={balanceInput}
+              onChange={e => setBalanceInput(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  const val = parseFloat(balanceInput);
+                  if (!isNaN(val)) onEditBalance?.(val);
+                  setEditingBalance(false);
+                }
+                if (e.key === 'Escape') setEditingBalance(false);
+              }}
+              onBlur={() => {
+                const val = parseFloat(balanceInput);
+                if (!isNaN(val)) onEditBalance?.(val);
+                setEditingBalance(false);
+              }}
+              style={{ width: 100, padding: '3px 8px', border: '1px solid #5050c8', borderRadius: 6, fontSize: 13, color: '#1a1a2e', outline: 'none' }}
+            />
+            <span style={{ fontSize: 12, color: '#8080a8' }}>{account.currency}</span>
+          </div>
+        ) : (
+          <span style={{ color: '#5050c8', fontWeight: 500 }}>
+            {fmt(account.balance, account.currency)}
+          </span>
+        )}
       </td>
 
       {/* Profit method */}
@@ -486,7 +536,11 @@ const AccountRow: React.FC<{
 
       {/* Actions */}
       <td style={{ padding: '0 16px', verticalAlign: 'middle' }}>
-        <RowMenu account={account} onEdit={onEdit} onDelete={onDelete} onSync={onSync} onHistory={onHistory} />
+        <RowMenu
+          account={account} onEdit={onEdit} onDelete={onDelete} onSync={onSync} onHistory={onHistory}
+          onClearTrades={onClearTrades}
+          onEditBalance={() => { setBalanceInput(String(account.balance)); setEditingBalance(true); }}
+        />
       </td>
     </tr>
   );

@@ -690,6 +690,13 @@ export const userDataService = {
     return { error };
   },
 
+  async clearAccountTrades(accountId: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+    const { error } = await supabase.from('trading_journals').delete().eq('account_id', accountId).eq('user_id', userId);
+    return { error };
+  },
+
   // 批量导入交易（带 account_id）
   async importTradesWithAccount(trades: any[], accountId: string) {
     const userId = await getCurrentUserId();
