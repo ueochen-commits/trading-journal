@@ -1649,12 +1649,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="equityGreenGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="rgba(52,211,153,0.45)" />
-                          <stop offset="100%" stopColor="rgba(52,211,153,0.05)" />
+                          <stop offset="0%" stopColor="rgba(52,211,153,0.35)" />
+                          <stop offset="100%" stopColor="rgba(52,211,153,0.02)" />
                         </linearGradient>
                         <linearGradient id="equityRedGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="rgba(251,113,133,0.05)" />
-                          <stop offset="100%" stopColor="rgba(251,113,133,0.45)" />
+                          <stop offset="0%" stopColor="rgba(251,113,133,0.02)" />
+                          <stop offset="100%" stopColor="rgba(251,113,133,0.35)" />
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
@@ -1702,13 +1702,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                           </defs>
                         );
                       }} />
-                      {/* Green fill above zero */}
+                      {/* Green fill above zero — baseValue=0 so fill only between line and zero */}
                       <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
+                        baseValue={0}
                         fill="url(#equityGreenGrad)" fillOpacity={1} dot={false} activeDot={false}
                         clipPath="url(#clipAboveZero)"
                       />
-                      {/* Red fill below zero */}
+                      {/* Red fill below zero — baseValue=0 so fill only between zero and line */}
                       <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
+                        baseValue={0}
                         fill="url(#equityRedGrad)" fillOpacity={1} dot={false} activeDot={false}
                         clipPath="url(#clipBelowZero)"
                       />
