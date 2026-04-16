@@ -12,11 +12,113 @@ import {
 import { useLanguage } from '../LanguageContext';
 
 // ─── Risk Gauge Component ─────────────────────────────────────────────────────
+interface RiskTooltipData {
+    score: number | null;
+    label: string;
+    color: string;
+    isPending: boolean;
+    analysisText: string | null;
+    metrics: { positionRatio: number | null; stopLossPercent: number | null; rrRatio: number | null; maxLoss: number | null };
+    footerText: string;
+    footerHighlight?: string;
+    missingHint?: string;
+}
+
 interface RiskGaugeProps {
     score: number | null;
-    missingHint?: string; // 具体缺失字段提示
+    tooltipData: RiskTooltipData;
     onClickSetup?: () => void;
 }
+
+function getMetricColor(type: string, value: number): string {
+    if (type === 'position') return value > 10 ? '#e24b4a' : value > 5 ? '#ef9f27' : '#1d9e75';
+    if (type === 'stoploss') return value > 5 ? '#e24b4a' : value > 3 ? '#ef9f27' : '#1d9e75';
+    if (type === 'rr') return value >= 2 ? '#1d9e75' : value >= 1 ? '#ef9f27' : '#e24b4a';
+    return '#e24b4a';
+}
+
+const RiskTooltipCard: React.FC<{ visible: boolean; data: RiskTooltipData; onClickSetup?: () => void }> = ({ visible, data, onClickSetup }) => {
+    const { score, label, color, isPending, analysisText, metrics, footerText, footerHighlight, missingHint } = data;
+    const displayScore = score != null ? Math.max(0, Math.min(100, score)) : null;
+
+    return (
+        <div style={{
+            position: 'absolute', top: '100%', left: '50%',
+            transform: visible ? 'translateX(-80%) translateY(0)' : 'translateX(-80%) translateY(4px)',
+            marginTop: '8px', width: '320px',
+            background: '#ffffff', border: '0.5px solid #e8e8f0', borderRadius: '10px',
+            padding: '14px 16px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            zIndex: 50, opacity: visible ? 1 : 0,
+            transition: 'opacity 0.18s ease, transform 0.18s ease',
+            pointerEvents: visible ? 'auto' : 'none',
+        }}>
+            <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                {/* 左侧评分 */}
+                <div style={{ borderLeft: `3px solid ${color}`, paddingLeft: '10px', flexShrink: 0 }}>
+                    <div style={{ fontSize: '28px', fontWeight: 500, color, letterSpacing: '-1px', lineHeight: 1 }}>
+                        {displayScore != null ? Math.round(displayScore) : '--'}
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#bbb', marginTop: '2px' }}>/ 100</div>
+                    <div style={{ fontSize: '11px', color, marginTop: '4px', fontWeight: 500 }}>{label}</div>
+                </div>
+
+                {/* 右侧内容 */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                    {/* 进度条 */}
+                    <div style={{ fontSize: '10px', color: '#bbb', letterSpacing: '0.8px', marginBottom: '4px' }}>风险区间</div>
+                    <div style={{ height: '4px', background: '#ebebf0', borderRadius: '99px', overflow: 'visible', position: 'relative', margin: '5px 0 3px' }}>
+                        <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg, #1d9e75 0%, #ef9f27 50%, #e24b4a 100%)', opacity: isPending ? 0.3 : 1 }} />
+                        <div style={{ position: 'absolute', top: '-3px', width: '2px', height: '10px', background: isPending ? '#ccc' : 'rgba(0,0,0,0.25)', borderRadius: '1px', left: `${displayScore ?? 50}%`, transform: 'translateX(-50%)' }} />
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                        <span style={{ fontSize: '9px', color: '#bbb' }}>低风险</span>
+                        <span style={{ fontSize: '9px', color: '#bbb' }}>中等</span>
+                        <span style={{ fontSize: '9px', color: '#bbb' }}>高风险</span>
+                    </div>
+
+                    {/* 分析文字 */}
+                    {isPending ? (
+                        <div style={{ fontSize: '11px', color: '#aaa', lineHeight: 1.6 }}>
+                            {missingHint === '请设置账户总资产'
+                                ? <>暂无足够数据。请补充<span style={{ color: '#7c3aed', cursor: 'pointer' }} onClick={onClickSetup}> 账户总资产 </span>以启用风险评级。</>
+                                : <>请填写<span style={{ color: '#7c3aed', cursor: 'pointer' }}> 风险金额 </span>或<span style={{ color: '#7c3aed' }}> 计划止损价格 </span>以启用风险评级。</>
+                            }
+                        </div>
+                    ) : (
+                        <div style={{ fontSize: '11px', color: '#888', lineHeight: 1.6 }}>{analysisText}</div>
+                    )}
+
+                    {/* 四项指标 */}
+                    <div style={{ marginTop: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                        {[
+                            { label: '仓位占比', value: metrics.positionRatio != null ? `${metrics.positionRatio.toFixed(1)}%` : '--', type: 'position', raw: metrics.positionRatio },
+                            { label: '止损距离', value: metrics.stopLossPercent != null ? `${metrics.stopLossPercent.toFixed(1)}%` : '--', type: 'stoploss', raw: metrics.stopLossPercent },
+                            { label: '盈亏比', value: metrics.rrRatio != null ? `${metrics.rrRatio.toFixed(2)}R` : '--', type: 'rr', raw: metrics.rrRatio },
+                            { label: '最大潜在亏损', value: metrics.maxLoss != null ? `-${metrics.maxLoss.toFixed(0)}` : '--', type: 'maxloss', raw: metrics.maxLoss },
+                        ].map(({ label: ml, value, type, raw }) => (
+                            <div key={ml}>
+                                <div style={{ fontSize: '9px', color: '#aaa' }}>{ml}</div>
+                                <div style={{ fontSize: '12px', fontWeight: 500, color: raw != null ? getMetricColor(type, raw) : '#ccc' }}>{value}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* 底部建议 */}
+                    <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '0.5px solid #f0f0f6', fontSize: '10px', color: '#aaa', lineHeight: 1.5 }}>
+                        {footerHighlight
+                            ? footerText.split(footerHighlight).map((part, i, arr) =>
+                                i < arr.length - 1
+                                    ? <span key={i}>{part}<span style={{ color }}>{footerHighlight}</span></span>
+                                    : <span key={i}>{part}</span>
+                              )
+                            : footerText
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 function getRiskLevel(score: number) {
     if (score < 33) return { label: '低风险', sub: '风险可控，执行良好', color: '#1d9e75' };
@@ -24,19 +126,22 @@ function getRiskLevel(score: number) {
     return { label: '高风险', sub: '仓位偏重，建议减仓', color: '#e24b4a' };
 }
 
-const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup }) => {
+const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const clampedScore = score != null ? Math.max(0, Math.min(100, score)) : 50;
     const unknown = score === null;
     const { label, sub, color } = unknown
-        ? { label: '待评估', sub: missingHint ?? '数据不足', color: '#aaaacc' }
+        ? { label: '待评估', sub: tooltipData.missingHint ?? '数据不足', color: '#aaaacc' }
         : getRiskLevel(clampedScore);
 
-    // score=0 → -90°（左端），score=50 → 0°（正上方），score=100 → 90°（右端）
-    // 用 rotate 驱动动画，圆心 (50,52) 作为旋转原点
     const rotateDeg = -90 + clampedScore * 1.8;
 
     return (
-        <div style={{ width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+        <div
+            style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
             <svg width="100" height="58" viewBox="0 0 100 58">
                 <defs>
                     <linearGradient id="riskGrad" x1="0" y1="0" x2="1" y2="0">
@@ -44,7 +149,6 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup 
                         <stop offset="50%" stopColor="#ef9f27" />
                         <stop offset="100%" stopColor="#e24b4a" />
                     </linearGradient>
-                    {/* 渐变针：从圆心（透明）到针尖（不透明） */}
                     <linearGradient id="needleGrad" x1="0" y1="1" x2="0" y2="0">
                         <stop offset="0%" stopColor={color} stopOpacity="0" />
                         <stop offset="100%" stopColor={color} stopOpacity="1" />
@@ -52,7 +156,6 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup 
                 </defs>
                 <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="#f0f0f6" strokeWidth="7" strokeLinecap="round" />
                 <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="url(#riskGrad)" strokeWidth="7" strokeLinecap="round" opacity={unknown ? 0.3 : 1} />
-                {/* 渐变针：梭形，从圆心透明渐变到针尖不透明 */}
                 <g style={{ transform: `rotate(${rotateDeg}deg)`, transformOrigin: '50px 52px', transition: 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)' }}>
                     <polygon points="50,19 52.5,52 50,49 47.5,52" fill="url(#needleGrad)" />
                 </g>
@@ -60,10 +163,8 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup 
                 <circle cx="50" cy="52" r="2" fill="white" opacity="0.6" />
             </svg>
             <div style={{ fontSize: 12, fontWeight: 600, color, textAlign: 'center', marginTop: 2, lineHeight: 1.3 }}>{label}</div>
-            <div
-                style={{ fontSize: 10, color: '#aaaacc', textAlign: 'center', marginTop: 2, lineHeight: 1.4, cursor: unknown ? 'pointer' : 'default' }}
-                onClick={unknown ? onClickSetup : undefined}
-            >{sub}</div>
+            <div style={{ fontSize: 10, color: '#aaaacc', textAlign: 'center', marginTop: 2, lineHeight: 1.4 }}>{sub}</div>
+            <RiskTooltipCard visible={isHovered} data={tooltipData} onClickSetup={onClickSetup} />
         </div>
     );
 };
@@ -1078,7 +1179,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         impliedStopLoss = slPrice.toFixed(2);
     }
 
-    // Risk Gauge score
+    // Risk Gauge score + tooltip data
     const currentAccount = tradingAccounts?.find(a => a.id === currentTrade.accountId);
     const totalAsset = currentAccount?.type === 'auto_sync' && currentAccount.balance
         ? currentAccount.balance
@@ -1086,10 +1187,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         ? currentAccount.manualBalance
         : null;
 
-    // 判断缺失哪些字段，给出精准提示
     const riskMissingHint = (() => {
         if (totalAsset == null) return '请设置账户总资产';
-        // 风险金额：优先用 riskAmount，其次用 stopLoss 推算
         const hasRiskAmount = (currentTrade.riskAmount ?? 0) > 0;
         const hasStopLoss = !!currentTrade.stopLoss && !!currentTrade.entryPrice;
         if (!hasRiskAmount && !hasStopLoss) return '请填写风险金额或计划止损价';
@@ -1098,20 +1197,74 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
     const riskGaugeScore = useMemo(() => {
         if (totalAsset == null || totalAsset <= 0) return null;
-
-        // 风险金额：优先用 riskAmount，其次用 stopLoss 推算
         let riskAmount = currentTrade.riskAmount ?? 0;
         if (riskAmount <= 0 && currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity) {
             riskAmount = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity;
         }
         if (riskAmount <= 0) return null;
-
         const riskAmountRatio = (riskAmount / totalAsset) * 100;
         const rrRatio = (currentTrade.profitTarget && currentTrade.stopLoss && currentTrade.entryPrice)
             ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) / Math.abs(currentTrade.entryPrice - currentTrade.stopLoss)
             : 1;
         return Math.max(0, Math.min(100, calcRiskScore(riskAmountRatio, rrRatio)));
     }, [totalAsset, currentTrade.riskAmount, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice, currentTrade.quantity]);
+
+    const riskTooltipData: RiskTooltipData = useMemo(() => {
+        const isPending = riskGaugeScore === null;
+        const s = riskGaugeScore ?? 0;
+
+        // compute metrics
+        let riskAmt = currentTrade.riskAmount ?? 0;
+        if (riskAmt <= 0 && currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity) {
+            riskAmt = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity;
+        }
+        const positionRatio = totalAsset && adjustedCost > 0 ? (adjustedCost / totalAsset) * 100 : null;
+        const stopLossPercent = currentTrade.stopLoss && currentTrade.entryPrice
+            ? Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) / currentTrade.entryPrice * 100
+            : null;
+        const rrRatio = (currentTrade.profitTarget && currentTrade.stopLoss && currentTrade.entryPrice)
+            ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) / Math.abs(currentTrade.entryPrice - currentTrade.stopLoss)
+            : null;
+        const maxLoss = riskAmt > 0 ? riskAmt : null;
+
+        if (isPending) {
+            return {
+                score: null, label: '待评估', color: '#aaaacc', isPending: true,
+                analysisText: null,
+                metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
+                footerText: '补充数据后将自动计算并显示风险评级',
+                missingHint: riskMissingHint ?? undefined,
+            };
+        }
+
+        const { label, color } = getRiskLevel(s);
+        const posStr = positionRatio != null ? `${positionRatio.toFixed(1)}%` : '未知';
+        const slStr = stopLossPercent != null ? `${stopLossPercent.toFixed(1)}%` : '未知';
+        const rrStr = rrRatio != null ? `${rrRatio.toFixed(2)}R` : '未知';
+        const maxLossStr = maxLoss != null ? maxLoss.toFixed(0) : '未知';
+
+        if (s < 33) return {
+            score: s, label, color, isPending: false,
+            analysisText: `仓位占账户 ${posStr}，控制良好。止损距离 ${slStr}，盈亏比 ${rrStr}，各项均在合理范围，继续保持。`,
+            metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
+            footerText: `风险控制优秀，符合 2% 法则，最大亏损 -${maxLossStr}`,
+            footerHighlight: '2% 法则',
+        };
+        if (s < 66) return {
+            score: s, label, color, isPending: false,
+            analysisText: `仓位占账户 ${posStr}，略超建议上限。止损距离 ${slStr}，潜在最大亏损 -${maxLossStr}，建议缩减仓位至 10% 以内。`,
+            metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
+            footerText: '风险尚可控，建议缩减仓位并确认止损位置合理',
+            footerHighlight: '建议缩减仓位',
+        };
+        return {
+            score: s, label, color, isPending: false,
+            analysisText: `仓位占账户 ${posStr}，严重超出建议上限。止损距离 ${slStr}，潜在最大亏损 -${maxLossStr}，强烈建议减仓。`,
+            metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
+            footerText: '参考 2% 风险法则，每笔交易亏损不超过账户的 2%',
+            footerHighlight: '2% 风险法则',
+        };
+    }, [riskGaugeScore, totalAsset, adjustedCost, currentTrade.riskAmount, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice, currentTrade.quantity, riskMissingHint]);
 
     // Localized Labels
     const labels = {
@@ -1338,7 +1491,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                         </div>
                                     </div>
                                     <div className="pt-4">
-                                        <RiskGauge score={riskGaugeScore} missingHint={riskMissingHint ?? undefined} />
+                                        <RiskGauge score={riskGaugeScore} tooltipData={riskTooltipData} />
                                     </div>
                                 </div>
 
