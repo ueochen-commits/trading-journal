@@ -8,6 +8,7 @@ interface Props {
   onEditAccount?: (id: string) => void;
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
+  onUpdateAccount?: (id: string, updates: { manualBalance?: number | null }) => void;
   onViewHistory?: (id: string) => void;
   onUpgrade?: () => void;
 }
@@ -194,11 +195,14 @@ const BrokersPage: React.FC<Props> = ({
   onSyncAccount,
   onViewHistory,
   onUpgrade,
+  onUpdateAccount,
 }) => {
   const [accounts, setAccounts] = useState<TradingAccount[]>(propAccounts ?? []);
   const [addBtnHov, setAddBtnHov] = useState(false);
   const [syncBtnHov, setSyncBtnHov] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [editingAccount, setEditingAccount] = useState<TradingAccount | null>(null);
+  const [manualBalanceInput, setManualBalanceInput] = useState('');
 
   // 当父组件传入新账户数据时同步更新（连接成功后刷新）
   React.useEffect(() => {
@@ -213,6 +217,20 @@ const BrokersPage: React.FC<Props> = ({
     setAccounts(a => a.filter(x => x.id !== id));
     setSelectedIds(s => s.filter(x => x !== id));
     onDeleteAccount?.(id);
+  };
+
+  const handleOpenEdit = (account: TradingAccount) => {
+    setEditingAccount(account);
+    setManualBalanceInput(account.manualBalance != null ? String(account.manualBalance) : '');
+  };
+
+  const handleSaveManualBalance = () => {
+    if (!editingAccount) return;
+    const val = manualBalanceInput.trim() === '' ? null : parseFloat(manualBalanceInput);
+    const updated = { ...editingAccount, manualBalance: val ?? undefined };
+    setAccounts(a => a.map(x => x.id === editingAccount.id ? updated : x));
+    onUpdateAccount?.(editingAccount.id, { manualBalance: val });
+    setEditingAccount(null);
   };
 
   const handleSelectAll = () => {
@@ -332,7 +350,7 @@ const BrokersPage: React.FC<Props> = ({
                     account={account}
                     selected={selectedIds.includes(account.id)}
                     onToggleSelect={() => handleToggleSelect(account.id)}
-                    onEdit={() => onEditAccount?.(account.id)}
+                    onEdit={() => account.type === 'manual' ? handleOpenEdit(account) : onEditAccount?.(account.id)}
                     onDelete={() => handleDelete(account.id)}
                     onSync={() => onSyncAccount?.(account.id)}
                     onHistory={() => onViewHistory?.(account.id)}
@@ -343,6 +361,42 @@ const BrokersPage: React.FC<Props> = ({
           </>
         )}
       </div>
+
+      {/* Manual Balance Edit Modal */}
+      {editingAccount && editingAccount.type === 'manual' && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          onClick={() => setEditingAccount(null)}>
+          <div style={{ background: '#fff', borderRadius: 12, padding: 28, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+            onClick={e => e.stopPropagation()}>
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: '#1a1a2e', margin: '0 0 4px' }}>{editingAccount.name}</h3>
+            <p style={{ fontSize: 12, color: '#b0aac8', margin: '0 0 20px' }}>手动账户设置</p>
+            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#2a2a40', marginBottom: 6 }}>账户总资产</label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <input
+                type="number" step="any" placeholder="请输入账户总资产"
+                value={manualBalanceInput}
+                onChange={e => setManualBalanceInput(e.target.value)}
+                style={{ flex: 1, padding: '8px 12px', border: '1px solid #e4e0f4', borderRadius: 8, fontSize: 14, color: '#1a1a2e', outline: 'none' }}
+                autoFocus
+              />
+              <span style={{ fontSize: 13, color: '#8080a8', flexShrink: 0 }}>{editingAccount.currency}</span>
+            </div>
+            <p style={{ fontSize: 12, color: '#b0aac8', margin: '0 0 20px', lineHeight: 1.5 }}>
+              用于计算仓位占比和风险评级，建议与实际账户资金保持一致
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button onClick={() => setEditingAccount(null)}
+                style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #e4e0f4', background: '#fff', color: '#8080a8', fontSize: 13, cursor: 'pointer' }}>
+                取消
+              </button>
+              <button onClick={handleSaveManualBalance}
+                style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#5050c8', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

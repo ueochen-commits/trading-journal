@@ -11,6 +11,76 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 
+// ─── Risk Gauge Component ─────────────────────────────────────────────────────
+interface RiskGaugeProps {
+    score: number | null; // 0-100, null = unknown
+    onClickSetup?: () => void;
+}
+
+function calcNeedleCoords(score: number) {
+    const angle = -90 + score * 1.8;
+    const rad = angle * Math.PI / 180;
+    return {
+        x: parseFloat((50 + Math.cos(rad) * 34).toFixed(1)),
+        y: parseFloat((52 + Math.sin(rad) * 34).toFixed(1)),
+    };
+}
+
+function getRiskLevel(score: number) {
+    if (score < 33) return { label: '低风险', sub: '风险可控，执行良好', color: '#1d9e75' };
+    if (score < 66) return { label: '中等风险', sub: '仓位适中，注意止损', color: '#ef9f27' };
+    return { label: '高风险', sub: '仓位偏重，建议减仓', color: '#e24b4a' };
+}
+
+const RiskGauge: React.FC<RiskGaugeProps> = ({ score, onClickSetup }) => {
+    const displayScore = score ?? 50;
+    const { x: nx, y: ny } = calcNeedleCoords(displayScore);
+    const unknown = score === null;
+    const { label, sub, color } = unknown
+        ? { label: '待评估', sub: '请设置账户总资产', color: '#aaaacc' }
+        : getRiskLevel(displayScore);
+
+    return (
+        <div style={{ width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+            <svg width="100" height="58" viewBox="0 0 100 58">
+                <defs>
+                    <linearGradient id="riskGrad" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="#1d9e75" />
+                        <stop offset="50%" stopColor="#ef9f27" />
+                        <stop offset="100%" stopColor="#e24b4a" />
+                    </linearGradient>
+                </defs>
+                <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="#f0f0f6" strokeWidth="7" strokeLinecap="round" />
+                <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="url(#riskGrad)" strokeWidth="7" strokeLinecap="round" opacity={unknown ? 0.3 : 1} />
+                <line x1="50" y1="52" x2={nx} y2={ny} stroke={color} strokeWidth="2" strokeLinecap="round"
+                    style={{ transition: 'all 0.4s ease' }} />
+                <circle cx="50" cy="52" r="3.5" fill={color} style={{ transition: 'all 0.4s ease' }} />
+            </svg>
+            <div style={{ fontSize: 12, fontWeight: 600, color, textAlign: 'center', marginTop: 2, lineHeight: 1.3 }}>{label}</div>
+            <div
+                style={{ fontSize: 10, color: '#aaaacc', textAlign: 'center', marginTop: 2, lineHeight: 1.4, cursor: unknown ? 'pointer' : 'default' }}
+                onClick={unknown ? onClickSetup : undefined}
+            >{sub}</div>
+        </div>
+    );
+};
+
+function calcRiskScore(positionRatio: number, stopLossPercent: number, rrRatio: number): number {
+    const posScore = positionRatio <= 2 ? 0
+        : positionRatio <= 10 ? (positionRatio - 2) / 8 * 30
+        : positionRatio <= 25 ? 30 + (positionRatio - 10) / 15 * 40
+        : Math.min(100, 70 + (positionRatio - 25) / 25 * 30);
+
+    const slScore = stopLossPercent <= 1 ? 10
+        : stopLossPercent <= 3 ? 10 + (stopLossPercent - 1) / 2 * 20
+        : stopLossPercent <= 8 ? 30 + (stopLossPercent - 3) / 5 * 35
+        : Math.min(100, 65 + (stopLossPercent - 8) / 7 * 25);
+
+    const rrBonus = rrRatio >= 3 ? 20 : rrRatio >= 2 ? 12 : rrRatio >= 1.5 ? 6 : 0;
+    return Math.max(0, Math.min(100, posScore * 0.6 + slScore * 0.4 - rrBonus));
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 interface TradeReviewModalProps {
     trade: Trade;
     allTrades: Trade[]; // To enable next/prev navigation
@@ -1006,6 +1076,25 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         impliedStopLoss = slPrice.toFixed(2);
     }
 
+    // Risk Gauge score
+    const currentAccount = tradingAccounts?.find(a => a.id === currentTrade.accountId);
+    const totalAsset = currentAccount?.type === 'auto_sync' && currentAccount.balance
+        ? currentAccount.balance
+        : currentAccount?.type === 'manual' && currentAccount.manualBalance != null
+        ? currentAccount.manualBalance
+        : null;
+    const riskGaugeScore = useMemo(() => {
+        if (totalAsset == null || adjustedCost <= 0) return null;
+        const positionRatio = (adjustedCost / totalAsset) * 100;
+        const stopLossPercent = currentTrade.stopLoss && currentTrade.entryPrice
+            ? Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) / currentTrade.entryPrice * 100
+            : 5;
+        const rrRatio = (currentTrade.profitTarget && currentTrade.stopLoss && currentTrade.entryPrice)
+            ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) / Math.abs(currentTrade.entryPrice - currentTrade.stopLoss)
+            : 1;
+        return calcRiskScore(positionRatio, stopLossPercent, rrRatio);
+    }, [totalAsset, adjustedCost, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice]);
+
     // Localized Labels
     const labels = {
         edit: language === 'cn' ? '编辑' : 'Edit',
@@ -1218,16 +1307,19 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         {leftTab === 'stats' && (
                             <>
                                 {/* Top PnL Block */}
-                                <div className="px-5 pt-5 pb-4">
-                                    <p className="text-[11px] font-normal uppercase tracking-wider mb-1.5 text-slate-500 dark:text-slate-400">{labels.stats.netPnl}</p>
-                                    <div className="flex items-baseline gap-3">
-                                        <h3 className={`text-[32px] font-semibold tracking-tight leading-none ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                            {currentTrade.pnl >= 0 ? '+' : ''}{currentTrade.pnl.toFixed(2)}
-                                        </h3>
-                                        <span className={`text-[14px] font-medium opacity-70 ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                            {netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%
-                                        </span>
+                                <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-[11px] font-normal uppercase tracking-wider mb-1.5 text-slate-500 dark:text-slate-400">{labels.stats.netPnl}</p>
+                                        <div className="flex items-baseline gap-3">
+                                            <h3 className={`text-[32px] font-semibold tracking-tight leading-none ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                {currentTrade.pnl >= 0 ? '+' : ''}{currentTrade.pnl.toFixed(2)}
+                                            </h3>
+                                            <span className={`text-[14px] font-medium opacity-70 ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                {netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%
+                                            </span>
+                                        </div>
                                     </div>
+                                    <RiskGauge score={riskGaugeScore} />
                                 </div>
 
                                 {/* Stats Rows */}

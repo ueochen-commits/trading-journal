@@ -26,6 +26,7 @@ export interface TradingAccount {
     lastSync?: string;
     nextSync?: string;
     exchangeConnectionId?: string;
+    manualBalance?: number; // 手动账户总资产，用于风险评级计算
 }
 
 export interface Trade {

@@ -95,6 +95,7 @@ function dbToTradingAccount(row: any): TradingAccount {
     lastSync: row.last_sync || undefined,
     nextSync: row.next_sync || undefined,
     exchangeConnectionId: row.exchange_connection_id || undefined,
+    manualBalance: row.manual_balance ?? undefined,
   };
 }
 
@@ -656,6 +657,7 @@ export const userDataService = {
     syncStatus: string;
     lastSync: string;
     nextSync: string;
+    manualBalance: number | null;
   }>) {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
@@ -668,6 +670,10 @@ export const userDataService = {
     if (updates.syncStatus !== undefined) dbUpdates.sync_status = updates.syncStatus;
     if (updates.lastSync !== undefined) dbUpdates.last_sync = updates.lastSync;
     if (updates.nextSync !== undefined) dbUpdates.next_sync = updates.nextSync;
+    if (updates.manualBalance !== undefined) {
+      dbUpdates.manual_balance = updates.manualBalance;
+      dbUpdates.balance_updated_at = new Date().toISOString();
+    }
 
     const { error } = await supabase.from('trading_accounts').update(dbUpdates).eq('id', id).eq('user_id', userId);
     return { error };

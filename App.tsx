@@ -1144,6 +1144,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   showToast('正在同步...');
                   // 后续可以在这里调用真实同步逻辑
                 }}
+                onUpdateAccount={async (id, updates) => {
+                  await userDataService.updateTradingAccount(id, updates);
+                  setTradingAccounts(prev => prev.map(a => a.id === id
+                    ? { ...a, manualBalance: updates.manualBalance ?? undefined }
+                    : a
+                  ));
+                }}
                 riskSettings={riskSettings}
                 onSaveRiskSettings={handleSaveRiskSettings}
               />;

@@ -514,12 +514,13 @@ interface SettingsPageProps {
   onAddAccount?: () => void;
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
+  onUpdateAccount?: (id: string, updates: { manualBalance?: number | null }) => void;
   initialSection?: string;
   riskSettings?: RiskSettings;
   onSaveRiskSettings?: (s: RiskSettings) => void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount, initialSection, riskSettings, onSaveRiskSettings }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount, onUpdateAccount, initialSection, riskSettings, onSaveRiskSettings }) => {
   const { user, updateProfile } = useUser();
   const [activeSection, setActiveSection] = useState(initialSection || 'profile');
   const [toast, setToast] = useState<string | null>(null);
@@ -541,7 +542,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAcco
     switch (activeSection) {
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
       case 'account': return <AccountPage showToast={showToast} />;
-      case 'brokers': return <BrokersPage userPlan="free" accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} />;
+      case 'brokers': return <BrokersPage userPlan="free" accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} onUpdateAccount={onUpdateAccount} />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} riskSettings={riskSettings} onSaveRiskSettings={onSaveRiskSettings} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
       case 'tags': return <TagsPage />;
