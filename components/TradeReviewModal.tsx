@@ -1331,7 +1331,9 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             </span>
                                         </div>
                                     </div>
-                                    <RiskGauge score={riskGaugeScore} missingHint={riskMissingHint ?? undefined} />
+                                    <div className="pt-4">
+                                        <RiskGauge score={riskGaugeScore} missingHint={riskMissingHint ?? undefined} />
+                                    </div>
                                 </div>
 
                                 {/* Stats Rows */}
