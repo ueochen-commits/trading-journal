@@ -1265,16 +1265,16 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         // 每个维度独立判断，只说有问题的，不说废话
         const issues: string[] = [];
         if (positionRatio != null) {
-            if (positionRatio > 25) issues.push(`仓位 ${posStr} 严重超标，单笔风险过高`);
-            else if (positionRatio > 10) issues.push(`仓位 ${posStr}，略超 10% 建议上限`);
+            if (positionRatio > 25) issues.push(`仓位 ${posStr}，超出建议上限 ${(positionRatio - 10).toFixed(1)}%，单笔风险过高`);
+            else if (positionRatio > 10) issues.push(`仓位 ${posStr}，超出 10% 建议上限 ${(positionRatio - 10).toFixed(1)}%`);
         }
         if (stopLossPercent != null) {
-            if (stopLossPercent > 8) issues.push(`止损距离 ${slStr}，波动空间过大`);
-            else if (stopLossPercent > 5) issues.push(`止损距离 ${slStr}，偏宽`);
+            if (stopLossPercent > 8) issues.push(`止损距离 ${slStr}，超出合理范围 ${(stopLossPercent - 5).toFixed(1)}%`);
+            else if (stopLossPercent > 5) issues.push(`止损距离 ${slStr}，偏宽 ${(stopLossPercent - 5).toFixed(1)}%`);
         }
         if (rrRatio != null) {
             if (rrRatio < 1) issues.push(`盈亏比仅 ${rrStr}，期望值为负`);
-            else if (rrRatio < 1.5) issues.push(`盈亏比 ${rrStr}，偏低`);
+            else if (rrRatio < 1.5) issues.push(`盈亏比 ${rrStr}，建议至少达到 1.5R`);
         }
         if (maxLoss != null && totalAsset && (maxLoss / totalAsset) > 0.02) {
             issues.push(`最大亏损 ${maxLossStr} ${currency}，超过账户 2%`);
