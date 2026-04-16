@@ -37,18 +37,18 @@ function getMetricColor(type: string, value: number): string {
     return '#e24b4a';
 }
 
-const RiskTooltipCard: React.FC<{ visible: boolean; data: RiskTooltipData; onClickSetup?: () => void }> = ({ visible, data, onClickSetup }) => {
+const RiskTooltipCard: React.FC<{ visible: boolean; top: number; left: number; data: RiskTooltipData; onClickSetup?: () => void }> = ({ visible, top, left, data, onClickSetup }) => {
     const { score, label, color, isPending, analysisText, metrics, footerText, footerHighlight, missingHint } = data;
     const displayScore = score != null ? Math.max(0, Math.min(100, score)) : null;
 
     return (
         <div style={{
-            position: 'absolute', top: '100%', left: '50%',
-            transform: visible ? 'translateX(-80%) translateY(0)' : 'translateX(-80%) translateY(4px)',
-            marginTop: '8px', width: '320px',
+            position: 'fixed', top, left,
+            width: '480px',
             background: '#ffffff', border: '0.5px solid #e8e8f0', borderRadius: '10px',
-            padding: '14px 16px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
-            zIndex: 50, opacity: visible ? 1 : 0,
+            padding: '16px 18px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
+            zIndex: 100, opacity: visible ? 1 : 0,
+            transform: visible ? 'translateY(0)' : 'translateY(4px)',
             transition: 'opacity 0.18s ease, transform 0.18s ease',
             pointerEvents: visible ? 'auto' : 'none',
         }}>
@@ -58,38 +58,38 @@ const RiskTooltipCard: React.FC<{ visible: boolean; data: RiskTooltipData; onCli
                     <div style={{ fontSize: '28px', fontWeight: 500, color, letterSpacing: '-1px', lineHeight: 1 }}>
                         {displayScore != null ? Math.round(displayScore) : '--'}
                     </div>
-                    <div style={{ fontSize: '10px', color: '#bbb', marginTop: '2px' }}>/ 100</div>
+                    <div style={{ fontSize: '11px', color: '#999', marginTop: '2px' }}>/ 100</div>
                     <div style={{ fontSize: '11px', color, marginTop: '4px', fontWeight: 500 }}>{label}</div>
                 </div>
 
                 {/* 右侧内容 */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                     {/* 进度条 */}
-                    <div style={{ fontSize: '10px', color: '#bbb', letterSpacing: '0.8px', marginBottom: '4px' }}>风险区间</div>
+                    <div style={{ fontSize: '10px', color: '#999', letterSpacing: '0.8px', marginBottom: '4px' }}>风险区间</div>
                     <div style={{ height: '4px', background: '#ebebf0', borderRadius: '99px', overflow: 'visible', position: 'relative', margin: '5px 0 3px' }}>
                         <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg, #1d9e75 0%, #ef9f27 50%, #e24b4a 100%)', opacity: isPending ? 0.3 : 1 }} />
                         <div style={{ position: 'absolute', top: '-3px', width: '2px', height: '10px', background: isPending ? '#ccc' : 'rgba(0,0,0,0.25)', borderRadius: '1px', left: `${displayScore ?? 50}%`, transform: 'translateX(-50%)' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '9px', color: '#bbb' }}>低风险</span>
-                        <span style={{ fontSize: '9px', color: '#bbb' }}>中等</span>
-                        <span style={{ fontSize: '9px', color: '#bbb' }}>高风险</span>
+                        <span style={{ fontSize: '10px', color: '#999' }}>低风险</span>
+                        <span style={{ fontSize: '10px', color: '#999' }}>中等</span>
+                        <span style={{ fontSize: '10px', color: '#999' }}>高风险</span>
                     </div>
 
                     {/* 分析文字 */}
                     {isPending ? (
-                        <div style={{ fontSize: '11px', color: '#aaa', lineHeight: 1.6 }}>
+                        <div style={{ fontSize: '12px', color: '#888', lineHeight: 1.6 }}>
                             {missingHint === '请设置账户总资产'
                                 ? <>暂无足够数据。请补充<span style={{ color: '#7c3aed', cursor: 'pointer' }} onClick={onClickSetup}> 账户总资产 </span>以启用风险评级。</>
                                 : <>请填写<span style={{ color: '#7c3aed', cursor: 'pointer' }}> 风险金额 </span>或<span style={{ color: '#7c3aed' }}> 计划止损价格 </span>以启用风险评级。</>
                             }
                         </div>
                     ) : (
-                        <div style={{ fontSize: '11px', color: '#888', lineHeight: 1.6 }}>{analysisText}</div>
+                        <div style={{ fontSize: '12px', color: '#555', lineHeight: 1.6 }}>{analysisText}</div>
                     )}
 
                     {/* 四项指标 */}
-                    <div style={{ marginTop: '8px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    <div style={{ marginTop: '10px', display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                         {[
                             { label: '仓位占比', value: metrics.positionRatio != null ? `${metrics.positionRatio.toFixed(1)}%` : '--', type: 'position', raw: metrics.positionRatio },
                             { label: '止损距离', value: metrics.stopLossPercent != null ? `${metrics.stopLossPercent.toFixed(1)}%` : '--', type: 'stoploss', raw: metrics.stopLossPercent },
@@ -97,14 +97,14 @@ const RiskTooltipCard: React.FC<{ visible: boolean; data: RiskTooltipData; onCli
                             { label: '最大潜在亏损', value: metrics.maxLoss != null ? `-${metrics.maxLoss.toFixed(0)}` : '--', type: 'maxloss', raw: metrics.maxLoss },
                         ].map(({ label: ml, value, type, raw }) => (
                             <div key={ml}>
-                                <div style={{ fontSize: '9px', color: '#aaa' }}>{ml}</div>
-                                <div style={{ fontSize: '12px', fontWeight: 500, color: raw != null ? getMetricColor(type, raw) : '#ccc' }}>{value}</div>
+                                <div style={{ fontSize: '11px', color: '#888' }}>{ml}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 500, color: raw != null ? getMetricColor(type, raw) : '#ccc' }}>{value}</div>
                             </div>
                         ))}
                     </div>
 
                     {/* 底部建议 */}
-                    <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '0.5px solid #f0f0f6', fontSize: '10px', color: '#aaa', lineHeight: 1.5 }}>
+                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '0.5px solid #f0f0f6', fontSize: '12px', color: '#888', lineHeight: 1.5 }}>
                         {footerHighlight
                             ? footerText.split(footerHighlight).map((part, i, arr) =>
                                 i < arr.length - 1
@@ -128,6 +128,23 @@ function getRiskLevel(score: number) {
 
 const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup }) => {
     const [isHovered, setIsHovered] = useState(false);
+    const [cardPos, setCardPos] = useState({ top: 0, left: 0 });
+    const gaugeRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleScroll = () => setIsHovered(false);
+        window.addEventListener('scroll', handleScroll, true);
+        return () => window.removeEventListener('scroll', handleScroll, true);
+    }, []);
+
+    const handleMouseEnter = () => {
+        if (gaugeRef.current) {
+            const rect = gaugeRef.current.getBoundingClientRect();
+            setCardPos({ top: rect.bottom + 8, left: rect.left - 20 });
+        }
+        setIsHovered(true);
+    };
+
     const clampedScore = score != null ? Math.max(0, Math.min(100, score)) : 50;
     const unknown = score === null;
     const { label, sub, color } = unknown
@@ -138,8 +155,9 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup 
 
     return (
         <div
-            style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}
-            onMouseEnter={() => setIsHovered(true)}
+            ref={gaugeRef}
+            style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}
+            onMouseEnter={handleMouseEnter}
             onMouseLeave={() => setIsHovered(false)}
         >
             <svg width="100" height="58" viewBox="0 0 100 58">
@@ -164,7 +182,7 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup 
             </svg>
             <div style={{ fontSize: 12, fontWeight: 600, color, textAlign: 'center', marginTop: 2, lineHeight: 1.3 }}>{label}</div>
             <div style={{ fontSize: 10, color: '#aaaacc', textAlign: 'center', marginTop: 2, lineHeight: 1.4 }}>{sub}</div>
-            <RiskTooltipCard visible={isHovered} data={tooltipData} onClickSetup={onClickSetup} />
+            <RiskTooltipCard visible={isHovered} top={cardPos.top} left={cardPos.left} data={tooltipData} onClickSetup={onClickSetup} />
         </div>
     );
 };
