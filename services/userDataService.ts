@@ -655,8 +655,8 @@ export const userDataService = {
     currency: string;
     profitMethod: string;
     syncStatus: string;
-    lastSync: string;
-    nextSync: string;
+    lastSync: string | null;
+    nextSync: string | null;
     manualBalance: number | null;
   }>) {
     const userId = await getCurrentUserId();

@@ -1199,7 +1199,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onClearTrades={async (accountId) => {
                   await userDataService.clearAccountTrades(accountId);
                   // 同时清空 lastSync，确保下次同步能从头拉取所有历史数据
-                  await userDataService.updateTradingAccount(accountId, { lastSync: '' });
+                  await userDataService.updateTradingAccount(accountId, { lastSync: null });
                   setTrades(prev => prev.filter(t => t.accountId !== accountId));
                   setTradingAccounts(prev => prev.map(a => a.id === accountId ? { ...a, lastSync: undefined } : a));
                 }}
