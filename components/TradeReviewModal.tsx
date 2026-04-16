@@ -20,11 +20,13 @@ interface RiskGaugeProps {
 
 function calcNeedleCoords(score: number) {
     const clamped = Math.max(0, Math.min(100, score));
-    const angle = -175 + clamped * 3.5;
-    const rad = angle * Math.PI / 180;
+    // 弧线圆心 (50,52)，从左端180°到右端0°
+    // score=0 → 180°（左端），score=50 → 90°（正上方），score=100 → 0°（右端）
+    const angleDeg = 180 - clamped * 1.8;
+    const rad = angleDeg * Math.PI / 180;
     return {
         x: parseFloat((50 + Math.cos(rad) * 34).toFixed(1)),
-        y: parseFloat((52 + Math.sin(rad) * 34).toFixed(1)),
+        y: parseFloat((52 - Math.sin(rad) * 34).toFixed(1)),
     };
 }
 
