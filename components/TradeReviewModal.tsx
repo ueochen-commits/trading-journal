@@ -18,18 +18,6 @@ interface RiskGaugeProps {
     onClickSetup?: () => void;
 }
 
-function calcNeedleCoords(score: number) {
-    const clamped = Math.max(0, Math.min(100, score));
-    // 弧线圆心 (50,52)，从左端180°到右端0°
-    // score=0 → 180°（左端），score=50 → 90°（正上方），score=100 → 0°（右端）
-    const angleDeg = 180 - clamped * 1.8;
-    const rad = angleDeg * Math.PI / 180;
-    return {
-        x: parseFloat((50 + Math.cos(rad) * 34).toFixed(1)),
-        y: parseFloat((52 - Math.sin(rad) * 34).toFixed(1)),
-    };
-}
-
 function getRiskLevel(score: number) {
     if (score < 33) return { label: '低风险', sub: '风险可控，执行良好', color: '#1d9e75' };
     if (score < 66) return { label: '中等风险', sub: '仓位适中，注意止损', color: '#ef9f27' };
@@ -38,11 +26,14 @@ function getRiskLevel(score: number) {
 
 const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup }) => {
     const clampedScore = score != null ? Math.max(0, Math.min(100, score)) : 50;
-    const { x: nx, y: ny } = calcNeedleCoords(clampedScore);
     const unknown = score === null;
     const { label, sub, color } = unknown
         ? { label: '待评估', sub: missingHint ?? '数据不足', color: '#aaaacc' }
         : getRiskLevel(clampedScore);
+
+    // score=0 → -90°（左端），score=50 → 0°（正上方），score=100 → 90°（右端）
+    // 用 rotate 驱动动画，圆心 (50,52) 作为旋转原点
+    const rotateDeg = -90 + clampedScore * 1.8;
 
     return (
         <div style={{ width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
@@ -56,9 +47,11 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup 
                 </defs>
                 <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="#f0f0f6" strokeWidth="7" strokeLinecap="round" />
                 <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="url(#riskGrad)" strokeWidth="7" strokeLinecap="round" opacity={unknown ? 0.3 : 1} />
-                <line x1="50" y1="52" x2={nx} y2={ny} stroke={color} strokeWidth="2" strokeLinecap="round"
-                    style={{ transition: 'all 0.4s ease' }} />
-                <circle cx="50" cy="52" r="3.5" fill={color} style={{ transition: 'all 0.4s ease' }} />
+                {/* 指针用 rotate 驱动，CSS transition 对 transform 完全生效 */}
+                <g style={{ transform: `rotate(${rotateDeg}deg)`, transformOrigin: '50px 52px', transition: 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)' }}>
+                    <line x1="50" y1="52" x2="50" y2="20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+                </g>
+                <circle cx="50" cy="52" r="3.5" fill={color} />
             </svg>
             <div style={{ fontSize: 12, fontWeight: 600, color, textAlign: 'center', marginTop: 2, lineHeight: 1.3 }}>{label}</div>
             <div
