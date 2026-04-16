@@ -1273,13 +1273,13 @@ const Dashboard: React.FC<DashboardProps> = ({
     const grouped: Record<string, typeof trades> = {};
     sortedTrades.forEach(t => { const d = fmtDate(t.entryDate); if (!grouped[d]) grouped[d] = []; grouped[d].push(t); });
     const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    const data: any[] = [{ date: 'Start', equity: initialEquity, returnPct: 0, cumulativePnl: 0, pnlAbove: 0, pnlBelow: 0 }];
+    const data: any[] = [{ date: 'Start', equity: initialEquity, returnPct: 0, cumulativePnl: 0 }];
     let currentEquity = initialEquity;
     sortedDates.forEach((date, i) => {
       const dayTrades = grouped[date];
       dayTrades.forEach(t => { currentEquity += (t.pnl - t.fees); });
       const cumulativePnl = parseFloat((currentEquity - initialEquity).toFixed(2));
-      const dataPoint: any = { date, equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl, pnlAbove: Math.max(0, cumulativePnl), pnlBelow: Math.min(0, cumulativePnl) };
+      const dataPoint: any = { date, equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl };
       selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend) dataPoint[friendId] = friend.equityCurve[Math.min(i + 1, friend.equityCurve.length - 1)]; });
       data.push(dataPoint);
     });
@@ -1680,15 +1680,35 @@ const Dashboard: React.FC<DashboardProps> = ({
                           );
                         }}
                       />
-                      {/* Green fill: pnlAbove (>=0) with baseline at 0 */}
-                      <Area type="monotone" dataKey="pnlAbove" baseValue={0} stroke="none"
+                      {/* Inject clipPaths at zero axis — never returns null */}
+                      <Customized component={(props: any) => {
+                        const yAxis = props.yAxisMap && (Object.values(props.yAxisMap)[0] as any);
+                        const top = props.offset?.top ?? 0;
+                        const bottom = top + (props.offset?.height ?? 0);
+                        const left = props.offset?.left ?? 0;
+                        const w = props.offset?.width ?? 0;
+                        const zeroY = yAxis?.scale ? yAxis.scale(0) : (top + bottom) / 2;
+                        const cZ = Math.max(top, Math.min(bottom, zeroY));
+                        return (
+                          <defs>
+                            <clipPath id="clipAboveZero">
+                              <rect x={left} y={top} width={w} height={cZ - top} />
+                            </clipPath>
+                            <clipPath id="clipBelowZero">
+                              <rect x={left} y={cZ} width={w} height={bottom - cZ} />
+                            </clipPath>
+                          </defs>
+                        );
+                      }} />
+                      {/* Green fill above zero — same dataKey as line so curves match exactly */}
+                      <Area type="monotone" dataKey="cumulativePnl" baseValue={0} stroke="none"
                         fill="url(#eqGreenGrad)" fillOpacity={1} dot={false} activeDot={false}
-                        isAnimationActive={false}
+                        isAnimationActive={false} clipPath="url(#clipAboveZero)"
                       />
-                      {/* Red fill: pnlBelow (<=0) with baseline at 0 */}
-                      <Area type="monotone" dataKey="pnlBelow" baseValue={0} stroke="none"
+                      {/* Red fill below zero */}
+                      <Area type="monotone" dataKey="cumulativePnl" baseValue={0} stroke="none"
                         fill="url(#eqRedGrad)" fillOpacity={1} dot={false} activeDot={false}
-                        isAnimationActive={false}
+                        isAnimationActive={false} clipPath="url(#clipBelowZero)"
                       />
                       {/* Line — indigo */}
                       <Area type="monotone" dataKey="cumulativePnl"
