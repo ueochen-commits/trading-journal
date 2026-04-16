@@ -3,7 +3,7 @@ import { Trade, TradeStatus, RiskSettings, TrackerRule, TrackerRuleType, DailyPl
 import {
   AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, Cell,
-  Legend, ComposedChart,
+  Legend, ComposedChart, Customized,
   RadialBarChart, RadialBar,
   ScatterChart, Scatter, ReferenceLine
 } from 'recharts';
