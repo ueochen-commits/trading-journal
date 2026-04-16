@@ -1249,12 +1249,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             {currentTrade.direction}
                                         </span>
                                     </div>
-                                    {activeStrategy && (
-                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.strategy}</span>
-                                            <span className="text-[13px] font-medium text-indigo-400 dark:text-indigo-400">{activeStrategy.name}</span>
-                                        </div>
-                                    )}
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.strategy}</span>
+                                        {activeStrategy
+                                            ? <span className="text-[13px] font-medium text-indigo-500 dark:text-indigo-400">{activeStrategy.name}</span>
+                                            : <span className="text-[13px] text-slate-300 dark:text-slate-600">--</span>
+                                        }
+                                    </div>
                                     <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
                                         <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.netRoi}</span>
                                         <span className={`text-[13px] font-medium font-mono ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>{netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%</span>
