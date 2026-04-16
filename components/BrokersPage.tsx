@@ -183,6 +183,59 @@ const RowMenu: React.FC<{
   );
 };
 
+// ─── Delete Account Modal ─────────────────────────────────────────────────────
+const DeleteAccountModal: React.FC<{
+  accountName: string;
+  accountId: string;
+  onClose: () => void;
+  onConfirm: (accountId: string) => void;
+}> = ({ accountName, accountId, onClose, onConfirm }) => {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [onClose]);
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,35,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#ffffff', border: '0.5px solid #e4e4ef', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}>
+        <style>{`@keyframes clearModalIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
+
+        {/* Header */}
+        <div style={{ padding: '22px 22px 18px', borderBottom: '0.5px solid #f0f0f8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e' }}>删除账户</span>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ cursor: 'pointer', opacity: 0.4 }} onClick={onClose}>
+              <line x1="1.5" y1="1.5" x2="11.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="11.5" y1="1.5" x2="1.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, margin: 0 }}>
+            <span style={{ color: '#c0392b', fontWeight: 500 }}>此操作无法撤销</span>，将永久删除账户{' '}
+            <span style={{ color: '#1a1a2e', fontWeight: 500 }}>{accountName}</span>{' '}
+            及其下所有交易记录。
+          </p>
+        </div>
+
+        {/* Buttons */}
+        <div style={{ padding: '16px 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ background: '#fff', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: '#666', cursor: 'pointer' }}>
+            取消
+          </button>
+          <button onClick={() => { onConfirm(accountId); onClose(); }}
+            style={{ background: '#c0392b', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+            确认删除
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Clear Trades Modal ───────────────────────────────────────────────────────
 const ClearTradesModal: React.FC<{
   accountName: string;
@@ -317,6 +370,7 @@ const BrokersPage: React.FC<Props> = ({
   const [editingAccount, setEditingAccount] = useState<TradingAccount | null>(null);
   const [manualBalanceInput, setManualBalanceInput] = useState('');
   const [clearModal, setClearModal] = useState<{ id: string; name: string } | null>(null);
+  const [deleteModal, setDeleteModal] = useState<{ id: string; name: string } | null>(null);
   const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
 
   // 当父组件传入新账户数据时同步更新（连接成功后刷新）
@@ -466,7 +520,7 @@ const BrokersPage: React.FC<Props> = ({
                     selected={selectedIds.includes(account.id)}
                     onToggleSelect={() => handleToggleSelect(account.id)}
                     onEdit={() => account.type === 'manual' ? handleOpenEdit(account) : onEditAccount?.(account.id)}
-                    onDelete={() => handleDelete(account.id)}
+                    onDelete={() => setDeleteModal({ id: account.id, name: account.name })}
                     onSync={async () => {
                       setSyncingIds(prev => new Set(prev).add(account.id));
                       try {
@@ -532,9 +586,16 @@ const BrokersPage: React.FC<Props> = ({
           accountName={clearModal.name}
           accountId={clearModal.id}
           onClose={() => setClearModal(null)}
-          onConfirm={async (id) => {
-            await onClearTrades?.(id);
-          }}
+          onConfirm={async (id) => { await onClearTrades?.(id); }}
+        />
+      )}
+
+      {deleteModal && (
+        <DeleteAccountModal
+          accountName={deleteModal.name}
+          accountId={deleteModal.id}
+          onClose={() => setDeleteModal(null)}
+          onConfirm={(id) => handleDelete(id)}
         />
       )}
     </div>
