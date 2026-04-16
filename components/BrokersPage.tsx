@@ -179,6 +179,98 @@ const RowMenu: React.FC<{
   );
 };
 
+// ─── Clear Trades Modal ───────────────────────────────────────────────────────
+const ClearTradesModal: React.FC<{
+  accountName: string;
+  accountId: string;
+  onClose: () => void;
+  onConfirm: (accountId: string) => Promise<void>;
+}> = ({ accountName, accountId, onClose, onConfirm }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [loading, setLoading] = useState(false);
+  const canConfirm = inputValue === '清除所有交易';
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [onClose]);
+
+  const handleConfirm = async () => {
+    if (!canConfirm) return;
+    setLoading(true);
+    try {
+      await onConfirm(accountId);
+      onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,35,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{ background: '#ffffff', border: '0.5px solid #e4e4ef', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}
+      >
+        <style>{`@keyframes clearModalIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
+
+        {/* Header */}
+        <div style={{ padding: '22px 22px 18px', borderBottom: '0.5px solid #f0f0f8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <span style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e' }}>清除交易记录</span>
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ cursor: 'pointer', opacity: 0.4 }} onClick={onClose}>
+              <line x1="1.5" y1="1.5" x2="11.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="11.5" y1="1.5" x2="1.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </div>
+          <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, margin: 0 }}>
+            <span style={{ color: '#c0392b', fontWeight: 500 }}>此操作无法撤销</span>，将清除{' '}
+            <span style={{ color: '#1a1a2e', fontWeight: 500 }}>{accountName}</span>{' '}
+            账户下所有交易记录、标签与备注。
+          </p>
+        </div>
+
+        {/* Input */}
+        <div style={{ padding: '16px 22px 18px' }}>
+          <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>请输入「清除所有交易」以确认</div>
+          <input
+            autoFocus
+            value={inputValue}
+            onChange={e => setInputValue(e.target.value)}
+            placeholder="清除所有交易"
+            style={{ width: '100%', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: '#1a1a2e', outline: 'none', background: '#fff', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
+            onFocus={e => (e.target.style.borderColor = '#9b8fde')}
+            onBlur={e => (e.target.style.borderColor = '#e4e4ef')}
+            onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
+          />
+        </div>
+
+        {/* Buttons */}
+        <div style={{ padding: '0 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+          <button onClick={onClose} style={{ background: '#fff', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: '#666', cursor: 'pointer' }}>
+            取消
+          </button>
+          <button
+            onClick={handleConfirm}
+            disabled={!canConfirm || loading}
+            style={{ background: canConfirm ? '#1a1a2e' : '#f0f0f5', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: canConfirm ? '#fff' : '#bbb', cursor: canConfirm && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
+          >
+            {loading ? '清除中...' : '确认清除'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ─── Type badge ───────────────────────────────────────────────────────────────
 const TypeBadge: React.FC<{ account: TradingAccount }> = ({ account }) => {
   if (account.type === 'demo') {
@@ -219,6 +311,7 @@ const BrokersPage: React.FC<Props> = ({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingAccount, setEditingAccount] = useState<TradingAccount | null>(null);
   const [manualBalanceInput, setManualBalanceInput] = useState('');
+  const [clearModal, setClearModal] = useState<{ id: string; name: string } | null>(null);
 
   // 当父组件传入新账户数据时同步更新（连接成功后刷新）
   React.useEffect(() => {
@@ -370,11 +463,7 @@ const BrokersPage: React.FC<Props> = ({
                     onDelete={() => handleDelete(account.id)}
                     onSync={() => onSyncAccount?.(account.id)}
                     onHistory={() => onViewHistory?.(account.id)}
-                    onClearTrades={() => {
-                      if (window.confirm(`确定要清除「${account.name}」下的所有交易数据吗？此操作不可撤销。`)) {
-                        onClearTrades?.(account.id);
-                      }
-                    }}
+                    onClearTrades={() => setClearModal({ id: account.id, name: account.name })}
                     onEditBalance={(newBalance) => {
                       setAccounts(a => a.map(x => x.id === account.id ? { ...x, balance: newBalance } : x));
                       onUpdateAccount?.(account.id, { balance: newBalance });
@@ -421,6 +510,18 @@ const BrokersPage: React.FC<Props> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Clear Trades Modal */}
+      {clearModal && (
+        <ClearTradesModal
+          accountName={clearModal.name}
+          accountId={clearModal.id}
+          onClose={() => setClearModal(null)}
+          onConfirm={async (id) => {
+            await onClearTrades?.(id);
+          }}
+        />
       )}
     </div>
   );
