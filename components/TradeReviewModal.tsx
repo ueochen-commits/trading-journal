@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan } from '../types';
+import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount } from '../types';
 import { 
     X, ChevronLeft, ChevronRight, Star, Plus, Trash2, Calendar, Clock, Hash, Tag, 
     AlertTriangle, FileText, Check, MoreHorizontal, GripVertical, Edit2, Share2, 
@@ -18,6 +18,7 @@ interface TradeReviewModalProps {
     onClose: () => void;
     onUpdateTrade: (trade: Trade) => void;
     strategies?: Strategy[];
+    tradingAccounts?: TradingAccount[];
     onSavePlan?: (plan: DailyPlan) => void; // New Prop for Notebook Sync
 }
 
@@ -387,7 +388,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         <GripVertical className="w-3 h-3" />
                     </div>
                     
-                    <Icon className={`w-4 h-4 ${cat.color}`} />
+                    <Icon className={`w-4 h-4 ${cat.color}`} fill="currentColor" strokeWidth={0} />
                     <span className="font-bold text-slate-800 dark:text-slate-200 text-sm">{cat.label}</span>
                 </div>
                 
@@ -501,7 +502,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     );
 };
 
-const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, isOpen, onClose, onUpdateTrade, strategies, onSavePlan }) => {
+const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, isOpen, onClose, onUpdateTrade, strategies, tradingAccounts, onSavePlan }) => {
     const { t, language } = useLanguage();
     const [currentTrade, setCurrentTrade] = useState<Trade>(trade);
     const [noteContent, setNoteContent] = useState(trade.reviewNotes || trade.notes || '');
@@ -1018,6 +1019,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         stats: {
             netPnl: language === 'cn' ? '净盈亏' : 'Net P&L',
             netRoi: language === 'cn' ? '净收益率' : 'Net ROI',
+            account: language === 'cn' ? '账户' : 'Account',
+            strategy: language === 'cn' ? '策略' : 'Strategy',
             side: language === 'cn' ? '方向' : 'Side',
             leverage: language === 'cn' ? '杠杆' : 'Leverage',
             contracts: language === 'cn' ? '交易数量' : 'Quantity',
@@ -1031,8 +1034,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             grailScale: language === 'cn' ? '执行评分' : 'Execution Score',
             maeMfe: "MAE / MFE",
             rating: language === 'cn' ? '交易评分' : 'Trade Rating',
-            profitTarget: language === 'cn' ? '止盈价格' : 'Profit Target',
-            stopLoss: language === 'cn' ? '止损价格' : 'Stop Loss',
+            profitTarget: language === 'cn' ? '目标止盈价格' : 'Profit Target',
+            stopLoss: language === 'cn' ? '计划止损价格' : 'Stop Loss',
             initialTarget: language === 'cn' ? '初始目标' : 'Initial Target',
             tradeRisk: language === 'cn' ? '交易风险' : 'Trade Risk',
             plannedR: language === 'cn' ? '计划盈亏比' : 'Planned R',
@@ -1217,9 +1220,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                         <h3 className={`text-4xl font-black tracking-tight ${pnlColor}`}>
                                             {currentTrade.pnl >= 0 ? '+' : ''}${currentTrade.pnl.toFixed(2)}
                                         </h3>
-                                        <p className={`text-sm font-bold mt-1 ${pnlColor}`}>
-                                            {netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}% {labels.stats.netRoi}
-                                        </p>
                                     </div>
                                 </div>
 
@@ -1228,11 +1228,29 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
                                     {/* ── Basic Info ── */}
                                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-2 pb-1">{language === 'cn' ? '基本信息' : 'Basic Info'}</p>
+                                    {currentTrade.accountId && tradingAccounts && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="font-bold text-slate-400">{labels.stats.account}</span>
+                                            <span className="font-mono font-bold text-slate-700 dark:text-slate-200">
+                                                {tradingAccounts.find(a => a.id === currentTrade.accountId)?.name || currentTrade.accountId}
+                                            </span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="font-bold text-slate-400">{labels.stats.side}</span>
                                         <span className={`font-bold uppercase px-2 py-0.5 rounded ${currentTrade.direction === Direction.LONG ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                                             {currentTrade.direction}
                                         </span>
+                                    </div>
+                                    {activeStrategy && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="font-bold text-slate-400">{labels.stats.strategy}</span>
+                                            <span className="font-bold text-indigo-500 dark:text-indigo-400">{activeStrategy.name}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.netRoi}</span>
+                                        <span className={`font-mono font-bold ${pnlColor}`}>{netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%</span>
                                     </div>
                                     {(currentTrade.leverage ?? 1) > 1 && (
                                         <div className="flex justify-between items-center text-sm">
@@ -1331,7 +1349,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                     <div className="pt-1">
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-bold text-slate-400 text-sm flex items-center gap-1.5">
-                                                <Trophy className="w-3.5 h-3.5 text-indigo-500" />
+                                                <Trophy className="w-3.5 h-3.5 text-indigo-500" fill="currentColor" strokeWidth={0} />
                                                 {labels.stats.grailScale}
                                             </span>
                                             <span className={`text-lg font-black font-mono leading-none ${getGradeColorClass(currentTrade.executionGrade)}`}>

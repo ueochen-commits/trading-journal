@@ -848,13 +848,14 @@ const Journal: React.FC<JournalProps> = ({
   if (activeReviewTrade) {
       return (
           <div className="absolute inset-0 z-40 bg-white dark:bg-slate-950">
-              <TradeReviewModal 
+              <TradeReviewModal
                   trade={activeReviewTrade}
-                  allTrades={filteredTrades} 
-                  isOpen={true} 
+                  allTrades={filteredTrades}
+                  isOpen={true}
                   onClose={() => setReviewTrade(null)}
                   onUpdateTrade={onUpdateTrade}
                   strategies={strategies}
+                  tradingAccounts={tradingAccounts}
                   onSavePlan={onSavePlan}
               />
           </div>
