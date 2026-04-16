@@ -1160,9 +1160,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       startDate,
                     );
 
-                    // 去重：过滤掉已存在的交易
-                    const existingSymbols = new Set(trades.filter(t => t.accountId === id).map(t => `${t.symbol}-${t.entryDate}`));
-                    const dedupedTrades = newTrades.filter(t => !existingSymbols.has(`${t.symbol}-${t.entryDate}`));
+                    // 去重：过滤掉内存中已存在的交易（清除后state为空，不会过滤任何东西，符合预期）
+                    const existingKeys = new Set(trades.filter(t => t.accountId === id).map(t => `${t.symbol}-${t.entryDate}`));
+                    const dedupedTrades = newTrades.filter(t => !existingKeys.has(`${t.symbol}-${t.entryDate}`));
 
                     if (dedupedTrades.length > 0) {
                       const result = await userDataService.importTradesWithAccount(
@@ -1198,7 +1198,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 }}
                 onClearTrades={async (accountId) => {
                   await userDataService.clearAccountTrades(accountId);
+                  // 同时清空 lastSync，确保下次同步能从头拉取所有历史数据
+                  await userDataService.updateTradingAccount(accountId, { lastSync: '' });
                   setTrades(prev => prev.filter(t => t.accountId !== accountId));
+                  setTradingAccounts(prev => prev.map(a => a.id === accountId ? { ...a, lastSync: undefined } : a));
                 }}
                 riskSettings={riskSettings}
                 onSaveRiskSettings={handleSaveRiskSettings}
