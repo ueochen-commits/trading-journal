@@ -1647,16 +1647,6 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div style={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="pnlGradPos" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#1D9E75" stopOpacity={0.3}/>
-                          <stop offset="100%" stopColor="#1D9E75" stopOpacity={0}/>
-                        </linearGradient>
-                        <linearGradient id="pnlGradNeg" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#E24B4A" stopOpacity={0}/>
-                          <stop offset="100%" stopColor="#E24B4A" stopOpacity={0.3}/>
-                        </linearGradient>
-                      </defs>
                       <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
                       <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                       <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={55}
@@ -1664,10 +1654,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                         domain={['auto', 'auto']}
                       />
                       <Tooltip
-                        cursor={{ stroke: '#888', strokeWidth: 1, strokeDasharray: '4 4' }}
+                        cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '4 4' }}
                         content={({ active, payload, label }: any) => {
                           if (!active || !payload?.length) return null;
-                          const val = payload.find((p: any) => p.dataKey === 'cumulativePnl')?.value ?? 0;
+                          const val = payload.find((p: any) => p.dataKey === 'cumulativePnl')?.value ?? payload[0]?.value ?? 0;
                           const sign = val >= 0 ? '+' : '';
                           return (
                             <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
@@ -1680,21 +1670,21 @@ const Dashboard: React.FC<DashboardProps> = ({
                           );
                         }}
                       />
-                      {/* Positive fill (above zero) */}
+                      {/* Green fill: above zero */}
                       <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
-                        fill="url(#pnlGradPos)" fillOpacity={1} dot={false} activeDot={false}
+                        fill="rgba(29,158,117,0.18)" fillOpacity={1} dot={false} activeDot={false}
                         baseValue={0}
                       />
-                      {/* Negative fill (below zero) */}
+                      {/* Red fill: below zero */}
                       <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
-                        fill="url(#pnlGradNeg)" fillOpacity={1} dot={false} activeDot={false}
+                        fill="rgba(226,75,74,0.18)" fillOpacity={1} dot={false} activeDot={false}
                         baseValue={0}
                       />
-                      {/* Line only */}
+                      {/* Line only — always indigo */}
                       <Area type="monotone" dataKey="cumulativePnl"
-                        stroke={currentTotalReturnPct >= 0 ? '#1D9E75' : '#E24B4A'} strokeWidth={2}
+                        stroke="#6366F1" strokeWidth={1.2}
                         fill="none" dot={false}
-                        activeDot={{ r: 5, fill: currentTotalReturnPct >= 0 ? '#1D9E75' : '#E24B4A', stroke: '#fff', strokeWidth: 2 }}
+                        activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }}
                       />
                       {selectedFriends.map(friendId => {
                         const friend = friends.find(f => f.id === friendId);
