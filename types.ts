@@ -43,6 +43,8 @@ export interface Trade {
   pnl: number;
   leverage?: number; // New Leverage Field
   riskAmount?: number; // Stop Loss Amount ($)
+  profitTarget?: number; // 目标止盈价
+  stopLoss?: number; // 计划止损价
   setup: string;
   notes: string; // 开仓理由/笔记
   reviewNotes?: string; // 交易复盘

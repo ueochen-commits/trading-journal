@@ -958,13 +958,48 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     const riskAmount = currentTrade.riskAmount || 0;
     const grossPnl = currentTrade.pnl + currentTrade.fees;
     const realizedR = riskAmount > 0 ? (currentTrade.pnl / riskAmount).toFixed(2) + 'R' : 'N/A';
-    
+
+    // Net ROI %
+    const adjustedCost = currentTrade.entryPrice * currentTrade.quantity;
+    const netRoi = adjustedCost > 0 ? (currentTrade.pnl / adjustedCost) * 100 : 0;
+
+    // Duration
+    const durationStr = (() => {
+        if (!currentTrade.entryDate || !currentTrade.exitDate) return '--';
+        const start = new Date(currentTrade.entryDate);
+        const end = new Date(currentTrade.exitDate);
+        const diffMs = end.getTime() - start.getTime();
+        if (diffMs <= 0) return '--';
+        const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        const parts: string[] = [];
+        if (days > 0) parts.push(`${days}d`);
+        if (hours > 0) parts.push(`${hours}h`);
+        if (minutes > 0 || parts.length === 0) parts.push(`${minutes}m`);
+        return parts.join(' ');
+    })();
+
+    // Risk & Reward calculations (based on user-input profitTarget / stopLoss)
+    const tradeRisk = currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity
+        ? Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity
+        : null;
+    const initialTarget = currentTrade.profitTarget && currentTrade.entryPrice && currentTrade.quantity
+        ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) * currentTrade.quantity
+        : null;
+    const plannedR = tradeRisk && tradeRisk > 0 && initialTarget != null
+        ? (initialTarget / tradeRisk).toFixed(2) + 'R'
+        : 'N/A';
+    const realizedRFromTarget = tradeRisk && tradeRisk > 0
+        ? (currentTrade.pnl / tradeRisk).toFixed(2) + 'R'
+        : realizedR;
+
     // Calculate Implied Stop Loss Price based on risk amount
     let impliedStopLoss = '--';
     if (currentTrade.entryPrice && currentTrade.quantity && riskAmount) {
         const riskPerUnit = riskAmount / currentTrade.quantity;
-        const slPrice = currentTrade.direction === Direction.LONG 
-            ? currentTrade.entryPrice - riskPerUnit 
+        const slPrice = currentTrade.direction === Direction.LONG
+            ? currentTrade.entryPrice - riskPerUnit
             : currentTrade.entryPrice + riskPerUnit;
         impliedStopLoss = slPrice.toFixed(2);
     }
@@ -982,19 +1017,26 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         },
         stats: {
             netPnl: language === 'cn' ? '净盈亏' : 'Net P&L',
+            netRoi: language === 'cn' ? '净收益率' : 'Net ROI',
             side: language === 'cn' ? '方向' : 'Side',
-            contracts: language === 'cn' ? '交易数量' : 'Contracts traded',
+            leverage: language === 'cn' ? '杠杆' : 'Leverage',
+            contracts: language === 'cn' ? '交易数量' : 'Quantity',
+            adjustedCost: language === 'cn' ? '持仓成本' : 'Adjusted Cost',
+            entryPrice: language === 'cn' ? '入场价格' : 'Entry Price',
+            exitPrice: language === 'cn' ? '出场价格' : 'Exit Price',
             grossPnl: language === 'cn' ? '毛利润' : 'Gross P&L',
+            fees: language === 'cn' ? '手续费' : 'Fees',
+            duration: language === 'cn' ? '持仓时间' : 'Duration',
             playbook: language === 'cn' ? '策略' : 'Playbook',
             grailScale: language === 'cn' ? '执行评分' : 'Execution Score',
             maeMfe: "MAE / MFE",
             rating: language === 'cn' ? '交易评分' : 'Trade Rating',
             profitTarget: language === 'cn' ? '止盈价格' : 'Profit Target',
-            stopLoss: language === 'cn' ? '止损价格 (Implied)' : 'Stop Loss (Implied)',
+            stopLoss: language === 'cn' ? '止损价格' : 'Stop Loss',
             initialTarget: language === 'cn' ? '初始目标' : 'Initial Target',
             tradeRisk: language === 'cn' ? '交易风险' : 'Trade Risk',
-            plannedR: language === 'cn' ? '计划盈亏比' : 'Planned R-Multiple',
-            realizedR: language === 'cn' ? '实际盈亏比' : 'Realized R-Multiple',
+            plannedR: language === 'cn' ? '计划盈亏比' : 'Planned R',
+            realizedR: language === 'cn' ? '实际盈亏比' : 'Realized R',
             selectTag: language === 'cn' ? '选择标签' : 'Select tag',
         },
         playbook: {
@@ -1169,34 +1211,124 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         {leftTab === 'stats' && (
                             <>
                                 {/* Top PnL Block */}
-                                <div className="px-6 pb-6 pt-2">
+                                <div className="px-6 pb-4 pt-2">
                                     <div className={`pl-4 border-l-4 ${borderColor} py-1`}>
                                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">{labels.stats.netPnl}</p>
                                         <h3 className={`text-4xl font-black tracking-tight ${pnlColor}`}>
                                             {currentTrade.pnl >= 0 ? '+' : ''}${currentTrade.pnl.toFixed(2)}
                                         </h3>
+                                        <p className={`text-sm font-bold mt-1 ${pnlColor}`}>
+                                            {netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}% {labels.stats.netRoi}
+                                        </p>
                                     </div>
                                 </div>
 
                                 {/* Stats List */}
-                                <div className="p-6 space-y-5 pt-0">
+                                <div className="p-6 space-y-1.5 pt-0">
+
+                                    {/* ── Basic Info ── */}
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-2 pb-1">{language === 'cn' ? '基本信息' : 'Basic Info'}</p>
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="font-bold text-slate-400">{labels.stats.side}</span>
                                         <span className={`font-bold uppercase px-2 py-0.5 rounded ${currentTrade.direction === Direction.LONG ? 'text-blue-600 dark:text-blue-400' : 'text-orange-600 dark:text-orange-400'}`}>
                                             {currentTrade.direction}
                                         </span>
                                     </div>
+                                    {(currentTrade.leverage ?? 1) > 1 && (
+                                        <div className="flex justify-between items-center text-sm">
+                                            <span className="font-bold text-slate-400">{labels.stats.leverage}</span>
+                                            <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{currentTrade.leverage}x</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="font-bold text-slate-400">{labels.stats.contracts}</span>
                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{currentTrade.quantity}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.adjustedCost}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">${adjustedCost.toFixed(2)}</span>
+                                    </div>
+
+                                    {/* ── Price Info ── */}
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-4 pb-1">{language === 'cn' ? '价格信息' : 'Price Info'}</p>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.entryPrice}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">${currentTrade.entryPrice.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.exitPrice}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.profitTarget}</span>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            placeholder="--"
+                                            value={currentTrade.profitTarget ?? ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                                setCurrentTrade(prev => ({ ...prev, profitTarget: val }));
+                                            }}
+                                            onBlur={() => onUpdateTrade({ ...currentTrade })}
+                                            className="w-28 text-right bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300 text-xs font-mono outline-none focus:border-indigo-500"
+                                        />
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.stopLoss}</span>
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            placeholder="--"
+                                            value={currentTrade.stopLoss ?? ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                                setCurrentTrade(prev => ({ ...prev, stopLoss: val }));
+                                            }}
+                                            onBlur={() => onUpdateTrade({ ...currentTrade })}
+                                            className="w-28 text-right bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300 text-xs font-mono outline-none focus:border-indigo-500"
+                                        />
+                                    </div>
+
+                                    {/* ── P&L Details ── */}
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-4 pb-1">{language === 'cn' ? '盈亏详情' : 'P&L Details'}</p>
+                                    <div className="flex justify-between items-center text-sm">
                                         <span className="font-bold text-slate-400">{labels.stats.grossPnl}</span>
                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-200">${grossPnl.toFixed(2)}</span>
                                     </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.fees}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">${currentTrade.fees.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.duration}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                                            <Clock className="w-3 h-3 text-slate-400" />{durationStr}
+                                        </span>
+                                    </div>
 
-                                    {/* Execution Grade - Unified with truth */}
-                                    <div className="pt-2">
+                                    {/* ── Risk & Reward ── */}
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-4 pb-1">{language === 'cn' ? '风险与回报' : 'Risk & Reward'}</p>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.tradeRisk}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.initialTarget}</span>
+                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-200">{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.plannedR}</span>
+                                        <span className="font-mono font-bold text-indigo-500">{plannedR}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="font-bold text-slate-400">{labels.stats.realizedR}</span>
+                                        <span className={`font-mono font-bold ${currentTrade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{realizedRFromTarget}</span>
+                                    </div>
+
+                                    {/* ── Execution Score ── */}
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest pt-4 pb-1">{language === 'cn' ? '评分' : 'Scoring'}</p>
+                                    <div className="pt-1">
                                         <div className="flex justify-between items-center mb-2">
                                             <span className="font-bold text-slate-400 text-sm flex items-center gap-1.5">
                                                 <Trophy className="w-3.5 h-3.5 text-indigo-500" />
@@ -1207,8 +1339,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             </span>
                                         </div>
                                         <div className="relative h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-1">
-                                            <div 
-                                                className={`h-full transition-all duration-700 ease-out rounded-full ${executionStats.color}`} 
+                                            <div
+                                                className={`h-full transition-all duration-700 ease-out rounded-full ${executionStats.color}`}
                                                 style={{ width: `${executionStats.percent}%` }}
                                             ></div>
                                         </div>
@@ -1217,30 +1349,16 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             <span className="font-mono font-bold">{executionStats.checked}/{executionStats.total} Rules</span>
                                         </div>
                                     </div>
-
-                                    {/* R-Multiple & Rating */}
-                                    <div className="flex justify-between items-center text-sm pt-2">
-                                        <span className="font-bold text-slate-400">{labels.stats.maeMfe}</span>
-                                        <div className="flex gap-2 font-mono font-bold text-xs">
-                                            <span className="bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 px-1.5 py-0.5 rounded">
-                                                -${(currentTrade.riskAmount || 50).toFixed(2)}
-                                            </span>
-                                            <span className="text-slate-300">/</span>
-                                            <span className="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 px-1.5 py-0.5 rounded">
-                                                ${(Math.abs(currentTrade.pnl) + 20).toFixed(2)}
-                                            </span>
-                                        </div>
-                                    </div>
                                     <div className="flex justify-between items-center text-sm pt-2">
                                         <span className="font-bold text-slate-400">{labels.stats.rating}</span>
                                         <div className="flex gap-1">
                                             {[1, 2, 3, 4, 5].map((star) => (
-                                                <button 
+                                                <button
                                                     key={star}
                                                     onClick={() => setRating(star)}
                                                     className={`p-0.5 transition-transform hover:scale-110 ${
-                                                        (currentTrade.rating || 0) >= star 
-                                                        ? 'text-amber-400 fill-amber-400' 
+                                                        (currentTrade.rating || 0) >= star
+                                                        ? 'text-amber-400 fill-amber-400'
                                                         : 'text-slate-200 dark:text-slate-700'
                                                     }`}
                                                 >
@@ -1248,27 +1366,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                                 </button>
                                             ))}
                                         </div>
-                                    </div>
-
-                                    {/* Price Targets */}
-                                    <div className="space-y-3 pt-2">
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className="font-bold text-slate-400">{labels.stats.profitTarget}</span>
-                                            <input type="text" placeholder="--" className="w-24 text-right bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300 text-xs font-mono outline-none focus:border-indigo-500" />
-                                        </div>
-                                        <div className="flex justify-between items-center text-sm">
-                                            <span className="font-bold text-slate-400">{labels.stats.stopLoss}</span>
-                                            <div className="relative w-24">
-                                                <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">$</span>
-                                                <input type="text" value={impliedStopLoss} readOnly className="w-full text-right bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 text-slate-700 dark:text-slate-300 text-xs font-mono outline-none focus:border-indigo-500" />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Realized R */}
-                                    <div className="flex justify-between items-center text-sm pt-1">
-                                        <span className="font-bold text-slate-400">{labels.stats.realizedR}</span>
-                                        <span className={`font-mono font-bold ${currentTrade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{realizedR}</span>
                                     </div>
 
                                     {/* CATEGORIES SECTION */}

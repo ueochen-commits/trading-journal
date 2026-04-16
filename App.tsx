@@ -160,6 +160,8 @@ const formatTradeFromDB = (trade: any): Trade => {
     compliance: trade.compliance || undefined,
     executionGrade: trade.execution_grade || undefined,
     accountId: trade.account_id || undefined,
+    profitTarget: trade.profit_target ?? undefined,
+    stopLoss: trade.stop_loss ?? undefined,
   };
 };
 
@@ -501,7 +503,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       rating: updated.rating || null,
       compliance: updated.compliance || null,
       execution_grade: updated.executionGrade || null,
-      account_id: updated.accountId || null
+      account_id: updated.accountId || null,
+      profit_target: updated.profitTarget || null,
+      stop_loss: updated.stopLoss || null
     }).eq('id', updated.id).eq('user_id', user.id);
 
     if (!error) {
