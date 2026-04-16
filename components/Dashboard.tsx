@@ -1273,13 +1273,13 @@ const Dashboard: React.FC<DashboardProps> = ({
     const grouped: Record<string, typeof trades> = {};
     sortedTrades.forEach(t => { const d = fmtDate(t.entryDate); if (!grouped[d]) grouped[d] = []; grouped[d].push(t); });
     const sortedDates = Object.keys(grouped).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-    const data: any[] = [{ date: 'Start', equity: initialEquity, returnPct: 0, cumulativePnl: 0 }];
+    const data: any[] = [{ date: 'Start', equity: initialEquity, returnPct: 0, cumulativePnl: 0, pnlAbove: 0, pnlBelow: 0 }];
     let currentEquity = initialEquity;
     sortedDates.forEach((date, i) => {
       const dayTrades = grouped[date];
       dayTrades.forEach(t => { currentEquity += (t.pnl - t.fees); });
       const cumulativePnl = parseFloat((currentEquity - initialEquity).toFixed(2));
-      const dataPoint: any = { date, equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl };
+      const dataPoint: any = { date, equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl, pnlAbove: Math.max(0, cumulativePnl), pnlBelow: Math.min(0, cumulativePnl) };
       selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend) dataPoint[friendId] = friend.equityCurve[Math.min(i + 1, friend.equityCurve.length - 1)]; });
       data.push(dataPoint);
     });
@@ -1647,6 +1647,16 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div style={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="eqGreenGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#34D399" stopOpacity={0.4} />
+                          <stop offset="100%" stopColor="#34D399" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="eqRedGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FB7185" stopOpacity={0} />
+                          <stop offset="100%" stopColor="#FB7185" stopOpacity={0.4} />
+                        </linearGradient>
+                      </defs>
                       <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
                       <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                       <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={55}
@@ -1670,54 +1680,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                           );
                         }}
                       />
-                      {/* Customized: injects gradients (userSpaceOnUse) + clipPaths aligned to zero axis */}
-                      <Customized component={(props: any) => {
-                        const yAxis = props.yAxisMap && (Object.values(props.yAxisMap)[0] as any);
-                        if (!yAxis?.scale) return null;
-                        const zeroY = yAxis.scale(0);
-                        const top = props.offset?.top ?? 0;
-                        const bottom = top + (props.offset?.height ?? 0);
-                        const left = props.offset?.left ?? 0;
-                        const w = props.offset?.width ?? 0;
-                        const cZ = Math.max(top, Math.min(bottom, zeroY));
-                        return (
-                          <defs>
-                            {/* Green: opaque at chart top → transparent at zero */}
-                            <linearGradient id="equityGreenGrad" x1="0" y1={top} x2="0" y2={cZ} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="rgba(52,211,153,0.38)" />
-                              <stop offset="100%" stopColor="rgba(52,211,153,0)" />
-                            </linearGradient>
-                            {/* Red: transparent at zero → opaque at chart bottom */}
-                            <linearGradient id="equityRedGrad" x1="0" y1={cZ} x2="0" y2={bottom} gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="rgba(251,113,133,0)" />
-                              <stop offset="100%" stopColor="rgba(251,113,133,0.38)" />
-                            </linearGradient>
-                            <clipPath id="clipAboveZero">
-                              <rect x={left} y={top} width={w} height={cZ - top} />
-                            </clipPath>
-                            <clipPath id="clipBelowZero">
-                              <rect x={left} y={cZ} width={w} height={bottom - cZ} />
-                            </clipPath>
-                          </defs>
-                        );
-                      }} />
-                      {/* Green fill above zero */}
-                      <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
-                        baseValue={0}
-                        fill="url(#equityGreenGrad)" fillOpacity={1} dot={false} activeDot={false}
-                        clipPath="url(#clipAboveZero)"
+                      {/* Green fill: pnlAbove (>=0) with baseline at 0 */}
+                      <Area type="monotone" dataKey="pnlAbove" baseValue={0} stroke="none"
+                        fill="url(#eqGreenGrad)" fillOpacity={1} dot={false} activeDot={false}
+                        isAnimationActive={false}
                       />
-                      {/* Red fill below zero */}
-                      <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
-                        baseValue={0}
-                        fill="url(#equityRedGrad)" fillOpacity={1} dot={false} activeDot={false}
-                        clipPath="url(#clipBelowZero)"
+                      {/* Red fill: pnlBelow (<=0) with baseline at 0 */}
+                      <Area type="monotone" dataKey="pnlBelow" baseValue={0} stroke="none"
+                        fill="url(#eqRedGrad)" fillOpacity={1} dot={false} activeDot={false}
+                        isAnimationActive={false}
                       />
-                      {/* Line only — indigo */}
+                      {/* Line — indigo */}
                       <Area type="monotone" dataKey="cumulativePnl"
                         stroke="#6366F1" strokeWidth={1.2}
                         fill="none" dot={false}
                         activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }}
+                        isAnimationActive={false}
                       />
                       {selectedFriends.map(friendId => {
                         const friend = friends.find(f => f.id === friendId);
