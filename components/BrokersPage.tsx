@@ -304,6 +304,7 @@ const BrokersPage: React.FC<Props> = ({
   onViewHistory,
   onUpgrade,
   onUpdateAccount,
+  onClearTrades,
 }) => {
   const [accounts, setAccounts] = useState<TradingAccount[]>(propAccounts ?? []);
   const [addBtnHov, setAddBtnHov] = useState(false);
