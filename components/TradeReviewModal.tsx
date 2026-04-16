@@ -1256,31 +1256,56 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         }
 
         const { label, color } = getRiskLevel(s);
-        const posStr = positionRatio != null ? `${positionRatio.toFixed(1)}%` : '未知';
-        const slStr = stopLossPercent != null ? `${stopLossPercent.toFixed(1)}%` : '未知';
-        const rrStr = rrRatio != null ? `${rrRatio.toFixed(2)}R` : '未知';
-        const maxLossStr = maxLoss != null ? maxLoss.toFixed(0) : '未知';
+        const posStr = positionRatio != null ? `${positionRatio.toFixed(1)}%` : null;
+        const slStr = stopLossPercent != null ? `${stopLossPercent.toFixed(1)}%` : null;
+        const rrStr = rrRatio != null ? `${rrRatio.toFixed(2)}R` : null;
+        const maxLossStr = maxLoss != null ? maxLoss.toFixed(0) : null;
+        const currency = currentAccount?.currency || '';
 
-        if (s < 33) return {
-            score: s, label, color, isPending: false,
-            analysisText: `仓位占账户 ${posStr}，控制良好。止损距离 ${slStr}，盈亏比 ${rrStr}，各项均在合理范围，继续保持。`,
-            metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
-            footerText: `风险控制优秀，符合 2% 法则，最大亏损 -${maxLossStr}`,
-            footerHighlight: '2% 法则',
-        };
-        if (s < 66) return {
-            score: s, label, color, isPending: false,
-            analysisText: `仓位占账户 ${posStr}，略超建议上限。止损距离 ${slStr}，潜在最大亏损 -${maxLossStr}，建议缩减仓位至 10% 以内。`,
-            metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
-            footerText: '风险尚可控，建议缩减仓位并确认止损位置合理',
-            footerHighlight: '建议缩减仓位',
-        };
+        // 每个维度独立判断，只说有问题的，不说废话
+        const issues: string[] = [];
+        if (positionRatio != null) {
+            if (positionRatio > 25) issues.push(`仓位 ${posStr} 严重超标，单笔风险过高`);
+            else if (positionRatio > 10) issues.push(`仓位 ${posStr}，略超 10% 建议上限`);
+        }
+        if (stopLossPercent != null) {
+            if (stopLossPercent > 8) issues.push(`止损距离 ${slStr}，波动空间过大`);
+            else if (stopLossPercent > 5) issues.push(`止损距离 ${slStr}，偏宽`);
+        }
+        if (rrRatio != null) {
+            if (rrRatio < 1) issues.push(`盈亏比仅 ${rrStr}，期望值为负`);
+            else if (rrRatio < 1.5) issues.push(`盈亏比 ${rrStr}，偏低`);
+        }
+        if (maxLoss != null && totalAsset && (maxLoss / totalAsset) > 0.02) {
+            issues.push(`最大亏损 ${maxLossStr} ${currency}，超过账户 2%`);
+        }
+
+        const analysisText = issues.length === 0
+            ? `风险金额 ${maxLossStr ? maxLossStr + ' ' + currency : '--'}，各项指标均在合理范围内。`
+            : issues.join('；') + '。';
+
+        // 底部建议也根据最严重的问题给出
+        let footerText = '';
+        let footerHighlight: string | undefined;
+        if (maxLoss != null && totalAsset) {
+            const pct = (maxLoss / totalAsset * 100).toFixed(1);
+            if (parseFloat(pct) > 2) {
+                footerText = `本笔风险占账户 ${pct}%，超过 2% 法则建议上限`;
+                footerHighlight = '2% 法则';
+            } else {
+                footerText = `本笔风险占账户 ${pct}%，符合 2% 法则`;
+                footerHighlight = '2% 法则';
+            }
+        } else {
+            footerText = '补充止损价格或风险金额可获得更精准的评估';
+        }
+
         return {
             score: s, label, color, isPending: false,
-            analysisText: `仓位占账户 ${posStr}，严重超出建议上限。止损距离 ${slStr}，潜在最大亏损 -${maxLossStr}，强烈建议减仓。`,
+            analysisText,
             metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
-            footerText: '参考 2% 风险法则，每笔交易亏损不超过账户的 2%',
-            footerHighlight: '2% 风险法则',
+            footerText,
+            footerHighlight,
         };
     }, [riskGaugeScore, totalAsset, adjustedCost, currentTrade.riskAmount, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice, currentTrade.quantity, riskMissingHint]);
 
