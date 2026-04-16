@@ -190,6 +190,9 @@ const DeleteAccountModal: React.FC<{
   onClose: () => void;
   onConfirm: (accountId: string) => void;
 }> = ({ accountName, accountId, onClose, onConfirm }) => {
+  const [inputValue, setInputValue] = useState('');
+  const canConfirm = inputValue === '我确认删除我的账户';
+
   useEffect(() => {
     document.body.style.overflow = 'hidden';
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -221,13 +224,30 @@ const DeleteAccountModal: React.FC<{
           </p>
         </div>
 
+        {/* Input */}
+        <div style={{ padding: '16px 22px 18px' }}>
+          <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>请输入「我确认删除我的账户」以确认</div>
+          <input
+            autoFocus
+            value={inputValue}
+            onChange={e => setInputValue(e.target.value)}
+            placeholder="我确认删除我的账户"
+            onKeyDown={e => { if (e.key === 'Enter' && canConfirm) { onConfirm(accountId); onClose(); } }}
+            style={{ width: '100%', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: '#1a1a2e', outline: 'none', background: '#fff', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
+            onFocus={e => (e.target.style.borderColor = '#9b8fde')}
+            onBlur={e => (e.target.style.borderColor = '#e4e4ef')}
+          />
+        </div>
+
         {/* Buttons */}
-        <div style={{ padding: '16px 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+        <div style={{ padding: '0 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
           <button onClick={onClose} style={{ background: '#fff', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: '#666', cursor: 'pointer' }}>
             取消
           </button>
-          <button onClick={() => { onConfirm(accountId); onClose(); }}
-            style={{ background: '#c0392b', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: '#fff', cursor: 'pointer' }}>
+          <button
+            disabled={!canConfirm}
+            onClick={() => { if (canConfirm) { onConfirm(accountId); onClose(); } }}
+            style={{ background: canConfirm ? '#c0392b' : '#f0f0f5', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: canConfirm ? '#fff' : '#bbb', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
             确认删除
           </button>
         </div>
