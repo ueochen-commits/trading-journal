@@ -18,7 +18,8 @@ interface RiskGaugeProps {
 }
 
 function calcNeedleCoords(score: number) {
-    const angle = -90 + score * 1.8;
+    const clamped = Math.max(0, Math.min(100, score));
+    const angle = -175 + clamped * 3.5;
     const rad = angle * Math.PI / 180;
     return {
         x: parseFloat((50 + Math.cos(rad) * 34).toFixed(1)),
@@ -1092,7 +1093,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         const rrRatio = (currentTrade.profitTarget && currentTrade.stopLoss && currentTrade.entryPrice)
             ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) / Math.abs(currentTrade.entryPrice - currentTrade.stopLoss)
             : 1;
-        return calcRiskScore(positionRatio, stopLossPercent, rrRatio);
+        const raw = calcRiskScore(positionRatio, stopLossPercent, rrRatio);
+        return Math.max(0, Math.min(100, raw));
     }, [totalAsset, adjustedCost, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice]);
 
     // Localized Labels
