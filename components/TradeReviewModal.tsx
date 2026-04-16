@@ -1143,16 +1143,16 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             <div className="flex flex-1 overflow-hidden">
                 
                 {/* LEFT SIDEBAR: Trade Details */}
-                <div className="w-96 flex flex-col flex-shrink-0" style={{ background: '#0d0f14', borderRight: '1px solid rgba(255,255,255,0.04)' }}>
+                <div className="w-96 bg-white dark:bg-[#0d0f14] border-r border-slate-200 dark:border-white/[0.04] flex flex-col flex-shrink-0">
                     
                     {/* Action Buttons Row */}
                     <div className="flex items-center justify-between px-5 pt-5 pb-3">
                         <div className="flex gap-2">
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: '#9ca3af' }}>
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 hover:border-indigo-400">
                                 <Edit2 className="w-3.5 h-3.5" />
                                 <span>{labels.edit}</span>
                             </button>
-                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', color: '#9ca3af' }}>
+                            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 hover:border-indigo-400">
                                 <Share2 className="w-3.5 h-3.5" />
                                 <span>{labels.share}</span>
                             </button>
@@ -1160,15 +1160,16 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         
                         <div className="flex flex-col items-end gap-1.5">
                             {/* Status Badge */}
-                            <span className="text-[10px] font-medium px-2 py-1 rounded uppercase tracking-wider" style={{
-                                background: currentTrade.status === TradeStatus.WIN ? 'rgba(0,200,150,0.1)' : currentTrade.status === TradeStatus.LOSS ? 'rgba(255,77,77,0.1)' : 'rgba(255,255,255,0.05)',
-                                color: currentTrade.status === TradeStatus.WIN ? '#00c896' : currentTrade.status === TradeStatus.LOSS ? '#ff4d4d' : '#666'
-                            }}>
+                            <span className={`text-[10px] font-medium px-2 py-1 rounded uppercase tracking-wider ${
+                                currentTrade.status === TradeStatus.WIN ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400' :
+                                currentTrade.status === TradeStatus.LOSS ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400' :
+                                'bg-slate-100 text-slate-500 dark:bg-white/[0.05] dark:text-slate-400'
+                            }`}>
                                 {currentTrade.status}
                             </span>
 
                             {/* Save Indicator */}
-                            <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide transition-all duration-300" style={{ color: saveStatus === 'saving' ? '#818cf8' : '#4ade80' }}>
+                            <div className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wide transition-all duration-300 ${saveStatus === 'saving' ? 'text-indigo-500' : 'text-emerald-500'}`}>
                                 {saveStatus === 'saving' ? (
                                     <>
                                         <RefreshCw className="w-3 h-3 animate-spin" />
@@ -1191,7 +1192,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
                     {/* Navigation Tabs */}
                     <div className="px-5 pb-0">
-                        <div className="flex gap-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                        <div className="flex gap-0 border-b border-slate-200 dark:border-white/[0.06]">
                             {['stats', 'playbook', 'executions', 'attachments'].map(tabKey => {
                                 const id = tabKey as typeof leftTab;
                                 const isActive = leftTab === id;
@@ -1199,8 +1200,9 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                     <button
                                         key={id}
                                         onClick={() => setLeftTab(id)}
-                                        className="px-3 pb-3 pt-1 text-[11px] font-medium uppercase tracking-wider transition-all duration-200 relative"
-                                        style={{ color: isActive ? '#e2e8f0' : '#555' }}
+                                        className={`px-3 pb-3 pt-1 text-[11px] font-medium uppercase tracking-wider transition-all duration-200 relative ${
+                                            isActive ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                        }`}
                                     >
                                         {labels.tabs[id]}
                                         {isActive && <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full" style={{ background: '#818cf8' }} />}
@@ -1217,12 +1219,12 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                             <>
                                 {/* Top PnL Block */}
                                 <div className="px-5 pt-5 pb-4">
-                                    <p className="text-[11px] font-normal uppercase tracking-wider mb-1.5" style={{ color: '#6b7280' }}>{labels.stats.netPnl}</p>
+                                    <p className="text-[11px] font-normal uppercase tracking-wider mb-1.5 text-slate-500 dark:text-slate-400">{labels.stats.netPnl}</p>
                                     <div className="flex items-baseline gap-3">
-                                        <h3 className="text-[32px] font-semibold tracking-tight leading-none" style={{ color: pnlHex }}>
+                                        <h3 className={`text-[32px] font-semibold tracking-tight leading-none ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
                                             {currentTrade.pnl >= 0 ? '+' : ''}{currentTrade.pnl.toFixed(2)}
                                         </h3>
-                                        <span className="text-[14px] font-medium" style={{ color: pnlHex, opacity: 0.7 }}>
+                                        <span className={`text-[14px] font-medium opacity-70 ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
                                             {netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%
                                         </span>
                                     </div>
@@ -1232,118 +1234,116 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                 <div className="px-5 pb-4">
 
                                     {/* ── Basic Info ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-1" style={{ color: '#4b5563' }}>{language === 'cn' ? '基本信息' : 'BASIC INFO'}</p>
+                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-1 text-slate-400 dark:text-slate-500">{language === 'cn' ? '基本信息' : 'BASIC INFO'}</p>
                                     {currentTrade.accountId && tradingAccounts && (
-                                        <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                            <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.account}</span>
-                                            <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>
+                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.account}</span>
+                                            <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">
                                                 {tradingAccounts.find(a => a.id === currentTrade.accountId)?.name || currentTrade.accountId}
                                             </span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.side}</span>
-                                        <span className="text-[13px] font-medium uppercase" style={{ color: currentTrade.direction === Direction.LONG ? '#00c896' : '#ff4d4d' }}>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.side}</span>
+                                        <span className={`text-[13px] font-medium uppercase ${currentTrade.direction === Direction.LONG ? 'text-emerald-500' : 'text-rose-500'}`}>
                                             {currentTrade.direction}
                                         </span>
                                     </div>
                                     {activeStrategy && (
-                                        <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                            <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.strategy}</span>
-                                            <span className="text-[13px] font-medium" style={{ color: '#a78bfa' }}>{activeStrategy.name}</span>
+                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.strategy}</span>
+                                            <span className="text-[13px] font-medium text-indigo-400 dark:text-indigo-400">{activeStrategy.name}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.netRoi}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: pnlHex }}>{netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.netRoi}</span>
+                                        <span className={`text-[13px] font-medium font-mono ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>{netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%</span>
                                     </div>
                                     {(currentTrade.leverage ?? 1) > 1 && (
-                                        <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                            <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.leverage}</span>
-                                            <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>{currentTrade.leverage}x</span>
+                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.leverage}</span>
+                                            <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">{currentTrade.leverage}x</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.contracts}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>{currentTrade.quantity}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.contracts}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">{currentTrade.quantity}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.adjustedCost}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>${adjustedCost.toFixed(2)}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.adjustedCost}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${adjustedCost.toFixed(2)}</span>
                                     </div>
 
                                     {/* ── Price Info ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5" style={{ color: '#4b5563' }}>{language === 'cn' ? '价格信息' : 'PRICE INFO'}</p>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.entryPrice}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>${currentTrade.entryPrice.toFixed(2)}</span>
+                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '价格信息' : 'PRICE INFO'}</p>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.entryPrice}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${currentTrade.entryPrice.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.exitPrice}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: currentTrade.exitPrice ? '#d1d5db' : '#374151' }}>{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.exitPrice}</span>
+                                        <span className={`text-[13px] font-medium font-mono ${currentTrade.exitPrice ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
                                         <span className="text-[13px] font-medium" style={{ color: '#00c896' }}>{labels.stats.profitTarget}</span>
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.profitTarget ?? ''}
                                             onChange={(e) => { const val = e.target.value ? parseFloat(e.target.value) : undefined; setCurrentTrade(prev => ({ ...prev, profitTarget: val })); }}
                                             onBlur={() => onUpdateTrade({ ...currentTrade })}
-                                            className="w-24 text-right text-[13px] font-mono font-medium outline-none"
-                                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '6px 10px', color: '#d1d5db' }}
+                                            className="w-24 text-right text-[13px] font-mono font-medium outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-700 dark:text-slate-200"
                                         />
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
                                         <span className="text-[13px] font-medium" style={{ color: '#ff4d4d' }}>{labels.stats.stopLoss}</span>
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.stopLoss ?? ''}
                                             onChange={(e) => { const val = e.target.value ? parseFloat(e.target.value) : undefined; setCurrentTrade(prev => ({ ...prev, stopLoss: val })); }}
                                             onBlur={() => onUpdateTrade({ ...currentTrade })}
-                                            className="w-24 text-right text-[13px] font-mono font-medium outline-none"
-                                            style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '6px', padding: '6px 10px', color: '#d1d5db' }}
+                                            className="w-24 text-right text-[13px] font-mono font-medium outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-700 dark:text-slate-200"
                                         />
                                     </div>
 
                                     {/* ── P&L Details ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5" style={{ color: '#4b5563' }}>{language === 'cn' ? '盈亏详情' : 'P&L DETAILS'}</p>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.grossPnl}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>${grossPnl.toFixed(2)}</span>
+                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '盈亏详情' : 'P&L DETAILS'}</p>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.grossPnl}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${grossPnl.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.fees}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>${currentTrade.fees.toFixed(2)}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.fees}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${currentTrade.fees.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.duration}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: '#d1d5db' }}>{durationStr}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.duration}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">{durationStr}</span>
                                     </div>
 
                                     {/* ── Risk & Reward ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5" style={{ color: '#4b5563' }}>{language === 'cn' ? '风险与回报' : 'RISK & REWARD'}</p>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.tradeRisk}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: tradeRisk != null ? '#d1d5db' : '#374151' }}>{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
+                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '风险与回报' : 'RISK & REWARD'}</p>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.tradeRisk}</span>
+                                        <span className={`text-[13px] font-medium font-mono ${tradeRisk != null ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.initialTarget}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: initialTarget != null ? '#d1d5db' : '#374151' }}>{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.initialTarget}</span>
+                                        <span className={`text-[13px] font-medium font-mono ${initialTarget != null ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.plannedR}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: plannedR !== 'N/A' ? '#d1d5db' : '#374151' }}>{plannedR}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.plannedR}</span>
+                                        <span className={`text-[13px] font-medium font-mono ${plannedR !== 'N/A' ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{plannedR}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.realizedR}</span>
-                                        <span className="text-[13px] font-medium font-mono" style={{ color: realizedRFromTarget !== 'N/A' ? pnlHex : '#374151' }}>{realizedRFromTarget}</span>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.realizedR}</span>
+                                        <span className={`text-[13px] font-medium font-mono ${realizedRFromTarget !== 'N/A' ? (isWin ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-300 dark:text-slate-600'}`}>{realizedRFromTarget}</span>
                                     </div>
 
                                     {/* ── Scoring ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5" style={{ color: '#4b5563' }}>{language === 'cn' ? '评分' : 'SCORING'}</p>
+                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '评分' : 'SCORING'}</p>
                                     <div className="py-2">
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[13px] flex items-center gap-1.5" style={{ color: '#6b7280' }}>
+                                            <span className="text-[13px] flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
                                                 <Trophy className="w-3.5 h-3.5" fill="#818cf8" strokeWidth={0} />
                                                 {labels.stats.grailScale}
                                             </span>
@@ -1351,19 +1351,19 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                                 {currentTrade.executionGrade || '-'}
                                             </span>
                                         </div>
-                                        <div className="relative h-[6px] rounded-full overflow-hidden mb-1.5" style={{ background: 'rgba(255,255,255,0.06)' }}>
+                                        <div className="relative h-[6px] rounded-full overflow-hidden mb-1.5 bg-slate-100 dark:bg-white/[0.06]">
                                             <div
                                                 className="h-full transition-all duration-700 ease-out rounded-full"
                                                 style={{ width: `${executionStats.percent}%`, background: '#818cf8' }}
                                             ></div>
                                         </div>
-                                        <div className="flex justify-between items-center text-[10px]" style={{ color: '#4b5563' }}>
+                                        <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500">
                                             <span>Based on Playbook rules</span>
                                             <span className="font-mono font-medium">{executionStats.checked}/{executionStats.total} Rules</span>
                                         </div>
                                     </div>
                                     <div className="flex justify-between items-center h-[38px]">
-                                        <span className="text-[13px]" style={{ color: '#6b7280' }}>{labels.stats.rating}</span>
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.rating}</span>
                                         <div className="flex gap-0.5">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
@@ -1371,14 +1371,14 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                                     onClick={() => setRating(star)}
                                                     className="p-0.5 transition-transform hover:scale-110"
                                                 >
-                                                    <Star className="w-[18px] h-[18px] fill-current" style={{ color: (currentTrade.rating || 0) >= star ? '#eab308' : '#1f2937' }} />
+                                                    <Star className={`w-[18px] h-[18px] fill-current ${(currentTrade.rating || 0) >= star ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'}`} />
                                                 </button>
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* CATEGORIES SECTION */}
-                                    <div className="mt-4 pt-4 space-y-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                                    <div className="mt-4 pt-4 space-y-2 border-t border-slate-100 dark:border-white/[0.04]">
                                         {categoryDefs.map(cat => (
                                             <TagSelector 
                                                 key={cat.id}
@@ -1400,13 +1400,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                     <div className="flex justify-between items-center pt-3">
                                         <button
                                             onClick={() => setIsAddCategoryOpen(true)}
-                                            className="text-[11px] font-medium transition-colors flex items-center gap-1" style={{ color: '#4b5563' }}
+                                            className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-500"
                                         >
                                             <Plus className="w-3 h-3" /> Add new category
                                         </button>
                                         <button
                                             onClick={() => setIsManageTagsOpen(true)}
-                                            className="text-[11px] font-medium transition-colors flex items-center gap-1" style={{ color: '#4b5563' }}
+                                            className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-500"
                                         >
                                             <Settings className="w-3 h-3" /> Manage tags
                                         </button>
