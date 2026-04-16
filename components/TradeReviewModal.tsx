@@ -13,7 +13,8 @@ import { useLanguage } from '../LanguageContext';
 
 // ─── Risk Gauge Component ─────────────────────────────────────────────────────
 interface RiskGaugeProps {
-    score: number | null; // 0-100, null = unknown
+    score: number | null;
+    missingHint?: string; // 具体缺失字段提示
     onClickSetup?: () => void;
 }
 
@@ -33,13 +34,13 @@ function getRiskLevel(score: number) {
     return { label: '高风险', sub: '仓位偏重，建议减仓', color: '#e24b4a' };
 }
 
-const RiskGauge: React.FC<RiskGaugeProps> = ({ score, onClickSetup }) => {
-    const displayScore = score ?? 50;
-    const { x: nx, y: ny } = calcNeedleCoords(displayScore);
+const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup }) => {
+    const clampedScore = score != null ? Math.max(0, Math.min(100, score)) : 50;
+    const { x: nx, y: ny } = calcNeedleCoords(clampedScore);
     const unknown = score === null;
     const { label, sub, color } = unknown
-        ? { label: '待评估', sub: '请设置账户总资产', color: '#aaaacc' }
-        : getRiskLevel(displayScore);
+        ? { label: '待评估', sub: missingHint ?? '数据不足', color: '#aaaacc' }
+        : getRiskLevel(clampedScore);
 
     return (
         <div style={{ width: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
@@ -66,19 +67,18 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, onClickSetup }) => {
     );
 };
 
-function calcRiskScore(positionRatio: number, stopLossPercent: number, rrRatio: number): number {
-    const posScore = positionRatio <= 2 ? 0
-        : positionRatio <= 10 ? (positionRatio - 2) / 8 * 30
-        : positionRatio <= 25 ? 30 + (positionRatio - 10) / 15 * 40
-        : Math.min(100, 70 + (positionRatio - 25) / 25 * 30);
+function calcRiskScore(riskAmountRatio: number, rrRatio: number): number {
+    // riskAmountRatio: 风险金额占账户总资产的百分比
+    // 0-1%: 低风险, 1-3%: 中低, 3-5%: 中等, 5-10%: 中高, 10%+: 高风险
+    const riskScore = riskAmountRatio <= 1 ? riskAmountRatio * 20
+        : riskAmountRatio <= 3 ? 20 + (riskAmountRatio - 1) / 2 * 25
+        : riskAmountRatio <= 5 ? 45 + (riskAmountRatio - 3) / 2 * 20
+        : riskAmountRatio <= 10 ? 65 + (riskAmountRatio - 5) / 5 * 20
+        : Math.min(100, 85 + (riskAmountRatio - 10) / 10 * 15);
 
-    const slScore = stopLossPercent <= 1 ? 10
-        : stopLossPercent <= 3 ? 10 + (stopLossPercent - 1) / 2 * 20
-        : stopLossPercent <= 8 ? 30 + (stopLossPercent - 3) / 5 * 35
-        : Math.min(100, 65 + (stopLossPercent - 8) / 7 * 25);
-
+    // 盈亏比越高，风险越合理，最多抵扣 20 分
     const rrBonus = rrRatio >= 3 ? 20 : rrRatio >= 2 ? 12 : rrRatio >= 1.5 ? 6 : 0;
-    return Math.max(0, Math.min(100, posScore * 0.6 + slScore * 0.4 - rrBonus));
+    return Math.max(0, Math.min(100, riskScore - rrBonus));
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1084,18 +1084,33 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         : currentAccount?.type === 'manual' && currentAccount.manualBalance != null
         ? currentAccount.manualBalance
         : null;
+
+    // 判断缺失哪些字段，给出精准提示
+    const riskMissingHint = (() => {
+        if (totalAsset == null) return '请设置账户总资产';
+        // 风险金额：优先用 riskAmount，其次用 stopLoss 推算
+        const hasRiskAmount = (currentTrade.riskAmount ?? 0) > 0;
+        const hasStopLoss = !!currentTrade.stopLoss && !!currentTrade.entryPrice;
+        if (!hasRiskAmount && !hasStopLoss) return '请填写风险金额或计划止损价';
+        return null;
+    })();
+
     const riskGaugeScore = useMemo(() => {
-        if (totalAsset == null || adjustedCost <= 0) return null;
-        const positionRatio = (adjustedCost / totalAsset) * 100;
-        const stopLossPercent = currentTrade.stopLoss && currentTrade.entryPrice
-            ? Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) / currentTrade.entryPrice * 100
-            : 5;
+        if (totalAsset == null || totalAsset <= 0) return null;
+
+        // 风险金额：优先用 riskAmount，其次用 stopLoss 推算
+        let riskAmount = currentTrade.riskAmount ?? 0;
+        if (riskAmount <= 0 && currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity) {
+            riskAmount = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity;
+        }
+        if (riskAmount <= 0) return null;
+
+        const riskAmountRatio = (riskAmount / totalAsset) * 100;
         const rrRatio = (currentTrade.profitTarget && currentTrade.stopLoss && currentTrade.entryPrice)
             ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) / Math.abs(currentTrade.entryPrice - currentTrade.stopLoss)
             : 1;
-        const raw = calcRiskScore(positionRatio, stopLossPercent, rrRatio);
-        return Math.max(0, Math.min(100, raw));
-    }, [totalAsset, adjustedCost, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice]);
+        return Math.max(0, Math.min(100, calcRiskScore(riskAmountRatio, rrRatio)));
+    }, [totalAsset, currentTrade.riskAmount, currentTrade.stopLoss, currentTrade.profitTarget, currentTrade.entryPrice, currentTrade.quantity]);
 
     // Localized Labels
     const labels = {
@@ -1321,7 +1336,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             </span>
                                         </div>
                                     </div>
-                                    <RiskGauge score={riskGaugeScore} />
+                                    <RiskGauge score={riskGaugeScore} missingHint={riskMissingHint ?? undefined} />
                                 </div>
 
                                 {/* Stats Rows */}
