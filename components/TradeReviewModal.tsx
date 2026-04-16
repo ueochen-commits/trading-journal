@@ -1319,7 +1319,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         {leftTab === 'stats' && (
                             <>
                                 {/* Top PnL Block */}
-                                <div className="px-5 pt-5 pb-4 flex items-end justify-between gap-3">
+                                <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
                                         <p className="text-[11px] font-normal uppercase tracking-wider mb-1.5 text-slate-500 dark:text-slate-400">{labels.stats.netPnl}</p>
                                         <div className="flex items-baseline gap-3">
