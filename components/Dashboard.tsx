@@ -1294,7 +1294,13 @@ const Dashboard: React.FC<DashboardProps> = ({
         const cP = curr.cumulativePnl, nP = next.cumulativePnl;
         if ((cP > 0 && nP < 0) || (cP < 0 && nP > 0)) {
           const t = Math.abs(cP) / (Math.abs(cP) + Math.abs(nP));
-          const interpPoint: any = { date: '', cumulativePnl: 0, pnlAbove: 0, pnlBelow: 0, equity: curr.equity + t * (next.equity - curr.equity), returnPct: curr.returnPct + t * (next.returnPct - curr.returnPct) };
+          // Interpolate date between curr and next
+          let interpDate = curr.date;
+          if (curr.date && next.date && curr.date !== 'Start') {
+            const d1 = new Date(curr.date).getTime(), d2 = new Date(next.date).getTime();
+            if (!isNaN(d1) && !isNaN(d2)) { const mid = new Date(d1 + t * (d2 - d1)); interpDate = `${mid.getFullYear()}/${String(mid.getMonth()+1).padStart(2,'0')}/${String(mid.getDate()).padStart(2,'0')}`; }
+          }
+          const interpPoint: any = { date: interpDate, cumulativePnl: 0, pnlAbove: 0, pnlBelow: 0, equity: curr.equity + t * (next.equity - curr.equity), returnPct: curr.returnPct + t * (next.returnPct - curr.returnPct) };
           selectedFriends.forEach(fId => { if (curr[fId] != null && next[fId] != null) interpPoint[fId] = curr[fId] + t * (next[fId] - curr[fId]); });
           result.push(interpPoint);
         }
