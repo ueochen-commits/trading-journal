@@ -261,7 +261,7 @@ const ClearTradesModal: React.FC<{
           <button
             onClick={handleConfirm}
             disabled={!canConfirm || loading}
-            style={{ background: canConfirm ? '#1a1a2e' : '#f0f0f5', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: canConfirm ? '#fff' : '#bbb', cursor: canConfirm && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
+            style={{ background: canConfirm ? '#5050c8' : '#f0f0f5', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: canConfirm ? '#fff' : '#bbb', cursor: canConfirm && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
           >
             {loading ? '清除中...' : '确认清除'}
           </button>
