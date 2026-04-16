@@ -339,7 +339,7 @@ export default async function handler(req: any, res: any) {
       for (const symbol of futuresSymbols) {
         try {
           const trades = await futuresExchange.fetchMyTrades(symbol, since, 500);
-          const cleanSymbol = symbol.split(':')[0].replace('/', '') + '_PERP';
+          const cleanSymbol = symbol.split(':')[0].replace('/', '');
           if (trades && trades.length > 0) {
             debugLog.push(`FUTURES ${symbol}: ${trades.length} fills`);
             const paired = pairTrades(trades, cleanSymbol);
@@ -381,7 +381,7 @@ export default async function handler(req: any, res: any) {
 
         for (const [, group] of tradeGroups) {
           const base = group.symbol.replace(/USDT$/, '');
-          const cleanSymbol = base ? `${base}_PERP` : group.symbol;
+          const cleanSymbol = base ? `${base}USDT` : group.symbol;
 
           allPairedTrades.push({
             symbol: cleanSymbol,
@@ -405,7 +405,7 @@ export default async function handler(req: any, res: any) {
         for (const [, pos] of positionMap) {
           const rawSymbol = pos.info?.symbol || pos.symbol?.split(':')[0].replace('/', '');
           const base = rawSymbol.replace(/USDT$/, '');
-          const cleanSymbol = base ? `${base}_PERP` : rawSymbol;
+          const cleanSymbol = base ? `${base}USDT` : rawSymbol;
           openSymbolsFromIncome.add(cleanSymbol);
 
           const entryPrice = parseFloat(pos.entryPrice || pos.info?.entryPrice || '0');

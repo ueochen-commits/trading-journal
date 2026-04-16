@@ -902,7 +902,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
         script.type = "text/javascript";
         script.async = true;
-        let tvSymbol = currentTrade.symbol;
+        let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '');
         if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
         const isDark = document.documentElement.classList.contains('dark');
         script.textContent = JSON.stringify({
@@ -1155,6 +1155,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     // Net ROI %
     const adjustedCost = currentTrade.entryPrice * currentTrade.quantity;
     const netRoi = adjustedCost > 0 ? (currentTrade.pnl / adjustedCost) * 100 : 0;
+    const leverage = currentTrade.leverage ?? 1;
+    const margin = leverage > 1 ? adjustedCost / leverage : (currentTrade.riskAmount || null);
 
     // Duration
     const durationStr = (() => {
@@ -1328,7 +1330,10 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             side: language === 'cn' ? '方向' : 'Side',
             leverage: language === 'cn' ? '杠杆' : 'Leverage',
             contracts: language === 'cn' ? '交易数量' : 'Quantity',
-            adjustedCost: language === 'cn' ? '持仓成本' : 'Adjusted Cost',
+            adjustedCost: language === 'cn' ? '持仓价值' : 'Position Value',
+            margin: language === 'cn' ? '保证金' : 'Margin',
+            entryTime: language === 'cn' ? '入场时间' : 'Entry Time',
+            exitTime: language === 'cn' ? '出场时间' : 'Exit Time',
             entryPrice: language === 'cn' ? '入场价格' : 'Entry Price',
             exitPrice: language === 'cn' ? '出场价格' : 'Exit Price',
             grossPnl: language === 'cn' ? '毛利润' : 'Gross P&L',
@@ -1581,6 +1586,24 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                     <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
                                         <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.adjustedCost}</span>
                                         <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${adjustedCost.toFixed(2)}</span>
+                                    </div>
+                                    {margin != null && margin > 0 && (
+                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.margin}</span>
+                                            <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${margin.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.entryTime}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">
+                                            {currentTrade.entryDate ? new Date(currentTrade.entryDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.exitTime}</span>
+                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">
+                                            {currentTrade.exitDate ? new Date(currentTrade.exitDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
+                                        </span>
                                     </div>
 
                                     {/* 执行评分 — 持仓成本下方 */}
