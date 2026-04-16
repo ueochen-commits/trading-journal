@@ -1918,16 +1918,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                           <AreaChart data={ddData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
                             <defs>
                               <linearGradient id="ddGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#e8a0b4" stopOpacity={0.5}/>
-                                <stop offset="60%" stopColor="#e8a0b4" stopOpacity={0.2}/>
-                                <stop offset="100%" stopColor="#e8a0b4" stopOpacity={0}/>
+                                <stop offset="0%" stopColor="#FB7185" stopOpacity={0}/>
+                                <stop offset="100%" stopColor="#FB7185" stopOpacity={0.4}/>
                               </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" vertical={false} />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} interval="preserveStartEnd" />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} domain={[yMin, 0]} width={58}
+                            <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
+                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} domain={[yMin, 0]} width={55}
                               tickFormatter={(v: number) => v === 0 ? `${currencySymbol}0` : `-${currencySymbol}${Math.abs(v).toLocaleString('en-US')}`} />
-                            <Tooltip cursor={{ stroke: '#7b7ef8', strokeWidth: 1, strokeDasharray: '4 4' }}
+                            <Tooltip cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '4 4' }}
                               content={({ active, payload, label }: any) => {
                                 if (!active || !payload?.length) return null;
                                 const val = payload[0]?.value ?? 0;
@@ -1935,7 +1934,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                   <div style={ddTooltipStyle}>
                                     <div style={{ fontWeight: 600, color: '#1a1d2e', marginBottom: 5 }}>{label}</div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                      <span style={{ width: 10, height: 10, background: '#e8a0b4', borderRadius: 2, display: 'inline-block' }} />
+                                      <span style={{ width: 10, height: 10, background: '#FB7185', borderRadius: 2, display: 'inline-block' }} />
                                       <span style={{ color: val < 0 ? '#e05c8a' : '#1a1d2e', fontWeight: 600 }}>
                                         {val < 0 ? '-' : ''}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                       </span>
@@ -1943,7 +1942,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                                   </div>
                                 );
                               }} />
-                            <Area type="monotone" dataKey="drawdown" stroke="#7b7ef8" strokeWidth={2} fill="url(#ddGradient)" dot={false} activeDot={{ r: 5, fill: '#7b7ef8', stroke: '#fff', strokeWidth: 2 }} />
+                            <Area type="monotone" dataKey="drawdown" stroke="#6366F1" strokeWidth={1.2} fill="url(#ddGradient)" fillOpacity={1} dot={false} activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }} isAnimationActive={false} />
                           </AreaChart>
                         </ResponsiveContainer>
                       </div>
