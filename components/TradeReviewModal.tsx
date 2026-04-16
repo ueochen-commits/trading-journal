@@ -44,14 +44,20 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, missingHint, onClickSetup 
                         <stop offset="50%" stopColor="#ef9f27" />
                         <stop offset="100%" stopColor="#e24b4a" />
                     </linearGradient>
+                    {/* 渐变针：从圆心（透明）到针尖（不透明） */}
+                    <linearGradient id="needleGrad" x1="0" y1="1" x2="0" y2="0">
+                        <stop offset="0%" stopColor={color} stopOpacity="0" />
+                        <stop offset="100%" stopColor={color} stopOpacity="1" />
+                    </linearGradient>
                 </defs>
                 <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="#f0f0f6" strokeWidth="7" strokeLinecap="round" />
                 <path d="M10,52 A40,40 0 0,1 90,52" fill="none" stroke="url(#riskGrad)" strokeWidth="7" strokeLinecap="round" opacity={unknown ? 0.3 : 1} />
-                {/* 指针用 rotate 驱动，CSS transition 对 transform 完全生效 */}
+                {/* 渐变针：梭形，从圆心透明渐变到针尖不透明 */}
                 <g style={{ transform: `rotate(${rotateDeg}deg)`, transformOrigin: '50px 52px', transition: 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)' }}>
-                    <line x1="50" y1="52" x2="50" y2="20" stroke={color} strokeWidth="2" strokeLinecap="round" />
+                    <polygon points="50,19 52.5,52 50,49 47.5,52" fill="url(#needleGrad)" />
                 </g>
-                <circle cx="50" cy="52" r="3.5" fill={color} />
+                <circle cx="50" cy="52" r="4" fill={color} />
+                <circle cx="50" cy="52" r="2" fill="white" opacity="0.6" />
             </svg>
             <div style={{ fontSize: 12, fontWeight: 600, color, textAlign: 'center', marginTop: 2, lineHeight: 1.3 }}>{label}</div>
             <div
