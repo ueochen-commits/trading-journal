@@ -87,7 +87,8 @@ const RowMenu: React.FC<{
   onHistory?: () => void;
   onClearTrades?: () => void;
   onEditBalance?: () => void;
-}> = ({ account, onEdit, onDelete, onSync, onHistory, onClearTrades, onEditBalance }) => {
+  isSyncing?: boolean;
+}> = ({ account, onEdit, onDelete, onSync, onHistory, onClearTrades, onEditBalance, isSyncing }) => {
   const [open, setOpen] = useState(false);
   const [syncHov, setSyncHov] = useState(false);
   const [dotsHov, setDotsHov] = useState(false);
@@ -128,16 +129,19 @@ const RowMenu: React.FC<{
     <div ref={menuRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
       {account.type === 'auto_sync' && (
         <button
-          onClick={() => onSync?.()}
+          onClick={() => !isSyncing && onSync?.()}
           onMouseEnter={() => setSyncHov(true)} onMouseLeave={() => setSyncHov(false)}
-          title="立即同步"
+          title={isSyncing ? '同步中...' : '立即同步'}
           style={{
-            width: 30, height: 30, borderRadius: 7, border: 'none', cursor: 'pointer',
-            background: syncHov ? '#f0edf8' : 'transparent',
+            width: 30, height: 30, borderRadius: 7, border: 'none', cursor: isSyncing ? 'default' : 'pointer',
+            background: syncHov && !isSyncing ? '#f0edf8' : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.12s',
           }}
         >
-          <IconRefresh color={syncHov ? '#5050c8' : '#8080b8'} />
+          <div style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }}>
+            <IconRefresh color={isSyncing ? '#5050c8' : (syncHov ? '#5050c8' : '#8080b8')} />
+          </div>
+          <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
         </button>
       )}
       <button
@@ -313,6 +317,7 @@ const BrokersPage: React.FC<Props> = ({
   const [editingAccount, setEditingAccount] = useState<TradingAccount | null>(null);
   const [manualBalanceInput, setManualBalanceInput] = useState('');
   const [clearModal, setClearModal] = useState<{ id: string; name: string } | null>(null);
+  const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
 
   // 当父组件传入新账户数据时同步更新（连接成功后刷新）
   React.useEffect(() => {
@@ -462,13 +467,21 @@ const BrokersPage: React.FC<Props> = ({
                     onToggleSelect={() => handleToggleSelect(account.id)}
                     onEdit={() => account.type === 'manual' ? handleOpenEdit(account) : onEditAccount?.(account.id)}
                     onDelete={() => handleDelete(account.id)}
-                    onSync={() => onSyncAccount?.(account.id)}
+                    onSync={async () => {
+                      setSyncingIds(prev => new Set(prev).add(account.id));
+                      try {
+                        await onSyncAccount?.(account.id);
+                      } finally {
+                        setSyncingIds(prev => { const s = new Set(prev); s.delete(account.id); return s; });
+                      }
+                    }}
                     onHistory={() => onViewHistory?.(account.id)}
                     onClearTrades={() => setClearModal({ id: account.id, name: account.name })}
                     onEditBalance={(newBalance) => {
                       setAccounts(a => a.map(x => x.id === account.id ? { ...x, balance: newBalance } : x));
                       onUpdateAccount?.(account.id, { balance: newBalance });
                     }}
+                    isSyncing={syncingIds.has(account.id)}
                   />
                 ))}
               </tbody>
@@ -539,7 +552,8 @@ const AccountRow: React.FC<{
   onHistory?: () => void;
   onClearTrades?: () => void;
   onEditBalance?: (newBalance: number) => void;
-}> = ({ account, selected, onToggleSelect, onEdit, onDelete, onSync, onHistory, onClearTrades, onEditBalance }) => {
+  isSyncing?: boolean;
+}> = ({ account, selected, onToggleSelect, onEdit, onDelete, onSync, onHistory, onClearTrades, onEditBalance, isSyncing }) => {
   const [hov, setHov] = useState(false);
   const [editingBalance, setEditingBalance] = useState(false);
   const [balanceInput, setBalanceInput] = useState('');
@@ -642,6 +656,7 @@ const AccountRow: React.FC<{
           account={account} onEdit={onEdit} onDelete={onDelete} onSync={onSync} onHistory={onHistory}
           onClearTrades={onClearTrades}
           onEditBalance={() => { setBalanceInput(String(account.balance)); setEditingBalance(true); }}
+          isSyncing={isSyncing}
         />
       </td>
     </tr>

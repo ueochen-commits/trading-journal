@@ -1141,8 +1141,53 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onSyncAccount={async (id) => {
                   const account = tradingAccounts.find(a => a.id === id);
                   if (!account || !account.exchangeConnectionId) return;
+
+                  // 获取 API 凭证
+                  const connections = await userDataService.loadExchangeConnections();
+                  const conn = connections.find(c => c.id === account.exchangeConnectionId);
+                  if (!conn) { showToast('找不到 API 凭证，请重新连接'); return; }
+
                   showToast('正在同步...');
-                  // 后续可以在这里调用真实同步逻辑
+                  try {
+                    // 以上次同步时间为起点，只拉取新数据
+                    const startDate = account.lastSync ?? undefined;
+                    const { trades: newTrades, balance, currency } = await fetchTradesFromExchange(
+                      account.exchange ?? conn.exchange,
+                      conn.apiKey,
+                      conn.apiSecret,
+                      undefined,
+                      id,
+                      startDate,
+                    );
+
+                    // 去重：过滤掉已存在的交易
+                    const existingSymbols = new Set(trades.filter(t => t.accountId === id).map(t => `${t.symbol}-${t.entryDate}`));
+                    const dedupedTrades = newTrades.filter(t => !existingSymbols.has(`${t.symbol}-${t.entryDate}`));
+
+                    if (dedupedTrades.length > 0) {
+                      const result = await userDataService.importTradesWithAccount(
+                        dedupedTrades.map(t => ({
+                          date: t.entryDate, exitDate: t.exitDate, symbol: t.symbol,
+                          direction: t.direction, entryPrice: t.entryPrice, exitPrice: t.exitPrice,
+                          quantity: t.quantity, leverage: t.leverage, riskAmount: t.riskAmount,
+                          fees: t.fees, pnl: t.pnl, setup: t.setup, notes: t.notes,
+                          reviewNotes: t.reviewNotes, mistakes: t.mistakes,
+                        })),
+                        id,
+                      );
+                      if (result.data) {
+                        setTrades(prev => [...result.data!.map(formatTradeFromDB), ...prev]);
+                      }
+                    }
+
+                    // 更新账户余额和同步时间
+                    const now = new Date().toISOString();
+                    await userDataService.updateTradingAccount(id, { syncStatus: 'synced', lastSync: now, balance, currency });
+                    setTradingAccounts(prev => prev.map(a => a.id === id ? { ...a, balance, currency, syncStatus: 'synced', lastSync: now } : a));
+                    showToast(dedupedTrades.length > 0 ? `同步完成，新增 ${dedupedTrades.length} 笔交易` : '同步完成，暂无新交易');
+                  } catch (err: any) {
+                    showToast(`同步失败：${err?.message ?? '请重试'}`);
+                  }
                 }}
                 onUpdateAccount={async (id, updates) => {
                   await userDataService.updateTradingAccount(id, updates);
