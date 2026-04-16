@@ -1647,6 +1647,31 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div style={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="equityGreenGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="rgba(52,211,153,0.45)" />
+                          <stop offset="100%" stopColor="rgba(52,211,153,0.15)" />
+                        </linearGradient>
+                        <linearGradient id="equityRedGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="rgba(251,113,133,0.15)" />
+                          <stop offset="100%" stopColor="rgba(251,113,133,0.45)" />
+                        </linearGradient>
+                        <clipPath id="clipAboveZero">
+                          <Customized component={({ yAxis, xAxis, height, width }: any) => {
+                            if (!yAxis?.scale) return null;
+                            const zeroY = Math.min(Math.max(yAxis.scale(0), yAxis.y || 0), (yAxis.y || 0) + (yAxis.height || height));
+                            return <rect x={xAxis?.x || 0} y={yAxis?.y || 0} width={xAxis?.width || width} height={Math.max(0, zeroY - (yAxis?.y || 0))} />;
+                          }} />
+                        </clipPath>
+                        <clipPath id="clipBelowZero">
+                          <Customized component={({ yAxis, xAxis, height, width }: any) => {
+                            if (!yAxis?.scale) return null;
+                            const zeroY = Math.min(Math.max(yAxis.scale(0), yAxis.y || 0), (yAxis.y || 0) + (yAxis.height || height));
+                            const bottom = (yAxis.y || 0) + (yAxis.height || height);
+                            return <rect x={xAxis?.x || 0} y={zeroY} width={xAxis?.width || width} height={Math.max(0, bottom - zeroY)} />;
+                          }} />
+                        </clipPath>
+                      </defs>
                       <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
                       <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                       <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={55}
@@ -1663,22 +1688,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
                               <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span style={{ width: 10, height: 10, background: val >= 0 ? '#1D9E75' : '#E24B4A', borderRadius: 2, display: 'inline-block' }} />
+                                <span style={{ width: 10, height: 10, background: val >= 0 ? '#34D399' : '#FB7185', borderRadius: 2, display: 'inline-block' }} />
                                 <span>{sign}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
                               </div>
                             </div>
                           );
                         }}
                       />
-                      {/* Green fill: above zero */}
+                      {/* Green fill above zero — clipped */}
                       <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
-                        fill="rgba(29,158,117,0.18)" fillOpacity={1} dot={false} activeDot={false}
-                        baseValue={0}
+                        fill="url(#equityGreenGrad)" fillOpacity={1} dot={false} activeDot={false}
+                        clipPath="url(#clipAboveZero)"
                       />
-                      {/* Red fill: below zero */}
+                      {/* Red fill below zero — clipped */}
                       <Area type="monotone" dataKey="cumulativePnl" stroke="none" strokeWidth={0}
-                        fill="rgba(226,75,74,0.18)" fillOpacity={1} dot={false} activeDot={false}
-                        baseValue={0}
+                        fill="url(#equityRedGrad)" fillOpacity={1} dot={false} activeDot={false}
+                        clipPath="url(#clipBelowZero)"
                       />
                       {/* Line only — always indigo */}
                       <Area type="monotone" dataKey="cumulativePnl"
