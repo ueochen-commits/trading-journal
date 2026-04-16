@@ -176,6 +176,14 @@
       input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         display: none;
       }
+
+      /* 禁用 Recharts SVG 图表的 focus outline 和文本选择 */
+      .recharts-wrapper,
+      .recharts-wrapper svg {
+        outline: none !important;
+        -webkit-user-select: none;
+        user-select: none;
+      }
     </style>
   <script type="importmap">
 {
