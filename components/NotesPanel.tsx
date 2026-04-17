@@ -412,7 +412,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif' }}
     >
       {/* ─── Layer 1: Title Bar ─── */}
-      <div className="flex items-center justify-between px-4" style={{ height: '38px' }}>
+      <div className="flex items-center justify-between px-6" style={{ height: '38px' }}>
         <div className="flex items-center gap-[10px]">
           <div className="w-1 h-4 bg-[#1a1a1a] dark:bg-[#ededed] rounded-sm" />
           <span className="text-[15px] font-medium text-[#1a1a1a] dark:text-[#ededed]">Notes</span>
@@ -439,7 +439,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       </div>
 
       {/* ─── Layer 2: Tabs + Template Button ─── */}
-      <div className="flex items-center justify-between px-4 mb-4" style={{ height: '32px' }}>
+      <div className="flex items-center justify-between px-6 mb-4" style={{ height: '32px' }}>
         <div className="inline-flex p-[3px] bg-[#f3f4f6] dark:bg-[#1a1a1a] rounded-lg">
           {(['trade-note', 'daily-journal'] as NoteTab[]).map((tab) => (
             <button
@@ -467,11 +467,11 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       </div>
 
       {/* ─── Layer 3: Separator ─── */}
-      <div className="mx-4 border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]" style={{ borderTopWidth: '0.5px', marginBottom: '12px' }} />
+      <div className="mx-6 border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]" style={{ borderTopWidth: '0.5px', marginBottom: '12px' }} />
 
       {/* ─── Layer 4: Rich Text Toolbar ─── */}
       <div
-        className="flex items-center gap-0.5 flex-wrap px-4"
+        className="flex items-center gap-0.5 flex-wrap px-6"
         style={{ marginBottom: '14px' }}
         onMouseDown={(e) => e.preventDefault()}
       >
@@ -717,8 +717,8 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       {/* ─── Layer 5: Editor Area ─── */}
       <div
         ref={editorContainerRef}
-        className={`flex-1 overflow-y-auto px-4 ${isFullscreen ? 'max-w-[800px] mx-auto w-full' : ''}`}
-        style={{ padding: '4px 4px 20px 4px' }}
+        className={`flex-1 overflow-y-auto ${isFullscreen ? 'max-w-[800px] mx-auto w-full' : ''}`}
+        style={{ padding: '4px 24px 20px 24px' }}
       >
         <EditorContent
           editor={editor}

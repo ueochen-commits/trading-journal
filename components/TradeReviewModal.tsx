@@ -1919,7 +1919,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                     <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-slate-700">
                         <GripHorizontal className="w-4 h-4 text-slate-400" />
                     </div>
-                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden">
+                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3">
                         <NotesPanel
                           symbol={currentTrade.symbol}
                           date={currentTrade.entryDate?.slice(0, 10)}
