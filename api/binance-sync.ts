@@ -62,6 +62,7 @@ export default async function handler(req: any, res: any) {
         options: { fetchCurrencies: false },
       });
       await futuresExchange.loadMarkets();
+      debugLog.push('loadMarkets OK');
 
       // 合约余额
       try {
@@ -71,34 +72,35 @@ export default async function handler(req: any, res: any) {
         debugLog.push(`FUTURES balance ERROR: ${e.message?.slice(0, 60)}`);
       }
 
-      // 确定时间范围：默认最近180天（Binance合约API限制）
-      // 如果用户指定了startDate则使用，否则用180天
+      // 确定时间范围：默认最近180天
       const since = startDate
         ? new Date(startDate).getTime()
         : Date.now() - 180 * 24 * 60 * 60 * 1000;
-
       debugLog.push(`since: ${new Date(since).toISOString()}`);
 
-      // 用 income 接口发现交易过的品种
+      // ── 3a. 发现交易过的品种 ──────────────────────────────────────────────
       const rawSymbols = new Set<string>();
+
+      // 方法1: income 接口
       try {
         let incomeStart = since;
         for (let page = 0; page < 20; page++) {
-          const batch = await futuresExchange.fapiPrivateGetIncome({
+          const resp = await futuresExchange.fapiPrivateGetIncome({
             startTime: incomeStart, limit: 1000,
-          }) || [];
+          });
+          const batch = Array.isArray(resp) ? resp : [];
           for (const r of batch) { if (r.symbol) rawSymbols.add(r.symbol); }
           if (batch.length < 1000) break;
           const lastTime = parseInt(batch[batch.length - 1].time, 10);
           if (!lastTime || lastTime <= incomeStart) break;
           incomeStart = lastTime + 1;
         }
-        debugLog.push(`income symbols: ${[...rawSymbols].join(',')}`);
+        debugLog.push(`income symbols(${rawSymbols.size}): ${[...rawSymbols].join(',')}`);
       } catch (e: any) {
-        debugLog.push(`income ERROR: ${e.message?.slice(0, 60)}`);
+        debugLog.push(`income ERROR: ${e.message?.slice(0, 80)}`);
       }
 
-      // 补充当前持仓的品种
+      // 方法2: 当前持仓
       try {
         const positions = await futuresExchange.fetchPositions();
         for (const p of positions) {
@@ -106,8 +108,29 @@ export default async function handler(req: any, res: any) {
             rawSymbols.add(p.info.symbol);
           }
         }
+        debugLog.push(`after positions: ${rawSymbols.size} symbols`);
       } catch (e: any) {
         debugLog.push(`positions ERROR: ${e.message?.slice(0, 60)}`);
+      }
+
+      // 方法3: 如果 income + positions 都没发现品种，用 allOrders 兜底
+      if (rawSymbols.size === 0) {
+        debugLog.push('FALLBACK: trying common symbols');
+        const common = ['BTCUSDT','ETHUSDT','BNBUSDT','XRPUSDT','SOLUSDT',
+          'DOGEUSDT','ADAUSDT','AVAXUSDT','DOTUSDT','LINKUSDT',
+          'MATICUSDT','LTCUSDT','TRXUSDT','ATOMUSDT','UNIUSDT',
+          'APTUSDT','ARBUSDT','OPUSDT','SUIUSDT','PEPEUSDT'];
+        for (const sym of common) {
+          try {
+            const orders = await futuresExchange.fapiPrivateGetAllOrders({
+              symbol: sym, startTime: since, limit: 1,
+            });
+            if (Array.isArray(orders) && orders.length > 0) {
+              rawSymbols.add(sym);
+            }
+          } catch { /* skip */ }
+        }
+        debugLog.push(`fallback found: ${rawSymbols.size} symbols`);
       }
 
       // 转换为 CCXT 格式
@@ -121,73 +144,65 @@ export default async function handler(req: any, res: any) {
           if (base && base !== raw) futuresSymbols.push(`${base}/USDT:USDT`);
         }
       }
+      debugLog.push(`querying ${futuresSymbols.length} symbols: ${futuresSymbols.join(',')}`);
 
-      debugLog.push(`querying ${futuresSymbols.length} symbols`);
-
-      // 核心：用 fapiPrivateGetUserTrades 直接获取每笔成交，含 realizedPnl
-      // 这个接口每条记录就是一次完整的开仓或平仓成交，不需要手动配对
+      // ── 3b. 用 fetchMyTrades 拉取每个品种的成交记录 ────────────────────────
       for (const ccxtSymbol of futuresSymbols) {
         try {
-          const rawSymbol = ccxtSymbol.split(':')[0].replace('/', '');
-          const cleanSymbol = rawSymbol; // 已经是 XRPUSDT 格式
+          const cleanSymbol = ccxtSymbol.split(':')[0].replace('/', '');
 
-          // 分页拉取，每次1000条，从最新往前
-          let fromId: string | undefined;
+          // 分页拉取
           const symbolFills: any[] = [];
-
+          let fetchSince = since;
           for (let page = 0; page < 10; page++) {
-            const params: any = { symbol: rawSymbol, limit: 1000, startTime: since };
-            if (fromId) params.fromId = fromId;
-
-            const fills = await futuresExchange.fapiPrivateGetUserTrades(params) || [];
-            if (fills.length === 0) break;
-            symbolFills.push(...fills);
-            if (fills.length < 1000) break;
-            // 下一页从最后一条的 id+1 开始
-            fromId = String(parseInt(fills[fills.length - 1].id, 10) + 1);
+            const trades = await futuresExchange.fetchMyTrades(ccxtSymbol, fetchSince, 1000);
+            if (!trades || trades.length === 0) break;
+            symbolFills.push(...trades);
+            if (trades.length < 1000) break;
+            fetchSince = trades[trades.length - 1].timestamp + 1;
           }
 
           if (symbolFills.length === 0) continue;
-          debugLog.push(`${rawSymbol}: ${symbolFills.length} fills`);
+          debugLog.push(`${cleanSymbol}: ${symbolFills.length} fills`);
 
           // 按订单分组，同一订单的多次成交合并为一条
           const orderMap = new Map<string, any>();
           for (const fill of symbolFills) {
-            const orderId = fill.orderId;
+            const orderId = fill.order || fill.info?.orderId || fill.id;
+            const side = (fill.side || '').toUpperCase(); // BUY / SELL
+            const positionSide = fill.info?.positionSide || 'BOTH';
             if (!orderMap.has(orderId)) {
               orderMap.set(orderId, {
                 orderId,
                 symbol: cleanSymbol,
-                side: fill.side,           // BUY / SELL
-                positionSide: fill.positionSide, // LONG / SHORT / BOTH
-                time: parseInt(fill.time, 10),
+                side,
+                positionSide,
+                time: fill.timestamp,
                 totalQty: 0,
                 totalCost: 0,
                 totalFee: 0,
                 totalRealizedPnl: 0,
-                isMaker: fill.maker,
               });
             }
             const o = orderMap.get(orderId)!;
-            const qty = parseFloat(fill.qty);
-            const price = parseFloat(fill.price);
+            const qty = fill.amount || 0;
+            const price = fill.price || 0;
             o.totalQty += qty;
             o.totalCost += price * qty;
-            o.totalFee += parseFloat(fill.commission || '0');
-            o.totalRealizedPnl += parseFloat(fill.realizedPnl || '0');
+            o.totalFee += (fill.fee?.cost || 0);
+            o.totalRealizedPnl += parseFloat(fill.info?.realizedPnl || '0');
           }
 
-          // 把订单分为开仓和平仓
-          // 双向持仓：LONG+BUY=开多, LONG+SELL=平多, SHORT+SELL=开空, SHORT+BUY=平空
-          // 单向持仓：reduceOnly=false=开仓, reduceOnly=true=平仓
-          const isDual = symbolFills.some(f => f.positionSide && f.positionSide !== 'BOTH');
+          // 判断双向/单向持仓模式
+          const isDual = symbolFills.some(f =>
+            f.info?.positionSide && f.info.positionSide !== 'BOTH'
+          );
 
           const isEntry = (o: any) => {
             if (isDual) {
               return (o.positionSide === 'LONG' && o.side === 'BUY') ||
                      (o.positionSide === 'SHORT' && o.side === 'SELL');
             }
-            // 单向：realizedPnl=0 的是开仓，非0的是平仓
             return o.totalRealizedPnl === 0;
           };
 
@@ -225,7 +240,7 @@ export default async function handler(req: any, res: any) {
                   orderId: entry.orderId,
                 });
               } else {
-                // 找不到对应开仓（可能开仓在时间窗口之前），仍然记录平仓信息
+                // 找不到对应开仓（可能开仓在时间窗口之前）
                 allTrades.push({
                   symbol: cleanSymbol,
                   direction,
@@ -266,17 +281,13 @@ export default async function handler(req: any, res: any) {
       }
 
     } catch (e: any) {
-      debugLog.push(`FUTURES init ERROR: ${e.message?.slice(0, 80)}`);
+      debugLog.push(`FUTURES init ERROR: ${e.message?.slice(0, 120)}`);
     }
 
-    // ── 4. 现货交易（可选）──────────────────────────────────────────────────
-    if (!skipSpot) {
-      // 现货逻辑保持不变，略
-    }
-
-    // ── 5. 排序并返回 ────────────────────────────────────────────────────────
+    // ── 4. 排序并返回 ────────────────────────────────────────────────────────
     allTrades.sort((a, b) => b.entryTime - a.entryTime);
 
+    debugLog.push(`TOTAL: ${allTrades.length} trades`);
     console.log('[CCXT] Debug:', debugLog.join(' | '));
 
     return res.status(200).json({
