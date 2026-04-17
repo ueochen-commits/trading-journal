@@ -697,6 +697,20 @@ export const userDataService = {
     return { error };
   },
 
+  // 获取账户下已有交易的 symbol+date 集合，用于去重
+  async getAccountTradeKeys(accountId: string): Promise<Set<string>> {
+    const userId = await getCurrentUserId();
+    if (!userId) return new Set();
+    const { data } = await supabase
+      .from('trading_journals')
+      .select('symbol, date')
+      .eq('account_id', accountId)
+      .eq('user_id', userId);
+    const toMinKey = (symbol: string, date: string) =>
+      `${symbol}-${new Date(date).toISOString().slice(0, 16)}`;
+    return new Set((data || []).map((r: any) => toMinKey(r.symbol, r.date)));
+  },
+
   // 批量导入交易（带 account_id）
   async importTradesWithAccount(trades: any[], accountId: string) {
     const userId = await getCurrentUserId();
