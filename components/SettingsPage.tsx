@@ -543,7 +543,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAcco
     switch (activeSection) {
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
       case 'account': return <AccountPage showToast={showToast} />;
-      case 'brokers': return <BrokersPage userPlan="free" accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} onUpdateAccount={onUpdateAccount} onClearTrades={onClearTrades} />;
+      case 'brokers': return <BrokersPage userPlan={user.tier} accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} onUpdateAccount={onUpdateAccount} onClearTrades={onClearTrades} />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} riskSettings={riskSettings} onSaveRiskSettings={onSaveRiskSettings} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
       case 'tags': return <TagsPage />;
