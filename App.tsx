@@ -1160,9 +1160,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       undefined,
                     );
 
-                    // 去重：用内存中现有记录构建key集合，只插入不存在的
-                    const existingKeys = new Set(trades.filter(t => t.accountId === id).map(t => `${t.symbol}-${t.entryDate}`));
-                    const dedupedTrades = newTrades.filter(t => !existingKeys.has(`${t.symbol}-${t.entryDate}`));
+                    // 去重：用symbol+分钟级时间戳，避免毫秒精度不一致导致key不匹配
+                    const toMinKey = (symbol: string, date: string) =>
+                      `${symbol}-${new Date(date).toISOString().slice(0, 16)}`;
+                    const existingKeys = new Set(
+                      trades.filter(t => t.accountId === id).map(t => toMinKey(t.symbol, t.entryDate))
+                    );
+                    const dedupedTrades = newTrades.filter(t => !existingKeys.has(toMinKey(t.symbol, t.entryDate)));
 
                     if (dedupedTrades.length > 0) {
                       const result = await userDataService.importTradesWithAccount(
