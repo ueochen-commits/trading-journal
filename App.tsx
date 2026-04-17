@@ -1160,11 +1160,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       undefined,
                     );
 
-                    // 去重：从数据库查询已有记录，避免内存state格式不一致导致误判
-                    const toMinKey = (symbol: string, date: string) =>
-                      `${symbol}-${new Date(date).toISOString().slice(0, 16)}`;
+                    // 去重：从数据库查询，用symbol+时间+开仓价+数量四元组，比单纯时间更可靠
+                    const toKey = (symbol: string, date: string, entryPrice: number, quantity: number) =>
+                      `${symbol}-${new Date(date).toISOString().slice(0, 16)}-${entryPrice}-${quantity}`;
                     const existingKeys = await userDataService.getAccountTradeKeys(id);
-                    const dedupedTrades = newTrades.filter(t => !existingKeys.has(toMinKey(t.symbol, t.entryDate)));
+                    const dedupedTrades = newTrades.filter(t =>
+                      !existingKeys.has(toKey(t.symbol, t.entryDate, t.entryPrice, t.quantity))
+                    );
 
                     if (dedupedTrades.length > 0) {
                       const result = await userDataService.importTradesWithAccount(

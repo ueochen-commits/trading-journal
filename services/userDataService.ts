@@ -697,18 +697,19 @@ export const userDataService = {
     return { error };
   },
 
-  // 获取账户下已有交易的 symbol+date 集合，用于去重
+  // 获取账户下已有交易的去重key集合
   async getAccountTradeKeys(accountId: string): Promise<Set<string>> {
     const userId = await getCurrentUserId();
     if (!userId) return new Set();
     const { data } = await supabase
       .from('trading_journals')
-      .select('symbol, date')
+      .select('symbol, date, entry_price, quantity')
       .eq('account_id', accountId)
       .eq('user_id', userId);
-    const toMinKey = (symbol: string, date: string) =>
-      `${symbol}-${new Date(date).toISOString().slice(0, 16)}`;
-    return new Set((data || []).map((r: any) => toMinKey(r.symbol, r.date)));
+    // 用 symbol+分钟时间+开仓价+数量 四元组，比单纯时间更可靠
+    const toKey = (symbol: string, date: string, entryPrice: number, quantity: number) =>
+      `${symbol}-${new Date(date).toISOString().slice(0, 16)}-${entryPrice}-${quantity}`;
+    return new Set((data || []).map((r: any) => toKey(r.symbol, r.date, r.entry_price, r.quantity)));
   },
 
   // 批量导入交易（带 account_id）
