@@ -190,6 +190,7 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
 
 // ── Trade Time Performance scatter chart ─────────────────────────────────────
 const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
+  const { currencySymbol } = useUser();
   const [mode, setMode] = React.useState<'entry'|'exit'>('entry');
   const timeToHour = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? null : d.getHours() + d.getMinutes() / 60; };
   const ttData = useMemo(() => trades.filter(t => {
