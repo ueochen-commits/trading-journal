@@ -1149,18 +1149,18 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
                   showToast('正在同步...');
                   try {
-                    // 以上次同步时间为起点，只拉取新数据
-                    const startDate = account.lastSync ?? undefined;
+                    // 拉全量数据，不用lastSync做时间过滤
+                    // 原因：用户可能手动删除了历史记录，增量同步无法补回
                     const { trades: newTrades, balance, currency } = await fetchTradesFromExchange(
                       account.exchange ?? conn.exchange,
                       conn.apiKey,
                       conn.apiSecret,
                       undefined,
                       id,
-                      startDate,
+                      undefined,
                     );
 
-                    // 去重：过滤掉内存中已存在的交易（清除后state为空，不会过滤任何东西，符合预期）
+                    // 去重：用内存中现有记录构建key集合，只插入不存在的
                     const existingKeys = new Set(trades.filter(t => t.accountId === id).map(t => `${t.symbol}-${t.entryDate}`));
                     const dedupedTrades = newTrades.filter(t => !existingKeys.has(`${t.symbol}-${t.entryDate}`));
 
