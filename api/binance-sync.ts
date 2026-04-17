@@ -217,7 +217,13 @@ export default async function handler(req: any, res: any) {
 
           const getDirection = (o: any): 'LONG' | 'SHORT' => {
             if (isDual) return o.positionSide === 'SHORT' ? 'SHORT' : 'LONG';
-            return o.side === 'BUY' ? 'LONG' : 'SHORT';
+            // 单向持仓：开仓 BUY=做多, SELL=做空
+            // 平仓方向要反转：SELL 平的是多仓(LONG), BUY 平的是空仓(SHORT)
+            if (isEntry(o)) {
+              return o.side === 'BUY' ? 'LONG' : 'SHORT';
+            } else {
+              return o.side === 'SELL' ? 'LONG' : 'SHORT';
+            }
           };
 
           const orders = Array.from(orderMap.values()).sort((a, b) => a.time - b.time);
