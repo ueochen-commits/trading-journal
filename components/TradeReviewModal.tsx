@@ -1443,12 +1443,12 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                 </div>
 
                 {/* Right Actions */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-5">
                     {/* Mark as Reviewed */}
-                    <label className="flex items-center gap-2 cursor-pointer select-none group">
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none group">
                         <div
                             onClick={() => setIsReviewed(!isReviewed)}
-                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+                            className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-all ${
                                 isReviewed
                                     ? 'bg-emerald-500 border-emerald-500'
                                     : 'border-slate-300 dark:border-slate-600 group-hover:border-emerald-400'
@@ -1469,7 +1469,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                     <img
                         src="/lion-care.png"
                         alt="TradeGrail"
-                        className="w-8 h-8 rounded-full object-cover"
+                        className="w-10 h-10 rounded-full object-cover"
                         title="TradeGrail"
                     />
 
@@ -1481,7 +1481,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors"
                         title={language === 'cn' ? '分享' : 'Share'}
                     >
-                        <Share2 className="w-4 h-4" />
+                        <Share2 className="w-4.5 h-4.5" />
                     </button>
 
                     {/* Divider */}
