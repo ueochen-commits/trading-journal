@@ -146,38 +146,47 @@ export default async function handler(req: any, res: any) {
       }
       debugLog.push(`querying ${futuresSymbols.length} symbols: ${futuresSymbols.join(',')}`);
 
-      // ── 3b. 用 fetchMyTrades 拉取每个品种的成交记录 ────────────────────────
+      // ── 3b. 用 fapiPrivateGetUserTrades 按7天窗口拉取成交 ─────────────────
+      // Binance userTrades 接口限制 startTime~endTime 不超过7天
+      const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+
       for (const ccxtSymbol of futuresSymbols) {
         try {
-          const cleanSymbol = ccxtSymbol.split(':')[0].replace('/', '');
+          const rawSymbol = ccxtSymbol.split(':')[0].replace('/', '');
 
-          // 分页拉取
+          // 按7天窗口逐段拉取
           const symbolFills: any[] = [];
-          let fetchSince = since;
-          for (let page = 0; page < 10; page++) {
-            const trades = await futuresExchange.fetchMyTrades(ccxtSymbol, fetchSince, 1000);
-            if (!trades || trades.length === 0) break;
-            symbolFills.push(...trades);
-            if (trades.length < 1000) break;
-            fetchSince = trades[trades.length - 1].timestamp + 1;
+          for (let wStart = since; wStart < now; wStart += SEVEN_DAYS) {
+            const wEnd = Math.min(wStart + SEVEN_DAYS, now);
+            try {
+              const resp = await futuresExchange.fapiPrivateGetUserTrades({
+                symbol: rawSymbol,
+                startTime: wStart,
+                endTime: wEnd,
+                limit: 1000,
+              });
+              const fills = Array.isArray(resp) ? resp : [];
+              if (fills.length > 0) symbolFills.push(...fills);
+            } catch { /* 单窗口失败不影响其他窗口 */ }
           }
 
           if (symbolFills.length === 0) continue;
-          debugLog.push(`${cleanSymbol}: ${symbolFills.length} fills`);
+          debugLog.push(`${rawSymbol}: ${symbolFills.length} fills`);
 
           // 按订单分组，同一订单的多次成交合并为一条
           const orderMap = new Map<string, any>();
           for (const fill of symbolFills) {
-            const orderId = fill.order || fill.info?.orderId || fill.id;
-            const side = (fill.side || '').toUpperCase(); // BUY / SELL
-            const positionSide = fill.info?.positionSide || 'BOTH';
+            const orderId = fill.orderId || fill.id;
+            const side = (fill.side || '').toUpperCase();
+            const positionSide = fill.positionSide || 'BOTH';
             if (!orderMap.has(orderId)) {
               orderMap.set(orderId, {
                 orderId,
-                symbol: cleanSymbol,
+                symbol: rawSymbol,
                 side,
                 positionSide,
-                time: fill.timestamp,
+                time: parseInt(fill.time, 10),
                 totalQty: 0,
                 totalCost: 0,
                 totalFee: 0,
@@ -185,17 +194,17 @@ export default async function handler(req: any, res: any) {
               });
             }
             const o = orderMap.get(orderId)!;
-            const qty = fill.amount || 0;
-            const price = fill.price || 0;
+            const qty = parseFloat(fill.qty || '0');
+            const price = parseFloat(fill.price || '0');
             o.totalQty += qty;
             o.totalCost += price * qty;
-            o.totalFee += (fill.fee?.cost || 0);
-            o.totalRealizedPnl += parseFloat(fill.info?.realizedPnl || '0');
+            o.totalFee += parseFloat(fill.commission || '0');
+            o.totalRealizedPnl += parseFloat(fill.realizedPnl || '0');
           }
 
           // 判断双向/单向持仓模式
           const isDual = symbolFills.some(f =>
-            f.info?.positionSide && f.info.positionSide !== 'BOTH'
+            f.positionSide && f.positionSide !== 'BOTH'
           );
 
           const isEntry = (o: any) => {
@@ -228,7 +237,7 @@ export default async function handler(req: any, res: any) {
               if (entryIdx >= 0) {
                 const entry = openOrders.splice(entryIdx, 1)[0];
                 allTrades.push({
-                  symbol: cleanSymbol,
+                  symbol: rawSymbol,
                   direction,
                   entryTime: entry.time,
                   exitTime: order.time,
@@ -242,7 +251,7 @@ export default async function handler(req: any, res: any) {
               } else {
                 // 找不到对应开仓（可能开仓在时间窗口之前）
                 allTrades.push({
-                  symbol: cleanSymbol,
+                  symbol: rawSymbol,
                   direction,
                   entryTime: order.time,
                   exitTime: order.time,
