@@ -146,7 +146,23 @@ export default async function handler(req: any, res: any) {
       }
       debugLog.push(`querying ${futuresSymbols.length} symbols: ${futuresSymbols.join(',')}`);
 
-      // ── 3b. 用 fapiPrivateGetUserTrades 按7天窗口拉取成交 ─────────────────
+      // ── 3b. 查询每个品种的当前杠杆倍数 ────────────────────────────────────
+      const leverageMap = new Map<string, number>();
+      try {
+        const positions = await futuresExchange.fapiPrivateV2GetPositionRisk();
+        if (Array.isArray(positions)) {
+          for (const p of positions) {
+            if (p.symbol && p.leverage) {
+              leverageMap.set(p.symbol, parseInt(p.leverage, 10));
+            }
+          }
+        }
+        debugLog.push(`leverage: ${leverageMap.size} symbols`);
+      } catch (e: any) {
+        debugLog.push(`leverage ERROR: ${e.message?.slice(0, 60)}`);
+      }
+
+      // ── 3c. 用 fapiPrivateGetUserTrades 按7天窗口拉取成交 ─────────────────
       // Binance userTrades 接口限制 startTime~endTime 不超过7天
       const SEVEN_DAYS = 7 * 24 * 60 * 60 * 1000;
       const now = Date.now();
@@ -253,6 +269,7 @@ export default async function handler(req: any, res: any) {
                   pnl: parseFloat(order.totalRealizedPnl.toFixed(4)),
                   fees: parseFloat((entry.totalFee + order.totalFee).toFixed(4)),
                   orderId: entry.orderId,
+                  leverage: leverageMap.get(rawSymbol) || null,
                 });
               } else {
                 // 找不到对应开仓（可能开仓在时间窗口之前）
@@ -267,6 +284,7 @@ export default async function handler(req: any, res: any) {
                   pnl: parseFloat(order.totalRealizedPnl.toFixed(4)),
                   fees: parseFloat(order.totalFee.toFixed(4)),
                   orderId: order.orderId,
+                  leverage: leverageMap.get(rawSymbol) || null,
                 });
               }
             }
@@ -287,6 +305,7 @@ export default async function handler(req: any, res: any) {
               fees: parseFloat(entry.totalFee.toFixed(4)),
               orderId: entry.orderId,
               isOpen: true,
+              leverage: leverageMap.get(rawSymbol) || null,
             });
           }
 
