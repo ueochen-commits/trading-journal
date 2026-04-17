@@ -332,6 +332,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
   // UI State for Auto-Actions (Not persisted)
   const [journalAutoOpen, setJournalAutoOpen] = useState(false);
+  const [journalReviewTradeId, setJournalReviewTradeId] = useState<string | null>(null);
   const [noteAutoCreate, setNoteAutoCreate] = useState(false);
   const [playbookAutoCreate, setPlaybookAutoCreate] = useState(false);
   
@@ -965,6 +966,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           selectedAccountId={selectedAccountId}
                           onAccountChange={setSelectedAccountId}
                           onManageAccounts={() => { setSettingsInitialSection('brokers'); handleSetActiveTab('settings'); setTimeout(() => setSettingsInitialSection(undefined), 200); }}
+                          onOpenTradeReview={(tradeId: string) => { setJournalReviewTradeId(tradeId); handleSetActiveTab('journal'); }}
                       />
                   </PageContainer>
               );
@@ -989,6 +991,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onSavePlan={handleSavePlan}
                           autoOpen={journalAutoOpen}
                           onResetAutoOpen={() => journalAutoOpen && setJournalAutoOpen(false)}
+                          initialReviewTradeId={journalReviewTradeId}
+                          onResetReviewTradeId={() => journalReviewTradeId && setJournalReviewTradeId(null)}
                           strategies={strategies}
                           tradingAccounts={tradingAccounts}
                           initialAccountId={selectedAccountId}

@@ -977,6 +977,7 @@ interface DashboardProps {
   onManageAccounts?: () => void;
   selectedAccountId?: string;
   onAccountChange?: (id: string) => void;
+  onOpenTradeReview?: (tradeId: string) => void;
 }
 
 const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
@@ -1003,7 +1004,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
     weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology,
-    tradingAccounts, onManageAccounts, selectedAccountId: externalAccountId, onAccountChange
+    tradingAccounts, onManageAccounts, selectedAccountId: externalAccountId, onAccountChange, onOpenTradeReview
 }) => {
   const { t, language } = useLanguage();
   const { currencySymbol } = useUser();
@@ -1874,7 +1875,8 @@ const Dashboard: React.FC<DashboardProps> = ({
                           const netPnl = trade.pnl - trade.fees;
                           return (
                             <div key={trade.id || idx}
-                              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 20px', borderBottom: idx < recent.length - 1 ? '1px solid #f5f5fa' : 'none', transition: 'background 0.1s', cursor: 'default' }}
+                              onClick={() => trade.id && onOpenTradeReview?.(trade.id)}
+                              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 20px', borderBottom: idx < recent.length - 1 ? '1px solid #f5f5fa' : 'none', transition: 'background 0.1s', cursor: 'pointer' }}
                               onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#fafafe'}
                               onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                             >

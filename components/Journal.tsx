@@ -87,6 +87,8 @@ interface JournalProps {
   onCreateNoteIntent?: (date: string, tradeIds: string[]) => void;
   tradingAccounts?: TradingAccount[];
   initialAccountId?: string;
+  initialReviewTradeId?: string | null;
+  onResetReviewTradeId?: () => void;
 }
 
 const initialFormState: Partial<Trade> = {
@@ -136,7 +138,8 @@ const Journal: React.FC<JournalProps> = ({
     trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade,
     checklist, onUpdateChecklist, onImportTrades, onShare,
     riskSettings, onSavePlan, autoOpen, onResetAutoOpen, strategies,
-    onNavigateToNote, onCreateNoteIntent, tradingAccounts, initialAccountId
+    onNavigateToNote, onCreateNoteIntent, tradingAccounts, initialAccountId,
+    initialReviewTradeId, onResetReviewTradeId
 }) => {
   const { t, language } = useLanguage();
   const { user, openPricing } = useUser();
@@ -179,6 +182,15 @@ const Journal: React.FC<JournalProps> = ({
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
   const [formErrors, setFormErrors] = useState<Record<string, boolean>>({});
   const [reviewTrade, setReviewTrade] = useState<Trade | null>(null);
+
+  // Auto-open review modal when navigating from Dashboard
+  useEffect(() => {
+    if (initialReviewTradeId) {
+      const target = trades.find(t => t.id === initialReviewTradeId);
+      if (target) setReviewTrade(target);
+      onResetReviewTradeId?.();
+    }
+  }, [initialReviewTradeId]);
   const [highlightedTradeId, setHighlightedTradeId] = useState<string | null>(null);
   const [newMistake, setNewMistake] = useState('');
   const [showMistakeSuggestions, setShowMistakeSuggestions] = useState(false);
