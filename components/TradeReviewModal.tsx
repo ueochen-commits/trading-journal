@@ -1,15 +1,18 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount } from '../types';
-import { 
-    X, ChevronLeft, ChevronRight, Star, Plus, Trash2, Calendar, Clock, Hash, Tag, 
-    AlertTriangle, FileText, Check, MoreHorizontal, GripVertical, Edit2, Share2, 
-    Paperclip, BookOpen, Layers, MapPin, ChevronDown, Settings, Save, Zap, Flag, 
-    RefreshCw, CheckCircle2, Trophy, Cloud, Bold, Italic, Underline, List, ListOrdered, 
-    Wand2, FileDown, AlignLeft, RotateCcw, RotateCw, Strikethrough, Code, AlignCenter, 
+import {
+    X, ChevronLeft, ChevronRight, Star, Plus, Trash2, Calendar, Clock, Hash, Tag,
+    AlertTriangle, FileText, Check, MoreHorizontal, GripVertical, Edit2, Share2,
+    Paperclip, BookOpen, Layers, MapPin, ChevronDown, Settings, Save, Zap, Flag,
+    RefreshCw, CheckCircle2, Trophy, Cloud, Bold, Italic, Underline, List, ListOrdered,
+    Wand2, FileDown, AlignLeft, RotateCcw, RotateCw, Strikethrough, Code, AlignCenter,
     AlignRight, Palette, Highlighter, Eraser, Link as LinkIcon, Image as ImageIcon, CheckSquare,
-    BookMarked, GripHorizontal, FilePlus, Menu
+    BookMarked, GripHorizontal, FilePlus, Menu, Maximize2, Minimize2, Mic, MicOff,
+    Download, Type, Minus, CaseSensitive, AlignJustify, Table, ListTodo, SeparatorHorizontal,
+    Camera, PlusCircle
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import NotesPanel from './NotesPanel';
 
 // ─── Risk Gauge Component ─────────────────────────────────────────────────────
 interface RiskTooltipData {
@@ -1917,7 +1920,37 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         <GripHorizontal className="w-4 h-4 text-slate-400" />
                     </div>
                     <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden">
-                        <ReviewEditor content={noteContent} onChange={setNoteContent} onSave={handleSave} placeholder={labels.notes.placeholder} />
+                        <NotesPanel
+                          symbol={currentTrade.symbol}
+                          date={currentTrade.entryDate?.slice(0, 10)}
+                          tradeNoteContent={noteContent}
+                          dailyJournalContent=""
+                          onContentChange={(tab, content) => {
+                            if (tab === 'trade-note') setNoteContent(content);
+                          }}
+                          onSave={(tab, content) => {
+                            if (tab === 'trade-note') {
+                              setNoteContent(content);
+                              handleSave();
+                            }
+                          }}
+                          tradeMetadata={{
+                            symbol: currentTrade.symbol,
+                            date: currentTrade.entryDate?.slice(0, 10) || '',
+                            dateFormatted: new Date(currentTrade.entryDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+                            direction: currentTrade.direction,
+                            pnlPercent: `${currentTrade.pnl >= 0 ? '+' : ''}${((currentTrade.pnl / (currentTrade.entryPrice * currentTrade.quantity || 1)) * 100).toFixed(2)}%`,
+                            account: currentTrade.accountId,
+                            entryPrice: `$${currentTrade.entryPrice}`,
+                            exitPrice: currentTrade.exitPrice ? `$${currentTrade.exitPrice}` : undefined,
+                            leverage: currentTrade.leverage ? `${currentTrade.leverage}x` : undefined,
+                            quantity: `${currentTrade.quantity}`,
+                          }}
+                          onDeleteNote={() => {
+                            setNoteContent('');
+                            handleSave();
+                          }}
+                        />
                     </div>
                 </div>
             </div>
