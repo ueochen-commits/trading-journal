@@ -1465,13 +1465,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                         </span>
                     </label>
 
-                    {/* Logo Placeholder */}
-                    <div
-                        className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm"
+                    {/* Logo */}
+                    <img
+                        src="/cir-lion.png"
+                        alt="TradeGrail"
+                        className="w-8 h-8 rounded-full object-cover"
                         title="TradeGrail"
-                    >
-                        <span className="text-white text-xs font-bold">TG</span>
-                    </div>
+                    />
 
                     {/* Share Button */}
                     <button
