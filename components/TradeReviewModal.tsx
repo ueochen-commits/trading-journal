@@ -701,20 +701,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     const rightPanelRef = useRef<HTMLDivElement>(null); // For sizing calculations
     const [leftTab, setLeftTab] = useState<'stats' | 'playbook' | 'executions' | 'attachments'>('stats');
 
-    // --- Chart Interval State ---
-    const defaultInterval = useMemo(() => {
-        const entry = new Date(currentTrade.entryDate).getTime();
-        const exit = currentTrade.exitDate ? new Date(currentTrade.exitDate).getTime() : Date.now();
-        const hours = (exit - entry) / 3600000;
-        if (hours < 2) return '1m';
-        if (hours < 12) return '5m';
-        if (hours < 72) return '15m';
-        if (hours < 336) return '1h';
-        return '4h';
-    }, [currentTrade.entryDate, currentTrade.exitDate]);
-    const [chartInterval, setChartInterval] = useState(defaultInterval);
-    useEffect(() => { setChartInterval(defaultInterval); }, [defaultInterval]);
-
     // --- Resizable Split Pane Logic ---
     const [splitRatio, setSplitRatio] = useState(60); // Default chart height %
     const [isDragging, setIsDragging] = useState(false);
@@ -905,59 +891,50 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     // Load TradingView Advanced Chart Widget
     useEffect(() => {
         const chartContainer = chartContainerRef.current;
-        if (!chartContainer || !chartInterval) return;
+        if (!chartContainer) return;
 
-        // Debounce widget creation to avoid TradingView internal errors
-        // when rapidly switching intervals
-        const timer = setTimeout(() => {
-            while (chartContainer.firstChild) {
-                chartContainer.removeChild(chartContainer.firstChild);
-            }
+        while (chartContainer.firstChild) {
+            chartContainer.removeChild(chartContainer.firstChild);
+        }
 
-            // Build TradingView symbol: ensure USDT suffix + BINANCE prefix
-            let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
-            if (!tvSymbol.endsWith('USDT') && !tvSymbol.endsWith('BUSD')) tvSymbol += 'USDT';
-            if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
+        // Build TradingView symbol: ensure USDT suffix + BINANCE prefix
+        let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
+        if (!tvSymbol.endsWith('USDT') && !tvSymbol.endsWith('BUSD')) tvSymbol += 'USDT';
+        if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
 
-            // Map interval to TradingView format
-            const tvIntervalMap: Record<string, string> = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1D': 'D' };
-            const tvInterval = tvIntervalMap[chartInterval] || '15';
+        const isDark = document.documentElement.classList.contains('dark');
 
-            const isDark = document.documentElement.classList.contains('dark');
-
-            const script = document.createElement('script');
-            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-            script.type = 'text/javascript';
-            script.async = true;
-            script.textContent = JSON.stringify({
-                autosize: true,
-                symbol: tvSymbol,
-                interval: tvInterval,
-                timezone: 'Etc/UTC',
-                theme: isDark ? 'dark' : 'light',
-                style: '1',
-                locale: language === 'cn' ? 'zh_CN' : 'en',
-                enable_publishing: false,
-                hide_top_toolbar: false,
-                hide_side_toolbar: false,
-                allow_symbol_change: true,
-                save_image: false,
-                calendar: false,
-                studies: ['Volume@tv-basicstudies'],
-                support_host: 'https://www.tradingview.com',
-            });
-            chartContainer.appendChild(script);
-        }, 150);
+        const script = document.createElement('script');
+        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+        script.type = 'text/javascript';
+        script.async = true;
+        script.textContent = JSON.stringify({
+            autosize: true,
+            symbol: tvSymbol,
+            interval: '15',
+            timezone: 'Etc/UTC',
+            theme: isDark ? 'dark' : 'light',
+            style: '1',
+            locale: language === 'cn' ? 'zh_CN' : 'en',
+            enable_publishing: false,
+            hide_top_toolbar: false,
+            hide_side_toolbar: false,
+            allow_symbol_change: true,
+            save_image: false,
+            calendar: false,
+            studies: ['Volume@tv-basicstudies'],
+            support_host: 'https://www.tradingview.com',
+        });
+        chartContainer.appendChild(script);
 
         return () => {
-            clearTimeout(timer);
             try {
                 while (chartContainer.firstChild) {
                     chartContainer.removeChild(chartContainer.firstChild);
                 }
             } catch { /* ignore cleanup errors */ }
         };
-    }, [currentTrade.symbol, chartInterval, language]);
+    }, [currentTrade.symbol, language]);
 
     // --- Dynamic Tag Handlers ---
     const handleAddTag = (catId: string, tag: string) => {
@@ -1935,39 +1912,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
                         {/* TradingView Chart */}
                         <div ref={chartContainerRef} className="w-full h-full" />
-
-                        {/* Interval Selector — floating top-right */}
-                        <div className="absolute top-2 right-2 z-10 flex items-center gap-0.5 bg-black/50 backdrop-blur-sm rounded-lg px-1 py-0.5">
-                            {['1m','5m','15m','1h','4h','1D'].map(iv => (
-                                <button key={iv} onClick={() => setChartInterval(iv)}
-                                    className={`px-2 py-0.5 text-[11px] rounded font-medium transition-colors ${chartInterval === iv ? 'bg-indigo-600 text-white' : 'text-slate-300 hover:text-white hover:bg-white/10'}`}
-                                >{iv}</button>
-                            ))}
-                        </div>
-
-                        {/* Trade Info Overlay — floating top-left */}
-                        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1" style={{ pointerEvents: 'none' }}>
-                            {/* Entry */}
-                            <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-xs" style={{ pointerEvents: 'auto' }}>
-                                <span className={`w-2 h-2 rounded-full ${currentTrade.direction === Direction.LONG ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                <span className="text-slate-400">Entry</span>
-                                <span className="text-white font-medium">${currentTrade.entryPrice}</span>
-                                <span className={currentTrade.direction === Direction.LONG ? 'text-emerald-400' : 'text-red-400'}>
-                                    {currentTrade.direction === Direction.LONG ? '▲ Long' : '▼ Short'}
-                                </span>
-                            </div>
-                            {/* Exit */}
-                            {currentTrade.exitDate && currentTrade.exitPrice > 0 && (
-                                <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-black/60 backdrop-blur-sm text-xs" style={{ pointerEvents: 'auto' }}>
-                                    <span className={`w-2 h-2 rounded-full ${currentTrade.pnl >= 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                                    <span className="text-slate-400">Exit</span>
-                                    <span className="text-white font-medium">${currentTrade.exitPrice}</span>
-                                    <span className={currentTrade.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                                        {currentTrade.pnl >= 0 ? '+' : ''}{currentTrade.pnl.toFixed(2)} USDT
-                                    </span>
-                                </div>
-                            )}
-                        </div>
                     </div>
                     <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-slate-700">
                         <GripHorizontal className="w-4 h-4 text-slate-400" />
