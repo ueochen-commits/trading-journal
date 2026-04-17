@@ -1168,6 +1168,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       !existingKeys.has(toKey(t.symbol, t.entryDate, t.entryPrice, t.quantity))
                     );
 
+                    let actualInserted = 0;
                     if (dedupedTrades.length > 0) {
                       const result = await userDataService.importTradesWithAccount(
                         dedupedTrades.map(t => ({
@@ -1180,6 +1181,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                         id,
                       );
                       if (result.data) {
+                        actualInserted = result.data.length;
                         setTrades(prev => [...result.data!.map(formatTradeFromDB), ...prev]);
                       }
                     }
@@ -1188,7 +1190,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                     const now = new Date().toISOString();
                     await userDataService.updateTradingAccount(id, { syncStatus: 'synced', lastSync: now, balance, currency });
                     setTradingAccounts(prev => prev.map(a => a.id === id ? { ...a, balance, currency, syncStatus: 'synced', lastSync: now } : a));
-                    showToast(dedupedTrades.length > 0 ? `同步完成，新增 ${dedupedTrades.length} 笔交易` : '同步完成，暂无新交易');
+                    showToast(actualInserted > 0 ? `同步完成，新增 ${actualInserted} 笔交易` : '同步完成，暂无新交易');
                   } catch (err: any) {
                     showToast(`同步失败：${err?.message ?? '请重试'}`);
                   }
