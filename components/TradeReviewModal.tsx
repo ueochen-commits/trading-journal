@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount } from '../types';
-import { createChart, ColorType, CrosshairMode, LineStyle, CandlestickSeries, createSeriesMarkers } from 'lightweight-charts';
-import type { IChartApi, ISeriesApi, CandlestickData, Time, SeriesMarker } from 'lightweight-charts';
+import { createChart, ColorType, CrosshairMode, LineStyle, CandlestickSeries, HistogramSeries, createSeriesMarkers, createTextWatermark } from 'lightweight-charts';
+import type { IChartApi, CandlestickData, Time } from 'lightweight-charts';
 import { 
     X, ChevronLeft, ChevronRight, Star, Plus, Trash2, Calendar, Clock, Hash, Tag, 
     AlertTriangle, FileText, Check, MoreHorizontal, GripVertical, Edit2, Share2, 
@@ -700,9 +700,25 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     const [currentTrade, setCurrentTrade] = useState<Trade>(trade);
     const [noteContent, setNoteContent] = useState(trade.reviewNotes || trade.notes || '');
     const chartContainerRef = useRef<HTMLDivElement>(null);
+    const legendRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null); // For sizing calculations
     const [leftTab, setLeftTab] = useState<'stats' | 'playbook' | 'executions' | 'attachments'>('stats');
-    
+
+    // --- Chart State ---
+    const defaultInterval = useMemo(() => {
+        const entry = new Date(currentTrade.entryDate).getTime();
+        const exit = currentTrade.exitDate ? new Date(currentTrade.exitDate).getTime() : Date.now();
+        const hours = (exit - entry) / 3600000;
+        if (hours < 2) return '1m';
+        if (hours < 12) return '5m';
+        if (hours < 72) return '15m';
+        if (hours < 336) return '1h';
+        return '4h';
+    }, [currentTrade.entryDate, currentTrade.exitDate]);
+    const [chartInterval, setChartInterval] = useState(defaultInterval);
+    const [chartLoading, setChartLoading] = useState(true);
+    useEffect(() => { setChartInterval(defaultInterval); }, [defaultInterval]);
+
     // --- Resizable Split Pane Logic ---
     const [splitRatio, setSplitRatio] = useState(60); // Default chart height %
     const [isDragging, setIsDragging] = useState(false);
@@ -893,116 +909,156 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     // Load Lightweight Charts with trade annotations
     useEffect(() => {
         const container = chartContainerRef.current;
-        if (!container) return;
+        if (!container || !chartInterval) return;
 
-        // Clear previous content
-        while (container.firstChild) {
-            container.removeChild(container.firstChild);
-        }
+        while (container.firstChild) container.removeChild(container.firstChild);
+
+        let aborted = false;
+        setChartLoading(true);
 
         const isDark = document.documentElement.classList.contains('dark');
-
-        // Determine interval based on trade duration
         const entryTime = new Date(currentTrade.entryDate).getTime();
         const exitTime = currentTrade.exitDate ? new Date(currentTrade.exitDate).getTime() : Date.now();
         const durationMs = exitTime - entryTime;
-        const durationHours = durationMs / (1000 * 60 * 60);
 
-        let interval: string;
-        let intervalSeconds: number;
-        if (durationHours < 2) { interval = '1m'; intervalSeconds = 60; }
-        else if (durationHours < 12) { interval = '5m'; intervalSeconds = 300; }
-        else if (durationHours < 72) { interval = '15m'; intervalSeconds = 900; }
-        else if (durationHours < 336) { interval = '1h'; intervalSeconds = 3600; }
-        else { interval = '4h'; intervalSeconds = 14400; }
-
-        // Expand time range by 30% on each side for context
-        const padding = durationMs * 0.3;
+        // Generous padding: 80% on each side, minimum 1 hour
+        const padding = Math.max(durationMs * 0.8, 3600000);
         const startTime = Math.floor((entryTime - padding) / 1000) * 1000;
         const endTime = Math.ceil((exitTime + padding) / 1000) * 1000;
 
-        // Create chart
+        const pricePrecision = Math.max(2, (currentTrade.entryPrice.toString().split('.')[1] || '').length);
+        const displaySymbol = currentTrade.symbol.replace(/_PERP$/, '');
+
         const chart = createChart(container, {
             layout: {
                 background: { type: ColorType.Solid, color: isDark ? '#0f172a' : '#ffffff' },
                 textColor: isDark ? '#94a3b8' : '#64748b',
+                fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
             },
             grid: {
-                vertLines: { color: isDark ? '#1e293b' : '#f1f5f9' },
-                horzLines: { color: isDark ? '#1e293b' : '#f1f5f9' },
+                vertLines: { color: isDark ? '#1e293b55' : '#f1f5f9' },
+                horzLines: { color: isDark ? '#1e293b55' : '#f1f5f9' },
             },
             crosshair: { mode: CrosshairMode.Normal },
             timeScale: {
                 timeVisible: true,
                 secondsVisible: false,
                 borderColor: isDark ? '#334155' : '#e2e8f0',
+                rightOffset: 8,
+                minBarSpacing: 4,
             },
             rightPriceScale: {
                 borderColor: isDark ? '#334155' : '#e2e8f0',
+                minimumWidth: 80,
             },
             width: container.clientWidth,
             height: container.clientHeight,
         });
 
-        const candleSeries = chart.addSeries(CandlestickSeries, {
-            upColor: '#22c55e',
-            downColor: '#ef4444',
-            borderDownColor: '#ef4444',
-            borderUpColor: '#22c55e',
-            wickDownColor: '#ef4444',
-            wickUpColor: '#22c55e',
+        // Watermark
+        createTextWatermark(chart.panes()[0], {
+            lines: [{
+                text: displaySymbol,
+                fontSize: 48,
+                color: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+            }],
         });
 
-        // Fetch klines from Binance
-        const symbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
+        const candleSeries = chart.addSeries(CandlestickSeries, {
+            upColor: '#22c55e', downColor: '#ef4444',
+            borderDownColor: '#ef4444', borderUpColor: '#22c55e',
+            wickDownColor: '#ef4444', wickUpColor: '#22c55e',
+            priceFormat: { type: 'price', precision: pricePrecision, minMove: 1 / Math.pow(10, pricePrecision) },
+        });
+
+        // Volume overlay at bottom 15%
+        const volumeSeries = chart.addSeries(HistogramSeries, {
+            priceFormat: { type: 'volume' },
+            priceScaleId: 'volume',
+        });
+        chart.priceScale('volume').applyOptions({
+            scaleMargins: { top: 0.85, bottom: 0 },
+        });
+
+        // OHLCV legend on crosshair hover — uses safe DOM methods (no innerHTML)
+        chart.subscribeCrosshairMove((param) => {
+            const legend = legendRef.current;
+            if (!legend) return;
+            if (!param.time || !param.seriesData?.size) { legend.textContent = ''; return; }
+            const d = param.seriesData.get(candleSeries) as any;
+            if (!d || d.open == null) { legend.textContent = ''; return; }
+            const { open, high, low, close } = d;
+            const chg = close - open;
+            const pct = ((chg / open) * 100).toFixed(2);
+            const cc = chg >= 0 ? '#22c55e' : '#ef4444';
+            const p = (n: number) => n.toFixed(pricePrecision);
+            // Build legend with DOM elements for safety
+            legend.textContent = '';
+            const items: [string, string][] = [['O', p(open)], ['H', p(high)], ['L', p(low)], ['C', p(close)]];
+            items.forEach(([label, val], i) => {
+                if (i > 0) { const sp = document.createElement('span'); sp.style.marginLeft = '8px'; legend.appendChild(sp); }
+                const lbl = document.createElement('span'); lbl.style.color = '#64748b'; lbl.textContent = label + ' '; legend.appendChild(lbl);
+                const v = document.createElement('span'); v.style.color = cc; v.textContent = val; legend.appendChild(v);
+            });
+            const chgSpan = document.createElement('span');
+            chgSpan.style.cssText = `color:${cc};margin-left:10px`;
+            chgSpan.textContent = `${chg >= 0 ? '+' : ''}${p(chg)} (${pct}%)`;
+            legend.appendChild(chgSpan);
+        });
+
+        const binanceSymbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
+        const binanceInterval = chartInterval === '1D' ? '1d' : chartInterval;
 
         const fetchKlines = async () => {
             let data: any[] | null = null;
-
-            // Try direct Binance API first
             try {
                 const params = new URLSearchParams({
-                    symbol,
-                    interval,
-                    startTime: String(startTime),
-                    endTime: String(endTime),
-                    limit: '1500',
+                    symbol: binanceSymbol, interval: binanceInterval,
+                    startTime: String(startTime), endTime: String(endTime), limit: '1500',
                 });
                 const resp = await fetch(`https://fapi.binance.com/fapi/v1/klines?${params}`);
                 if (resp.ok) data = await resp.json();
-            } catch { /* fallback below */ }
+            } catch { /* fallback */ }
 
-            // Fallback to proxy
             if (!data) {
                 try {
                     const resp = await fetch('/api/binance-klines', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ symbol, interval, startTime, endTime }),
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbol: binanceSymbol, interval: binanceInterval, startTime, endTime }),
                     });
                     if (resp.ok) data = await resp.json();
                 } catch { /* no data */ }
             }
 
+            if (aborted) return;
+            setChartLoading(false);
             if (!data || !Array.isArray(data) || data.length === 0) return;
 
-            // Parse kline data: [openTime, open, high, low, close, ...]
-            const candles: CandlestickData<Time>[] = data.map((k: any) => ({
-                time: (Math.floor(k[0] / 1000)) as Time,
-                open: parseFloat(k[1]),
-                high: parseFloat(k[2]),
-                low: parseFloat(k[3]),
-                close: parseFloat(k[4]),
-            }));
+            // Parse candles + volume
+            const candles: CandlestickData<Time>[] = [];
+            const volumes: { time: Time; value: number; color: string }[] = [];
+            for (const k of data) {
+                const time = Math.floor(k[0] / 1000) as Time;
+                const open = parseFloat(k[1]);
+                const close = parseFloat(k[4]);
+                candles.push({ time, open, high: parseFloat(k[2]), low: parseFloat(k[3]), close });
+                volumes.push({
+                    time,
+                    value: parseFloat(k[5]),
+                    color: close >= open
+                        ? (isDark ? 'rgba(34,197,94,0.25)' : 'rgba(34,197,94,0.35)')
+                        : (isDark ? 'rgba(239,68,68,0.25)' : 'rgba(239,68,68,0.35)'),
+                });
+            }
 
             candleSeries.setData(candles);
+            volumeSeries.setData(volumes);
 
             // --- Markers ---
             const markers: any[] = [];
             const entryTs = Math.floor(entryTime / 1000);
             const exitTs = currentTrade.exitDate ? Math.floor(new Date(currentTrade.exitDate).getTime() / 1000) : null;
 
-            // Snap timestamp to nearest candle
             const snapToCandle = (ts: number) => {
                 let closest = candles[0]?.time as number;
                 let minDiff = Math.abs(ts - closest);
@@ -1014,85 +1070,64 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             };
 
             const isLong = currentTrade.direction === Direction.LONG;
-            const entrySnapped = snapToCandle(entryTs);
-
-            // Entry marker
             markers.push({
-                time: entrySnapped,
+                time: snapToCandle(entryTs),
                 position: isLong ? 'belowBar' : 'aboveBar',
                 color: isLong ? '#22c55e' : '#ef4444',
                 shape: isLong ? 'arrowUp' : 'arrowDown',
                 text: `Entry $${currentTrade.entryPrice}`,
             });
 
-            // Exit marker (only if trade is closed)
             if (exitTs && currentTrade.exitDate) {
-                const exitSnapped = snapToCandle(exitTs);
                 const isProfit = currentTrade.pnl >= 0;
                 markers.push({
-                    time: exitSnapped,
+                    time: snapToCandle(exitTs),
                     position: isLong ? 'aboveBar' : 'belowBar',
                     color: isProfit ? '#22c55e' : '#ef4444',
-                    shape: isProfit ? 'circle' : 'circle',
+                    shape: 'circle',
                     text: `Exit $${currentTrade.exitPrice} ${isProfit ? '✓' : '✗'}`,
                 });
             }
 
-            // Sort markers by time (required by lightweight-charts)
             markers.sort((a, b) => (a.time as number) - (b.time as number));
             createSeriesMarkers(candleSeries, markers);
 
             // --- Price Lines ---
-            // Entry price line
             candleSeries.createPriceLine({
-                price: currentTrade.entryPrice,
-                color: '#3b82f6',
-                lineWidth: 1,
-                lineStyle: LineStyle.Dashed,
-                axisLabelVisible: true,
-                title: 'Entry',
+                price: currentTrade.entryPrice, color: '#3b82f6',
+                lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: 'Entry',
             });
-
-            // Exit price line (only if closed)
             if (currentTrade.exitDate && currentTrade.exitPrice > 0) {
                 const isProfit = currentTrade.pnl >= 0;
                 candleSeries.createPriceLine({
-                    price: currentTrade.exitPrice,
-                    color: isProfit ? '#22c55e' : '#ef4444',
-                    lineWidth: 1,
-                    lineStyle: LineStyle.Dashed,
-                    axisLabelVisible: true,
-                    title: 'Exit',
+                    price: currentTrade.exitPrice, color: isProfit ? '#22c55e' : '#ef4444',
+                    lineWidth: 1, lineStyle: LineStyle.Dashed, axisLabelVisible: true, title: 'Exit',
                 });
             }
 
-            // Auto-fit to trade time range
-            const visibleFrom = snapToCandle(Math.floor((entryTime - padding * 0.3) / 1000));
-            const visibleTo = snapToCandle(Math.floor((exitTime + padding * 0.3) / 1000));
+            // Visible range: show full padded range
             chart.timeScale().setVisibleRange({
-                from: visibleFrom,
-                to: visibleTo,
+                from: candles[0].time,
+                to: candles[candles.length - 1].time,
             });
         };
 
         fetchKlines();
 
-        // Auto-resize with ResizeObserver
         const resizeObserver = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const { width, height } = entry.contentRect;
-                if (width > 0 && height > 0) {
-                    chart.resize(width, height);
-                }
+                if (width > 0 && height > 0) chart.resize(width, height);
             }
         });
         resizeObserver.observe(container);
 
         return () => {
+            aborted = true;
             resizeObserver.disconnect();
             chart.remove();
         };
-    }, [currentTrade.symbol, currentTrade.entryDate, currentTrade.exitDate, language]);
+    }, [currentTrade.symbol, currentTrade.entryDate, currentTrade.exitDate, currentTrade.entryPrice, currentTrade.exitPrice, currentTrade.pnl, currentTrade.direction, chartInterval]);
 
     // --- Dynamic Tag Handlers ---
     const handleAddTag = (catId: string, tag: string) => {
@@ -2065,9 +2100,50 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
                 {/* RIGHT CONTENT: Chart & Notes */}
                 <div ref={rightPanelRef} className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-slate-900 relative">
-                    <div style={{ height: `${splitRatio}%` }} className="border-b border-slate-200 dark:border-slate-800 relative bg-slate-950">
+                    <div style={{ height: `${splitRatio}%` }} className="border-b border-slate-200 dark:border-slate-800 relative bg-slate-950 flex flex-col">
                         {isDragging && <div className="absolute inset-0 z-50 bg-transparent" />}
-                        <div ref={chartContainerRef} className="w-full h-full" />
+
+                        {/* Chart Toolbar */}
+                        <div className="flex items-center justify-between px-3 h-9 min-h-[36px] border-b border-slate-800/60 bg-slate-950/90 backdrop-blur-sm shrink-0 z-10">
+                            <div className="flex items-center gap-2 text-xs min-w-0 overflow-hidden">
+                                <span className="font-bold text-white whitespace-nowrap">{currentTrade.symbol.replace(/_PERP$/, '')}</span>
+                                <span className="text-slate-600">|</span>
+                                <span className="text-slate-400 whitespace-nowrap">{chartInterval}</span>
+                                <span className="text-slate-600">|</span>
+                                <div ref={legendRef} className="flex items-center text-xs whitespace-nowrap overflow-hidden" />
+                            </div>
+                            <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                                {['1m','5m','15m','1h','4h','1D'].map(iv => (
+                                    <button key={iv} onClick={() => setChartInterval(iv)}
+                                        className={`px-2 py-0.5 text-[11px] rounded font-medium transition-colors ${chartInterval === iv ? 'bg-indigo-600 text-white' : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800'}`}
+                                    >{iv}</button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Chart Canvas */}
+                        <div ref={chartContainerRef} className="flex-1 w-full min-h-0" />
+
+                        {/* Loading Overlay */}
+                        {chartLoading && (
+                            <div className="absolute inset-0 flex items-center justify-center bg-slate-950/60 z-20">
+                                <div className="flex items-center gap-2 text-slate-400 text-sm">
+                                    <RefreshCw className="w-4 h-4 animate-spin" />
+                                    <span>{language === 'cn' ? '加载K线数据...' : 'Loading chart...'}</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Trade PnL Badge */}
+                        {currentTrade.exitDate && (
+                            <div className={`absolute top-12 right-3 z-10 px-2.5 py-1 rounded-lg text-xs font-bold backdrop-blur-sm ${
+                                currentTrade.pnl >= 0
+                                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'
+                                    : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                            }`}>
+                                {currentTrade.pnl >= 0 ? '+' : ''}{currentTrade.pnl.toFixed(2)} USDT
+                            </div>
+                        )}
                     </div>
                     <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-slate-700">
                         <GripHorizontal className="w-4 h-4 text-slate-400" />
