@@ -742,7 +742,11 @@ export const userDataService = {
       };
     });
 
-    const { data: inserted, error } = await supabase.from('trading_journals').insert(data).select();
+    // onConflict: 遇到unique constraint冲突时忽略，不报错不覆盖
+    const { data: inserted, error } = await supabase
+      .from('trading_journals')
+      .upsert(data, { onConflict: 'user_id,account_id,symbol,date,entry_price,quantity', ignoreDuplicates: true })
+      .select();
     if (error) console.error('[importTradesWithAccount] Insert error:', error);
     return { error, data: inserted };
   },
