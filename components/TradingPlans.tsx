@@ -1383,7 +1383,6 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                         <button onClick={openSaveTemplateModal} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors"><Save className="w-4 h-4 text-slate-400" />{t.plans.saveAsTemplate}</button>
                         <button onClick={() => setIsTemplateGridModalOpen(true)} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors"><Layout className="w-4 h-4 text-indigo-500" />{language === 'cn' ? '选择模板' : 'Select Template'}</button>
                     </div>
-                    <RichTextEditor content={activePlan.content} onChange={(content) => handleUpdateActivePlan({ content })} />
                     <NotesPanel
                       symbol={activePlanTrades[0]?.symbol}
                       date={activePlan.date}
