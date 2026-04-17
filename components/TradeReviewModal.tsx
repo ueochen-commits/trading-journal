@@ -715,6 +715,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     // Save Status Indicator State
     const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'synced'>('saved');
     const autoSaveTimerRef = useRef<any>(null);
+    const [isReviewed, setIsReviewed] = useState(!!trade.reviewNotes);
 
     // Dynamic Categories State - Initialize safely from localStorage or Default
     const [categoryDefs, setCategoryDefs] = useState<CategoryDef[]>(() => {
@@ -1443,6 +1444,49 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
                 {/* Right Actions */}
                 <div className="flex items-center gap-3">
+                    {/* Mark as Reviewed */}
+                    <label className="flex items-center gap-2 cursor-pointer select-none group">
+                        <div
+                            onClick={() => setIsReviewed(!isReviewed)}
+                            className={`w-4 h-4 rounded border-2 flex items-center justify-center transition-all ${
+                                isReviewed
+                                    ? 'bg-emerald-500 border-emerald-500'
+                                    : 'border-slate-300 dark:border-slate-600 group-hover:border-emerald-400'
+                            }`}
+                        >
+                            {isReviewed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
+                        </div>
+                        <span className={`text-xs font-medium transition-colors ${
+                            isReviewed
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                        }`}>
+                            {language === 'cn' ? '标记为已复盘' : 'Reviewed'}
+                        </span>
+                    </label>
+
+                    {/* Logo Placeholder */}
+                    <div
+                        className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center shadow-sm"
+                        title="TradeGrail"
+                    >
+                        <span className="text-white text-xs font-bold">TG</span>
+                    </div>
+
+                    {/* Share Button */}
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(`${currentTrade.symbol} | ${currentTrade.direction} | PnL: $${currentTrade.pnl.toFixed(2)}`);
+                        }}
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors"
+                        title={language === 'cn' ? '分享' : 'Share'}
+                    >
+                        <Share2 className="w-4 h-4" />
+                    </button>
+
+                    {/* Divider */}
+                    <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />
+
                     <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
                         <X className="w-5 h-5" />
                     </button>
