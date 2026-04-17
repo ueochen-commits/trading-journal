@@ -36,78 +36,109 @@ function mergeOrderFills(fills: any[]): any[] {
   return merged;
 }
 
-// 把 Binance 成交记录配对成完整交易（支持 LONG 和 SHORT）
+// 把 Binance 成交记录配对成完整交易
+// Binance 合约成交记录字段说明：
+//   side: 'buy'/'sell' — 订单方向
+//   info.positionSide: 'LONG'/'SHORT'/'BOTH' — 持仓方向（双向持仓模式）
+//   info.maker: bool — 是否是 maker
+// 双向持仓模式下：LONG+buy=做多开仓, LONG+sell=做多平仓, SHORT+sell=做空开仓, SHORT+buy=做空平仓
+// 单向持仓模式下：buy=开多或平空, sell=开空或平多，需要用 reduceOnly 区分
 function pairTrades(fills: any[], symbol: string): any[] {
   const trades: any[] = [];
   const merged = mergeOrderFills(fills);
   const sorted = [...merged].sort((a, b) => a.timestamp - b.timestamp);
 
-  const openBuys: any[] = [];   // 未配对的买入（做多开仓）
-  const openSells: any[] = [];  // 未配对的卖出（做空开仓）
+  // 检测是否为双向持仓模式
+  const isDualSide = sorted.some((f: any) =>
+    f.info?.positionSide && f.info.positionSide !== 'BOTH'
+  );
 
-  for (const fill of sorted) {
-    if (fill.side === 'buy') {
-      // 如果有未配对的做空，这笔买入是平空
-      if (openSells.length > 0) {
-        const entry = openSells.shift()!;
-        const pnl = (entry.price - fill.price) * entry.amount - (entry.fee?.cost ?? 0) - (fill.fee?.cost ?? 0);
-        trades.push({
-          symbol,
-          entryTime: entry.timestamp,
-          exitTime: fill.timestamp,
-          direction: 'SHORT',
-          entryPrice: entry.price,
-          exitPrice: fill.price,
-          quantity: entry.amount,
-          pnl: parseFloat(pnl.toFixed(4)),
-          fees: (entry.fee?.cost ?? 0) + (fill.fee?.cost ?? 0),
-          orderId: entry.order || entry.id,
-        });
-      } else {
-        // 否则是做多开仓
-        openBuys.push(fill);
+  if (isDualSide) {
+    // 双向持仓模式：按 positionSide 分组，分别配对
+    const longFills = sorted.filter((f: any) => f.info?.positionSide === 'LONG');
+    const shortFills = sorted.filter((f: any) => f.info?.positionSide === 'SHORT');
+
+    const pairOneSide = (sideFills: any[], direction: 'LONG' | 'SHORT') => {
+      const openFills: any[] = [];
+      const entryBuy = direction === 'LONG' ? 'buy' : 'sell';
+      for (const fill of sideFills) {
+        if (fill.side === entryBuy) {
+          openFills.push(fill); // 开仓
+        } else if (openFills.length > 0) {
+          const entry = openFills.shift()!;
+          const pnl = direction === 'LONG'
+            ? (fill.price - entry.price) * entry.amount - (entry.fee?.cost ?? 0) - (fill.fee?.cost ?? 0)
+            : (entry.price - fill.price) * entry.amount - (entry.fee?.cost ?? 0) - (fill.fee?.cost ?? 0);
+          trades.push({
+            symbol, direction,
+            entryTime: entry.timestamp, exitTime: fill.timestamp,
+            entryPrice: entry.price, exitPrice: fill.price,
+            quantity: entry.amount,
+            pnl: parseFloat(pnl.toFixed(4)),
+            fees: (entry.fee?.cost ?? 0) + (fill.fee?.cost ?? 0),
+            orderId: entry.order || entry.id,
+          });
+        }
       }
-    } else {
-      // 如果有未配对的做多，这笔卖出是平多
-      if (openBuys.length > 0) {
-        const entry = openBuys.shift()!;
+      // 未配对的 = 持仓中
+      for (const entry of openFills) {
+        trades.push({
+          symbol, direction,
+          entryTime: entry.timestamp, exitTime: null,
+          entryPrice: entry.price, exitPrice: 0,
+          quantity: entry.amount, pnl: 0,
+          fees: entry.fee?.cost ?? 0,
+          orderId: entry.order || entry.id, isOpen: true,
+        });
+      }
+    };
+
+    pairOneSide(longFills, 'LONG');
+    pairOneSide(shortFills, 'SHORT');
+  } else {
+    // 单向持仓模式：用 reduceOnly 区分开仓/平仓
+    const openLongs: any[] = [];
+    const openShorts: any[] = [];
+
+    for (const fill of sorted) {
+      const isReduce = fill.info?.reduceOnly === true || fill.reduceOnly === true;
+      if (fill.side === 'buy' && !isReduce) {
+        openLongs.push(fill); // 做多开仓
+      } else if (fill.side === 'sell' && !isReduce) {
+        openShorts.push(fill); // 做空开仓
+      } else if (fill.side === 'sell' && isReduce && openLongs.length > 0) {
+        const entry = openLongs.shift()!;
         const pnl = (fill.price - entry.price) * entry.amount - (entry.fee?.cost ?? 0) - (fill.fee?.cost ?? 0);
         trades.push({
-          symbol,
-          entryTime: entry.timestamp,
-          exitTime: fill.timestamp,
-          direction: 'LONG',
-          entryPrice: entry.price,
-          exitPrice: fill.price,
+          symbol, direction: 'LONG',
+          entryTime: entry.timestamp, exitTime: fill.timestamp,
+          entryPrice: entry.price, exitPrice: fill.price,
           quantity: entry.amount,
           pnl: parseFloat(pnl.toFixed(4)),
           fees: (entry.fee?.cost ?? 0) + (fill.fee?.cost ?? 0),
           orderId: entry.order || entry.id,
         });
-      } else {
-        // 否则是做空开仓
-        openSells.push(fill);
+      } else if (fill.side === 'buy' && isReduce && openShorts.length > 0) {
+        const entry = openShorts.shift()!;
+        const pnl = (entry.price - fill.price) * entry.amount - (entry.fee?.cost ?? 0) - (fill.fee?.cost ?? 0);
+        trades.push({
+          symbol, direction: 'SHORT',
+          entryTime: entry.timestamp, exitTime: fill.timestamp,
+          entryPrice: entry.price, exitPrice: fill.price,
+          quantity: entry.amount,
+          pnl: parseFloat(pnl.toFixed(4)),
+          fees: (entry.fee?.cost ?? 0) + (fill.fee?.cost ?? 0),
+          orderId: entry.order || entry.id,
+        });
       }
     }
-  }
-
-  // 未配对的买入 = 做多持仓中
-  for (const entry of openBuys) {
-    trades.push({
-      symbol, entryTime: entry.timestamp, exitTime: null,
-      direction: 'LONG', entryPrice: entry.price, exitPrice: 0,
-      quantity: entry.amount, pnl: 0, fees: entry.fee?.cost ?? 0,
-      orderId: entry.order || entry.id, isOpen: true,
-    });
-  }
-  // 未配对的卖出 = 做空持仓中
-  for (const entry of openSells) {
-    trades.push({
-      symbol, entryTime: entry.timestamp, exitTime: null,
-      direction: 'SHORT', entryPrice: entry.price, exitPrice: 0,
-      quantity: entry.amount, pnl: 0, fees: entry.fee?.cost ?? 0,
-      orderId: entry.order || entry.id, isOpen: true,
-    });
+    // 未配对的 = 持仓中
+    for (const entry of openLongs) {
+      trades.push({ symbol, direction: 'LONG', entryTime: entry.timestamp, exitTime: null, entryPrice: entry.price, exitPrice: 0, quantity: entry.amount, pnl: 0, fees: entry.fee?.cost ?? 0, orderId: entry.order || entry.id, isOpen: true });
+    }
+    for (const entry of openShorts) {
+      trades.push({ symbol, direction: 'SHORT', entryTime: entry.timestamp, exitTime: null, entryPrice: entry.price, exitPrice: 0, quantity: entry.amount, pnl: 0, fees: entry.fee?.cost ?? 0, orderId: entry.order || entry.id, isOpen: true });
+    }
   }
 
   return trades;
@@ -180,9 +211,11 @@ export default async function handler(req: any, res: any) {
     let futuresUsdtTotal = 0;
 
     // 2. 确定查询起始时间
+    // 默认拉取3年内的数据，覆盖绝大多数用户的历史记录
+    // Binance 合约历史最多支持查询约200天，现货无限制
     const since = startDate
       ? new Date(startDate).getTime()
-      : Date.now() - 90 * 24 * 60 * 60 * 1000;
+      : Date.now() - 3 * 365 * 24 * 60 * 60 * 1000;
 
     // 3. 自动发现现货交易品种（从余额推断 + 常用列表兜底）
     const DEFAULT_SPOT = [
