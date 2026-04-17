@@ -1467,7 +1467,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
                     {/* Logo */}
                     <img
-                        src="/cir-lion.png"
+                        src="/lion-care.png"
                         alt="TradeGrail"
                         className="w-8 h-8 rounded-full object-cover"
                         title="TradeGrail"
