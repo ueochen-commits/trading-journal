@@ -907,45 +907,50 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         const chartContainer = chartContainerRef.current;
         if (!chartContainer || !chartInterval) return;
 
-        while (chartContainer.firstChild) {
-            chartContainer.removeChild(chartContainer.firstChild);
-        }
+        // Debounce widget creation to avoid TradingView internal errors
+        // when rapidly switching intervals
+        const timer = setTimeout(() => {
+            while (chartContainer.firstChild) {
+                chartContainer.removeChild(chartContainer.firstChild);
+            }
 
-        // Build TradingView symbol: ensure USDT suffix + BINANCE prefix
-        let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
-        if (!tvSymbol.endsWith('USDT') && !tvSymbol.endsWith('BUSD')) tvSymbol += 'USDT';
-        if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
+            // Build TradingView symbol: ensure USDT suffix + BINANCE prefix
+            let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
+            if (!tvSymbol.endsWith('USDT') && !tvSymbol.endsWith('BUSD')) tvSymbol += 'USDT';
+            if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
 
-        // Map interval to TradingView format
-        const tvIntervalMap: Record<string, string> = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1D': 'D' };
-        const tvInterval = tvIntervalMap[chartInterval] || '15';
+            // Map interval to TradingView format
+            const tvIntervalMap: Record<string, string> = { '1m': '1', '5m': '5', '15m': '15', '1h': '60', '4h': '240', '1D': 'D' };
+            const tvInterval = tvIntervalMap[chartInterval] || '15';
 
-        const isDark = document.documentElement.classList.contains('dark');
+            const isDark = document.documentElement.classList.contains('dark');
 
-        const script = document.createElement('script');
-        script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
-        script.type = 'text/javascript';
-        script.async = true;
-        script.textContent = JSON.stringify({
-            autosize: true,
-            symbol: tvSymbol,
-            interval: tvInterval,
-            timezone: 'Etc/UTC',
-            theme: isDark ? 'dark' : 'light',
-            style: '1',
-            locale: language === 'cn' ? 'zh_CN' : 'en',
-            enable_publishing: false,
-            hide_top_toolbar: false,
-            hide_side_toolbar: false,
-            allow_symbol_change: true,
-            save_image: false,
-            calendar: false,
-            studies: ['Volume@tv-basicstudies'],
-            support_host: 'https://www.tradingview.com',
-        });
-        chartContainer.appendChild(script);
+            const script = document.createElement('script');
+            script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
+            script.type = 'text/javascript';
+            script.async = true;
+            script.textContent = JSON.stringify({
+                autosize: true,
+                symbol: tvSymbol,
+                interval: tvInterval,
+                timezone: 'Etc/UTC',
+                theme: isDark ? 'dark' : 'light',
+                style: '1',
+                locale: language === 'cn' ? 'zh_CN' : 'en',
+                enable_publishing: false,
+                hide_top_toolbar: false,
+                hide_side_toolbar: false,
+                allow_symbol_change: true,
+                save_image: false,
+                calendar: false,
+                studies: ['Volume@tv-basicstudies'],
+                support_host: 'https://www.tradingview.com',
+            });
+            chartContainer.appendChild(script);
+        }, 150);
 
         return () => {
+            clearTimeout(timer);
             try {
                 while (chartContainer.firstChild) {
                     chartContainer.removeChild(chartContainer.firstChild);
