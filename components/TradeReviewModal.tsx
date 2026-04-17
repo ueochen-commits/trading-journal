@@ -1,5 +1,7 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount } from '../types';
+import { createChart, ColorType, CrosshairMode, LineStyle, CandlestickSeries, createSeriesMarkers } from 'lightweight-charts';
+import type { IChartApi, ISeriesApi, CandlestickData, Time, SeriesMarker } from 'lightweight-charts';
 import { 
     X, ChevronLeft, ChevronRight, Star, Plus, Trash2, Calendar, Clock, Hash, Tag, 
     AlertTriangle, FileText, Check, MoreHorizontal, GripVertical, Edit2, Share2, 
@@ -888,54 +890,209 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         setSaveStatus('saved');
     };
 
-    // Load TradingView Widget
+    // Load Lightweight Charts with trade annotations
     useEffect(() => {
-        const chartContainer = chartContainerRef.current;
-        if (!chartContainer) return;
+        const container = chartContainerRef.current;
+        if (!container) return;
 
-        // Remove all existing children before adding new widget
-        while (chartContainer.firstChild) {
-            chartContainer.removeChild(chartContainer.firstChild);
+        // Clear previous content
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
         }
 
-        const script = document.createElement("script");
-        script.src = "https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js";
-        script.type = "text/javascript";
-        script.async = true;
-        let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '');
-        if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
         const isDark = document.documentElement.classList.contains('dark');
-        script.textContent = JSON.stringify({
-            "autosize": true,
-            "symbol": tvSymbol,
-            "interval": "15",
-            "timezone": "Etc/UTC",
-            "theme": isDark ? "dark" : "light",
-            "style": "1",
-            "locale": language === 'cn' ? "zh_CN" : "en",
-            "enable_publishing": false,
-            "hide_top_toolbar": false,
-            "hide_side_toolbar": false,
-            "allow_symbol_change": true,
-            "save_image": false,
-            "calendar": false,
-            "support_host": "https://www.tradingview.com"
+
+        // Determine interval based on trade duration
+        const entryTime = new Date(currentTrade.entryDate).getTime();
+        const exitTime = currentTrade.exitDate ? new Date(currentTrade.exitDate).getTime() : Date.now();
+        const durationMs = exitTime - entryTime;
+        const durationHours = durationMs / (1000 * 60 * 60);
+
+        let interval: string;
+        let intervalSeconds: number;
+        if (durationHours < 2) { interval = '1m'; intervalSeconds = 60; }
+        else if (durationHours < 12) { interval = '5m'; intervalSeconds = 300; }
+        else if (durationHours < 72) { interval = '15m'; intervalSeconds = 900; }
+        else if (durationHours < 336) { interval = '1h'; intervalSeconds = 3600; }
+        else { interval = '4h'; intervalSeconds = 14400; }
+
+        // Expand time range by 30% on each side for context
+        const padding = durationMs * 0.3;
+        const startTime = Math.floor((entryTime - padding) / 1000) * 1000;
+        const endTime = Math.ceil((exitTime + padding) / 1000) * 1000;
+
+        // Create chart
+        const chart = createChart(container, {
+            layout: {
+                background: { type: ColorType.Solid, color: isDark ? '#0f172a' : '#ffffff' },
+                textColor: isDark ? '#94a3b8' : '#64748b',
+            },
+            grid: {
+                vertLines: { color: isDark ? '#1e293b' : '#f1f5f9' },
+                horzLines: { color: isDark ? '#1e293b' : '#f1f5f9' },
+            },
+            crosshair: { mode: CrosshairMode.Normal },
+            timeScale: {
+                timeVisible: true,
+                secondsVisible: false,
+                borderColor: isDark ? '#334155' : '#e2e8f0',
+            },
+            rightPriceScale: {
+                borderColor: isDark ? '#334155' : '#e2e8f0',
+            },
+            width: container.clientWidth,
+            height: container.clientHeight,
         });
-        chartContainer.appendChild(script);
+
+        const candleSeries = chart.addSeries(CandlestickSeries, {
+            upColor: '#22c55e',
+            downColor: '#ef4444',
+            borderDownColor: '#ef4444',
+            borderUpColor: '#22c55e',
+            wickDownColor: '#ef4444',
+            wickUpColor: '#22c55e',
+        });
+
+        // Fetch klines from Binance
+        const symbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
+
+        const fetchKlines = async () => {
+            let data: any[] | null = null;
+
+            // Try direct Binance API first
+            try {
+                const params = new URLSearchParams({
+                    symbol,
+                    interval,
+                    startTime: String(startTime),
+                    endTime: String(endTime),
+                    limit: '1500',
+                });
+                const resp = await fetch(`https://fapi.binance.com/fapi/v1/klines?${params}`);
+                if (resp.ok) data = await resp.json();
+            } catch { /* fallback below */ }
+
+            // Fallback to proxy
+            if (!data) {
+                try {
+                    const resp = await fetch('/api/binance-klines', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ symbol, interval, startTime, endTime }),
+                    });
+                    if (resp.ok) data = await resp.json();
+                } catch { /* no data */ }
+            }
+
+            if (!data || !Array.isArray(data) || data.length === 0) return;
+
+            // Parse kline data: [openTime, open, high, low, close, ...]
+            const candles: CandlestickData<Time>[] = data.map((k: any) => ({
+                time: (Math.floor(k[0] / 1000)) as Time,
+                open: parseFloat(k[1]),
+                high: parseFloat(k[2]),
+                low: parseFloat(k[3]),
+                close: parseFloat(k[4]),
+            }));
+
+            candleSeries.setData(candles);
+
+            // --- Markers ---
+            const markers: any[] = [];
+            const entryTs = Math.floor(entryTime / 1000);
+            const exitTs = currentTrade.exitDate ? Math.floor(new Date(currentTrade.exitDate).getTime() / 1000) : null;
+
+            // Snap timestamp to nearest candle
+            const snapToCandle = (ts: number) => {
+                let closest = candles[0]?.time as number;
+                let minDiff = Math.abs(ts - closest);
+                for (const c of candles) {
+                    const diff = Math.abs(ts - (c.time as number));
+                    if (diff < minDiff) { minDiff = diff; closest = c.time as number; }
+                }
+                return closest as Time;
+            };
+
+            const isLong = currentTrade.direction === Direction.LONG;
+            const entrySnapped = snapToCandle(entryTs);
+
+            // Entry marker
+            markers.push({
+                time: entrySnapped,
+                position: isLong ? 'belowBar' : 'aboveBar',
+                color: isLong ? '#22c55e' : '#ef4444',
+                shape: isLong ? 'arrowUp' : 'arrowDown',
+                text: `Entry $${currentTrade.entryPrice}`,
+            });
+
+            // Exit marker (only if trade is closed)
+            if (exitTs && currentTrade.exitDate) {
+                const exitSnapped = snapToCandle(exitTs);
+                const isProfit = currentTrade.pnl >= 0;
+                markers.push({
+                    time: exitSnapped,
+                    position: isLong ? 'aboveBar' : 'belowBar',
+                    color: isProfit ? '#22c55e' : '#ef4444',
+                    shape: isProfit ? 'circle' : 'circle',
+                    text: `Exit $${currentTrade.exitPrice} ${isProfit ? '✓' : '✗'}`,
+                });
+            }
+
+            // Sort markers by time (required by lightweight-charts)
+            markers.sort((a, b) => (a.time as number) - (b.time as number));
+            createSeriesMarkers(candleSeries, markers);
+
+            // --- Price Lines ---
+            // Entry price line
+            candleSeries.createPriceLine({
+                price: currentTrade.entryPrice,
+                color: '#3b82f6',
+                lineWidth: 1,
+                lineStyle: LineStyle.Dashed,
+                axisLabelVisible: true,
+                title: 'Entry',
+            });
+
+            // Exit price line (only if closed)
+            if (currentTrade.exitDate && currentTrade.exitPrice > 0) {
+                const isProfit = currentTrade.pnl >= 0;
+                candleSeries.createPriceLine({
+                    price: currentTrade.exitPrice,
+                    color: isProfit ? '#22c55e' : '#ef4444',
+                    lineWidth: 1,
+                    lineStyle: LineStyle.Dashed,
+                    axisLabelVisible: true,
+                    title: 'Exit',
+                });
+            }
+
+            // Auto-fit to trade time range
+            const visibleFrom = snapToCandle(Math.floor((entryTime - padding * 0.3) / 1000));
+            const visibleTo = snapToCandle(Math.floor((exitTime + padding * 0.3) / 1000));
+            chart.timeScale().setVisibleRange({
+                from: visibleFrom,
+                to: visibleTo,
+            });
+        };
+
+        fetchKlines();
+
+        // Auto-resize with ResizeObserver
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                if (width > 0 && height > 0) {
+                    chart.resize(width, height);
+                }
+            }
+        });
+        resizeObserver.observe(container);
 
         return () => {
-            // Clear TradingView's DOM nodes before React unmounts the modal.
-            // Without this, React's reconciliation encounters nodes it didn't
-            // create and throws "removeChild: not a child" errors.
-            try {
-                while (chartContainer.firstChild) {
-                    chartContainer.removeChild(chartContainer.firstChild);
-                }
-            } catch(e) {
-                // Ignore errors during cleanup
-            }
+            resizeObserver.disconnect();
+            chart.remove();
         };
-    }, [currentTrade.symbol, language]);
+    }, [currentTrade.symbol, currentTrade.entryDate, currentTrade.exitDate, language]);
 
     // --- Dynamic Tag Handlers ---
     const handleAddTag = (catId: string, tag: string) => {
