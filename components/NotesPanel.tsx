@@ -210,9 +210,12 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
   // ─── TipTap Editor Setup ───
   const editor = useEditor({
     extensions: [
-      StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3] },
+        horizontalRule: false,
+      }),
       Underline,
-      Link.configure({ openOnClick: false }),
+      Link.configure({ openOnClick: false, autolink: true }),
       TextStyle,
       Color,
       Highlight.configure({ multicolor: true }),
