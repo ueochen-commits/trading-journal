@@ -352,7 +352,8 @@ export default async function handler(req: any, res: any) {
 
       // Fallback: 如果 fetchMyTrades 没拿到任何合约交易（可能缺少 Enable Futures 权限），
       // 用 income 记录 + fetchPositions 持仓数据构建交易记录
-      const futuresTradeCount = allPairedTrades.filter(t => t.symbol?.endsWith('_PERP')).length;
+      // 注意：symbol已去掉_PERP后缀，用allPairedTrades总数判断
+      const futuresTradeCount = allPairedTrades.length;
       if (futuresTradeCount === 0 && (incomeRecords.length > 0 || positionMap.size > 0)) {
         debugLog.push('FUTURES fetchMyTrades returned 0 trades, falling back to income + position data');
 
@@ -383,14 +384,31 @@ export default async function handler(req: any, res: any) {
           const base = group.symbol.replace(/USDT$/, '');
           const cleanSymbol = base ? `${base}USDT` : group.symbol;
 
+          // 尝试从 fetchMyTrades 获取该品种的价格信息
+          let entryPrice = 0;
+          let exitPrice = 0;
+          let quantity = 0;
+          let direction = 'LONG';
+          try {
+            const ccxtSymbol = `${base}/USDT:USDT`;
+            const symbolTrades = await futuresExchange.fetchMyTrades(ccxtSymbol, group.time - 60000, 10);
+            if (symbolTrades && symbolTrades.length > 0) {
+              const buys = symbolTrades.filter((t: any) => t.side === 'buy');
+              const sells = symbolTrades.filter((t: any) => t.side === 'sell');
+              if (buys.length > 0) { entryPrice = buys[0].price; quantity = buys[0].amount; direction = 'LONG'; }
+              if (sells.length > 0) { exitPrice = sells[0].price; }
+              if (sells.length > 0 && buys.length === 0) { entryPrice = sells[0].price; quantity = sells[0].amount; direction = 'SHORT'; }
+            }
+          } catch { /* 拿不到就保持0 */ }
+
           allPairedTrades.push({
             symbol: cleanSymbol,
             entryTime: group.time,
             exitTime: group.time,
-            direction: 'LONG',
-            entryPrice: 0,
-            exitPrice: 0,
-            quantity: 0,
+            direction,
+            entryPrice,
+            exitPrice,
+            quantity,
             pnl: parseFloat(group.pnl.toFixed(4)),
             fees: parseFloat(group.fees.toFixed(4)),
             orderId: `income_${group.time}`,
