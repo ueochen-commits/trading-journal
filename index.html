@@ -184,6 +184,115 @@
         -webkit-user-select: none;
         user-select: none;
       }
+
+      /* ─── TipTap / NotesPanel Editor Styles ─── */
+      .notes-panel-editor .tiptap {
+        outline: none;
+        min-height: 200px;
+        font-size: 15px;
+        line-height: 1.8;
+      }
+      .notes-panel-editor .tiptap p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        color: #9ca3af;
+        pointer-events: none;
+        height: 0;
+      }
+      .dark .notes-panel-editor .tiptap p.is-editor-empty:first-child::before {
+        color: #6b7280;
+      }
+      .notes-panel-editor .tiptap h1 { font-size: 1.75em; font-weight: 500; margin: 0.67em 0; }
+      .notes-panel-editor .tiptap h2 { font-size: 1.4em; font-weight: 500; margin: 0.5em 0; }
+      .notes-panel-editor .tiptap h3 { font-size: 1.15em; font-weight: 500; margin: 0.4em 0; }
+      .notes-panel-editor .tiptap blockquote {
+        border-left: 3px solid #e5e7eb;
+        padding-left: 1em;
+        margin: 0.5em 0;
+        color: #6b7280;
+      }
+      .dark .notes-panel-editor .tiptap blockquote {
+        border-left-color: #374151;
+        color: #9ca3af;
+      }
+      .notes-panel-editor .tiptap pre {
+        background: #f3f4f6;
+        border-radius: 6px;
+        padding: 0.75em 1em;
+        font-family: ui-monospace, "SF Mono", Monaco, Consolas, monospace;
+        font-size: 0.9em;
+        overflow-x: auto;
+      }
+      .dark .notes-panel-editor .tiptap pre {
+        background: #1a1a1a;
+      }
+      .notes-panel-editor .tiptap code {
+        background: #f3f4f6;
+        border-radius: 3px;
+        padding: 0.15em 0.3em;
+        font-family: ui-monospace, "SF Mono", Monaco, Consolas, monospace;
+        font-size: 0.9em;
+      }
+      .dark .notes-panel-editor .tiptap code { background: #1a1a1a; }
+      .notes-panel-editor .tiptap ul { list-style: disc; padding-left: 1.5em; }
+      .notes-panel-editor .tiptap ol { list-style: decimal; padding-left: 1.5em; }
+      .notes-panel-editor .tiptap ul[data-type="taskList"] {
+        list-style: none;
+        padding-left: 0;
+      }
+      .notes-panel-editor .tiptap ul[data-type="taskList"] li {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5em;
+      }
+      .notes-panel-editor .tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
+        margin-top: 0.35em;
+        accent-color: #10b981;
+      }
+      .notes-panel-editor .tiptap a {
+        color: #3b82f6;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+      .notes-panel-editor .tiptap img {
+        max-width: 100%;
+        border-radius: 6px;
+        margin: 0.5em 0;
+      }
+      .notes-panel-editor .tiptap table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 0.5em 0;
+      }
+      .notes-panel-editor .tiptap table td,
+      .notes-panel-editor .tiptap table th {
+        border: 1px solid #e5e7eb;
+        padding: 0.4em 0.6em;
+        min-width: 60px;
+      }
+      .dark .notes-panel-editor .tiptap table td,
+      .dark .notes-panel-editor .tiptap table th {
+        border-color: #374151;
+      }
+      .notes-panel-editor .tiptap table th {
+        background: #f9fafb;
+        font-weight: 500;
+      }
+      .dark .notes-panel-editor .tiptap table th {
+        background: #1a1a1a;
+      }
+      .notes-panel-editor .tiptap hr {
+        border: none;
+        border-top: 1px solid #e5e7eb;
+        margin: 1em 0;
+      }
+      .dark .notes-panel-editor .tiptap hr {
+        border-top-color: #374151;
+      }
+      .notes-panel-editor .tiptap mark {
+        border-radius: 2px;
+        padding: 0 2px;
+      }
     </style>
   <script type="importmap">
 {
@@ -196,6 +305,7 @@
     "@google/genai": "https://esm.sh/@google/genai@^1.33.0",
     "flatpickr": "https://esm.sh/flatpickr@^4.6.13",
     "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "jspdf": "https://esm.sh/jspdf@^2.5.2",
     "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.39.7"
   }
 }

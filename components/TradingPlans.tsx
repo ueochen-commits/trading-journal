@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { DailyPlan, Trade, TradeStatus, Direction, Strategy } from '../types';
-import { 
-    Save, Trash2, Bold, Italic, Underline, Strikethrough, Image as ImageIcon, 
-    Search, Folder, FileText, Plus, MoreHorizontal, 
+import {
+    Save, Trash2, Bold, Italic, Underline, Strikethrough, Image as ImageIcon,
+    Search, Folder, FileText, Plus, MoreHorizontal,
     ChevronRight, BookOpen, Target, StickyNote, BarChart3,
     Calendar, CheckSquare, Link as LinkIcon, X, Clock, DollarSign, Activity, Share2, CandlestickChart,
     Tag, LayoutTemplate, MoreVertical, FilePlus, ChevronDown, FolderPlus, RotateCcw, RotateCw,
@@ -11,6 +11,7 @@ import {
     Printer, FileDown, Files, RefreshCw, Cloud, Wand2, AlertCircle, BookMarked, Undo2, Layout, AppWindow
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import NotesPanel from './NotesPanel';
 
 interface TradingPlansProps {
   plans: DailyPlan[];
@@ -294,7 +295,8 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
   const [isTagsOpen, setIsTagsOpen] = useState(true);
   const [isTemplatesOpen, setIsTemplatesOpen] = useState(false);
   const [folderSelectorOpen, setFolderSelectorOpen] = useState(false);
-  
+  const [dailyJournalContent, setDailyJournalContent] = useState('');
+
   // New States for Template Management
   const [isTemplateGridModalOpen, setIsTemplateGridModalOpen] = useState(false);
   const [selectedTemplateInGrid, setSelectedTemplateInGrid] = useState<string | null>(null);
@@ -1382,6 +1384,49 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                         <button onClick={() => setIsTemplateGridModalOpen(true)} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors"><Layout className="w-4 h-4 text-indigo-500" />{language === 'cn' ? '选择模板' : 'Select Template'}</button>
                     </div>
                     <RichTextEditor content={activePlan.content} onChange={(content) => handleUpdateActivePlan({ content })} />
+                    <NotesPanel
+                      symbol={activePlanTrades[0]?.symbol}
+                      date={activePlan.date}
+                      tradeNoteContent={activePlan.content}
+                      dailyJournalContent={dailyJournalContent}
+                      onContentChange={(tab, content) => {
+                        if (tab === 'trade-note') {
+                          handleUpdateActivePlan({ content });
+                        } else {
+                          setDailyJournalContent(content);
+                        }
+                      }}
+                      onSave={(tab, content) => {
+                        if (tab === 'trade-note') {
+                          handleUpdateActivePlan({ content });
+                        } else {
+                          setDailyJournalContent(content);
+                        }
+                      }}
+                      tradeMetadata={activePlanTrades[0] ? {
+                        symbol: activePlanTrades[0].symbol,
+                        date: activePlan.date,
+                        dateFormatted: new Date(activePlan.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+                        direction: activePlanTrades[0].direction,
+                        pnlPercent: `${activePlanTrades[0].pnl >= 0 ? '+' : ''}${((activePlanTrades[0].pnl / (activePlanTrades[0].entryPrice * activePlanTrades[0].quantity || 1)) * 100).toFixed(2)}%`,
+                        account: activePlanTrades[0].accountId,
+                        entryPrice: `$${activePlanTrades[0].entryPrice}`,
+                        exitPrice: activePlanTrades[0].exitPrice ? `$${activePlanTrades[0].exitPrice}` : undefined,
+                        leverage: activePlanTrades[0].leverage ? `${activePlanTrades[0].leverage}x` : undefined,
+                        quantity: `${activePlanTrades[0].quantity}`,
+                      } : {
+                        symbol: activePlan.title || 'Note',
+                        date: activePlan.date,
+                        dateFormatted: new Date(activePlan.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
+                        direction: '',
+                        pnlPercent: '',
+                      }}
+                      templates={allTemplates.map(t => ({ id: t.id, name: t.name, content: t.content }))}
+                      onApplyTemplate={(content) => handleInsertTemplate(content)}
+                      onDeleteNote={() => {
+                        handleUpdateActivePlan({ content: '' });
+                      }}
+                    />
                 </div>
               </div>
           ) : (
