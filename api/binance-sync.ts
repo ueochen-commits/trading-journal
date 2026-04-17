@@ -270,7 +270,7 @@ export default async function handler(req: any, res: any) {
           for (const entry of openOrders) {
             const direction = getDirection(entry);
             allTrades.push({
-              symbol: cleanSymbol,
+              symbol: rawSymbol,
               direction,
               entryTime: entry.time,
               exitTime: null,
