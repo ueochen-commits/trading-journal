@@ -1846,7 +1846,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                     <div style={{ flex: 1, minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={winRateData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
+                        <ComposedChart data={winRateData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
+                          style={{ cursor: 'pointer' }}
+                          onClick={(data: any) => {
+                            const label = data?.activeLabel;
+                            if (!label) return;
+                            const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
+                            if (!isNaN(d.getTime())) setChartClickDay(d);
+                          }}
+                        >
                           <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} yAxisId="pct" />
                           <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
                           <YAxis yAxisId="pct" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={38}
