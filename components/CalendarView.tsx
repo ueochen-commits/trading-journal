@@ -777,7 +777,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     </button>
                     {/* 右侧：保存状态 + 保存按钮 + logo + X */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 12.5, color: saveStatus === 'unsaved' ? '#F59E0B' : '#94A3B8' }}>
+                      <span style={{ fontSize: 12.5, color: saveStatus === 'unsaved' ? '#6366F1' : '#94A3B8' }}>
                         {saveStatus === 'saving' ? '保存中...' : saveStatus === 'unsaved' ? '未保存' : lastSavedAt ? `已保存 · ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '已保存'}
                       </span>
                       <button
@@ -968,7 +968,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                       <span style={{ width: 1, height: 10, background: '#E2E8F0' }} />
                       {saveStatus === 'saving' && <span style={{ fontSize: 12, color: '#10B981' }}>自动保存中...</span>}
                       {saveStatus === 'saved' && lastSavedAt && <span style={{ fontSize: 12, color: '#94A3B8' }}>已保存 · {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                      {saveStatus === 'unsaved' && <span style={{ fontSize: 12, color: '#F59E0B' }}>未保存</span>}
+                      {saveStatus === 'unsaved' && <span style={{ fontSize: 12, color: '#6366F1' }}>未保存</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       {[['⌘B', '加粗'], ['⌘I', '斜体'], ['⌘K', '链接'], ['⌘S', '保存']].map(([key, label]) => (
