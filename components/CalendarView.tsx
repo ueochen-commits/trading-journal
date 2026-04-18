@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { DailyPlan, Trade, Direction } from '../types';
 import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface CalendarViewProps {
   trades: Trade[];
@@ -149,7 +149,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     const grossLosses = Math.abs(selectedDayTrades.filter(tr => tr.pnl <= 0).reduce((acc, tr) => acc + tr.pnl, 0));
     const profitFactor = grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0;
     const totalFees = selectedDayTrades.reduce((acc, tr) => acc + tr.fees, 0);
-    return { profitFactor, totalFees };
+    const grossPnl = selectedDayTrades.reduce((acc, tr) => acc + tr.pnl, 0);
+    const volume = selectedDayTrades.reduce((acc, tr) => acc + (tr.entryPrice * tr.quantity), 0);
+    return { profitFactor, totalFees, grossPnl, volume, grossWins, grossLosses };
   }, [selectedDayStats, selectedDayTrades]);
 
   const cumulativePnlData = useMemo(() => {
@@ -168,6 +170,24 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [selectedDay]);
+
+  const selectedDayHasReview = useMemo(() => {
+    if (!selectedDay) return false;
+    const yyyy = selectedDay.getFullYear();
+    const mm = String(selectedDay.getMonth() + 1).padStart(2, '0');
+    const dd = String(selectedDay.getDate()).padStart(2, '0');
+    return !!plans?.find(p => p.date === `${yyyy}-${mm}-${dd}` && p.folder === 'daily-journal');
+  }, [selectedDay, plans]);
+
+  const modalDateLabel = useMemo(() => {
+    if (!selectedDay) return '';
+    const isCN = !!(t.calendar as any).weekSuffix;
+    if (isCN) {
+      const wd = ['周日','周一','周二','周三','周四','周五','周六'][selectedDay.getDay()];
+      return `${selectedDay.getFullYear()}年${selectedDay.getMonth()+1}月${selectedDay.getDate()}日 ${wd}`;
+    }
+    return selectedDay.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'short' });
+  }, [selectedDay, t.calendar]);
 
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
@@ -391,173 +411,187 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
       {/* Daily Details Modal */}
       {selectedDay && (
         <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in"
+          style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)' }}
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl flex flex-col shadow-2xl overflow-hidden animate-fade-in-up relative"
-            style={{ maxHeight: '85vh' }}
+            className="bg-white flex flex-col overflow-hidden animate-fade-in-up relative"
+            style={{ width: 'min(1040px, 92vw)', maxHeight: '85vh', borderRadius: 16, boxShadow: '0 24px 72px rgba(15,23,42,0.16)' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#F3F4F6] dark:border-slate-800 flex-shrink-0">
-              <div className="flex items-center gap-3">
-                <span className="text-[15px] font-semibold text-[#111827] dark:text-slate-100">
-                  {selectedDay.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
-                </span>
+            {/* Section 1: Header */}
+            <div className="flex items-center justify-between flex-shrink-0" style={{ padding: '0 40px', height: 72 }}>
+              <div className="flex items-center">
+                <span style={{ fontSize: 20, fontWeight: 600, color: '#0F172A', fontFamily: 'Inter, sans-serif' }}>{modalDateLabel}</span>
                 {selectedDayStats && (
-                  <span
-                    className={`text-[15px] font-bold ${selectedDayStats.pnl >= 0 ? 'text-[#15803D]' : 'text-[#DC2626]'}`}
-                    style={{ fontVariantNumeric: 'tabular-nums' }}
-                  >
-                    {selectedDayStats.pnl >= 0 ? '+' : '\u2212'}${Math.abs(selectedDayStats.pnl).toFixed(2)}
-                  </span>
+                  <>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1', margin: '0 12px', flexShrink: 0, display: 'inline-block' }} />
+                    <span style={{ fontSize: 13, color: '#64748B', fontWeight: 400, marginRight: 8 }}>Net P&L</span>
+                    <span style={{ fontSize: 20, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626' }}>
+                      {selectedDayStats.pnl >= 0 ? '+' : '\u2212'}${Math.abs(selectedDayStats.pnl).toFixed(2)}
+                    </span>
+                  </>
                 )}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center" style={{ gap: 12 }}>
                 <button
                   onClick={() => setShowReview(v => !v)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-all ${
-                    showReview
-                      ? 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-indigo-400'
-                      : 'bg-white dark:bg-slate-800 border-[#E5E7EB] dark:border-slate-700 text-[#6B7280] dark:text-slate-400 hover:bg-[#F9FAFB] dark:hover:bg-slate-700'
-                  }`}
+                  className="relative flex items-center"
+                  style={{ height: 36, padding: '0 14px', gap: 6, borderRadius: 8, fontSize: 14, fontWeight: 500, background: showReview ? '#EEF2FF' : '#fff', border: `1px solid ${showReview ? '#C7D2FE' : '#E2E8F0'}`, color: showReview ? '#4338CA' : '#475569', cursor: 'pointer', transition: 'all 150ms', outline: 'none' }}
                 >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  {(t.calendar.modal as any).writeReview || '写复盘'}
+                  <Edit3 style={{ width: 16, height: 16 }} />
+                  {cal.weekSuffix ? '写复盘' : 'Add note'}
+                  {selectedDayHasReview && (
+                    <span style={{ position: 'absolute', top: -3, right: -3, width: 8, height: 8, borderRadius: '50%', background: '#3B82F6', border: '1.5px solid #fff' }} />
+                  )}
                 </button>
                 <button
                   onClick={() => setSelectedDay(null)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-[#111827] dark:hover:text-slate-100 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition-all"
+                  style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', transition: 'background 150ms', outline: 'none' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                 >
-                  <X className="w-4 h-4" />
+                  <X style={{ width: 18, height: 18 }} />
                 </button>
               </div>
             </div>
-
-            {/* KPI + Chart Section */}
-            {selectedDayStats && (
-              <div className="flex border-b border-[#F3F4F6] dark:border-slate-800 flex-shrink-0">
-                {/* Cumulative P&L Chart */}
-                <div className="flex-[7] px-6 py-4 border-r border-[#F3F4F6] dark:border-slate-800 min-w-0">
-                  <p className="text-[11px] font-medium text-[#9CA3AF] dark:text-slate-500 mb-2 uppercase tracking-wide">Cumulative P&L</p>
-                  <ResponsiveContainer width="100%" height={100}>
+            {/* Section 2: KPI + Chart */}
+            <div className="flex flex-shrink-0" style={{ padding: '24px 40px', gap: 32, borderTop: '1px solid #F1F5F9' }}>
+              {/* Left: Cumulative P&L Chart (flex 5) */}
+              <div style={{ flex: 5, minWidth: 0 }}>
+                <p style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>CUMULATIVE P&L</p>
+                {selectedDayStats ? (
+                  <ResponsiveContainer width="100%" height={180}>
                     <AreaChart data={cumulativePnlData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                       <defs>
                         <linearGradient id="modalPnlGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor={selectedDayStats.pnl >= 0 ? '#10B981' : '#EF4444'} stopOpacity={0.2} />
-                          <stop offset="95%" stopColor={selectedDayStats.pnl >= 0 ? '#10B981' : '#EF4444'} stopOpacity={0} />
+                          <stop offset="0%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0.12} />
+                          <stop offset="100%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="i" hide />
-                      <YAxis hide />
-                      <Tooltip
-                        contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12, padding: '4px 10px' }}
-                        formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']}
-                        labelFormatter={(l: any) => `Trade ${l}`}
-                      />
-                      <Area type="monotone" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#10B981' : '#EF4444'} strokeWidth={2} fill="url(#modalPnlGrad)" dot={false} activeDot={{ r: 4 }} />
+                      <XAxis dataKey="i" axisLine={{ stroke: '#E2E8F0' }} tickLine={false} tick={false} />
+                      <YAxis tickCount={5} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8', fontVariantNumeric: 'tabular-nums' } as any} tickFormatter={(v: number) => `$${v}`} width={48} />
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
+                      <Area type="monotone" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={2} fill="url(#modalPnlGrad)" dot={false} activeDot={{ r: 4 }} />
                     </AreaChart>
                   </ResponsiveContainer>
-                </div>
-                {/* 8 KPI Grid */}
-                <div className="flex-[5] px-4 py-4 grid grid-cols-2 gap-2 content-start">
-                  {[
-                    { label: 'Net P&L', value: `${selectedDayStats.pnl >= 0 ? '+' : '\u2212'}$${Math.abs(selectedDayStats.pnl).toFixed(2)}`, color: selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626' },
-                    { label: 'Win Rate', value: `${selectedDayStats.winRate.toFixed(1)}%`, color: selectedDayStats.winRate >= 50 ? '#15803D' : '#DC2626' },
-                    { label: 'Trades', value: String(selectedDayStats.count), color: '#374151' },
-                    { label: 'W / L', value: `${selectedDayStats.wins} / ${selectedDayStats.losses}`, color: '#374151' },
-                    { label: 'Avg Win', value: `$${selectedDayStats.avgWin.toFixed(2)}`, color: '#15803D' },
-                    { label: 'Avg Loss', value: `$${Math.abs(selectedDayStats.avgLoss).toFixed(2)}`, color: '#DC2626' },
-                    { label: 'Prof. Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: '#374151' },
-                    { label: 'Fees', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: '#6B7280' },
-                  ].map(kpi => (
-                    <div key={kpi.label} className="bg-[#F9FAFB] dark:bg-slate-800 rounded-lg px-3 py-2">
-                      <p className="text-[10px] text-[#9CA3AF] dark:text-slate-500 font-medium mb-0.5">{kpi.label}</p>
-                      <p className="text-[13px] font-bold" style={{ color: kpi.color, fontVariantNumeric: 'tabular-nums' }}>{kpi.value}</p>
-                    </div>
-                  ))}
-                </div>
+                ) : (
+                  <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: 14 }}>当日无交易</div>
+                )}
               </div>
-            )}
-
-            {/* Trade Table */}
-            <div className="overflow-y-auto flex-shrink-0" style={{ maxHeight: selectedDayTrades.length > 6 ? 280 : undefined }}>
-              {selectedDayTrades.length > 0 ? (
-                <table className="w-full text-[13px]">
-                  <thead className="sticky top-0 bg-[#F9FAFB] dark:bg-slate-800 border-b border-[#F3F4F6] dark:border-slate-700">
+              {/* Right: 8 KPI Grid 4×2 (flex 7) */}
+              <div style={{ flex: 7, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px 32px', alignContent: 'start', paddingTop: 28 }}>
+                {[
+                  { label: cal.weekSuffix ? '总交易' : 'Total Trades', value: selectedDayStats ? String(selectedDayStats.count) : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '毛盈亏' : 'Gross P&L', value: extendedDayStats ? `${extendedDayStats.grossPnl >= 0 ? '+' : '\u2212'}$${Math.abs(extendedDayStats.grossPnl).toFixed(2)}` : '\u2014', color: extendedDayStats ? (extendedDayStats.grossPnl >= 0 ? '#15803D' : '#DC2626') : '#0F172A' },
+                  { label: cal.weekSuffix ? '盈/亏笔数' : 'Winners / Losers', value: selectedDayStats ? `${selectedDayStats.wins} / ${selectedDayStats.losses}` : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '手续费' : 'Commissions', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: selectedDayStats ? (selectedDayStats.winRate >= 50 ? '#15803D' : '#DC2626') : '#0F172A' },
+                  { label: cal.weekSuffix ? '成交量' : 'Volume', value: extendedDayStats && extendedDayStats.volume > 0 ? extendedDayStats.volume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '盈利因子' : 'Profit Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '均盈/均亏' : 'Avg Win / Loss', value: selectedDayStats ? `$${selectedDayStats.avgWin.toFixed(2)} / \u2212$${Math.abs(selectedDayStats.avgLoss).toFixed(2)}` : '\u2014', color: '#0F172A' },
+                ].map(kpi => (
+                  <div key={kpi.label}>
+                    <p style={{ fontSize: 13, color: '#64748B', fontWeight: 400, marginBottom: 4, lineHeight: 1.4 }}>{kpi.label}</p>
+                    <p style={{ fontSize: 20, fontWeight: 600, color: kpi.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>{kpi.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            {/* Section 3: Trade Table */}
+            {selectedDayTrades.length > 0 && (
+              <div style={{ overflowY: 'auto', maxHeight: selectedDayTrades.length > 6 ? 360 : undefined, borderTop: '1px solid #F1F5F9', flexShrink: 0 }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead style={{ position: 'sticky', top: 0, background: '#F8FAFC', zIndex: 1 }}>
                     <tr>
-                      {['Time', 'Symbol', 'Dir', 'Qty', 'Net P&L', 'ROI%', 'Setup'].map(h => (
-                        <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                      {[
+                        { label: cal.weekSuffix ? '开仓时间' : 'Time', w: 120, align: 'left' },
+                        { label: cal.weekSuffix ? '品种' : 'Symbol', w: 160, align: 'left' },
+                        { label: cal.weekSuffix ? '方向' : 'Direction', w: 100, align: 'left' },
+                        { label: cal.weekSuffix ? '数量' : 'Qty', w: 140, align: 'right' },
+                        { label: cal.weekSuffix ? '净P&L' : 'Net P&L', w: 140, align: 'right' },
+                        { label: 'ROI%', w: 120, align: 'right' },
+                        { label: cal.weekSuffix ? '来源' : 'Source', w: undefined, align: 'left' },
+                      ].map(col => (
+                        <th key={col.label} style={{ width: col.w, padding: '0 16px', height: 44, textAlign: col.align as any, fontSize: 13, fontWeight: 500, color: '#475569', borderBottom: '1px solid #F1F5F9', whiteSpace: 'nowrap' }}>{col.label}</th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F3F4F6] dark:divide-slate-800">
+                  <tbody>
                     {selectedDayTrades.map(trade => {
                       const netPnl = trade.pnl - trade.fees;
                       const costBasis = trade.entryPrice * trade.quantity;
                       const roi = costBasis > 0 ? (netPnl / costBasis) * 100 : null;
                       return (
-                        <tr key={trade.id} className="hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50 transition-colors">
-                          <td className="px-4 py-3 text-[#6B7280] dark:text-slate-400 whitespace-nowrap">
-                            {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        <tr key={trade.id} style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 100ms' }}
+                          onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#FAFBFC'; }}
+                          onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = ''; }}>
+                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                            {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                           </td>
-                          <td className="px-4 py-3 font-semibold text-[#111827] dark:text-slate-100">{trade.symbol}</td>
-                          <td className="px-4 py-3">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
-                              trade.direction === Direction.LONG
-                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
-                                : 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400'
-                            }`}>{trade.direction}</span>
+                          <td style={{ padding: '0 16px', height: 56 }}>
+                            <span style={{ background: '#EEF2FF', color: '#4338CA', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 500 }}>{trade.symbol}</span>
                           </td>
-                          <td className="px-4 py-3 text-[#374151] dark:text-slate-300" style={{ fontVariantNumeric: 'tabular-nums' }}>{trade.quantity}</td>
-                          <td className={`px-4 py-3 font-semibold ${netPnl >= 0 ? 'text-[#15803D] dark:text-emerald-400' : 'text-[#DC2626] dark:text-rose-400'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, fontWeight: 500, color: '#0F172A' }}>{trade.direction}</td>
+                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, color: '#0F172A', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{trade.quantity.toLocaleString()}</td>
+                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, fontWeight: 500, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: netPnl >= 0 ? '#15803D' : '#DC2626' }}>
                             {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
                           </td>
-                          <td className={`px-4 py-3 ${roi !== null ? (roi >= 0 ? 'text-[#15803D] dark:text-emerald-400' : 'text-[#DC2626] dark:text-rose-400') : 'text-[#9CA3AF]'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                            {roi !== null ? `${roi >= 0 ? '+' : ''}${roi.toFixed(2)}%` : '\u2014'}
+                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: roi !== null ? (roi >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
+                            {roi !== null ? (roi >= 0 ? `${roi.toFixed(2)}%` : `(${Math.abs(roi).toFixed(2)}%)`) : '\u2014'}
                           </td>
-                          <td className="px-4 py-3 text-[#6B7280] dark:text-slate-400">{trade.setup || '\u2014'}</td>
+                          <td style={{ padding: '0 16px', height: 56, fontSize: 13, color: '#94A3B8' }}>{trade.setup || '\u2014'}</td>
                         </tr>
                       );
                     })}
                   </tbody>
                 </table>
-              ) : (
-                <div className="px-6 py-10 text-center text-[13px] text-[#9CA3AF] dark:text-slate-500">
-                  当日无交易记录
-                </div>
-              )}
-            </div>
-
-            {/* Collapsible Daily Review */}
+              </div>
+            )}
+            {/* Section 4: Collapsible Review */}
             {showReview && (
-              <div className="border-t border-[#F3F4F6] dark:border-slate-800 px-6 py-5 flex flex-col gap-3 flex-shrink-0">
-                <p className="text-[11px] text-[#9CA3AF] dark:text-slate-500 font-medium uppercase tracking-wide">Daily Review</p>
+              <div style={{ borderTop: '1px solid #F1F5F9', padding: '20px 40px', flexShrink: 0 }}>
                 <textarea
-                  className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-xl p-4 text-[14px] text-[#374151] dark:text-slate-200 leading-relaxed outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition-all resize-none"
-                  rows={5}
+                  style={{ width: '100%', height: 180, background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '14px 16px', fontSize: 14, color: '#374151', lineHeight: 1.7, outline: 'none', resize: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 150ms' }}
                   placeholder={t.calendar.modal.writeReview}
                   value={reviewText}
                   onChange={e => setReviewText(e.target.value)}
+                  onFocus={e => { e.currentTarget.style.borderColor = '#6366F1'; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = '#E2E8F0'; }}
                 />
-                <div className="flex justify-end">
-                  <button
-                    onClick={handleSaveReview}
-                    className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[13px] font-medium transition-all"
-                  >
-                    <Save className="w-3.5 h-3.5" />
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                  <button onClick={handleSaveReview} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 16px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
+                    <Save style={{ width: 14, height: 14 }} />
                     {t.calendar.modal.save}
                   </button>
                 </div>
               </div>
             )}
-
-            {/* Save Toast */}
+            {/* Section 5: Bottom Bar */}
+            <div style={{ borderTop: '1px solid #F1F5F9', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, flexShrink: 0 }}>
+              <button
+                onClick={() => setSelectedDay(null)}
+                style={{ height: 40, padding: '0 20px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 14, fontWeight: 500, color: '#475569', cursor: 'pointer', transition: 'background 150ms' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fff'; }}
+              >
+                {cal.weekSuffix ? '取消' : 'Cancel'}
+              </button>
+              <button
+                style={{ height: 40, padding: '0 20px', background: '#6366F1', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, color: '#fff', cursor: 'pointer', transition: 'background 150ms' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4F46E5'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#6366F1'; }}
+              >
+                {cal.weekSuffix ? '查看详情' : 'View Details'}
+              </button>
+            </div>
+            {/* Toast */}
             {showToast && (
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 animate-fade-in-up z-[60]">
-                <CheckCircle2 className="w-4 h-4" />
-                <span className="text-[13px] font-medium">{t.calendar.modal.saveSuccess}</span>
+                <CheckCircle2 style={{ width: 16, height: 16 }} />
+                <span style={{ fontSize: 13, fontWeight: 500 }}>{t.calendar.modal.saveSuccess}</span>
               </div>
             )}
           </div>
