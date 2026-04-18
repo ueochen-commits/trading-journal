@@ -466,16 +466,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                   <ResponsiveContainer width="100%" height={180}>
                     <AreaChart data={cumulativePnlData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="v7PnlGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0.13} />
-                          <stop offset="100%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0} />
+                        <linearGradient id="calPnlGreenGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#34D399" stopOpacity={0.4} />
+                          <stop offset="100%" stopColor="#34D399" stopOpacity={0} />
+                        </linearGradient>
+                        <linearGradient id="calPnlRedGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#FB7185" stopOpacity={0} />
+                          <stop offset="100%" stopColor="#FB7185" stopOpacity={0.4} />
                         </linearGradient>
                       </defs>
                       <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#F1F5F9" />
                       <XAxis dataKey="i" axisLine={false} tickLine={false} tick={false} />
                       <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
                       <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
-                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={1.5} strokeLinecap="round" fill="url(#v7PnlGrad)" dot={false} activeDot={{ r: 3 }} />
+                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#10B981' : '#F43F5E'} strokeWidth={1.5} strokeLinecap="round" fill={selectedDayStats.pnl >= 0 ? 'url(#calPnlGreenGrad)' : 'url(#calPnlRedGrad)'} fillOpacity={1} dot={false} activeDot={{ r: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
