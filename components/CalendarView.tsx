@@ -153,9 +153,10 @@ interface CalendarViewProps {
   onSavePlan?: (plan: DailyPlan) => void;
   externalSelectedDay?: Date | null;
   onExternalClose?: () => void;
+  onOpenTradeReview?: (tradeId: string) => void;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, externalSelectedDay, onExternalClose }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, externalSelectedDay, onExternalClose, onOpenTradeReview }) => {
   const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -786,7 +787,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                             const costBasis = trade.entryPrice * trade.quantity;
                             const roi = costBasis > 0 ? (netPnl / costBasis) * 100 : null;
                             return (
-                              <tr key={trade.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 100ms' }}
+                              <tr key={trade.id}
+                                style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 100ms', cursor: onOpenTradeReview ? 'pointer' : 'default' }}
+                                onClick={() => { if (onOpenTradeReview && trade.id) { doSaveReview(reviewHtml); setSelectedDay(null); onOpenTradeReview(trade.id); } }}
                                 onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#FAFBFC'; }}
                                 onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = ''; }}>
                                 <td style={{ padding: '18px 16px 18px 44px', fontSize: 13.5, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>

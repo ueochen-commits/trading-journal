@@ -1990,7 +1990,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 })()}
               </div>
 
-              <div id="dashboard-calendar" className="pt-2"><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} externalSelectedDay={chartClickDay} onExternalClose={() => setChartClickDay(null)} /></div>
+              <div id="dashboard-calendar" className="pt-2"><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} externalSelectedDay={chartClickDay} onExternalClose={() => setChartClickDay(null)} onOpenTradeReview={onOpenTradeReview} /></div>
           </div>
 
           <div className="lg:col-span-4 xl:col-span-3 space-y-6">
