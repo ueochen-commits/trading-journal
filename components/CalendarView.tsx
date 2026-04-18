@@ -154,8 +154,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     return Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthDays - firstDayOfMonth + 1 + i;
       return (
-        <div key={`prev-${i}`} className="h-[110px] rounded-[10px] p-[10px_12px] flex flex-col items-end" style={{ background: 'transparent' }}>
-          <span className="text-[13px] text-[#D1D5DB] dark:text-slate-700">{day}</span>
+        <div key={`prev-${i}`} className="h-[96px] rounded-[8px] flex flex-col items-end" style={{ background: '#FAFAFA', padding: '10px 12px' }}>
+          <span className="text-[13px]" style={{ color: '#B0B5BD' }}>{day}</span>
         </div>
       );
     });
@@ -163,8 +163,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
   const renderNextMonthBlanks = () => {
     return Array.from({ length: trailingBlanks }, (_, i) => (
-      <div key={`next-${i}`} className="h-[110px] rounded-[10px] p-[10px_12px] flex flex-col items-end" style={{ background: 'transparent' }}>
-        <span className="text-[13px] text-[#D1D5DB] dark:text-slate-700">{i + 1}</span>
+      <div key={`next-${i}`} className="h-[96px] rounded-[8px] flex flex-col items-end" style={{ background: '#FAFAFA', padding: '10px 12px' }}>
+        <span className="text-[13px]" style={{ color: '#B0B5BD' }}>{i + 1}</span>
       </div>
     ));
   };
@@ -176,22 +176,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
       const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), d).toDateString();
 
       // Determine cell style
-      let bgClass = 'bg-[#F9FAFB] dark:bg-slate-900/50'; // no-trade day
+      let bgStyle = '#F3F4F6'; // no-trade day —明显浅灰
       let textClass = 'text-[#9CA3AF] dark:text-slate-500';
       let pnlTextClass = 'text-[#9CA3AF]';
       let borderClass = '';
 
       if (data && data.count > 0) {
         if (data.netPnl > 0) {
-          bgClass = 'bg-[#DCFCE7] dark:bg-emerald-950/40';
+          bgStyle = '#DCFCE7';
           textClass = 'text-[#15803D] dark:text-emerald-400';
           pnlTextClass = 'text-[#15803D] dark:text-emerald-400';
         } else if (data.netPnl < 0) {
-          bgClass = 'bg-[#FEE2E2] dark:bg-rose-950/40';
+          bgStyle = '#FEE2E2';
           textClass = 'text-[#DC2626] dark:text-rose-400';
           pnlTextClass = 'text-[#DC2626] dark:text-rose-400';
         } else {
-          bgClass = 'bg-[#FEF3C7] dark:bg-amber-950/30';
+          bgStyle = '#FEF3C7';
           textClass = 'text-[#92400E] dark:text-amber-400';
           pnlTextClass = 'text-[#92400E] dark:text-amber-400';
         }
@@ -210,9 +210,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           role="button"
           tabIndex={0}
           aria-label={ariaLabel}
-          className={`h-[110px] rounded-[10px] flex flex-col cursor-pointer group relative ${bgClass} ${borderClass}`}
-          style={{ padding: '10px 12px', transition: 'all 150ms ease' }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
+          className={`h-[96px] rounded-[8px] flex flex-col cursor-pointer group relative ${borderClass}`}
+          style={{ padding: '10px 12px', background: bgStyle, transition: 'all 150ms ease' }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
         >
           {/* Day number — right aligned, top */}
@@ -239,13 +239,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           {/* Marker dot — absolute, bottom-right corner */}
           {data && data.count > 0 && (
             <div
-              className={`absolute rounded-full ${data.netPnl >= 0 ? 'bg-[#15803D] dark:bg-emerald-500' : 'bg-[#DC2626] dark:bg-rose-500'}`}
-              style={{ width: 5, height: 5, bottom: 8, right: 8 }}
+              className={`absolute rounded-full ${data.netPnl >= 0 ? 'bg-[#15803D]' : 'bg-[#DC2626]'}`}
+              style={{ width: 5, height: 5, bottom: 6, right: 6 }}
             />
           )}
           {/* Review dot for no-trade days */}
           {(!data || data.count === 0) && data?.hasReview && (
-            <div className="absolute rounded-full bg-[#F97316]" style={{ width: 5, height: 5, bottom: 8, right: 8 }} />
+            <div className="absolute rounded-full bg-[#F97316]" style={{ width: 5, height: 5, bottom: 6, right: 6 }} />
           )}
         </div>
       );
@@ -269,8 +269,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           </button>
           <button
             onClick={() => setCurrentDate(new Date())}
-            className="ml-1 px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-700 rounded-lg text-[13px] font-medium text-[#6B7280] dark:text-slate-400 hover:bg-[#F9FAFB] dark:hover:bg-slate-800"
-            style={{ transition: 'all 150ms ease' }}
+            className="ml-1 bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] text-[13px] font-medium text-[#6B7280] dark:text-slate-400 hover:bg-[#F9FAFB] dark:hover:bg-slate-800"
+            style={{ padding: '6px 10px', transition: 'all 150ms ease' }}
           >
             {cal.thisMonth || 'This month'}
           </button>
@@ -310,18 +310,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           </div>
 
           {/* Day Cells Grid */}
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-7" style={{ gap: 5 }}>
             {renderPrevMonthBlanks()}
             {renderCurrentMonthDays()}
             {renderNextMonthBlanks()}
           </div>
         </div>
 
-        {/* Weekly Summary Sidebar */}
-        <div className="lg:w-[200px] flex flex-col gap-2">
-          <div className="h-9 flex items-center px-1">
-            <span className="text-[12px] font-medium text-[#9CA3AF] dark:text-slate-500 uppercase tracking-wide">{cal.weeklySummary || 'Weekly Summary'}</span>
-          </div>
+        {/* Weekly Summary Sidebar — no title, aligned to grid top */}
+        <div className="lg:w-[200px] flex flex-col gap-[5px]">
+          {/* Spacer matching weekday header height so week cards align with day rows */}
+          <div style={{ height: 33 }} />
           {weeklyStats.map((week, i) => {
             const isPositive = week.pnl >= 0;
             const weekLabel = cal.weekSuffix
