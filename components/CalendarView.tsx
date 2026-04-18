@@ -194,10 +194,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         quality: 1, pixelRatio: 2, backgroundColor: '#FFFFFF', cacheBust: true,
         filter: (node: HTMLElement) => !node.classList?.contains('screenshot-ignore'),
       };
-      // Step 1: capture calendar as image
       const calDataUrl = await toPng(calendarRef.current, opts);
 
-      // Step 2: compose final card with gradient bg + logo + calendar + url
       const calImg = new Image();
       await new Promise<void>(res => { calImg.onload = () => res(); calImg.src = calDataUrl; });
 
@@ -205,19 +203,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       logoImg.crossOrigin = 'anonymous';
       await new Promise<void>(res => { logoImg.onload = () => res(); logoImg.onerror = () => res(); logoImg.src = '/TRADEGRAIL-lion.png'; });
 
-      const PAD = 48;
-      const LOGO_H = 48;
-      const URL_H = 28;
-      const GAP = 16;
-      const W = calImg.width;
-      const H = PAD + LOGO_H + GAP + calImg.height + GAP + URL_H + PAD;
+      // Layout: gradient frame around calendar + bottom footer strip
+      // Reference: calendar fills width with padding, footer at bottom with logo left + url right
+      const SIDE_PAD = 32;   // left/right padding around calendar
+      const TOP_PAD = 32;    // top padding
+      const FOOTER_H = 56;   // footer strip height
+      const CAL_RADIUS = 12;
+
+      const W = calImg.width + SIDE_PAD * 2;
+      const H = TOP_PAD + calImg.height + FOOTER_H;
 
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext('2d')!;
 
-      // Gradient background
+      // Gradient background (full card)
       const grad = ctx.createLinearGradient(0, 0, W, H);
       grad.addColorStop(0, '#6366F1');
       grad.addColorStop(0.5, '#A855F7');
@@ -225,36 +226,41 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Logo (centered, max height 48px)
-      if (logoImg.naturalWidth > 0) {
-        const logoW = logoImg.naturalWidth * (LOGO_H / logoImg.naturalHeight);
-        ctx.drawImage(logoImg, (W - logoW) / 2, PAD, logoW, LOGO_H);
-      }
-
-      // Calendar screenshot (rounded corners)
-      const rx = 16;
+      // Calendar screenshot with rounded corners
+      const cx = SIDE_PAD, cy = TOP_PAD, cw = calImg.width, ch = calImg.height;
       ctx.save();
       ctx.beginPath();
-      const cx = 0, cy = PAD + LOGO_H + GAP, cw = W, ch = calImg.height;
-      ctx.moveTo(cx + rx, cy);
-      ctx.lineTo(cx + cw - rx, cy);
-      ctx.quadraticCurveTo(cx + cw, cy, cx + cw, cy + rx);
-      ctx.lineTo(cx + cw, cy + ch - rx);
-      ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - rx, cy + ch);
-      ctx.lineTo(cx + rx, cy + ch);
-      ctx.quadraticCurveTo(cx, cy + ch, cx, cy + ch - rx);
-      ctx.lineTo(cx, cy + rx);
-      ctx.quadraticCurveTo(cx, cy, cx + rx, cy);
+      ctx.moveTo(cx + CAL_RADIUS, cy);
+      ctx.lineTo(cx + cw - CAL_RADIUS, cy);
+      ctx.quadraticCurveTo(cx + cw, cy, cx + cw, cy + CAL_RADIUS);
+      ctx.lineTo(cx + cw, cy + ch - CAL_RADIUS);
+      ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - CAL_RADIUS, cy + ch);
+      ctx.lineTo(cx + CAL_RADIUS, cy + ch);
+      ctx.quadraticCurveTo(cx, cy + ch, cx, cy + ch - CAL_RADIUS);
+      ctx.lineTo(cx, cy + CAL_RADIUS);
+      ctx.quadraticCurveTo(cx, cy, cx + CAL_RADIUS, cy);
       ctx.closePath();
       ctx.clip();
-      ctx.drawImage(calImg, 0, PAD + LOGO_H + GAP);
+      ctx.drawImage(calImg, cx, cy);
       ctx.restore();
 
-      // URL text
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      ctx.font = `${28}px Inter, -apple-system, sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText('tradegrail.net', W / 2, PAD + LOGO_H + GAP + calImg.height + GAP + 20);
+      // Footer: logo left, url right — vertically centered in footer strip
+      const footerY = TOP_PAD + calImg.height;
+      const footerCenterY = footerY + FOOTER_H / 2;
+
+      // Logo on the left
+      const LOGO_H = 28;
+      if (logoImg.naturalWidth > 0) {
+        const logoW = logoImg.naturalWidth * (LOGO_H / logoImg.naturalHeight);
+        ctx.drawImage(logoImg, SIDE_PAD, footerCenterY - LOGO_H / 2, logoW, LOGO_H);
+      }
+
+      // URL on the right
+      ctx.fillStyle = 'rgba(255,255,255,0.80)';
+      ctx.font = `500 24px Inter, -apple-system, sans-serif`;
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('tradegrail.net', W - SIDE_PAD, footerCenterY);
 
       const finalUrl = canvas.toDataURL('image/png');
       const finalBlob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/png'));
