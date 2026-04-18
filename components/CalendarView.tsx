@@ -203,22 +203,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       logoImg.crossOrigin = 'anonymous';
       await new Promise<void>(res => { logoImg.onload = () => res(); logoImg.onerror = () => res(); logoImg.src = '/TRADEGRAIL-lion.png'; });
 
-      // Layout: gradient frame around calendar + bottom footer strip
-      // Reference: calendar fills width with padding, footer at bottom with logo left + url right
-      const SIDE_PAD = 32;   // left/right padding around calendar
-      const TOP_PAD = 32;    // top padding
-      const FOOTER_H = 56;   // footer strip height
-      const CAL_RADIUS = 12;
+      // Layout (matching reference image 39):
+      // [TOP_PAD] [LOGO centered] [LOGO_BOTTOM_GAP] [calendar with side padding] [URL_GAP] [url centered] [BOTTOM_PAD]
+      const SIDE_PAD = 40;
+      const TOP_PAD = 40;
+      const LOGO_H = 56;           // large logo at top
+      const LOGO_BOTTOM_GAP = 28;
+      const CAL_RADIUS = 14;
+      const URL_GAP = 24;
+      const URL_FONT = 26;
+      const BOTTOM_PAD = 36;
 
       const W = calImg.width + SIDE_PAD * 2;
-      const H = TOP_PAD + calImg.height + FOOTER_H;
+      const H = TOP_PAD + LOGO_H + LOGO_BOTTOM_GAP + calImg.height + URL_GAP + URL_FONT + BOTTOM_PAD;
 
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext('2d')!;
 
-      // Gradient background (full card)
+      // Gradient background
       const grad = ctx.createLinearGradient(0, 0, W, H);
       grad.addColorStop(0, '#6366F1');
       grad.addColorStop(0.5, '#A855F7');
@@ -226,8 +230,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
+      // Logo — centered at top, max width = W - SIDE_PAD*2
+      if (logoImg.naturalWidth > 0) {
+        const maxLogoW = W - SIDE_PAD * 2;
+        let logoW = logoImg.naturalWidth * (LOGO_H / logoImg.naturalHeight);
+        if (logoW > maxLogoW) { logoW = maxLogoW; }
+        ctx.drawImage(logoImg, (W - logoW) / 2, TOP_PAD, logoW, LOGO_H);
+      }
+
       // Calendar screenshot with rounded corners
-      const cx = SIDE_PAD, cy = TOP_PAD, cw = calImg.width, ch = calImg.height;
+      const cx = SIDE_PAD, cy = TOP_PAD + LOGO_H + LOGO_BOTTOM_GAP;
+      const cw = calImg.width, ch = calImg.height;
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(cx + CAL_RADIUS, cy);
@@ -244,23 +257,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       ctx.drawImage(calImg, cx, cy);
       ctx.restore();
 
-      // Footer: logo left, url right — vertically centered in footer strip
-      const footerY = TOP_PAD + calImg.height;
-      const footerCenterY = footerY + FOOTER_H / 2;
-
-      // Logo on the left
-      const LOGO_H = 28;
-      if (logoImg.naturalWidth > 0) {
-        const logoW = logoImg.naturalWidth * (LOGO_H / logoImg.naturalHeight);
-        ctx.drawImage(logoImg, SIDE_PAD, footerCenterY - LOGO_H / 2, logoW, LOGO_H);
-      }
-
-      // URL on the right
-      ctx.fillStyle = 'rgba(255,255,255,0.80)';
-      ctx.font = `500 24px Inter, -apple-system, sans-serif`;
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('tradegrail.net', W - SIDE_PAD, footerCenterY);
+      // URL — centered below calendar
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.font = `400 ${URL_FONT}px Inter, -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText('tradegrail.net', W / 2, TOP_PAD + LOGO_H + LOGO_BOTTOM_GAP + calImg.height + URL_GAP);
 
       const finalUrl = canvas.toDataURL('image/png');
       const finalBlob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/png'));
