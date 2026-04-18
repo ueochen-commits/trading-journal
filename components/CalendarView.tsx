@@ -475,7 +475,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                       <XAxis dataKey="i" axisLine={false} tickLine={false} tick={false} />
                       <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
                       <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
-                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={1.5} strokeDasharray="4 3" strokeLinecap="round" fill="url(#v7PnlGrad)" dot={false} activeDot={{ r: 3 }} />
+                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={1.5} strokeLinecap="round" fill="url(#v7PnlGrad)" dot={false} activeDot={{ r: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
@@ -502,7 +502,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                           <>
                             <span style={{ color: '#15803D' }}>${selectedDayStats.avgWin.toFixed(2)}</span>
                             <span style={{ color: '#94A3B8' }}> / </span>
-                            <span style={{ color: '#DC2626' }}>\u2212${Math.abs(selectedDayStats.avgLoss).toFixed(2)}</span>
+                            <span style={{ color: '#DC2626' }}>{'\u2212'}${Math.abs(selectedDayStats.avgLoss).toFixed(2)}</span>
                           </>
                         ) : <span style={{ color: '#94A3B8' }}>\u2014</span>}
                       </div>
