@@ -1,8 +1,9 @@
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { DailyPlan, Trade, Direction } from '../types';
 import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface CalendarViewProps {
   trades: Trade[];
@@ -16,6 +17,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [reviewText, setReviewText] = useState('');
   const [showToast, setShowToast] = useState(false);
+  const [showReview, setShowReview] = useState(false);
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -97,6 +99,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     const dateKey = `${yyyy}-${mm}-${dd}`;
     const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
     setReviewText(existingPlan ? stripHtml(existingPlan.content) : '');
+    setShowReview(false);
     setSelectedDay(date);
   };
 
@@ -139,6 +142,32 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     const avgLoss = losses > 0 ? selectedDayTrades.filter(tr => tr.pnl <= 0).reduce((acc, tr) => acc + tr.pnl, 0) / losses : 0;
     return { pnl, count, wins, losses, winRate, avgWin, avgLoss };
   }, [selectedDayTrades]);
+
+  const extendedDayStats = useMemo(() => {
+    if (!selectedDayStats) return null;
+    const grossWins = selectedDayTrades.filter(tr => tr.pnl > 0).reduce((acc, tr) => acc + tr.pnl, 0);
+    const grossLosses = Math.abs(selectedDayTrades.filter(tr => tr.pnl <= 0).reduce((acc, tr) => acc + tr.pnl, 0));
+    const profitFactor = grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0;
+    const totalFees = selectedDayTrades.reduce((acc, tr) => acc + tr.fees, 0);
+    return { profitFactor, totalFees };
+  }, [selectedDayStats, selectedDayTrades]);
+
+  const cumulativePnlData = useMemo(() => {
+    if (!selectedDay) return [];
+    const sorted = [...selectedDayTrades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
+    let cum = 0;
+    return sorted.map((tr, i) => {
+      cum += tr.pnl - tr.fees;
+      return { i: i + 1, pnl: parseFloat(cum.toFixed(2)) };
+    });
+  }, [selectedDay, selectedDayTrades]);
+
+  useEffect(() => {
+    if (!selectedDay) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedDay(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selectedDay]);
 
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
@@ -361,98 +390,176 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
       {/* Daily Details Modal */}
       {selectedDay && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-5xl h-[85vh] flex flex-col shadow-2xl overflow-hidden relative">
-            {showToast && (
-              <div className="absolute top-20 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-2 animate-fade-in-up z-[60] border border-emerald-500/50">
-                <CheckCircle2 className="w-5 h-5" />
-                <span className="font-medium text-sm">{t.calendar.modal.saveSuccess}</span>
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setSelectedDay(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-4xl flex flex-col shadow-2xl overflow-hidden animate-fade-in-up relative"
+            style={{ maxHeight: '85vh' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#F3F4F6] dark:border-slate-800 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <span className="text-[15px] font-semibold text-[#111827] dark:text-slate-100">
+                  {selectedDay.toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}
+                </span>
+                {selectedDayStats && (
+                  <span
+                    className={`text-[15px] font-bold ${selectedDayStats.pnl >= 0 ? 'text-[#15803D]' : 'text-[#DC2626]'}`}
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    {selectedDayStats.pnl >= 0 ? '+' : '\u2212'}${Math.abs(selectedDayStats.pnl).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowReview(v => !v)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] font-medium border transition-all ${
+                    showReview
+                      ? 'bg-indigo-50 border-indigo-200 text-indigo-600 dark:bg-indigo-900/20 dark:border-indigo-700 dark:text-indigo-400'
+                      : 'bg-white dark:bg-slate-800 border-[#E5E7EB] dark:border-slate-700 text-[#6B7280] dark:text-slate-400 hover:bg-[#F9FAFB] dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  {(t.calendar.modal as any).writeReview || '写复盘'}
+                </button>
+                <button
+                  onClick={() => setSelectedDay(null)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-[#111827] dark:hover:text-slate-100 hover:bg-[#F3F4F6] dark:hover:bg-slate-800 transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* KPI + Chart Section */}
+            {selectedDayStats && (
+              <div className="flex border-b border-[#F3F4F6] dark:border-slate-800 flex-shrink-0">
+                {/* Cumulative P&L Chart */}
+                <div className="flex-[7] px-6 py-4 border-r border-[#F3F4F6] dark:border-slate-800 min-w-0">
+                  <p className="text-[11px] font-medium text-[#9CA3AF] dark:text-slate-500 mb-2 uppercase tracking-wide">Cumulative P&L</p>
+                  <ResponsiveContainer width="100%" height={100}>
+                    <AreaChart data={cumulativePnlData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="modalPnlGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor={selectedDayStats.pnl >= 0 ? '#10B981' : '#EF4444'} stopOpacity={0.2} />
+                          <stop offset="95%" stopColor={selectedDayStats.pnl >= 0 ? '#10B981' : '#EF4444'} stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="i" hide />
+                      <YAxis hide />
+                      <Tooltip
+                        contentStyle={{ background: '#fff', border: '1px solid #E5E7EB', borderRadius: 8, fontSize: 12, padding: '4px 10px' }}
+                        formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']}
+                        labelFormatter={(l: any) => `Trade ${l}`}
+                      />
+                      <Area type="monotone" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#10B981' : '#EF4444'} strokeWidth={2} fill="url(#modalPnlGrad)" dot={false} activeDot={{ r: 4 }} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                {/* 8 KPI Grid */}
+                <div className="flex-[5] px-4 py-4 grid grid-cols-2 gap-2 content-start">
+                  {[
+                    { label: 'Net P&L', value: `${selectedDayStats.pnl >= 0 ? '+' : '\u2212'}$${Math.abs(selectedDayStats.pnl).toFixed(2)}`, color: selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626' },
+                    { label: 'Win Rate', value: `${selectedDayStats.winRate.toFixed(1)}%`, color: selectedDayStats.winRate >= 50 ? '#15803D' : '#DC2626' },
+                    { label: 'Trades', value: String(selectedDayStats.count), color: '#374151' },
+                    { label: 'W / L', value: `${selectedDayStats.wins} / ${selectedDayStats.losses}`, color: '#374151' },
+                    { label: 'Avg Win', value: `$${selectedDayStats.avgWin.toFixed(2)}`, color: '#15803D' },
+                    { label: 'Avg Loss', value: `$${Math.abs(selectedDayStats.avgLoss).toFixed(2)}`, color: '#DC2626' },
+                    { label: 'Prof. Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: '#374151' },
+                    { label: 'Fees', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: '#6B7280' },
+                  ].map(kpi => (
+                    <div key={kpi.label} className="bg-[#F9FAFB] dark:bg-slate-800 rounded-lg px-3 py-2">
+                      <p className="text-[10px] text-[#9CA3AF] dark:text-slate-500 font-medium mb-0.5">{kpi.label}</p>
+                      <p className="text-[13px] font-bold" style={{ color: kpi.color, fontVariantNumeric: 'tabular-nums' }}>{kpi.value}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
-            <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                {selectedDay.toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-              </h3>
-              <button onClick={() => setSelectedDay(null)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-6 h-6" /></button>
-            </div>
-            <div className="flex flex-1 overflow-hidden">
-              {/* Left: Stats & Trades */}
-              <div className="w-1/3 bg-slate-50 dark:bg-slate-950/50 border-r border-slate-200 dark:border-slate-800 p-5 overflow-y-auto">
-                <div className="mb-6">
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t.calendar.modal.stats}</h4>
-                  {selectedDayStats ? (
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className={`p-3 rounded-xl border ${selectedDayStats.pnl >= 0 ? 'bg-emerald-50 border-emerald-100 dark:bg-emerald-900/10 dark:border-emerald-500/20' : 'bg-rose-50 border-rose-100 dark:bg-rose-900/10 dark:border-rose-500/20'}`}>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Net P&L</p>
-                        <p className={`text-lg font-bold font-mono ${selectedDayStats.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>${selectedDayStats.pnl.toFixed(2)}</p>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{t.calendar.modal.wins}</p>
-                        <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{selectedDayStats.wins}/{selectedDayStats.count}</p>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{t.calendar.modal.avgWin}</p>
-                        <p className="text-sm font-bold text-emerald-500 font-mono">${selectedDayStats.avgWin.toFixed(2)}</p>
-                      </div>
-                      <div className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl">
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{t.calendar.modal.avgLoss}</p>
-                        <p className="text-sm font-bold text-rose-500 font-mono">${selectedDayStats.avgLoss.toFixed(2)}</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-slate-500 italic">No trades recorded.</div>
-                  )}
+
+            {/* Trade Table */}
+            <div className="overflow-y-auto flex-shrink-0" style={{ maxHeight: selectedDayTrades.length > 6 ? 280 : undefined }}>
+              {selectedDayTrades.length > 0 ? (
+                <table className="w-full text-[13px]">
+                  <thead className="sticky top-0 bg-[#F9FAFB] dark:bg-slate-800 border-b border-[#F3F4F6] dark:border-slate-700">
+                    <tr>
+                      {['Time', 'Symbol', 'Dir', 'Qty', 'Net P&L', 'ROI%', 'Setup'].map(h => (
+                        <th key={h} className="px-4 py-2.5 text-left text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 uppercase tracking-wide whitespace-nowrap">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#F3F4F6] dark:divide-slate-800">
+                    {selectedDayTrades.map(trade => {
+                      const netPnl = trade.pnl - trade.fees;
+                      const costBasis = trade.entryPrice * trade.quantity;
+                      const roi = costBasis > 0 ? (netPnl / costBasis) * 100 : null;
+                      return (
+                        <tr key={trade.id} className="hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50 transition-colors">
+                          <td className="px-4 py-3 text-[#6B7280] dark:text-slate-400 whitespace-nowrap">
+                            {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </td>
+                          <td className="px-4 py-3 font-semibold text-[#111827] dark:text-slate-100">{trade.symbol}</td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium ${
+                              trade.direction === Direction.LONG
+                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
+                                : 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400'
+                            }`}>{trade.direction}</span>
+                          </td>
+                          <td className="px-4 py-3 text-[#374151] dark:text-slate-300" style={{ fontVariantNumeric: 'tabular-nums' }}>{trade.quantity}</td>
+                          <td className={`px-4 py-3 font-semibold ${netPnl >= 0 ? 'text-[#15803D] dark:text-emerald-400' : 'text-[#DC2626] dark:text-rose-400'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                            {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
+                          </td>
+                          <td className={`px-4 py-3 ${roi !== null ? (roi >= 0 ? 'text-[#15803D] dark:text-emerald-400' : 'text-[#DC2626] dark:text-rose-400') : 'text-[#9CA3AF]'}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                            {roi !== null ? `${roi >= 0 ? '+' : ''}${roi.toFixed(2)}%` : '\u2014'}
+                          </td>
+                          <td className="px-4 py-3 text-[#6B7280] dark:text-slate-400">{trade.setup || '\u2014'}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              ) : (
+                <div className="px-6 py-10 text-center text-[13px] text-[#9CA3AF] dark:text-slate-500">
+                  当日无交易记录
                 </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">{t.calendar.modal.trades}</h4>
-                  <div className="space-y-3">
-                    {selectedDayTrades.map(trade => (
-                      <div key={trade.id} className="p-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
-                        <div className="flex justify-between items-start mb-2">
-                          <span className="font-bold text-slate-900 dark:text-white text-sm">{trade.symbol}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${trade.direction === Direction.LONG ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-300' : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-300'}`}>{trade.direction}</span>
-                        </div>
-                        <div className="flex justify-between items-center text-xs text-slate-500 mb-2">
-                          <span>{new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                          <span>{trade.setup}</span>
-                        </div>
-                        <div className={`text-right font-mono font-bold text-sm ${trade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                          ${(trade.pnl - trade.fees).toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
-                    {selectedDayTrades.length === 0 && (
-                      <p className="text-sm text-slate-400 text-center py-4">No trades.</p>
-                    )}
-                  </div>
+              )}
+            </div>
+
+            {/* Collapsible Daily Review */}
+            {showReview && (
+              <div className="border-t border-[#F3F4F6] dark:border-slate-800 px-6 py-5 flex flex-col gap-3 flex-shrink-0">
+                <p className="text-[11px] text-[#9CA3AF] dark:text-slate-500 font-medium uppercase tracking-wide">Daily Review</p>
+                <textarea
+                  className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-xl p-4 text-[14px] text-[#374151] dark:text-slate-200 leading-relaxed outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-400 transition-all resize-none"
+                  rows={5}
+                  placeholder={t.calendar.modal.writeReview}
+                  value={reviewText}
+                  onChange={e => setReviewText(e.target.value)}
+                />
+                <div className="flex justify-end">
+                  <button
+                    onClick={handleSaveReview}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[13px] font-medium transition-all"
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {t.calendar.modal.save}
+                  </button>
                 </div>
               </div>
-              {/* Right: Review Editor */}
-              <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 p-6">
-                <h4 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Edit3 className="w-5 h-5 text-indigo-500" />
-                  {t.calendar.modal.dailyReview}
-                </h4>
-                <p className="text-xs text-slate-400 mb-2">Synced to Notebook &gt; Daily Journal</p>
-                <div className="flex-1 flex flex-col relative">
-                  <textarea
-                    className="flex-1 w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-slate-800 dark:text-slate-200 leading-relaxed outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all resize-none font-sans"
-                    placeholder={t.calendar.modal.writeReview}
-                    value={reviewText}
-                    onChange={(e) => setReviewText(e.target.value)}
-                  />
-                  <div className="mt-4 flex justify-end">
-                    <button
-                      onClick={handleSaveReview}
-                      className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-500/20 flex items-center gap-2 transition-all"
-                    >
-                      <Save className="w-4 h-4" />
-                      {t.calendar.modal.save}
-                    </button>
-                  </div>
-                </div>
+            )}
+
+            {/* Save Toast */}
+            {showToast && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 animate-fade-in-up z-[60]">
+                <CheckCircle2 className="w-4 h-4" />
+                <span className="text-[13px] font-medium">{t.calendar.modal.saveSuccess}</span>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
