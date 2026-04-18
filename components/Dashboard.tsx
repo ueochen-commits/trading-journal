@@ -1914,7 +1914,17 @@ const Dashboard: React.FC<DashboardProps> = ({
                       if (!data.length) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b3c6', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>;
                       return (
                         <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%">
+                          <BarChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%"
+                            style={{ cursor: 'pointer' }}
+                            onClick={(chartData: any) => {
+                              const label = chartData?.activeLabel;
+                              if (!label) return;
+                              // format is MM/DD/YY
+                              const [mm, dd, yy] = label.split('/');
+                              const d = new Date(`20${yy}-${mm}-${dd}T00:00:00`);
+                              if (!isNaN(d.getTime())) setChartClickDay(d);
+                            }}
+                          >
                             <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.05)" vertical={false} />
                             <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} interval="preserveStartEnd" />
                             <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} width={52}
