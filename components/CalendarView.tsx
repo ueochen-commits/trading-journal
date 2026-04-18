@@ -6,10 +6,11 @@ import {
   ChevronLeft, ChevronRight, X, Edit3, CheckCircle2, ArrowLeft, Save,
   Undo2, Redo2, Mic, MicOff, Bold, Italic, Underline as UnderlineIcon, Code2,
   Link as LinkIcon, Eraser, Type, Paintbrush, Plus, ChevronDown,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive, Camera
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import html2canvas from 'html2canvas';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -176,6 +177,23 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const [reviewIsRecording, setReviewIsRecording] = useState(false);
   const [showTradePicker, setShowTradePicker] = useState(false);
   const reviewColorInputRef = useRef<HTMLDivElement>(null);
+  const calendarRef = useRef<HTMLDivElement>(null);
+  const [isCapturing, setIsCapturing] = useState(false);
+
+  const handleCapture = useCallback(async () => {
+    if (!calendarRef.current || isCapturing) return;
+    setIsCapturing(true);
+    try {
+      const canvas = await html2canvas(calendarRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+      const link = document.createElement('a');
+      const now = new Date();
+      link.download = `calendar-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      setIsCapturing(false);
+    }
+  }, [isCapturing]);
   const reviewBgColorInputRef = useRef<HTMLDivElement>(null);
   const reviewTextColorNativeRef = useRef<HTMLInputElement>(null);
   const reviewBgColorNativeRef = useRef<HTMLInputElement>(null);
@@ -571,7 +589,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   };
 
   return (
-    <div className="space-y-4 relative">
+    <div ref={calendarRef} className="space-y-4 relative">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -589,6 +607,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           </button>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleCapture}
+            disabled={isCapturing}
+            title={cal.weekSuffix ? '截图保存' : 'Save screenshot'}
+            className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-[#6366F1] hover:bg-[#F3F4F6] transition-all"
+            style={{ flexShrink: 0 }}
+          >
+            <Camera className="w-4 h-4" />
+          </button>
           <span className="text-[12px] text-[#9CA3AF] font-medium">{cal.monthlyStats || 'Monthly:'}</span>
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-[13px] font-bold ${monthStats.totalPnl >= 0 ? 'bg-[#D4F4DD] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}
             style={{ fontVariantNumeric: 'tabular-nums' }}>
