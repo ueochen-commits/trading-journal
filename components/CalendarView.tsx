@@ -743,44 +743,48 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
               ) : (
                 /* ── View B: Review Editor ── */
                 <>
-                  {/* B1: Top Nav Bar */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, padding: '0 44px', borderBottom: '1px solid #F1F5F9' }}>
-                    <button
-                      onClick={() => switchView('transactions')}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#334155', padding: '6px 10px', borderRadius: 7, outline: 'none', transition: 'background 150ms' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
-                    >
-                      <ArrowLeft style={{ width: 15, height: 15 }} />
-                      {cal.weekSuffix ? '返回交易详情' : 'Back to trades'}
-                    </button>
+                  {/* B1: Top Nav Bar — 与 View A header 完全相同的容器结构 */}
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '36px 44px 0' }}>
+                    {/* 左侧：返回按钮 + 保存状态 + 保存按钮 */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <button
+                        onClick={() => switchView('transactions')}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid #E2E8F0', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#334155', height: 38, padding: '0 14px', borderRadius: 9, outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
+                      >
+                        <ArrowLeft style={{ width: 14, height: 14 }} />
+                        {cal.weekSuffix ? '返回交易详情' : 'Back to trades'}
+                      </button>
                       <span style={{ fontSize: 12.5, color: saveStatus === 'unsaved' ? '#F59E0B' : '#94A3B8' }}>
                         {saveStatus === 'saving' ? '保存中...' : saveStatus === 'unsaved' ? '未保存' : lastSavedAt ? `已保存 · ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '已保存'}
                       </span>
                       <button
                         onClick={() => doSaveReview(reviewHtml)}
                         disabled={saveStatus !== 'unsaved'}
-                        style={{ height: 34, padding: '0 14px', background: saveStatus === 'unsaved' ? '#6366F1' : '#F1F5F9', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, color: saveStatus === 'unsaved' ? '#fff' : '#94A3B8', cursor: saveStatus === 'unsaved' ? 'pointer' : 'default', outline: 'none', transition: 'all 150ms', display: 'flex', alignItems: 'center', gap: 6 }}
+                        style={{ height: 34, padding: '0 14px', background: saveStatus === 'unsaved' ? '#6366F1' : '#F1F5F9', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, color: saveStatus === 'unsaved' ? '#fff' : '#94A3B8', cursor: saveStatus === 'unsaved' ? 'pointer' : 'default', outline: 'none', transition: 'all 150ms', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
                       >
                         <Save style={{ width: 13, height: 13 }} />
                         {cal.weekSuffix ? '保存' : 'Save'}
                       </button>
+                    </div>
+                    {/* 右侧：logo + X — 与 View A 完全相同的位置 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
                         <img src="/lion-care.png" alt="logo" style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: '50%' }} />
                       </div>
                       <button
                         onClick={() => { doSaveReview(reviewHtml); setSelectedDay(null); }}
-                        style={{ width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 7, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
+                        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
                         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                       >
-                        <X style={{ width: 16, height: 16 }} />
+                        <X style={{ width: 17, height: 17 }} />
                       </button>
                     </div>
                   </div>
                   {/* B2: Data Context Strip */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 20, height: 64, padding: '0 44px', background: '#F8FAFC', borderBottom: '1px solid #F1F5F9' }}>
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 20, height: 64, padding: '0 44px', background: '#F8FAFC', borderBottom: '1px solid #F1F5F9', marginTop: 24 }}>
                     <span style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>{modalDateLabel}</span>
                     <span style={{ width: 1, height: 16, background: '#CBD5E1' }} />
                     <span style={{ fontSize: 13, color: '#64748B' }}>Net P&L</span>
