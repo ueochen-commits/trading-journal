@@ -929,7 +929,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     </RDropdown>
                   </div>
                   {/* B4: Editor Area */}
-                  <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', height: 480, flexShrink: 0 }}>
+                  <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', flex: '1 1 auto', minHeight: 480, minWidth: 0 }}>
                     <EditorContent editor={reviewEditor} />
                   </div>
                   {/* B5: Status Bar */}
