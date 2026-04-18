@@ -216,7 +216,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       FontFamily, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: '今天的交易心得、市场观察、情绪状态...' }),
       TaskList, TaskItem.configure({ nested: true }), HorizontalRule, FontSize,
-      GlobalDragHandle.configure({ dragHandleWidth: 20 }),
+      GlobalDragHandle.configure({ dragHandleWidth: 30 }),
     ],
     content: reviewHtml,
     onUpdate: ({ editor: ed }) => {
@@ -234,6 +234,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDay]);
+
+  // 注入 + 按钮到 drag handle
+  useEffect(() => {
+    if (!reviewEditor) return;
+    const parent = reviewEditor.view.dom.parentElement;
+    if (!parent) return;
+    const injectPlus = (handle: Element) => {
+      if (handle.querySelector('.drag-plus-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'drag-plus-btn';
+      btn.textContent = '+';
+      btn.title = '插入新段落';
+      btn.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
+      btn.addEventListener('dragstart', e => e.stopPropagation());
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        reviewEditor.chain().focus().createParagraphNear().run();
+      });
+      handle.insertBefore(btn, handle.firstChild);
+    };
+    const observer = new MutationObserver(() => {
+      const handle = parent.querySelector('.drag-handle');
+      if (handle) injectPlus(handle);
+    });
+    observer.observe(parent, { childList: true });
+    const existing = parent.querySelector('.drag-handle');
+    if (existing) injectPlus(existing);
+    return () => observer.disconnect();
+  }, [reviewEditor]);
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
