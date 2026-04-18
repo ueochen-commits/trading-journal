@@ -745,17 +745,18 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                 <>
                   {/* B1: Top Nav Bar — 与 View A header 完全相同的容器结构 */}
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '36px 44px 0' }}>
-                    {/* 左侧：返回按钮 + 保存状态 + 保存按钮 */}
+                    {/* 左侧：纯文字返回按钮 */}
+                    <button
+                      onClick={() => switchView('transactions')}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#64748B', padding: 0, outline: 'none', transition: 'color 150ms', flexShrink: 0 }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0F172A'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#64748B'; }}
+                    >
+                      <ArrowLeft style={{ width: 14, height: 14 }} />
+                      {cal.weekSuffix ? '返回交易详情' : 'Back to trades'}
+                    </button>
+                    {/* 右侧：保存状态 + 保存按钮 + logo + X */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <button
-                        onClick={() => switchView('transactions')}
-                        style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: '1px solid #E2E8F0', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#334155', height: 38, padding: '0 14px', borderRadius: 9, outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
-                      >
-                        <ArrowLeft style={{ width: 14, height: 14 }} />
-                        {cal.weekSuffix ? '返回交易详情' : 'Back to trades'}
-                      </button>
                       <span style={{ fontSize: 12.5, color: saveStatus === 'unsaved' ? '#F59E0B' : '#94A3B8' }}>
                         {saveStatus === 'saving' ? '保存中...' : saveStatus === 'unsaved' ? '未保存' : lastSavedAt ? `已保存 · ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '已保存'}
                       </span>
@@ -767,9 +768,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                         <Save style={{ width: 13, height: 13 }} />
                         {cal.weekSuffix ? '保存' : 'Save'}
                       </button>
-                    </div>
-                    {/* 右侧：logo + X — 与 View A 完全相同的位置 */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
                         <img src="/lion-care.png" alt="logo" style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: '50%' }} />
                       </div>
