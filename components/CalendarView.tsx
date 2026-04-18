@@ -11,6 +11,7 @@ import {
 import { useLanguage } from '../LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import html2canvas from 'html2canvas';
+import { toPng, toBlob } from 'html-to-image';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -179,21 +180,54 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const reviewColorInputRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
+  const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
 
   const handleCapture = useCallback(async () => {
     if (!calendarRef.current || isCapturing) return;
     setIsCapturing(true);
     try {
-      const canvas = await html2canvas(calendarRef.current, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-      const link = document.createElement('a');
-      const now = new Date();
-      link.download = `calendar-${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
+      await document.fonts.ready;
+      const opts = {
+        quality: 1, pixelRatio: 2, backgroundColor: '#FFFFFF', cacheBust: true,
+        filter: (node: HTMLElement) => !node.classList?.contains('screenshot-ignore'),
+      };
+      const [url, blob] = await Promise.all([
+        toPng(calendarRef.current, opts),
+        toBlob(calendarRef.current, opts),
+      ]);
+      setScreenshotUrl(url);
+      setScreenshotBlob(blob);
+      setShareModalOpen(true);
+      setCopyStatus('idle');
+    } catch (err) {
+      console.error('截图失败', err);
     } finally {
       setIsCapturing(false);
     }
   }, [isCapturing]);
+
+  const handleDownload = useCallback(() => {
+    if (!screenshotUrl) return;
+    const link = document.createElement('a');
+    link.download = `tradegrail-calendar-${new Date().toISOString().slice(0, 10)}.png`;
+    link.href = screenshotUrl;
+    link.click();
+  }, [screenshotUrl]);
+
+  const handleCopy = useCallback(async () => {
+    if (!screenshotBlob) return;
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': screenshotBlob })]);
+      setCopyStatus('copied');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    } catch {
+      setCopyStatus('error');
+      setTimeout(() => setCopyStatus('idle'), 2000);
+    }
+  }, [screenshotBlob]);
   const reviewBgColorInputRef = useRef<HTMLDivElement>(null);
   const reviewTextColorNativeRef = useRef<HTMLInputElement>(null);
   const reviewBgColorNativeRef = useRef<HTMLInputElement>(null);
@@ -610,11 +644,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           <button
             onClick={handleCapture}
             disabled={isCapturing}
-            title={cal.weekSuffix ? '截图保存' : 'Save screenshot'}
-            className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-[#6366F1] hover:bg-[#F3F4F6] transition-all"
-            style={{ flexShrink: 0 }}
+            title={cal.weekSuffix ? '分享日历' : 'Share calendar'}
+            className="screenshot-ignore w-8 h-8 flex items-center justify-center rounded-[8px] transition-all"
+            style={{ flexShrink: 0, background: 'transparent', border: '1px solid #E2E8F0', color: '#64748B', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; (e.currentTarget as HTMLButtonElement).style.color = '#0F172A'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#64748B'; }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
               <circle cx="12" cy="13" r="3"/>
             </svg>
@@ -1123,6 +1159,55 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           <span style={{ fontSize: 13, fontWeight: 500 }}>{(t.calendar as any).modal?.saveSuccess || '已保存'}</span>
         </div>
       )}
+
+      {/* Share Modal */}
+      {shareModalOpen && screenshotUrl && createPortal(
+        <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 99999, animation: 'slideInUp 200ms ease-out', width: 320 }}>
+          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
+            {/* Preview with gradient bg */}
+            <div style={{ position: 'relative', background: 'linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%)', padding: '20px 20px 12px' }}>
+              <button
+                onClick={() => setShareModalOpen(false)}
+                style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.35)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', backdropFilter: 'blur(8px)', zIndex: 2 }}
+              >
+                <X style={{ width: 14, height: 14 }} />
+              </button>
+              <div style={{ borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
+                <img src={screenshotUrl} alt="calendar screenshot" style={{ width: '100%', display: 'block' }} />
+              </div>
+              {/* Watermark */}
+              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>TRADEGRAIL</span>
+                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>tradegrail.net</span>
+              </div>
+            </div>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 8, padding: '12px 16px 16px' }}>
+              <button
+                onClick={handleDownload}
+                style={{ flex: 1, height: 38, background: '#6366F1', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 500, color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'background 150ms' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4F46E5'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#6366F1'; }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                下载图片
+              </button>
+              <button
+                onClick={handleCopy}
+                style={{ flex: 1, height: 38, background: copyStatus === 'copied' ? '#10B981' : copyStatus === 'error' ? '#EF4444' : '#F1F5F9', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 500, color: copyStatus === 'idle' ? '#334155' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 150ms' }}
+              >
+                {copyStatus === 'copied' ? (
+                  <><CheckCircle2 style={{ width: 13, height: 13 }} />已复制</>
+                ) : copyStatus === 'error' ? (
+                  <>复制失败</>
+                ) : (
+                  <><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>复制图片</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      , document.body)}
     </div>
   );
 };

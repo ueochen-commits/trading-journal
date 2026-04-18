@@ -39,6 +39,7 @@
     "ccxt": "^4.5.48",
     "crypto-js": "^4.2.0",
     "flatpickr": "^4.6.13",
+    "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "jspdf": "^4.2.1",
     "lightweight-charts": "^5.1.0",
