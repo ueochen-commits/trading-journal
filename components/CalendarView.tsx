@@ -525,6 +525,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         else { bgStyle = '#FEF3C7'; textClass = 'text-[#92400E]'; pnlTextClass = 'text-[#92400E]'; }
       }
       if (isToday) borderClass = 'ring-2 ring-[#3B82F6] ring-inset';
+      const iconColor = data && data.count > 0
+        ? (data.netPnl > 0 ? '#15803D' : data.netPnl < 0 ? '#DC2626' : '#92400E')
+        : '#64748B';
+      const iconOpacity = data && data.count > 0 ? 0.55 : 0.45;
       return (
         <div key={d} onClick={() => handleDayClick(d)} role="button" tabIndex={0}
           className={`rounded-[8px] cursor-pointer relative ${borderClass}`}
@@ -532,6 +536,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
         >
+          {/* 左上角：复盘笔记图标 */}
+          {data?.hasReview && (
+            <div title="当日已写复盘" style={{ position: 'absolute', top: 10, left: 12, color: iconColor, opacity: iconOpacity, display: 'flex' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="8" y1="13" x2="14" y2="13"/>
+                <line x1="8" y1="17" x2="12" y2="17"/>
+              </svg>
+            </div>
+          )}
           <span className={`absolute text-[13px] font-medium ${textClass}`} style={{ top: 12, right: 14 }}>{d}</span>
           {data && data.count > 0 && (
             <>
