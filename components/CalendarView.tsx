@@ -203,44 +203,62 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       logoImg.crossOrigin = 'anonymous';
       await new Promise<void>(res => { logoImg.onload = () => res(); logoImg.onerror = () => res(); logoImg.src = '/TRADEGRAIL-lion.png'; });
 
-      // Layout (matching reference image 39):
-      // [TOP_PAD] [LOGO centered] [LOGO_BOTTOM_GAP] [calendar with side padding] [URL_GAP] [url centered] [BOTTOM_PAD]
-      const SIDE_PAD = 40;
-      const TOP_PAD = 40;
-      const LOGO_H = 56;           // large logo at top
-      const LOGO_BOTTOM_GAP = 28;
-      const CAL_RADIUS = 14;
-      const URL_GAP = 24;
-      const URL_FONT = 26;
-      const BOTTOM_PAD = 36;
+      // Layout constants (all in canvas px, pixelRatio=2 so calImg is already 2x)
+      const SIDE_PAD = 256;   // 128px * 2 for 2x
+      const LOGO_ZONE_H = 320; // 160px * 2
+      const LOGO_H = 112;      // 56px * 2
+      const CAL_RADIUS = 28;   // 14px * 2
+      const BOTTOM_ZONE_H = 240; // 120px * 2
 
       const W = calImg.width + SIDE_PAD * 2;
-      const H = TOP_PAD + LOGO_H + LOGO_BOTTOM_GAP + calImg.height + URL_GAP + URL_FONT + BOTTOM_PAD;
+      const H = LOGO_ZONE_H + calImg.height + BOTTOM_ZONE_H;
 
       const canvas = document.createElement('canvas');
       canvas.width = W;
       canvas.height = H;
       const ctx = canvas.getContext('2d')!;
 
-      // Gradient background
-      const grad = ctx.createLinearGradient(0, 0, W, H);
-      grad.addColorStop(0, '#6366F1');
-      grad.addColorStop(0.5, '#A855F7');
-      grad.addColorStop(1, '#EC4899');
+      // Deep blue-purple vertical gradient background
+      const grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0,   '#0F2A5C');
+      grad.addColorStop(0.5, '#1E1B4B');
+      grad.addColorStop(1,   '#3B1563');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, H);
 
-      // Logo — centered at top, max width = W - SIDE_PAD*2
+      // Logo — centered in top zone
       if (logoImg.naturalWidth > 0) {
         const maxLogoW = W - SIDE_PAD * 2;
         let logoW = logoImg.naturalWidth * (LOGO_H / logoImg.naturalHeight);
-        if (logoW > maxLogoW) { logoW = maxLogoW; }
-        ctx.drawImage(logoImg, (W - logoW) / 2, TOP_PAD, logoW, LOGO_H);
+        if (logoW > maxLogoW) logoW = maxLogoW;
+        ctx.drawImage(logoImg, (W - logoW) / 2, (LOGO_ZONE_H - LOGO_H) / 2, logoW, LOGO_H);
       }
 
-      // Calendar screenshot with rounded corners
-      const cx = SIDE_PAD, cy = TOP_PAD + LOGO_H + LOGO_BOTTOM_GAP;
+      // Calendar white card with shadow + rounded corners
+      const cx = SIDE_PAD, cy = LOGO_ZONE_H;
       const cw = calImg.width, ch = calImg.height;
+
+      // Shadow
+      ctx.save();
+      ctx.shadowColor = 'rgba(0,0,0,0.25)';
+      ctx.shadowBlur = 80;
+      ctx.shadowOffsetY = 24;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.moveTo(cx + CAL_RADIUS, cy);
+      ctx.lineTo(cx + cw - CAL_RADIUS, cy);
+      ctx.quadraticCurveTo(cx + cw, cy, cx + cw, cy + CAL_RADIUS);
+      ctx.lineTo(cx + cw, cy + ch - CAL_RADIUS);
+      ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - CAL_RADIUS, cy + ch);
+      ctx.lineTo(cx + CAL_RADIUS, cy + ch);
+      ctx.quadraticCurveTo(cx, cy + ch, cx, cy + ch - CAL_RADIUS);
+      ctx.lineTo(cx, cy + CAL_RADIUS);
+      ctx.quadraticCurveTo(cx, cy, cx + CAL_RADIUS, cy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+
+      // Clip and draw calendar image
       ctx.save();
       ctx.beginPath();
       ctx.moveTo(cx + CAL_RADIUS, cy);
@@ -257,12 +275,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       ctx.drawImage(calImg, cx, cy);
       ctx.restore();
 
-      // URL — centered below calendar
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      ctx.font = `400 ${URL_FONT}px Inter, -apple-system, sans-serif`;
+      // URL — centered in bottom zone, Georgia serif
+      const urlY = LOGO_ZONE_H + calImg.height + BOTTOM_ZONE_H * 0.45;
+      ctx.fillStyle = 'rgba(255,255,255,0.92)';
+      ctx.font = `400 44px Georgia, "Times New Roman", serif`;
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText('tradegrail.net', W / 2, TOP_PAD + LOGO_H + LOGO_BOTTOM_GAP + calImg.height + URL_GAP);
+      ctx.textBaseline = 'middle';
+      ctx.fillText('www.tradegrail.com', W / 2, urlY);
 
       const finalUrl = canvas.toDataURL('image/png');
       const finalBlob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/png'));
