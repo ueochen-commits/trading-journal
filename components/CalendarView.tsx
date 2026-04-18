@@ -154,8 +154,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     return Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthDays - firstDayOfMonth + 1 + i;
       return (
-        <div key={`prev-${i}`} className="h-[96px] rounded-[8px] flex flex-col items-end" style={{ background: '#FAFAFA', padding: '10px 12px' }}>
-          <span className="text-[13px]" style={{ color: '#B0B5BD' }}>{day}</span>
+        <div key={`prev-${i}`} className="rounded-[8px] relative" style={{ minHeight: 130, background: '#FAFAFA' }}>
+          <span className="absolute text-[13px]" style={{ top: 12, right: 14, color: '#B0B5BD' }}>{day}</span>
         </div>
       );
     });
@@ -163,8 +163,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
   const renderNextMonthBlanks = () => {
     return Array.from({ length: trailingBlanks }, (_, i) => (
-      <div key={`next-${i}`} className="h-[96px] rounded-[8px] flex flex-col items-end" style={{ background: '#FAFAFA', padding: '10px 12px' }}>
-        <span className="text-[13px]" style={{ color: '#B0B5BD' }}>{i + 1}</span>
+      <div key={`next-${i}`} className="rounded-[8px] relative" style={{ minHeight: 130, background: '#FAFAFA' }}>
+        <span className="absolute text-[13px]" style={{ top: 12, right: 14, color: '#B0B5BD' }}>{i + 1}</span>
       </div>
     ));
   };
@@ -210,39 +210,36 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           role="button"
           tabIndex={0}
           aria-label={ariaLabel}
-          className={`h-[96px] rounded-[8px] flex flex-col cursor-pointer group relative ${borderClass}`}
-          style={{ padding: '10px 12px', background: bgStyle, transition: 'all 150ms ease' }}
+          className={`rounded-[8px] cursor-pointer relative ${borderClass}`}
+          style={{ minHeight: 130, background: bgStyle, transition: 'all 150ms ease' }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
         >
-          {/* Day number — right aligned, top */}
-          <div className="w-full flex justify-end">
-            <span className={`text-[13px] font-medium ${textClass}`}>{d}</span>
-          </div>
+          {/* Day number — absolute top-right */}
+          <span className={`absolute text-[13px] font-medium ${textClass}`} style={{ top: 12, right: 14 }}>{d}</span>
 
-          {data && data.count > 0 ? (
-            <div className="flex-1 flex flex-col items-end justify-center w-full">
-              <span className={`text-[16px] font-bold ${pnlTextClass}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
-                {data.netPnl >= 0 ? '+' : '\u2212'}${Math.abs(data.netPnl).toFixed(2)}
-              </span>
-              <span className={`text-[12px] ${pnlTextClass} mt-0.5`} style={{ opacity: 0.7 }}>
-                {data.count} {cal.trades || 'trades'}
-              </span>
-              <span className={`text-[12px] ${pnlTextClass}`} style={{ opacity: 0.55 }}>
-                {data.winRate.toFixed(1)}%
-              </span>
-            </div>
-          ) : (
-            <div className="flex-1" />
-          )}
-
-          {/* Marker dot — absolute, bottom-right corner */}
           {data && data.count > 0 && (
-            <div
-              className={`absolute rounded-full ${data.netPnl >= 0 ? 'bg-[#15803D]' : 'bg-[#DC2626]'}`}
-              style={{ width: 5, height: 5, bottom: 6, right: 6 }}
-            />
+            <>
+              {/* P&L + meta — absolute bottom-right */}
+              <div className="absolute flex flex-col items-end" style={{ bottom: 12, right: 14, lineHeight: 1.5 }}>
+                <span className={`text-[15px] font-semibold ${pnlTextClass}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {data.netPnl >= 0 ? '+' : '\u2212'}${Math.abs(data.netPnl).toFixed(2)}
+                </span>
+                <span className="text-[12px] font-normal" style={{ color: '#6B7280' }}>
+                  {data.count} {cal.trades || 'trades'}
+                </span>
+                <span className="text-[12px] font-normal" style={{ color: '#9CA3AF' }}>
+                  {data.winRate.toFixed(1)}%
+                </span>
+              </div>
+              {/* Marker dot */}
+              <div
+                className={`absolute rounded-full ${data.netPnl >= 0 ? 'bg-[#15803D]' : 'bg-[#DC2626]'}`}
+                style={{ width: 5, height: 5, bottom: 6, right: 6 }}
+              />
+            </>
           )}
+
           {/* Review dot for no-trade days */}
           {(!data || data.count === 0) && data?.hasReview && (
             <div className="absolute rounded-full bg-[#F97316]" style={{ width: 5, height: 5, bottom: 6, right: 6 }} />
@@ -310,7 +307,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           </div>
 
           {/* Day Cells Grid */}
-          <div className="grid grid-cols-7" style={{ gap: 5 }}>
+          <div className="grid grid-cols-7" style={{ gap: 6 }}>
             {renderPrevMonthBlanks()}
             {renderCurrentMonthDays()}
             {renderNextMonthBlanks()}
@@ -318,8 +315,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
         </div>
 
         {/* Weekly Summary Sidebar — no title, aligned to grid top */}
-        <div className="lg:w-[200px] flex flex-col gap-[5px]">
-          {/* Spacer matching weekday header height so week cards align with day rows */}
+        <div className="lg:w-[220px] flex flex-col gap-[6px]">
+          {/* Spacer matching weekday header height */}
           <div style={{ height: 33 }} />
           {weeklyStats.map((week, i) => {
             const isPositive = week.pnl >= 0;
@@ -329,17 +326,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             return (
               <div
                 key={i}
-                className="rounded-xl border border-[#E5E7EB] dark:border-slate-800 px-4 py-3.5 cursor-pointer flex-1 flex flex-col"
+                className="rounded-[8px] border border-[#E5E7EB] dark:border-slate-800 cursor-pointer flex-1 flex flex-col justify-center"
                 style={{
+                  minHeight: 130,
+                  padding: '12px 16px',
                   background: week.isCurrent ? '#FAFAFA' : '#ffffff',
                   transition: 'all 150ms ease'
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#F9FAFB'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = week.isCurrent ? '#FAFAFA' : '#ffffff'; }}
               >
-                <span className="text-[13px] font-medium text-[#6B7280] dark:text-slate-400 mb-1">{weekLabel}</span>
+                <span className="text-[12px] font-medium text-[#9CA3AF] dark:text-slate-500 mb-1">{weekLabel}</span>
                 <span
-                  className={`text-[20px] font-bold mb-1.5 ${
+                  className={`text-[18px] font-bold mb-2 ${
                     week.count === 0
                       ? 'text-[#111827] dark:text-slate-300'
                       : isPositive
@@ -350,7 +349,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                 >
                   {week.count === 0 ? '$0.00' : `${isPositive ? '+' : '\u2212'}$${Math.abs(week.pnl).toFixed(2)}`}
                 </span>
-                <span className="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#F3F4F6] dark:bg-slate-800 text-[#374151] dark:text-slate-400">
+                <span className="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#F3F4F6] dark:bg-slate-800 text-[#6B7280] dark:text-slate-400">
                   {week.tradingDays} {cal.tradingDays || 'days'}
                 </span>
               </div>
