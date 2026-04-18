@@ -417,7 +417,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
         >
           <div
             className="animate-fade-in-up"
-            style={{ width: 'min(1040px, 92vw)', maxHeight: 'min(85vh, 720px)', background: '#FFFFFF', borderRadius: 16, boxShadow: '0 24px 72px rgba(15,23,42,0.14)', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", WebkitFontSmoothing: 'antialiased' }}
+            style={{ width: 'min(1040px, 92vw)', maxHeight: 'min(92vh, 1040px)', background: '#FFFFFF', borderRadius: 16, boxShadow: '0 24px 72px rgba(15,23,42,0.14)', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", WebkitFontSmoothing: 'antialiased' }}
             onClick={e => e.stopPropagation()}
           >
             {/* ── Header ── */}
@@ -515,7 +515,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             </div>
             {/* ── Section 3: Trade Table ── */}
             {selectedDayTrades.length > 0 && (
-              <div style={{ borderTop: '1px solid #F1F5F9', flex: '1 1 auto', minHeight: 0, overflowY: selectedDayTrades.length > 6 ? 'auto' : 'visible', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
+              <div style={{ borderTop: '1px solid #F1F5F9', flex: '1 1 auto', minHeight: 0, overflowY: selectedDayTrades.length > 10 ? 'auto' : 'visible', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                   <colgroup>
                     <col style={{ width: '13%' }} /><col style={{ width: '18%' }} /><col style={{ width: '10%' }} />
