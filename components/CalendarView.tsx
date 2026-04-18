@@ -177,6 +177,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const [reviewInsertMenuOpen, setReviewInsertMenuOpen] = useState(false);
   const [reviewIsRecording, setReviewIsRecording] = useState(false);
   const [showTradePicker, setShowTradePicker] = useState(false);
+  const [tradeSearchQuery, setTradeSearchQuery] = useState('');
+  const [tradeHighlightIdx, setTradeHighlightIdx] = useState(0);
+  const tradeSearchInputRef = useRef<HTMLInputElement>(null);
   const reviewColorInputRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -478,7 +481,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     reviewEditor?.chain().focus().setFontSize(`${next}px`).run();
   }, [reviewFontSize, reviewEditor]);
 
-  // Month stats for toolbar pills
+
   const monthStats = useMemo(() => {
     const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
     const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
@@ -574,6 +577,37 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     if (!selectedDay) return [];
     return trades.filter(tr => new Date(tr.entryDate).toDateString() === selectedDay.toDateString());
   }, [selectedDay, trades]);
+
+  const filteredPickerTrades = useMemo(() => {
+    if (!selectedDayTrades.length) return [];
+    const q = tradeSearchQuery.trim().toLowerCase();
+    if (!q) return selectedDayTrades;
+    return selectedDayTrades.filter(t =>
+      t.symbol.toLowerCase().includes(q) ||
+      new Date(t.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false }).includes(q) ||
+      t.direction.toLowerCase().includes(q)
+    );
+  }, [selectedDayTrades, tradeSearchQuery]);
+
+  const handleInsertTrade = useCallback((trade: typeof selectedDayTrades[0]) => {
+    if (!reviewEditor) return;
+    const netPnl = trade.pnl - trade.fees;
+    const pnlColor = netPnl >= 0 ? '#15803D' : '#DC2626';
+    const pnlText = netPnl >= 0 ? `+$${netPnl.toFixed(2)}` : `\u2212$${Math.abs(netPnl).toFixed(2)}`;
+    const time = new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+    const html = `<span data-trade-id="${trade.id}" contenteditable="false" style="display:inline-flex;align-items:center;gap:6px;padding:2px 10px;margin:0 2px;background:#FAFBFC;border:1px solid #E2E8F0;border-radius:6px;font-size:12.5px;vertical-align:middle;user-select:all;cursor:default;font-family:inherit;"><span style="font-family:monospace;color:#64748B;font-size:11px;">${time}</span><span style="display:inline-block;padding:1px 6px;background:#EEF2FF;color:#4338CA;border-radius:3px;font-size:11px;font-weight:500;">${trade.symbol}</span><span style="color:#0F172A;font-weight:500;font-size:12px;">${trade.direction}</span><span style="color:${pnlColor};font-weight:500;font-variant-numeric:tabular-nums;font-size:12px;">${pnlText}</span></span>`;
+    reviewEditor.chain().focus().insertContent(html + ' ').run();
+    setShowTradePicker(false);
+    setTradeSearchQuery('');
+    setTradeHighlightIdx(0);
+  }, [reviewEditor]);
+
+  const handleSelectorKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); setTradeHighlightIdx(i => Math.min(i + 1, filteredPickerTrades.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setTradeHighlightIdx(i => Math.max(i - 1, 0)); }
+    else if (e.key === 'Enter') { e.preventDefault(); if (filteredPickerTrades[tradeHighlightIdx]) handleInsertTrade(filteredPickerTrades[tradeHighlightIdx]); }
+    else if (e.key === 'Escape') { e.preventDefault(); setShowTradePicker(false); }
+  }, [filteredPickerTrades, tradeHighlightIdx, handleInsertTrade]);
 
   const selectedDayStats = useMemo(() => {
     const count = selectedDayTrades.length;
@@ -1179,8 +1213,68 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                           className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors">{o.label}</button>
                       ))}
                     </RDropdown>
+                    {/* 引用交易按钮 */}
+                    <div style={{ width: 1, height: 18, background: 'rgba(0,0,0,0.08)', margin: '0 4px', flexShrink: 0 }} />
+                    <button
+                      type="button"
+                      onMouseDown={e => e.preventDefault()}
+                      onClick={() => { setShowTradePicker(true); setTradeSearchQuery(''); setTradeHighlightIdx(0); setTimeout(() => tradeSearchInputRef.current?.focus(), 50); }}
+                      title="引用今日交易"
+                      style={{ height: 24, padding: '0 10px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 5, color: '#4338CA', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, transition: 'background 150ms' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#E0E7FF'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#EEF2FF'; }}
+                    >
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                      </svg>
+                      引用交易
+                    </button>
                   </div>
-                  {/* B4: Editor Area */}
+                  {/* Trade Picker Overlay */}
+                  {showTradePicker && (
+                    <>
+                      <div style={{ position: 'fixed', inset: 0, zIndex: 10099 }} onClick={() => setShowTradePicker(false)} />
+                      <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 160, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                        {/* Search */}
+                        <div style={{ padding: '12px 16px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
+                          <div style={{ position: 'relative' }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)' }}>
+                              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                            <input ref={tradeSearchInputRef} type="text" placeholder="搜索品种或方向..." value={tradeSearchQuery}
+                              onChange={e => { setTradeSearchQuery(e.target.value); setTradeHighlightIdx(0); }}
+                              onKeyDown={handleSelectorKeyDown}
+                              style={{ width: '100%', padding: '7px 12px 7px 30px', border: '1px solid #E2E8F0', borderRadius: 6, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                          </div>
+                          <div style={{ marginTop: 6, fontSize: 11, color: '#64748B' }}>{modalDateLabel} · {selectedDayTrades.length} 笔交易</div>
+                        </div>
+                        {/* List */}
+                        <div style={{ flex: '1 1 auto', overflowY: 'auto', minHeight: 0 }}>
+                          {filteredPickerTrades.length === 0 ? (
+                            <div style={{ padding: '28px 16px', textAlign: 'center', color: '#94A3B8', fontSize: 13 }}>没有匹配的交易</div>
+                          ) : filteredPickerTrades.map((trade, idx) => {
+                            const netPnl = trade.pnl - trade.fees;
+                            const time = new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+                            return (
+                              <div key={trade.id} onClick={() => handleInsertTrade(trade)} onMouseEnter={() => setTradeHighlightIdx(idx)}
+                                style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', background: idx === tradeHighlightIdx ? '#F8FAFC' : 'transparent', borderTop: idx === 0 ? 'none' : '1px solid #F1F5F9' }}>
+                                <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#64748B', minWidth: 44, flexShrink: 0 }}>{time}</span>
+                                <span style={{ display: 'inline-block', padding: '2px 7px', background: '#EEF2FF', color: '#4338CA', borderRadius: 4, fontSize: 11.5, fontWeight: 500, flexShrink: 0 }}>{trade.symbol}</span>
+                                <span style={{ fontSize: 12, color: '#0F172A', fontWeight: 500, flexShrink: 0 }}>{trade.direction}</span>
+                                <span style={{ fontSize: 12.5, fontWeight: 500, color: netPnl >= 0 ? '#15803D' : '#DC2626', fontVariantNumeric: 'tabular-nums', marginLeft: 'auto', flexShrink: 0 }}>
+                                  {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Footer */}
+                        <div style={{ padding: '7px 16px', borderTop: '1px solid #F1F5F9', background: '#FAFBFC', fontSize: 10.5, color: '#94A3B8', flexShrink: 0 }}>
+                          ↑↓ 选择 · ⏎ 插入 · Esc 关闭
+                        </div>
+                      </div>
+                    </>
+                  )}
                   <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', flex: '1 1 auto', minHeight: 480, minWidth: 0 }}>
                     <EditorContent editor={reviewEditor} />
                   </div>
