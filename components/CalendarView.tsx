@@ -552,14 +552,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           <div
             className="animate-fade-in-up"
             style={{
-              width: currentView === 'review' ? 'min(720px, 92vw)' : 'min(1040px, 92vw)',
-              maxHeight: 'min(92vh, 1040px)',
+              width: 'min(1040px, 92vw)',
+              height: currentView === 'review' ? '720px' : undefined,
+              maxHeight: currentView === 'review' ? '720px' : 'min(92vh, 1040px)',
               background: '#FFFFFF', borderRadius: 16,
               boxShadow: '0 24px 72px rgba(15,23,42,0.14)',
               display: 'flex', flexDirection: 'column', overflow: 'hidden',
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
               WebkitFontSmoothing: 'antialiased',
-              transition: 'width 150ms ease-out',
+              transition: 'height 200ms ease-out',
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -786,7 +787,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     )}
                   </div>
                   {/* B3: Rich Text Toolbar */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 2, height: 48, padding: '0 44px', borderBottom: '1px solid #F1F5F9', background: '#FAFBFC' }}
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2, height: 48, padding: '0 28px', borderBottom: '1px solid #F1F5F9', background: '#FAFBFC', overflowX: 'auto' }}
                     onMouseDown={e => e.preventDefault()}>
                     <ToolBtn onClick={() => reviewEditor?.chain().focus().undo().run()} title="撤销" ariaLabel="撤销" disabled={!reviewEditor?.can().undo()}>
                       <Undo2 className="w-3 h-3" />
@@ -919,7 +920,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     </RDropdown>
                   </div>
                   {/* B4: Editor Area */}
-                  <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', flex: '1 1 auto', minHeight: 0 }}>
+                  <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', height: 480, flexShrink: 0 }}>
                     <EditorContent editor={reviewEditor} />
                   </div>
                   {/* B5: Status Bar */}
