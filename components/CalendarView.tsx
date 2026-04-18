@@ -411,8 +411,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
       {/* Daily Details Modal Final */}
       {selectedDay && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
-          style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', padding: 24 }}
+          className="animate-fade-in"
+          style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', padding: 24 }}
           onClick={() => setSelectedDay(null)}
         >
           <div
@@ -515,7 +515,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             </div>
             {/* ── Section 3: Trade Table ── */}
             {selectedDayTrades.length > 0 && (
-              <div style={{ borderTop: '1px solid #F1F5F9', flex: '1 1 auto', minHeight: 0, overflowY: selectedDayTrades.length > 10 ? 'auto' : 'visible', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
+              <div style={{ borderTop: '1px solid #F1F5F9', flex: '1 1 auto', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                   <colgroup>
                     <col style={{ width: '13%' }} /><col style={{ width: '18%' }} /><col style={{ width: '10%' }} />
