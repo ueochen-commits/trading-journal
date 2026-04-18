@@ -140,6 +140,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [showToast, setShowToast] = useState(false);
   const [currentView, setCurrentView] = useState<'transactions' | 'review'>('transactions');
+  const [viewOpacity, setViewOpacity] = useState(1);
   const [reviewHtml, setReviewHtml] = useState('');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
   const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null);
@@ -158,6 +159,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
+
+  const switchView = useCallback((target: 'transactions' | 'review') => {
+    setViewOpacity(0);
+    setTimeout(() => {
+      setCurrentView(target);
+      setViewOpacity(1);
+    }, 150);
+  }, []);
 
   const doSaveReview = useCallback((html: string) => {
     if (!selectedDay || !onSavePlan) return;
@@ -205,7 +214,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (currentView === 'review') setCurrentView('transactions');
+        if (currentView === 'review') switchView('transactions');
         else setSelectedDay(null);
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 's' && currentView === 'review') {
@@ -215,7 +224,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     };
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
-  }, [currentView, reviewHtml, selectedDay, doSaveReview]);
+  }, [currentView, reviewHtml, selectedDay, doSaveReview, switchView]);
 
   const toggleReviewVoice = useCallback(() => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -553,8 +562,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             className="animate-fade-in-up"
             style={{
               width: 'min(1040px, 92vw)',
-              height: currentView === 'review' ? '720px' : undefined,
-              maxHeight: currentView === 'review' ? '720px' : 'min(92vh, 1040px)',
+              height: currentView === 'review' ? 'min(92vh, 1040px)' : undefined,
+              maxHeight: 'min(92vh, 1040px)',
               background: '#FFFFFF', borderRadius: 16,
               boxShadow: '0 24px 72px rgba(15,23,42,0.14)',
               display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -564,7 +573,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             }}
             onClick={e => e.stopPropagation()}
           >
-            <div style={{ opacity: 1, transition: 'opacity 150ms ease-out', display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}>
+            <div style={{ opacity: viewOpacity, transition: 'opacity 150ms ease-out', display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}>
               {currentView === 'transactions' ? (
                 <>
                   {/* ── View A: Header ── */}
@@ -579,7 +588,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <button
-                        onClick={() => setCurrentView('review')}
+                        onClick={() => switchView('review')}
                         style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
                         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
@@ -737,7 +746,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                   {/* B1: Top Nav Bar */}
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 44px', borderBottom: '1px solid #F1F5F9' }}>
                     <button
-                      onClick={() => setCurrentView('transactions')}
+                      onClick={() => switchView('transactions')}
                       style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#334155', padding: '6px 10px', borderRadius: 7, outline: 'none', transition: 'background 150ms' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; }}
