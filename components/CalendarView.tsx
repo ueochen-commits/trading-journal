@@ -744,7 +744,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                 /* ── View B: Review Editor ── */
                 <>
                   {/* B1: Top Nav Bar */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 56, padding: '0 44px', borderBottom: '1px solid #F1F5F9' }}>
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 64, padding: '0 44px', borderBottom: '1px solid #F1F5F9' }}>
                     <button
                       onClick={() => switchView('transactions')}
                       style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#334155', padding: '6px 10px', borderRadius: 7, outline: 'none', transition: 'background 150ms' }}
@@ -766,6 +766,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                         <Save style={{ width: 13, height: 13 }} />
                         {cal.weekSuffix ? '保存' : 'Save'}
                       </button>
+                      <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+                        <img src="/lion-care.png" alt="logo" style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: '50%' }} />
+                      </div>
                       <button
                         onClick={() => { doSaveReview(reviewHtml); setSelectedDay(null); }}
                         style={{ width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 7, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
