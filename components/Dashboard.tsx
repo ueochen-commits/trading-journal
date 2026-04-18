@@ -2025,7 +2025,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                             onClick={(data: any) => {
                               const label = data?.activeLabel;
                               if (!label) return;
-                              const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
+                              // format is MM/DD/YY
+                              const [mm, dd, yy] = label.split('/');
+                              if (!mm || !dd || !yy) return;
+                              const d = new Date(`20${yy}-${mm}-${dd}T00:00:00`);
                               if (!isNaN(d.getTime())) setChartClickDay(d);
                             }}
                           >
