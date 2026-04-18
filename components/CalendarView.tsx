@@ -1,9 +1,9 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { DailyPlan, Trade, Direction } from '../types';
-import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2, User } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 interface CalendarViewProps {
   trades: Trade[];
@@ -408,11 +408,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
       </div>
 
 
-      {/* Daily Details Modal v7 */}
+      {/* Daily Details Modal Final */}
       {selectedDay && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
-          style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', padding: '24px' }}
+          style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', padding: 24 }}
           onClick={() => setSelectedDay(null)}
         >
           <div
@@ -420,8 +420,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             style={{ width: 'min(1040px, 92vw)', maxHeight: 'min(85vh, 720px)', background: '#FFFFFF', borderRadius: 16, boxShadow: '0 24px 72px rgba(15,23,42,0.14)', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", WebkitFontSmoothing: 'antialiased' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* ── Section 1: Header ── */}
-            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '36px 40px 0' }}>
+            {/* ── Header ── */}
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '36px 44px 0' }}>
               {/* Left cluster */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                 <span style={{ fontSize: 19, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.015em' }}>{modalDateLabel}</span>
@@ -435,7 +435,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <button
                   onClick={() => setShowReview(v => !v)}
-                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
+                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
                 >
@@ -445,9 +445,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#6366F1', border: '2px solid #fff' }} />
                   )}
                 </button>
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#A78BFA 0%,#818CF8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <User style={{ width: 19, height: 19, color: '#fff' }} />
+                </div>
                 <button
                   onClick={() => setSelectedDay(null)}
-                  style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
+                  style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                 >
@@ -456,7 +459,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
               </div>
             </div>
             {/* ── Section 2: KPI + Chart ── */}
-            <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: '5fr 7fr', gap: 40, alignItems: 'center', padding: '32px 40px' }}>
+            <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: '5fr 7fr', gap: 40, alignItems: 'center', padding: '32px 44px' }}>
               {/* Left: Cumulative P&L chart */}
               <div style={{ minWidth: 0 }}>
                 {selectedDayStats ? (
@@ -469,11 +472,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                         </linearGradient>
                       </defs>
                       <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#F1F5F9" />
-                      <XAxis dataKey="i" axisLine={{ stroke: '#E2E8F0' }} tickLine={false} tick={false} />
+                      <XAxis dataKey="i" axisLine={false} tickLine={false} tick={false} />
                       <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
-                      <ReferenceLine y={0} stroke="#CBD5E1" strokeWidth={1} />
                       <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
-                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={1.5} strokeLinecap="round" fill="url(#v7PnlGrad)" dot={false} activeDot={{ r: 3 }} />
+                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={1.5} strokeDasharray="4 3" strokeLinecap="round" fill="url(#v7PnlGrad)" dot={false} activeDot={{ r: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
@@ -487,14 +489,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                   { label: cal.weekSuffix ? '毛盈亏' : 'Gross P&L', value: extendedDayStats ? `${extendedDayStats.grossPnl >= 0 ? '+' : '\u2212'}$${Math.abs(extendedDayStats.grossPnl).toFixed(2)}` : '\u2014', color: extendedDayStats ? (extendedDayStats.grossPnl >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' },
                   { label: cal.weekSuffix ? '盈/亏笔数' : 'Winners / Losers', value: selectedDayStats ? `${selectedDayStats.wins} / ${selectedDayStats.losses}` : '\u2014', color: '#0F172A' },
                   { label: cal.weekSuffix ? '手续费' : 'Commissions', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: '#0F172A' },
-                  { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: selectedDayStats ? (selectedDayStats.winRate >= 50 ? '#15803D' : '#DC2626') : '#94A3B8' },
+                  { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: '#0F172A' },
                   { label: cal.weekSuffix ? '成交量' : 'Volume', value: extendedDayStats && extendedDayStats.volume > 0 ? extendedDayStats.volume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014', color: '#0F172A' },
                   { label: cal.weekSuffix ? '盈利因子' : 'Profit Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: '#0F172A' },
-                  { label: cal.weekSuffix ? '均盈 / 均亏' : 'Avg Win / Loss', value: selectedDayStats ? `$${selectedDayStats.avgWin.toFixed(2)} / \u2212$${Math.abs(selectedDayStats.avgLoss).toFixed(2)}` : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '均盈 / 均亏' : 'Avg Win / Loss', value: null, color: '#0F172A', isAvgWinLoss: true },
                 ].map(kpi => (
-                  <div key={kpi.label}>
+                  <div key={kpi.label} style={{ whiteSpace: 'nowrap' }}>
                     <div style={{ fontSize: 12.5, fontWeight: 400, color: '#64748B', marginBottom: 8, letterSpacing: '-0.005em' }}>{kpi.label}</div>
-                    <div style={{ fontSize: 17, fontWeight: 500, color: kpi.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>{kpi.value}</div>
+                    {kpi.isAvgWinLoss ? (
+                      <div style={{ fontSize: 16, fontWeight: 500, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>
+                        {selectedDayStats ? (
+                          <>
+                            <span style={{ color: '#15803D' }}>${selectedDayStats.avgWin.toFixed(2)}</span>
+                            <span style={{ color: '#94A3B8' }}> / </span>
+                            <span style={{ color: '#DC2626' }}>\u2212${Math.abs(selectedDayStats.avgLoss).toFixed(2)}</span>
+                          </>
+                        ) : <span style={{ color: '#94A3B8' }}>\u2014</span>}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 16, fontWeight: 500, color: kpi.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>{kpi.value}</div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -518,7 +532,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                         { label: 'ROI%', align: 'right' },
                         { label: cal.weekSuffix ? '策略' : 'Strategy', align: 'left' },
                       ].map((col, ci) => (
-                        <th key={col.label} style={{ padding: '12px 16px', textAlign: col.align as any, fontSize: 12.5, fontWeight: 500, color: '#475569', borderBottom: '1px solid #F1F5F9', paddingLeft: ci === 0 ? 40 : 16, paddingRight: ci === 6 ? 40 : 16 }}>{col.label}</th>
+                        <th key={col.label} style={{ padding: '12px 16px', textAlign: col.align as any, fontSize: 12.5, fontWeight: 500, color: '#475569', borderBottom: '1px solid #F1F5F9', paddingLeft: ci === 0 ? 44 : 16, paddingRight: ci === 6 ? 44 : 16 }}>{col.label}</th>
                       ))}
                     </tr>
                   </thead>
@@ -531,7 +545,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                         <tr key={trade.id} style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 100ms' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#FAFBFC'; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = ''; }}>
-                          <td style={{ padding: '18px 16px 18px 40px', fontSize: 13.5, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                          <td style={{ padding: '18px 16px 18px 44px', fontSize: 13.5, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                             {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                           </td>
                           <td style={{ padding: '18px 16px' }}>
@@ -545,9 +559,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                           <td style={{ padding: '18px 16px', fontSize: 13.5, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: roi !== null ? (roi >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
                             {roi !== null ? (roi >= 0 ? `${roi.toFixed(2)}%` : `(${Math.abs(roi).toFixed(2)}%)`) : '\u2014'}
                           </td>
-                          <td style={{ padding: '18px 40px 18px 16px' }}>
+                          <td style={{ padding: '18px 44px 18px 16px' }}>
                             {trade.setup
-                              ? <span style={{ display: 'inline-block', padding: '3px 9px', background: '#F8FAFC', color: '#334155', border: '1px solid #E2E8F0', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
+                              ? <span style={{ display: 'inline-block', padding: '3px 9px', background: '#F8FAFC', color: '#334155', border: '1px solid #CBD5E1', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
                               : <span style={{ color: '#CBD5E1', fontSize: 13.5, letterSpacing: '0.05em' }}>--</span>
                             }
                           </td>
@@ -560,7 +574,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             )}
             {/* ── Section 4: Daily Review (collapsible) ── */}
             {showReview && (
-              <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '20px 40px' }}>
+              <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '20px 44px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
                   <span style={{ fontSize: 14, fontWeight: 500, color: '#0F172A' }}>{cal.weekSuffix ? '每日复盘' : 'Daily Review'}</span>
                   <button onClick={handleSaveReview} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', outline: 'none' }}>
@@ -579,7 +593,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
               </div>
             )}
             {/* ── Section 5: Bottom Bar ── */}
-            <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '0 40px 28px', marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingTop: 20 }}>
+            <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '0 44px 28px', marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingTop: 20 }}>
               <button
                 onClick={() => setSelectedDay(null)}
                 style={{ height: 40, padding: '0 22px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#475569', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
