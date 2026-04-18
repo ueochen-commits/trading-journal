@@ -1096,6 +1096,7 @@ const Dashboard: React.FC<DashboardProps> = ({
   const [isMarketConfigOpen, setIsMarketConfigOpen] = useState(false);
   const [friends, setFriends] = useState<Friend[]>(MOCK_FRIENDS);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
+  const [chartClickDay, setChartClickDay] = useState<Date | null>(null);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
   const [newFriendName, setNewFriendName] = useState('');
   const [newDisciplineRuleText, setNewDisciplineRuleText] = useState('');
@@ -1739,7 +1740,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                 {/* Chart */}
                 <div style={{ flex: 1, minHeight: 0 }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
+                    <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
+                      style={{ cursor: 'pointer' }}
+                      onClick={(data: any) => {
+                        const label = data?.activeLabel;
+                        if (!label || label === 'Start') return;
+                        const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
+                        if (!isNaN(d.getTime())) setChartClickDay(d);
+                      }}
+                    >
                       <defs>
                         <linearGradient id="eqGreenGrad" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#34D399" stopOpacity={0.4} />
@@ -1963,7 +1972,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 })()}
               </div>
 
-              <div id="dashboard-calendar" className="pt-2"><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} /></div>
+              <div id="dashboard-calendar" className="pt-2"><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} externalSelectedDay={chartClickDay} onExternalClose={() => setChartClickDay(null)} /></div>
           </div>
 
           <div className="lg:col-span-4 xl:col-span-3 space-y-6">

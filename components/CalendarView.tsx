@@ -150,9 +150,11 @@ interface CalendarViewProps {
   trades: Trade[];
   plans?: DailyPlan[];
   onSavePlan?: (plan: DailyPlan) => void;
+  externalSelectedDay?: Date | null;
+  onExternalClose?: () => void;
 }
 
-const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }) => {
+const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, externalSelectedDay, onExternalClose }) => {
   const { t } = useLanguage();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -375,6 +377,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     setSaveStatus('saved');
     setSelectedDay(date);
   };
+
+  // 外部注入日期（如从图表点击）→ 打开弹窗
+  useEffect(() => {
+    if (!externalSelectedDay) return;
+    const date = externalSelectedDay;
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const dateKey = `${yyyy}-${mm}-${dd}`;
+    const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
+    setCurrentView('transactions');
+    setReviewHtml(existingPlan ? existingPlan.content : '');
+    setSaveStatus('saved');
+    setSelectedDay(date);
+  }, [externalSelectedDay]);
+
+  // 弹窗关闭时通知外部
+  useEffect(() => {
+    if (!selectedDay) onExternalClose?.();
+  }, [selectedDay]);
 
   const selectedDayTrades = useMemo(() => {
     if (!selectedDay) return [];
