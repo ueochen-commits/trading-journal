@@ -178,6 +178,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const [reviewInsertMenuOpen, setReviewInsertMenuOpen] = useState(false);
   const [reviewIsRecording, setReviewIsRecording] = useState(false);
   const [showTradePicker, setShowTradePicker] = useState(false);
+  const [tradePickerPos, setTradePickerPos] = useState<{ top: number; left: number } | null>(null);
   const [tradeSearchQuery, setTradeSearchQuery] = useState('');
   const [tradeHighlightIdx, setTradeHighlightIdx] = useState(0);
   const tradeSearchInputRef = useRef<HTMLInputElement>(null);
@@ -1221,7 +1222,21 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                     <div style={{ width: 1, height: 18, background: 'rgba(0,0,0,0.08)', margin: '0 4px', flexShrink: 0 }} />
                     <button
                       type="button"
-                      onMouseDown={e => e.preventDefault()}
+                      onMouseDown={e => {
+                        e.preventDefault();
+                        // Capture cursor position before editor loses focus
+                        const sel = window.getSelection();
+                        if (sel && sel.rangeCount > 0) {
+                          const rect = sel.getRangeAt(0).getBoundingClientRect();
+                          if (rect.width > 0 || rect.height > 0) {
+                            setTradePickerPos({ top: rect.bottom + 8, left: rect.left });
+                          } else {
+                            setTradePickerPos(null); // no selection, use fallback
+                          }
+                        } else {
+                          setTradePickerPos(null);
+                        }
+                      }}
                       onClick={() => { setShowTradePicker(true); setTradeSearchQuery(''); setTradeHighlightIdx(0); setTimeout(() => tradeSearchInputRef.current?.focus(), 50); }}
                       title="引用今日交易"
                       style={{ height: 24, padding: '0 10px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 5, color: '#4338CA', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, transition: 'background 150ms' }}
@@ -1238,7 +1253,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   {showTradePicker && (
                     <>
                       <div style={{ position: 'fixed', inset: 0, zIndex: 10099 }} onClick={() => setShowTradePicker(false)} />
-                      <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <div onClick={e => e.stopPropagation()} style={
+                        tradePickerPos
+                          ? { position: 'fixed', top: Math.min(tradePickerPos.top, window.innerHeight - 400), left: Math.min(tradePickerPos.left, window.innerWidth - 440), width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+                          : { position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+                      }>
                         {/* Search */}
                         <div style={{ padding: '12px 16px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
                           <div style={{ position: 'relative' }}>

@@ -17,11 +17,11 @@ const TradeReference = Node.create({
 
   addAttributes() {
     return {
-      tradeId:   { default: null },
-      time:      { default: '' },
-      symbol:    { default: '' },
-      direction: { default: '' },
-      netPnl:    { default: 0 },
+      tradeId:   { default: null,  parseHTML: el => el.getAttribute('data-trade-ref') },
+      time:      { default: '',    parseHTML: el => el.getAttribute('data-time') },
+      symbol:    { default: '',    parseHTML: el => el.getAttribute('data-symbol') },
+      direction: { default: '',    parseHTML: el => el.getAttribute('data-direction') },
+      netPnl:    { default: 0,     parseHTML: el => parseFloat(el.getAttribute('data-net-pnl') || '0') },
     };
   },
 
@@ -41,6 +41,10 @@ const TradeReference = Node.create({
       'span',
       mergeAttributes({
         'data-trade-ref': tradeId,
+        'data-time': time,
+        'data-symbol': symbol,
+        'data-direction': direction,
+        'data-net-pnl': String(netPnl),
         style: [
           'display:inline-flex',
           'align-items:center',
