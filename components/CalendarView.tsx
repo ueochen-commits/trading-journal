@@ -3,7 +3,7 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { DailyPlan, Trade, Direction } from '../types';
 import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 
 interface CalendarViewProps {
   trades: Trade[];
@@ -408,114 +408,117 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
       </div>
 
 
-      {/* Daily Details Modal */}
+      {/* Daily Details Modal v7 */}
       {selectedDay && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in"
-          style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)' }}
+          className="fixed inset-0 z-50 flex items-center justify-center animate-fade-in"
+          style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', padding: '24px' }}
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="bg-white flex flex-col overflow-hidden animate-fade-in-up relative"
-            style={{ width: 'min(1040px, 92vw)', maxHeight: '85vh', borderRadius: 16, boxShadow: '0 24px 72px rgba(15,23,42,0.16)' }}
+            className="animate-fade-in-up"
+            style={{ width: 'min(1040px, 92vw)', maxHeight: 'min(85vh, 720px)', background: '#FFFFFF', borderRadius: 16, boxShadow: '0 24px 72px rgba(15,23,42,0.14)', display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", WebkitFontSmoothing: 'antialiased' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Section 1: Header */}
-            <div className="flex items-center justify-between flex-shrink-0" style={{ padding: '0 40px', height: 72 }}>
-              <div className="flex items-center">
-                <span style={{ fontSize: 20, fontWeight: 600, color: '#0F172A', fontFamily: 'Inter, sans-serif' }}>{modalDateLabel}</span>
-                {selectedDayStats && (
-                  <>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#CBD5E1', margin: '0 12px', flexShrink: 0, display: 'inline-block' }} />
-                    <span style={{ fontSize: 13, color: '#64748B', fontWeight: 400, marginRight: 8 }}>Net P&L</span>
-                    <span style={{ fontSize: 20, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626' }}>
-                      {selectedDayStats.pnl >= 0 ? '+' : '\u2212'}${Math.abs(selectedDayStats.pnl).toFixed(2)}
-                    </span>
-                  </>
-                )}
+            {/* ── Section 1: Header ── */}
+            <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '36px 40px 0' }}>
+              {/* Left cluster */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                <span style={{ fontSize: 19, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.015em' }}>{modalDateLabel}</span>
+                <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#CBD5E1', flexShrink: 0, display: 'inline-block' }} />
+                <span style={{ fontSize: 13, fontWeight: 400, color: '#64748B' }}>Net P&L</span>
+                <span style={{ fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: selectedDayStats ? (selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
+                  {selectedDayStats ? `${selectedDayStats.pnl >= 0 ? '+' : '\u2212'}$${Math.abs(selectedDayStats.pnl).toFixed(2)}` : '\u2014'}
+                </span>
               </div>
-              <div className="flex items-center" style={{ gap: 12 }}>
+              {/* Right cluster */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <button
                   onClick={() => setShowReview(v => !v)}
-                  className="relative flex items-center"
-                  style={{ height: 36, padding: '0 14px', gap: 6, borderRadius: 8, fontSize: 14, fontWeight: 500, background: showReview ? '#EEF2FF' : '#fff', border: `1px solid ${showReview ? '#C7D2FE' : '#E2E8F0'}`, color: showReview ? '#4338CA' : '#475569', cursor: 'pointer', transition: 'all 150ms', outline: 'none' }}
+                  style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
                 >
-                  <Edit3 style={{ width: 16, height: 16 }} />
-                  {cal.weekSuffix ? '写复盘' : 'Add note'}
+                  <Edit3 style={{ width: 14, height: 14 }} />
+                  {showReview ? (cal.weekSuffix ? '收起复盘' : 'Hide note') : (cal.weekSuffix ? '写复盘' : 'Add note')}
                   {selectedDayHasReview && (
-                    <span style={{ position: 'absolute', top: -3, right: -3, width: 8, height: 8, borderRadius: '50%', background: '#3B82F6', border: '1.5px solid #fff' }} />
+                    <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#6366F1', border: '2px solid #fff' }} />
                   )}
                 </button>
                 <button
                   onClick={() => setSelectedDay(null)}
-                  style={{ width: 36, height: 36, borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748B', transition: 'background 150ms', outline: 'none' }}
+                  style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                 >
-                  <X style={{ width: 18, height: 18 }} />
+                  <X style={{ width: 17, height: 17 }} />
                 </button>
               </div>
             </div>
-            {/* Section 2: KPI + Chart */}
-            <div className="flex flex-shrink-0" style={{ padding: '24px 40px', gap: 32, borderTop: '1px solid #F1F5F9' }}>
-              {/* Left: Cumulative P&L Chart (flex 5) */}
-              <div style={{ flex: 5, minWidth: 0 }}>
-                <p style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 12 }}>CUMULATIVE P&L</p>
+            {/* ── Section 2: KPI + Chart ── */}
+            <div style={{ flexShrink: 0, display: 'grid', gridTemplateColumns: '5fr 7fr', gap: 40, alignItems: 'center', padding: '32px 40px' }}>
+              {/* Left: Cumulative P&L chart */}
+              <div style={{ minWidth: 0 }}>
                 {selectedDayStats ? (
                   <ResponsiveContainer width="100%" height={180}>
                     <AreaChart data={cumulativePnlData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
                       <defs>
-                        <linearGradient id="modalPnlGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0.12} />
+                        <linearGradient id="v7PnlGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0.13} />
                           <stop offset="100%" stopColor={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <XAxis dataKey="i" axisLine={{ stroke: '#E2E8F0' }} tickLine={false} tick={false} />
-                      <YAxis tickCount={5} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#94A3B8', fontVariantNumeric: 'tabular-nums' } as any} tickFormatter={(v: number) => `$${v}`} width={48} />
                       <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#F1F5F9" />
+                      <XAxis dataKey="i" axisLine={{ stroke: '#E2E8F0' }} tickLine={false} tick={false} />
+                      <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
+                      <ReferenceLine y={0} stroke="#CBD5E1" strokeWidth={1} />
                       <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
-                      <Area type="monotone" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={2} fill="url(#modalPnlGrad)" dot={false} activeDot={{ r: 4 }} />
+                      <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626'} strokeWidth={1.5} strokeLinecap="round" fill="url(#v7PnlGrad)" dot={false} activeDot={{ r: 3 }} />
                     </AreaChart>
                   </ResponsiveContainer>
                 ) : (
                   <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: 14 }}>当日无交易</div>
                 )}
               </div>
-              {/* Right: 8 KPI Grid 4×2 (flex 7) */}
-              <div style={{ flex: 7, display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px 32px', alignContent: 'start', paddingTop: 28 }}>
+              {/* Right: 4×2 KPI grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', rowGap: 26, columnGap: 24 }}>
                 {[
                   { label: cal.weekSuffix ? '总交易' : 'Total Trades', value: selectedDayStats ? String(selectedDayStats.count) : '\u2014', color: '#0F172A' },
-                  { label: cal.weekSuffix ? '毛盈亏' : 'Gross P&L', value: extendedDayStats ? `${extendedDayStats.grossPnl >= 0 ? '+' : '\u2212'}$${Math.abs(extendedDayStats.grossPnl).toFixed(2)}` : '\u2014', color: extendedDayStats ? (extendedDayStats.grossPnl >= 0 ? '#15803D' : '#DC2626') : '#0F172A' },
+                  { label: cal.weekSuffix ? '毛盈亏' : 'Gross P&L', value: extendedDayStats ? `${extendedDayStats.grossPnl >= 0 ? '+' : '\u2212'}$${Math.abs(extendedDayStats.grossPnl).toFixed(2)}` : '\u2014', color: extendedDayStats ? (extendedDayStats.grossPnl >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' },
                   { label: cal.weekSuffix ? '盈/亏笔数' : 'Winners / Losers', value: selectedDayStats ? `${selectedDayStats.wins} / ${selectedDayStats.losses}` : '\u2014', color: '#0F172A' },
                   { label: cal.weekSuffix ? '手续费' : 'Commissions', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: '#0F172A' },
-                  { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: selectedDayStats ? (selectedDayStats.winRate >= 50 ? '#15803D' : '#DC2626') : '#0F172A' },
+                  { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: selectedDayStats ? (selectedDayStats.winRate >= 50 ? '#15803D' : '#DC2626') : '#94A3B8' },
                   { label: cal.weekSuffix ? '成交量' : 'Volume', value: extendedDayStats && extendedDayStats.volume > 0 ? extendedDayStats.volume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014', color: '#0F172A' },
                   { label: cal.weekSuffix ? '盈利因子' : 'Profit Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: '#0F172A' },
-                  { label: cal.weekSuffix ? '均盈/均亏' : 'Avg Win / Loss', value: selectedDayStats ? `$${selectedDayStats.avgWin.toFixed(2)} / \u2212$${Math.abs(selectedDayStats.avgLoss).toFixed(2)}` : '\u2014', color: '#0F172A' },
+                  { label: cal.weekSuffix ? '均盈 / 均亏' : 'Avg Win / Loss', value: selectedDayStats ? `$${selectedDayStats.avgWin.toFixed(2)} / \u2212$${Math.abs(selectedDayStats.avgLoss).toFixed(2)}` : '\u2014', color: '#0F172A' },
                 ].map(kpi => (
                   <div key={kpi.label}>
-                    <p style={{ fontSize: 13, color: '#64748B', fontWeight: 400, marginBottom: 4, lineHeight: 1.4 }}>{kpi.label}</p>
-                    <p style={{ fontSize: 20, fontWeight: 600, color: kpi.color, fontVariantNumeric: 'tabular-nums', lineHeight: 1.2 }}>{kpi.value}</p>
+                    <div style={{ fontSize: 12.5, fontWeight: 400, color: '#64748B', marginBottom: 8, letterSpacing: '-0.005em' }}>{kpi.label}</div>
+                    <div style={{ fontSize: 17, fontWeight: 500, color: kpi.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>{kpi.value}</div>
                   </div>
                 ))}
               </div>
             </div>
-            {/* Section 3: Trade Table */}
+            {/* ── Section 3: Trade Table ── */}
             {selectedDayTrades.length > 0 && (
-              <div style={{ overflowY: 'auto', maxHeight: selectedDayTrades.length > 6 ? 360 : undefined, borderTop: '1px solid #F1F5F9', flexShrink: 0 }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <div style={{ borderTop: '1px solid #F1F5F9', flex: '1 1 auto', minHeight: 0, overflowY: selectedDayTrades.length > 6 ? 'auto' : 'visible', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                  <colgroup>
+                    <col style={{ width: '13%' }} /><col style={{ width: '18%' }} /><col style={{ width: '10%' }} />
+                    <col style={{ width: '15%' }} /><col style={{ width: '14%' }} /><col style={{ width: '12%' }} /><col />
+                  </colgroup>
                   <thead style={{ position: 'sticky', top: 0, background: '#F8FAFC', zIndex: 1 }}>
                     <tr>
                       {[
-                        { label: cal.weekSuffix ? '开仓时间' : 'Time', w: 120, align: 'left' },
-                        { label: cal.weekSuffix ? '品种' : 'Symbol', w: 160, align: 'left' },
-                        { label: cal.weekSuffix ? '方向' : 'Direction', w: 100, align: 'left' },
-                        { label: cal.weekSuffix ? '数量' : 'Qty', w: 140, align: 'right' },
-                        { label: cal.weekSuffix ? '净P&L' : 'Net P&L', w: 140, align: 'right' },
-                        { label: 'ROI%', w: 120, align: 'right' },
-                        { label: cal.weekSuffix ? '来源' : 'Source', w: undefined, align: 'left' },
-                      ].map(col => (
-                        <th key={col.label} style={{ width: col.w, padding: '0 16px', height: 44, textAlign: col.align as any, fontSize: 13, fontWeight: 500, color: '#475569', borderBottom: '1px solid #F1F5F9', whiteSpace: 'nowrap' }}>{col.label}</th>
+                        { label: cal.weekSuffix ? '开仓时间' : 'Time', align: 'left' },
+                        { label: cal.weekSuffix ? '品种' : 'Symbol', align: 'left' },
+                        { label: cal.weekSuffix ? '方向' : 'Direction', align: 'left' },
+                        { label: cal.weekSuffix ? '数量' : 'Qty', align: 'right' },
+                        { label: cal.weekSuffix ? '净 P&L' : 'Net P&L', align: 'right' },
+                        { label: 'ROI%', align: 'right' },
+                        { label: cal.weekSuffix ? '策略' : 'Strategy', align: 'left' },
+                      ].map((col, ci) => (
+                        <th key={col.label} style={{ padding: '12px 16px', textAlign: col.align as any, fontSize: 12.5, fontWeight: 500, color: '#475569', borderBottom: '1px solid #F1F5F9', paddingLeft: ci === 0 ? 40 : 16, paddingRight: ci === 6 ? 40 : 16 }}>{col.label}</th>
                       ))}
                     </tr>
                   </thead>
@@ -528,21 +531,26 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                         <tr key={trade.id} style={{ borderBottom: '1px solid #F1F5F9', cursor: 'pointer', transition: 'background 100ms' }}
                           onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#FAFBFC'; }}
                           onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = ''; }}>
-                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-                            {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          <td style={{ padding: '18px 16px 18px 40px', fontSize: 13.5, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                            {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                           </td>
-                          <td style={{ padding: '0 16px', height: 56 }}>
-                            <span style={{ background: '#EEF2FF', color: '#4338CA', padding: '4px 10px', borderRadius: 6, fontSize: 13, fontWeight: 500 }}>{trade.symbol}</span>
+                          <td style={{ padding: '18px 16px' }}>
+                            <span style={{ display: 'inline-block', padding: '3px 9px', background: '#EEF2FF', color: '#4338CA', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.symbol}</span>
                           </td>
-                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, fontWeight: 500, color: '#0F172A' }}>{trade.direction}</td>
-                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, color: '#0F172A', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{trade.quantity.toLocaleString()}</td>
-                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, fontWeight: 500, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: netPnl >= 0 ? '#15803D' : '#DC2626' }}>
+                          <td style={{ padding: '18px 16px', fontSize: 13.5, fontWeight: 500, color: '#0F172A' }}>{trade.direction}</td>
+                          <td style={{ padding: '18px 16px', fontSize: 13.5, color: '#0F172A', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{trade.quantity.toLocaleString()}</td>
+                          <td style={{ padding: '18px 16px', fontSize: 13.5, fontWeight: 500, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: netPnl >= 0 ? '#15803D' : '#DC2626' }}>
                             {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
                           </td>
-                          <td style={{ padding: '0 16px', height: 56, fontSize: 14, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: roi !== null ? (roi >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
+                          <td style={{ padding: '18px 16px', fontSize: 13.5, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: roi !== null ? (roi >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
                             {roi !== null ? (roi >= 0 ? `${roi.toFixed(2)}%` : `(${Math.abs(roi).toFixed(2)}%)`) : '\u2014'}
                           </td>
-                          <td style={{ padding: '0 16px', height: 56, fontSize: 13, color: '#94A3B8' }}>{trade.setup || '\u2014'}</td>
+                          <td style={{ padding: '18px 40px 18px 16px' }}>
+                            {trade.setup
+                              ? <span style={{ display: 'inline-block', padding: '3px 9px', background: '#F8FAFC', color: '#334155', border: '1px solid #E2E8F0', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
+                              : <span style={{ color: '#CBD5E1', fontSize: 13.5, letterSpacing: '0.05em' }}>--</span>
+                            }
+                          </td>
                         </tr>
                       );
                     })}
@@ -550,37 +558,38 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                 </table>
               </div>
             )}
-            {/* Section 4: Collapsible Review */}
+            {/* ── Section 4: Daily Review (collapsible) ── */}
             {showReview && (
-              <div style={{ borderTop: '1px solid #F1F5F9', padding: '20px 40px', flexShrink: 0 }}>
+              <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '20px 40px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 500, color: '#0F172A' }}>{cal.weekSuffix ? '每日复盘' : 'Daily Review'}</span>
+                  <button onClick={handleSaveReview} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 32, padding: '0 14px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, cursor: 'pointer', outline: 'none' }}>
+                    <Save style={{ width: 13, height: 13 }} />
+                    {t.calendar.modal.save}
+                  </button>
+                </div>
                 <textarea
-                  style={{ width: '100%', height: 180, background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: 10, padding: '14px 16px', fontSize: 14, color: '#374151', lineHeight: 1.7, outline: 'none', resize: 'none', fontFamily: 'Inter, sans-serif', boxSizing: 'border-box', transition: 'border-color 150ms' }}
-                  placeholder={t.calendar.modal.writeReview}
+                  style={{ width: '100%', height: 140, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 8, padding: '12px 14px', fontSize: 13.5, color: '#0F172A', lineHeight: 1.65, outline: 'none', resize: 'none', fontFamily: 'inherit', boxSizing: 'border-box', transition: 'border-color 150ms' }}
+                  placeholder={cal.weekSuffix ? '记录今天的交易心得、市场观察、情绪状态...' : t.calendar.modal.writeReview}
                   value={reviewText}
                   onChange={e => setReviewText(e.target.value)}
                   onFocus={e => { e.currentTarget.style.borderColor = '#6366F1'; }}
                   onBlur={e => { e.currentTarget.style.borderColor = '#E2E8F0'; }}
                 />
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
-                  <button onClick={handleSaveReview} style={{ display: 'flex', alignItems: 'center', gap: 6, height: 36, padding: '0 16px', background: '#6366F1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>
-                    <Save style={{ width: 14, height: 14 }} />
-                    {t.calendar.modal.save}
-                  </button>
-                </div>
               </div>
             )}
-            {/* Section 5: Bottom Bar */}
-            <div style={{ borderTop: '1px solid #F1F5F9', padding: '0 40px', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 12, flexShrink: 0 }}>
+            {/* ── Section 5: Bottom Bar ── */}
+            <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '0 40px 28px', marginTop: 12, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10, paddingTop: 20 }}>
               <button
                 onClick={() => setSelectedDay(null)}
-                style={{ height: 40, padding: '0 20px', background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 14, fontWeight: 500, color: '#475569', cursor: 'pointer', transition: 'background 150ms' }}
+                style={{ height: 40, padding: '0 22px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#475569', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fff'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
               >
                 {cal.weekSuffix ? '取消' : 'Cancel'}
               </button>
               <button
-                style={{ height: 40, padding: '0 20px', background: '#6366F1', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, color: '#fff', cursor: 'pointer', transition: 'background 150ms' }}
+                style={{ height: 40, padding: '0 22px', background: '#6366F1', border: 'none', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#FFFFFF', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4F46E5'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#6366F1'; }}
               >
@@ -590,7 +599,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             {/* Toast */}
             {showToast && (
               <div className="absolute bottom-6 left-1/2 -translate-x-1/2 bg-emerald-600 text-white px-5 py-2.5 rounded-full shadow-xl flex items-center gap-2 animate-fade-in-up z-[60]">
-                <CheckCircle2 style={{ width: 16, height: 16 }} />
+                <CheckCircle2 style={{ width: 15, height: 15 }} />
                 <span style={{ fontSize: 13, fontWeight: 500 }}>{t.calendar.modal.saveSuccess}</span>
               </div>
             )}
