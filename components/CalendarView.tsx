@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { DailyPlan, Trade, Direction } from '../types';
 import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
@@ -409,7 +410,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
 
       {/* Daily Details Modal Final */}
-      {selectedDay && (
+      {selectedDay && createPortal(
         <div
           className="animate-fade-in"
           style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(4px)', padding: 24 }}
@@ -623,7 +624,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             )}
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 };
