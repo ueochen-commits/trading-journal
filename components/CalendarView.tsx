@@ -1224,15 +1224,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       type="button"
                       onMouseDown={e => {
                         e.preventDefault();
-                        // Capture cursor position before editor loses focus
-                        const sel = window.getSelection();
-                        if (sel && sel.rangeCount > 0) {
-                          const rect = sel.getRangeAt(0).getBoundingClientRect();
-                          if (rect.width > 0 || rect.height > 0) {
-                            setTradePickerPos({ top: rect.bottom + 8, left: rect.left });
-                          } else {
-                            setTradePickerPos(null); // no selection, use fallback
-                          }
+                        // Use TipTap's own cursor position — always inside the editor
+                        if (reviewEditor) {
+                          const { from } = reviewEditor.state.selection;
+                          const coords = reviewEditor.view.coordsAtPos(from);
+                          setTradePickerPos({
+                            top: coords.bottom + 8,
+                            left: coords.left,
+                          });
                         } else {
                           setTradePickerPos(null);
                         }
