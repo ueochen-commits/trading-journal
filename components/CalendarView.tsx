@@ -154,7 +154,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     return Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthDays - firstDayOfMonth + 1 + i;
       return (
-        <div key={`prev-${i}`} className="h-[110px] rounded-[10px] bg-white dark:bg-slate-900 p-2 flex flex-col items-end" style={{ transition: 'all 150ms ease' }}>
+        <div key={`prev-${i}`} className="h-[110px] rounded-[10px] p-[10px_12px] flex flex-col items-end" style={{ background: 'transparent' }}>
           <span className="text-[13px] text-[#D1D5DB] dark:text-slate-700">{day}</span>
         </div>
       );
@@ -163,7 +163,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
   const renderNextMonthBlanks = () => {
     return Array.from({ length: trailingBlanks }, (_, i) => (
-      <div key={`next-${i}`} className="h-[110px] rounded-[10px] bg-white dark:bg-slate-900 p-2 flex flex-col items-end" style={{ transition: 'all 150ms ease' }}>
+      <div key={`next-${i}`} className="h-[110px] rounded-[10px] p-[10px_12px] flex flex-col items-end" style={{ background: 'transparent' }}>
         <span className="text-[13px] text-[#D1D5DB] dark:text-slate-700">{i + 1}</span>
       </div>
     ));
@@ -210,13 +210,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           role="button"
           tabIndex={0}
           aria-label={ariaLabel}
-          className={`h-[110px] rounded-[10px] p-2.5 flex flex-col items-end cursor-pointer group ${bgClass} ${borderClass}`}
-          style={{ transition: 'all 150ms ease' }}
+          className={`h-[110px] rounded-[10px] flex flex-col cursor-pointer group relative ${bgClass} ${borderClass}`}
+          style={{ padding: '10px 12px', transition: 'all 150ms ease' }}
           onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)'; }}
           onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
         >
-          {/* Day number — right aligned */}
-          <div className="w-full flex justify-end items-start">
+          {/* Day number — right aligned, top */}
+          <div className="w-full flex justify-end">
             <span className={`text-[13px] font-medium ${textClass}`}>{d}</span>
           </div>
 
@@ -225,22 +225,27 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
               <span className={`text-[16px] font-bold ${pnlTextClass}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
                 {data.netPnl >= 0 ? '+' : '\u2212'}${Math.abs(data.netPnl).toFixed(2)}
               </span>
-              <span className={`text-[12px] ${pnlTextClass} opacity-70 mt-0.5`}>
+              <span className={`text-[12px] ${pnlTextClass} mt-0.5`} style={{ opacity: 0.7 }}>
                 {data.count} {cal.trades || 'trades'}
               </span>
-              <span className={`text-[12px] ${pnlTextClass} opacity-70`}>
+              <span className={`text-[12px] ${pnlTextClass}`} style={{ opacity: 0.55 }}>
                 {data.winRate.toFixed(1)}%
               </span>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-end justify-end w-full">
-              {data?.hasReview && <div className="w-1.5 h-1.5 rounded-full bg-[#F97316]" />}
-            </div>
+            <div className="flex-1" />
           )}
 
-          {/* Marker dot for trade days */}
+          {/* Marker dot — absolute, bottom-right corner */}
           {data && data.count > 0 && (
-            <div className={`w-1 h-1 rounded-full mt-auto self-end ${data.netPnl >= 0 ? 'bg-[#15803D] dark:bg-emerald-500' : 'bg-[#DC2626] dark:bg-rose-500'}`} />
+            <div
+              className={`absolute rounded-full ${data.netPnl >= 0 ? 'bg-[#15803D] dark:bg-emerald-500' : 'bg-[#DC2626] dark:bg-rose-500'}`}
+              style={{ width: 5, height: 5, bottom: 8, right: 8 }}
+            />
+          )}
+          {/* Review dot for no-trade days */}
+          {(!data || data.count === 0) && data?.hasReview && (
+            <div className="absolute rounded-full bg-[#F97316]" style={{ width: 5, height: 5, bottom: 8, right: 8 }} />
           )}
         </div>
       );
@@ -249,8 +254,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
 
   return (
     <div className="space-y-4 relative">
-      {/* Compact Toolbar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Toolbar — single line, left nav + right stats */}
+      <div className="flex items-center justify-between">
         {/* Left: Month Nav */}
         <div className="flex items-center gap-2">
           <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-slate-800 text-[#6B7280] dark:text-slate-400" style={{ transition: 'all 150ms ease' }}>
@@ -272,9 +277,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
         </div>
 
         {/* Right: Monthly Stats Pills */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2">
           <span className="text-[12px] text-[#9CA3AF] dark:text-slate-500 font-medium">{cal.monthlyStats || 'Monthly:'}</span>
-          {/* P&L Pill */}
           <span
             className={`inline-flex items-center px-3 py-1 rounded-full text-[13px] font-bold ${
               monthStats.totalPnl >= 0
@@ -285,7 +289,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
           >
             {monthStats.totalPnl >= 0 ? '+' : '\u2212'}${Math.abs(monthStats.totalPnl).toFixed(2)}
           </span>
-          {/* Trading Days Pill */}
           <span className="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-medium bg-[#F3F4F6] dark:bg-slate-800 text-[#374151] dark:text-slate-300">
             {monthStats.tradingDays} {cal.tradingDays || 'days'}
           </span>
@@ -297,10 +300,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
       <div className="flex flex-col lg:flex-row gap-4">
         {/* Calendar Grid */}
         <div className="flex-1 min-w-0">
-          {/* Weekday Header — individual pill cards */}
-          <div className="grid grid-cols-7 gap-1.5 mb-1.5">
+          {/* Weekday Header — plain text, no card borders */}
+          <div className="grid grid-cols-7 mb-1.5 border-b border-[#F3F4F6] dark:border-slate-800 pb-2">
             {t.calendar.weekdays.map(day => (
-              <div key={day} className="h-9 flex items-center justify-center bg-white dark:bg-slate-900 border border-[#E5E7EB] dark:border-slate-800 rounded-lg">
+              <div key={day} className="flex items-center justify-center">
                 <span className="text-[13px] font-medium text-[#6B7280] dark:text-slate-400">{day}</span>
               </div>
             ))}
@@ -324,21 +327,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
             const weekLabel = cal.weekSuffix
               ? `${cal.week}${i + 1}${cal.weekSuffix}`
               : `${cal.week} ${i + 1}`;
-            const highlightBg = week.isCurrent
-              ? (isPositive ? 'bg-[#F0FDF4] dark:bg-emerald-950/30' : 'bg-[#FEF2F2] dark:bg-rose-950/30')
-              : 'bg-white dark:bg-slate-900';
             return (
               <div
                 key={i}
-                className={`rounded-xl border border-[#E5E7EB] dark:border-slate-800 px-4 py-3.5 cursor-pointer flex-1 flex flex-col relative overflow-hidden ${highlightBg}`}
-                style={{ transition: 'all 150ms ease' }}
-                onMouseEnter={e => { e.currentTarget.style.backgroundColor = week.isCurrent ? '' : '#F9FAFB'; }}
-                onMouseLeave={e => { e.currentTarget.style.backgroundColor = ''; }}
+                className="rounded-xl border border-[#E5E7EB] dark:border-slate-800 px-4 py-3.5 cursor-pointer flex-1 flex flex-col"
+                style={{
+                  background: week.isCurrent ? '#FAFAFA' : '#ffffff',
+                  transition: 'all 150ms ease'
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#F9FAFB'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = week.isCurrent ? '#FAFAFA' : '#ffffff'; }}
               >
-                {/* Current week accent bar */}
-                {week.isCurrent && (
-                  <div className={`absolute left-0 top-0 bottom-0 w-[3px] ${isPositive ? 'bg-[#15803D] dark:bg-emerald-500' : 'bg-[#DC2626] dark:bg-rose-500'}`} />
-                )}
                 <span className="text-[13px] font-medium text-[#6B7280] dark:text-slate-400 mb-1">{weekLabel}</span>
                 <span
                   className={`text-[20px] font-bold mb-1.5 ${
