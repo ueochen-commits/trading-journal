@@ -27,6 +27,7 @@ import TaskItem from '@tiptap/extension-task-item';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import FontSize from '../lib/tiptapFontSize';
 import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
+import TradeReference from '../lib/tradeReferenceExtension';
 
 const TEXT_COLORS = ['#E24B4A','#EF9F27','#10b981','#3b82f6','#8b5cf6','#ec4899','#1a1a1a','#6b7280','#9ca3af','#ffffff'];
 const BG_COLORS = ['#fef3c7','#fce7f3','#dbeafe','#d1fae5','#ede9fe','#fee2e2','#f3f4f6','#fef9c3','#ccfbf1','#ffffff'];
@@ -361,6 +362,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       Placeholder.configure({ placeholder: '今天的交易心得、市场观察、情绪状态...' }),
       TaskList, TaskItem.configure({ nested: true }), HorizontalRule, FontSize,
       GlobalDragHandle.configure({ dragHandleWidth: 30 }),
+      TradeReference,
     ],
     content: reviewHtml,
     onUpdate: ({ editor: ed }) => {
@@ -592,11 +594,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const handleInsertTrade = useCallback((trade: typeof selectedDayTrades[0]) => {
     if (!reviewEditor) return;
     const netPnl = trade.pnl - trade.fees;
-    const pnlColor = netPnl >= 0 ? '#15803D' : '#DC2626';
-    const pnlText = netPnl >= 0 ? `+$${netPnl.toFixed(2)}` : `\u2212$${Math.abs(netPnl).toFixed(2)}`;
     const time = new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
-    const html = `<span data-trade-id="${trade.id}" contenteditable="false" style="display:inline-flex;align-items:center;gap:6px;padding:2px 10px;margin:0 2px;background:#FAFBFC;border:1px solid #E2E8F0;border-radius:6px;font-size:12.5px;vertical-align:middle;user-select:all;cursor:default;font-family:inherit;"><span style="font-family:monospace;color:#64748B;font-size:11px;">${time}</span><span style="display:inline-block;padding:1px 6px;background:#EEF2FF;color:#4338CA;border-radius:3px;font-size:11px;font-weight:500;">${trade.symbol}</span><span style="color:#0F172A;font-weight:500;font-size:12px;">${trade.direction}</span><span style="color:${pnlColor};font-weight:500;font-variant-numeric:tabular-nums;font-size:12px;">${pnlText}</span></span>`;
-    reviewEditor.chain().focus().insertContent(html + ' ').run();
+    reviewEditor.chain().focus().insertContent([
+      { type: 'tradeReference', attrs: { tradeId: trade.id, time, symbol: trade.symbol, direction: trade.direction, netPnl } },
+      { type: 'text', text: ' ' },
+    ]).run();
     setShowTradePicker(false);
     setTradeSearchQuery('');
     setTradeHighlightIdx(0);
@@ -1079,6 +1081,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       </>
                     )}
                   </div>
+                  {/* B3+B4 wrapper — position:relative so trade picker overlay anchors here */}
+                  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}>
                   {/* B3: Rich Text Toolbar */}
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2, height: 48, padding: '0 28px', borderBottom: '1px solid #F1F5F9', background: '#FAFBFC', overflowX: 'auto' }}
                     onMouseDown={e => e.preventDefault()}>
@@ -1234,7 +1238,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   {showTradePicker && (
                     <>
                       <div style={{ position: 'fixed', inset: 0, zIndex: 10099 }} onClick={() => setShowTradePicker(false)} />
-                      <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 160, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                      <div onClick={e => e.stopPropagation()} style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                         {/* Search */}
                         <div style={{ padding: '12px 16px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
                           <div style={{ position: 'relative' }}>
@@ -1278,6 +1282,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', flex: '1 1 auto', minHeight: 480, minWidth: 0 }}>
                     <EditorContent editor={reviewEditor} />
                   </div>
+                  </div>{/* end B3+B4 wrapper */}
                   {/* B5: Status Bar */}
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 40, padding: '0 44px', background: '#FAFBFC', borderTop: '1px solid #F1F5F9' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1295,38 +1300,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       ))}
                     </div>
                   </div>
-                  {/* Trade Picker Overlay */}
-                  {showTradePicker && (
-                    <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,23,42,0.4)', zIndex: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 16 }}>
-                      <div style={{ background: '#fff', borderRadius: 12, padding: 24, width: 480, maxHeight: 400, overflowY: 'auto', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                          <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{cal.weekSuffix ? '选择要引用的交易' : 'Select a trade to quote'}</span>
-                          <button onClick={() => setShowTradePicker(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B' }}><X style={{ width: 16, height: 16 }} /></button>
-                        </div>
-                        {selectedDayTrades.length === 0 ? (
-                          <p style={{ fontSize: 13, color: '#94A3B8', textAlign: 'center', padding: '20px 0' }}>{cal.weekSuffix ? '当日无交易' : 'No trades today'}</p>
-                        ) : selectedDayTrades.map(trade => {
-                          const netPnl = trade.pnl - trade.fees;
-                          return (
-                            <div key={trade.id}
-                              onClick={() => {
-                                const html = `<div style="display:inline-flex;align-items:center;gap:8px;padding:4px 10px;background:#EEF2FF;border-radius:6px;font-size:12px;font-weight:500;color:#4338CA;margin:0 2px">${trade.symbol} ${trade.direction} ${netPnl >= 0 ? '+' : ''}$${netPnl.toFixed(2)}</div>`;
-                                reviewEditor?.chain().focus().insertContent(html).run();
-                                setShowTradePicker(false);
-                              }}
-                              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', borderRadius: 8, cursor: 'pointer', transition: 'background 100ms', marginBottom: 4 }}
-                              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#F8FAFC'; }}
-                              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = ''; }}>
-                              <span style={{ fontSize: 13, fontWeight: 500, color: '#0F172A' }}>{trade.symbol} · {trade.direction}</span>
-                              <span style={{ fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: netPnl >= 0 ? '#15803D' : '#DC2626' }}>
-                                {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
-                              </span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
             </div>
