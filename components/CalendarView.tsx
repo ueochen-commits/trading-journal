@@ -87,31 +87,49 @@ const RDropdown = ({
   trigger, children, isOpen, onClose,
 }: {
   trigger: React.ReactNode; children: React.ReactNode; isOpen: boolean; onClose: () => void;
-}) => (
-  <div className="relative">
-    {trigger}
-    {isOpen && (
-      <>
-        <div className="fixed inset-0 z-[10040]" onClick={onClose} />
-        <div className="absolute top-full left-0 mt-1 z-[10050] bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg py-1 min-w-[140px]">
-          {children}
-        </div>
-      </>
-    )}
-  </div>
-);
+}) => {
+  const wrapRef = React.useRef<HTMLDivElement>(null);
+  const [pos, setPos] = React.useState<{ top: number; left: number } | null>(null);
+  React.useEffect(() => {
+    if (isOpen && wrapRef.current) {
+      const r = wrapRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, left: r.left });
+    }
+  }, [isOpen]);
+  return (
+    <div ref={wrapRef} className="relative">
+      {trigger}
+      {isOpen && pos && (
+        <>
+          <div className="fixed inset-0 z-[10040]" onClick={onClose} />
+          <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 10050 }} className="bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg py-1 min-w-[140px]">
+            {children}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
 
 const RColorPicker = ({
-  colors, isOpen, onClose, onSelect, onCustom,
+  colors, isOpen, onClose, onSelect, onCustom, triggerRef,
 }: {
   colors: string[]; isOpen: boolean; onClose: () => void;
   onSelect: (color: string) => void; onCustom: () => void;
+  triggerRef: React.RefObject<HTMLDivElement>;
 }) => {
-  if (!isOpen) return null;
+  const [pos, setPos] = React.useState<{ top: number; left: number } | null>(null);
+  React.useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const r = triggerRef.current.getBoundingClientRect();
+      setPos({ top: r.bottom + 4, left: r.left });
+    }
+  }, [isOpen, triggerRef]);
+  if (!isOpen || !pos) return null;
   return (
     <>
       <div className="fixed inset-0 z-[10040]" onClick={onClose} />
-      <div className="absolute top-full left-0 mt-1 z-[10050] bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg p-2 w-[180px]">
+      <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 10050 }} className="bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg p-2 w-[180px]">
         <div className="grid grid-cols-5 gap-1.5 mb-2">
           {colors.map((c) => (
             <button key={c} type="button" onClick={() => { onSelect(c); onClose(); }}
@@ -153,8 +171,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
   const [reviewInsertMenuOpen, setReviewInsertMenuOpen] = useState(false);
   const [reviewIsRecording, setReviewIsRecording] = useState(false);
   const [showTradePicker, setShowTradePicker] = useState(false);
-  const reviewColorInputRef = useRef<HTMLInputElement>(null);
-  const reviewBgColorInputRef = useRef<HTMLInputElement>(null);
+  const reviewColorInputRef = useRef<HTMLDivElement>(null);
+  const reviewBgColorInputRef = useRef<HTMLDivElement>(null);
+  const reviewTextColorNativeRef = useRef<HTMLInputElement>(null);
+  const reviewBgColorNativeRef = useRef<HTMLInputElement>(null);
   const reviewRecognitionRef = useRef<any>(null);
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
@@ -870,23 +890,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                       <Eraser className="w-3 h-3" />
                     </ToolBtn>
                     <ToolDivider />
-                    <div className="relative">
+                    <div className="relative" ref={reviewColorInputRef as any}>
                       <ToolBtn onClick={() => setReviewTextColorOpen(!reviewTextColorOpen)} title="文字颜色" ariaLabel="文字颜色">
                         <div className="flex flex-col items-center"><Type className="w-3 h-3" /><div className="w-3 h-[3px] rounded-sm bg-[#E24B4A] mt-px" /></div>
                       </ToolBtn>
                       <RColorPicker colors={TEXT_COLORS} isOpen={reviewTextColorOpen} onClose={() => setReviewTextColorOpen(false)}
                         onSelect={c => reviewEditor?.chain().focus().setColor(c).run()}
-                        onCustom={() => { reviewColorInputRef.current?.click(); setReviewTextColorOpen(false); }} />
-                      <input ref={reviewColorInputRef} type="color" className="hidden" onChange={e => reviewEditor?.chain().focus().setColor(e.target.value).run()} />
+                        onCustom={() => { reviewTextColorNativeRef.current?.click(); setReviewTextColorOpen(false); }}
+                        triggerRef={reviewColorInputRef as any} />
+                      <input ref={reviewTextColorNativeRef} type="color" className="hidden" onChange={e => reviewEditor?.chain().focus().setColor(e.target.value).run()} />
                     </div>
-                    <div className="relative">
+                    <div className="relative" ref={reviewBgColorInputRef as any}>
                       <ToolBtn onClick={() => setReviewBgColorOpen(!reviewBgColorOpen)} title="背景色" ariaLabel="背景色">
                         <div className="flex flex-col items-center"><Paintbrush className="w-3 h-3" /><div className="w-3 h-[3px] rounded-sm bg-[#EF9F27] mt-px" /></div>
                       </ToolBtn>
                       <RColorPicker colors={BG_COLORS} isOpen={reviewBgColorOpen} onClose={() => setReviewBgColorOpen(false)}
                         onSelect={c => reviewEditor?.chain().focus().toggleHighlight({ color: c }).run()}
-                        onCustom={() => { reviewBgColorInputRef.current?.click(); setReviewBgColorOpen(false); }} />
-                      <input ref={reviewBgColorInputRef} type="color" className="hidden" onChange={e => reviewEditor?.chain().focus().toggleHighlight({ color: e.target.value }).run()} />
+                        onCustom={() => { reviewBgColorNativeRef.current?.click(); setReviewBgColorOpen(false); }}
+                        triggerRef={reviewBgColorInputRef as any} />
+                      <input ref={reviewBgColorNativeRef} type="color" className="hidden" onChange={e => reviewEditor?.chain().focus().toggleHighlight({ color: e.target.value }).run()} />
                     </div>
                     <div className="relative">
                       <ToolBtn onClick={() => setReviewInsertMenuOpen(!reviewInsertMenuOpen)} title="插入" ariaLabel="插入">
