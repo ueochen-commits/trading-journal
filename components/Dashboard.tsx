@@ -1963,7 +1963,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 })()}
               </div>
 
-              <div id="dashboard-calendar" className="pt-2"><div className="flex items-center gap-3 mb-6"><div className="p-2 bg-orange-100 dark:bg-orange-50/10 rounded-lg"><Calendar className="w-6 h-6 text-orange-500" /></div><h3 className="text-xl font-bold text-slate-900 dark:text-white">{t.calendar.title}</h3></div><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} /></div>
+              <div id="dashboard-calendar" className="pt-2"><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} /></div>
           </div>
 
           <div className="lg:col-span-4 xl:col-span-3 space-y-6">
