@@ -211,6 +211,8 @@ const en = {
       title: "Trading Calendar",
       totalPnl: "Total P&L",
       totalTrades: "Total Trades",
+      week: "Week",
+      weeklySummary: "Weekly Summary",
       weekdays: ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
       modal: {
           stats: "Day Stats",
@@ -1554,6 +1556,9 @@ const cn = {
   calendar: {
       ...en.calendar,
       title: "交易日历",
+      week: "第",
+      weekSuffix: "周",
+      weeklySummary: "周度汇总",
       weekdays: ["周日", "周一", "周二", "周三", "周四", "周五", "周六"]
   },
   tour: {

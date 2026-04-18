@@ -40,6 +40,29 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
      return { totalPnl, totalTrades };
   }, [currentDate, trades]);
 
+  // Weekly stats: aggregate P&L and trade count per calendar row
+  const weeklyStats = useMemo(() => {
+    const totalCells = firstDayOfMonth + daysInMonth;
+    const numWeeks = Math.ceil(totalCells / 7);
+    const weeks: { pnl: number; count: number }[] = [];
+
+    for (let w = 0; w < numWeeks; w++) {
+      let weekPnl = 0;
+      let weekCount = 0;
+      for (let col = 0; col < 7; col++) {
+        const cellIndex = w * 7 + col;
+        const day = cellIndex - firstDayOfMonth + 1;
+        if (day < 1 || day > daysInMonth) continue;
+        const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
+        const dayTrades = trades.filter(t => new Date(t.entryDate).toDateString() === dateStr);
+        weekPnl += dayTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+        weekCount += dayTrades.length;
+      }
+      weeks.push({ pnl: weekPnl, count: weekCount });
+    }
+    return weeks;
+  }, [currentDate, trades, firstDayOfMonth, daysInMonth]);
+
   const getDayData = (day: number) => {
     const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
     
@@ -136,7 +159,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
     const blanks = [];
 
     for (let i = 0; i < firstDayOfMonth; i++) {
-      blanks.push(<div key={`blank-${i}`} className="min-h-[140px] bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50"></div>);
+      blanks.push(<div key={`blank-${i}`} className="min-h-[100px] bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800/50"></div>);
     }
 
     for (let d = 1; d <= daysInMonth; d++) {
@@ -161,7 +184,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
         <div 
             key={d} 
             onClick={() => handleDayClick(d)}
-            className={`min-h-[140px] p-2 border relative group transition-all flex flex-col cursor-pointer ${bgColor} ${isToday ? 'ring-2 ring-indigo-500 z-10' : ''}`}
+            className={`min-h-[100px] p-2 border relative group transition-all flex flex-col cursor-pointer ${bgColor} ${isToday ? 'ring-2 ring-indigo-500 z-10' : ''}`}
         >
           {/* Day Number */}
           <div className="flex justify-between items-start mb-1">
@@ -180,25 +203,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                 <span className="text-[10px] text-slate-500 dark:text-slate-400 mb-2 font-medium">
                     {data.count} {data.count === 1 ? 'Trade' : 'Trades'}
                 </span>
-
-                {/* Tags / Pills */}
-                <div className="flex flex-wrap gap-1 mt-auto content-start">
-                    {data.setups.slice(0, 2).map((setup, i) => (
-                        <span key={`setup-${i}`} className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide truncate max-w-full bg-indigo-50 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-500/30">
-                            {setup}
-                        </span>
-                    ))}
-                     {data.mistakes.slice(0, 2).map((mistake, i) => (
-                        <span key={`mistake-${i}`} className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide truncate max-w-full bg-rose-50 dark:bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-100 dark:border-rose-500/30">
-                            {mistake}
-                        </span>
-                    ))}
-                    {(data.setups.length + data.mistakes.length) > 3 && (
-                        <span className="text-[9px] text-slate-400 dark:text-slate-500 self-center font-medium">
-                            +{data.setups.length + data.mistakes.length - 3} more
-                        </span>
-                    )}
-                </div>
             </div>
           ) : (
              // No trades, but allow clicking to add review
@@ -275,18 +279,64 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
-        {/* Weekday Header */}
-        <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
-            {t.calendar.weekdays.map(day => (
-                <div key={day} className="py-4 text-center text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-widest">{day}</div>
-            ))}
+      {/* Grid + Weekly Summary */}
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Calendar Grid */}
+        <div className="flex-1 min-w-0 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm transition-colors">
+          {/* Weekday Header */}
+          <div className="grid grid-cols-7 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm">
+              {t.calendar.weekdays.map(day => (
+                  <div key={day} className="py-4 text-center text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-widest">{day}</div>
+              ))}
+          </div>
+
+          {/* Days */}
+          <div className="grid grid-cols-7 bg-slate-100 dark:bg-slate-950 gap-px border-b border-l border-slate-200 dark:border-slate-800">
+              {renderCalendarDays()}
+          </div>
         </div>
-        
-        {/* Days */}
-        <div className="grid grid-cols-7 bg-slate-100 dark:bg-slate-950 gap-px border-b border-l border-slate-200 dark:border-slate-800">
-            {renderCalendarDays()}
+
+        {/* Weekly Summary Sidebar */}
+        <div className="lg:w-56 xl:w-64 bg-white dark:bg-slate-950 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm transition-colors p-4">
+          <h3 className="text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-widest mb-3">
+            {t.calendar.weeklySummary}
+          </h3>
+          <div className="space-y-2">
+            {weeklyStats.map((week, i) => {
+              const isPositive = week.pnl >= 0;
+              const weekLabel = (t.calendar as any).weekSuffix
+                ? `${t.calendar.week}${i + 1}${(t.calendar as any).weekSuffix}`
+                : `${t.calendar.week} ${i + 1}`;
+              return (
+                <div
+                  key={i}
+                  className={`p-3 rounded-xl border transition-colors ${
+                    week.count === 0
+                      ? 'bg-slate-50 dark:bg-slate-900/30 border-slate-100 dark:border-slate-800/50'
+                      : isPositive
+                        ? 'bg-emerald-50 dark:bg-teal-900/20 border-emerald-100 dark:border-teal-800/30'
+                        : 'bg-rose-50 dark:bg-rose-900/20 border-rose-100 dark:border-rose-800/30'
+                  }`}
+                >
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-bold text-slate-600 dark:text-slate-300">{weekLabel}</span>
+                    <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                      {week.count} {week.count === 1 ? 'trade' : 'trades'}
+                    </span>
+                  </div>
+                  <span className={`text-sm font-bold font-mono ${
+                    week.count === 0
+                      ? 'text-slate-300 dark:text-slate-600'
+                      : isPositive
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-rose-600 dark:text-rose-400'
+                  }`}>
+                    {week.count === 0 ? '$0.00' : `${isPositive ? '+' : ''}$${week.pnl.toFixed(2)}`}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
