@@ -211,7 +211,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const reviewEditor = useEditor({
     extensions: [
-      StarterKit, Underline, Link.configure({ openOnClick: false }),
+      StarterKit.configure({ dropcursor: { color: '#6366f1', width: 3 } }), Underline, Link.configure({ openOnClick: false }),
       TextStyle, Color, Highlight.configure({ multicolor: true }),
       FontFamily, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: '今天的交易心得、市场观察、情绪状态...' }),
