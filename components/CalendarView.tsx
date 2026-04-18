@@ -24,6 +24,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import FontSize from '../lib/tiptapFontSize';
+import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
 
 const TEXT_COLORS = ['#E24B4A','#EF9F27','#10b981','#3b82f6','#8b5cf6','#ec4899','#1a1a1a','#6b7280','#9ca3af','#ffffff'];
 const BG_COLORS = ['#fef3c7','#fce7f3','#dbeafe','#d1fae5','#ede9fe','#fee2e2','#f3f4f6','#fef9c3','#ccfbf1','#ffffff'];
@@ -215,6 +216,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       FontFamily, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: '今天的交易心得、市场观察、情绪状态...' }),
       TaskList, TaskItem.configure({ nested: true }), HorizontalRule, FontSize,
+      GlobalDragHandle.configure({ dragHandleWidth: 20 }),
     ],
     content: reviewHtml,
     onUpdate: ({ editor: ed }) => {
