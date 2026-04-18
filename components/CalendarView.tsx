@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, X, Edit3, CheckCircle2, ArrowLeft, Save,
   Undo2, Redo2, Mic, MicOff, Bold, Italic, Underline as UnderlineIcon, Code2,
   Link as LinkIcon, Eraser, Type, Paintbrush, Plus, ChevronDown,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive, Paperclip
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -1243,9 +1243,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#E0E7FF'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#EEF2FF'; }}
                     >
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                      </svg>
+                      <Paperclip style={{ width: 11, height: 11 }} />
                       引用交易
                     </button>
                   </div>
@@ -1253,7 +1251,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   {showTradePicker && (
                     <>
                       <div style={{ position: 'fixed', inset: 0, zIndex: 10099 }} onClick={() => setShowTradePicker(false)} />
-                      <div onClick={e => e.stopPropagation()} style={
+                      <div onClick={e => e.stopPropagation()} className="trade-picker-dropdown" style={
                         tradePickerPos
                           ? { position: 'fixed', top: Math.min(tradePickerPos.top, window.innerHeight - 400), left: Math.min(tradePickerPos.left, window.innerWidth - 440), width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
                           : { position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
