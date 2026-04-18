@@ -194,12 +194,73 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         quality: 1, pixelRatio: 2, backgroundColor: '#FFFFFF', cacheBust: true,
         filter: (node: HTMLElement) => !node.classList?.contains('screenshot-ignore'),
       };
-      const [url, blob] = await Promise.all([
-        toPng(calendarRef.current, opts),
-        toBlob(calendarRef.current, opts),
-      ]);
-      setScreenshotUrl(url);
-      setScreenshotBlob(blob);
+      // Step 1: capture calendar as image
+      const calDataUrl = await toPng(calendarRef.current, opts);
+
+      // Step 2: compose final card with gradient bg + logo + calendar + url
+      const calImg = new Image();
+      await new Promise<void>(res => { calImg.onload = () => res(); calImg.src = calDataUrl; });
+
+      const logoImg = new Image();
+      logoImg.crossOrigin = 'anonymous';
+      await new Promise<void>(res => { logoImg.onload = () => res(); logoImg.onerror = () => res(); logoImg.src = '/TRADEGRAIL-lion.png'; });
+
+      const PAD = 48;
+      const LOGO_H = 48;
+      const URL_H = 28;
+      const GAP = 16;
+      const W = calImg.width;
+      const H = PAD + LOGO_H + GAP + calImg.height + GAP + URL_H + PAD;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext('2d')!;
+
+      // Gradient background
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#6366F1');
+      grad.addColorStop(0.5, '#A855F7');
+      grad.addColorStop(1, '#EC4899');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Logo (centered, max height 48px)
+      if (logoImg.naturalWidth > 0) {
+        const logoW = logoImg.naturalWidth * (LOGO_H / logoImg.naturalHeight);
+        ctx.drawImage(logoImg, (W - logoW) / 2, PAD, logoW, LOGO_H);
+      }
+
+      // Calendar screenshot (rounded corners)
+      const rx = 16;
+      ctx.save();
+      ctx.beginPath();
+      const cx = 0, cy = PAD + LOGO_H + GAP, cw = W, ch = calImg.height;
+      ctx.moveTo(cx + rx, cy);
+      ctx.lineTo(cx + cw - rx, cy);
+      ctx.quadraticCurveTo(cx + cw, cy, cx + cw, cy + rx);
+      ctx.lineTo(cx + cw, cy + ch - rx);
+      ctx.quadraticCurveTo(cx + cw, cy + ch, cx + cw - rx, cy + ch);
+      ctx.lineTo(cx + rx, cy + ch);
+      ctx.quadraticCurveTo(cx, cy + ch, cx, cy + ch - rx);
+      ctx.lineTo(cx, cy + rx);
+      ctx.quadraticCurveTo(cx, cy, cx + rx, cy);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(calImg, 0, PAD + LOGO_H + GAP);
+      ctx.restore();
+
+      // URL text
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.font = `${28}px Inter, -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('tradegrail.net', W / 2, PAD + LOGO_H + GAP + calImg.height + GAP + 20);
+
+      const finalUrl = canvas.toDataURL('image/png');
+      const finalBlob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/png'));
+
+      setScreenshotUrl(finalUrl);
+      setScreenshotBlob(finalBlob);
       setShareModalOpen(true);
       setCopyStatus('idle');
     } catch (err) {
@@ -1164,22 +1225,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       {shareModalOpen && screenshotUrl && createPortal(
         <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 99999, animation: 'slideInUp 200ms ease-out', width: 320 }}>
           <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
-            {/* Preview with gradient bg */}
-            <div style={{ position: 'relative', background: 'linear-gradient(135deg, #6366F1 0%, #A855F7 50%, #EC4899 100%)', padding: '20px 20px 12px' }}>
+            {/* Preview — image already contains gradient + logo + url */}
+            <div style={{ position: 'relative' }}>
               <button
                 onClick={() => setShareModalOpen(false)}
                 style={{ position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: '50%', background: 'rgba(0,0,0,0.35)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', backdropFilter: 'blur(8px)', zIndex: 2 }}
               >
                 <X style={{ width: 14, height: 14 }} />
               </button>
-              <div style={{ borderRadius: 10, overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.2)' }}>
-                <img src={screenshotUrl} alt="calendar screenshot" style={{ width: '100%', display: 'block' }} />
-              </div>
-              {/* Watermark */}
-              <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.9)', letterSpacing: '0.08em' }}>TRADEGRAIL</span>
-                <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.6)' }}>tradegrail.net</span>
-              </div>
+              <img src={screenshotUrl} alt="calendar share card" style={{ width: '100%', display: 'block', borderRadius: '16px 16px 0 0' }} />
             </div>
             {/* Actions */}
             <div style={{ display: 'flex', gap: 8, padding: '12px 16px 16px' }}>
