@@ -2020,7 +2020,15 @@ const Dashboard: React.FC<DashboardProps> = ({
                     ) : (
                       <div style={{ flex: 1, minHeight: 0 }}>
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={ddData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}>
+                          <AreaChart data={ddData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
+                            style={{ cursor: 'pointer' }}
+                            onClick={(data: any) => {
+                              const label = data?.activeLabel;
+                              if (!label) return;
+                              const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
+                              if (!isNaN(d.getTime())) setChartClickDay(d);
+                            }}
+                          >
                             <defs>
                               <linearGradient id="ddGradient" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="0%" stopColor="#FB7185" stopOpacity={0}/>
