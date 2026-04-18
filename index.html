@@ -293,6 +293,13 @@
         border-radius: 2px;
         padding: 0 2px;
       }
+
+      /* Remove browser focus outline on Recharts SVG elements */
+      .recharts-wrapper,
+      .recharts-wrapper svg,
+      .recharts-wrapper *:focus {
+        outline: none !important;
+      }
     </style>
   <script type="importmap">
 {
