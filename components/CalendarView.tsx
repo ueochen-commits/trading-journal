@@ -1,7 +1,7 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
 import { DailyPlan, Trade, Direction } from '../types';
-import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Save, Edit3, CheckCircle2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
@@ -445,8 +445,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan }
                     <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#6366F1', border: '2px solid #fff' }} />
                   )}
                 </button>
-                <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#A78BFA 0%,#818CF8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <User style={{ width: 19, height: 19, color: '#fff' }} />
+                <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg,#A78BFA 0%,#818CF8 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                  <img src="/lion-care.png" alt="logo" style={{ width: 38, height: 38, objectFit: 'cover', borderRadius: '50%' }} />
                 </div>
                 <button
                   onClick={() => setSelectedDay(null)}
