@@ -6,7 +6,7 @@ import {
   ChevronLeft, ChevronRight, X, Edit3, CheckCircle2, ArrowLeft, Save,
   Undo2, Redo2, Mic, MicOff, Bold, Italic, Underline as UnderlineIcon, Code2,
   Link as LinkIcon, Eraser, Type, Paintbrush, Plus, ChevronDown,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive, Camera
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -614,7 +614,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             className="w-8 h-8 flex items-center justify-center rounded-lg text-[#9CA3AF] hover:text-[#6366F1] hover:bg-[#F3F4F6] transition-all"
             style={{ flexShrink: 0 }}
           >
-            <Camera className="w-4 h-4" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
+              <circle cx="12" cy="13" r="3"/>
+            </svg>
           </button>
           <span className="text-[12px] text-[#9CA3AF] font-medium">{cal.monthlyStats || 'Monthly:'}</span>
           <span className={`inline-flex items-center px-3 py-1 rounded-full text-[13px] font-bold ${monthStats.totalPnl >= 0 ? 'bg-[#D4F4DD] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}
