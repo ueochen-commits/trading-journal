@@ -281,7 +281,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       ctx.font = `400 44px Georgia, "Times New Roman", serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText('www.tradegrail.com', W / 2, urlY);
+      ctx.fillText('www.tradegrail.net', W / 2, urlY);
 
       const finalUrl = canvas.toDataURL('image/png');
       const finalBlob = await new Promise<Blob>(res => canvas.toBlob(b => res(b!), 'image/png'));
