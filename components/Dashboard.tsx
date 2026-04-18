@@ -305,7 +305,7 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
             <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" />
               <XAxis type="number" dataKey="x" domain={['dataMin', 'dataMax']} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }}
-                tickFormatter={(v: number) => v < 24 ? `${Math.round(v)}h` : `${(v / 24).toFixed(0)}d`} label={{ value: language === 'cn' ? '持仓时长' : 'Duration', position: 'insideBottomRight', offset: -5, fontSize: 10, fill: '#b0b3c6' }} />
+                tickFormatter={(v: number) => v < 24 ? `${Math.round(v)}h` : `${(v / 24).toFixed(0)}d`} />
               <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={46}
                 tickFormatter={(v: number) => v >= 0 ? `$${(v/1000).toFixed(0)}k` : `-$${(Math.abs(v)/1000).toFixed(0)}k`} />
               <ReferenceLine y={0} stroke="rgba(0,0,0,0.12)" strokeWidth={1} />
