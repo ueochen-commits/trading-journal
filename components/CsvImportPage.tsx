@@ -29,6 +29,7 @@ interface FieldMapping {
 }
 
 interface AiRules {
+  recordType: 'paired_trades' | 'raw_orders';
   detectedExchange: string;
   detectedAccountType: string;
   confidence: number;
@@ -167,10 +168,15 @@ const BigCheck = () => (
 
 // ─── Helper: fallback rules when AI fails ────────────────────────────────────
 
-function buildFallbackRules(headers: string[], _rows: Record<string, string>[], exchange: string): AiRules {
+function buildFallbackRules(headers: string[], rows: Record<string, string>[], exchange: string): AiRules {
   const h = headers.map(s => s.toLowerCase());
   const find = (...keys: string[]) => headers.find((_, i) => keys.some(k => h[i].includes(k))) || null;
+  // Detect raw_orders: has side column but no pnl column
+  const hasPnl = !!find('pnl', 'profit', 'realized', '盈亏', '收益', '盈利');
+  const hasSide = !!find('side', 'direction', 'type', '方向', '类型');
+  const recordType: 'paired_trades' | 'raw_orders' = (hasSide && !hasPnl) ? 'raw_orders' : 'paired_trades';
   return {
+    recordType,
     detectedExchange: exchange || 'Unknown',
     detectedAccountType: 'unknown',
     confidence: 40,
@@ -180,9 +186,9 @@ function buildFallbackRules(headers: string[], _rows: Record<string, string>[], 
       symbol: find('symbol', 'pair', 'contract', '品种', '合约') || headers[1],
       side: find('side', 'direction', 'type', '方向', '类型') || headers[2],
       quantity: find('qty', 'quantity', 'size', 'amount', '数量') || headers[3],
-      openPrice: find('open price', 'entry', 'avg', '开仓价') || headers[4],
+      openPrice: find('open price', 'entry', 'avg', '开仓价', 'price') || headers[4],
       closePrice: find('close price', 'exit price', '平仓价'),
-      netPnl: find('pnl', 'profit', 'realized', '盈亏', '收益') || headers[5],
+      netPnl: find('pnl', 'profit', 'realized', '盈亏', '收益', '盈利') || headers[5],
       grossPnl: null,
       commission: find('fee', 'commission', 'cost', '手续费'),
     },
@@ -214,29 +220,37 @@ function parseNum(raw: string | undefined): number {
 // ─── Helper: convert all rows to Trade[] ─────────────────────────────────────
 
 function convertRows(rows: Record<string, string>[], rules: AiRules): Trade[] {
+  if (rules.recordType === 'raw_orders') {
+    return pairRawOrders(rows, rules);
+  }
+  return convertPairedRows(rows, rules);
+}
+
+// paired_trades: each row is already a complete trade
+function convertPairedRows(rows: Record<string, string>[], rules: AiRules): Trade[] {
   const { fieldMapping: fm, sideValues } = rules;
   const longSet = new Set(sideValues.long.map(s => s.toLowerCase()));
   const shortSet = new Set(sideValues.short.map(s => s.toLowerCase()));
 
   return rows.map((row, i) => {
-    const rawSide = (row[fm.side] || '').trim().toLowerCase();
+    const rawSide = fm.side ? (row[fm.side] || '').trim().toLowerCase() : '';
     const direction: Direction = shortSet.has(rawSide) ? Direction.SHORT : Direction.LONG;
 
-    const pnl = parseNum(row[fm.netPnl]);
+    const pnl = fm.netPnl ? parseNum(row[fm.netPnl]) : 0;
     const fees = fm.commission ? Math.abs(parseNum(row[fm.commission])) : 0;
-    // openTime must exist; if AI returned null, try first column that looks like a date
     const rawTime = fm.openTime ? row[fm.openTime] : Object.values(row).find(v => /\d{4}[-/]\d{2}[-/]\d{2}/.test(String(v))) || '';
     const entryDate = parseDate(String(rawTime));
     const exitDate = fm.closeTime ? parseDate(row[fm.closeTime]) : entryDate;
-    const entryPrice = parseNum(row[fm.openPrice]);
+    const entryPrice = fm.openPrice ? parseNum(row[fm.openPrice]) : 0;
     const exitPrice = fm.closePrice ? parseNum(row[fm.closePrice]) : entryPrice;
-    const quantity = parseNum(row[fm.quantity]) || 1;
+    const quantity = fm.quantity ? (parseNum(row[fm.quantity]) || 1) : 1;
+    const symbol = fm.symbol ? (row[fm.symbol] || '').trim().toUpperCase() : 'UNKNOWN';
 
     const status = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
 
     return {
       id: `import_${Date.now()}_${i}`,
-      symbol: (row[fm.symbol] || '').trim().toUpperCase(),
+      symbol: symbol || 'UNKNOWN',
       entryDate,
       exitDate,
       entryPrice,
@@ -251,7 +265,110 @@ function convertRows(rows: Record<string, string>[], rules: AiRules): Trade[] {
       leverage: 1,
       riskAmount: 0,
     } as Trade;
-  }).filter(t => t.symbol && t.entryDate);
+  }).filter(t => t.entryDate);
+}
+
+// raw_orders: pair BUY+SELL rows by symbol to form complete trades
+function pairRawOrders(rows: Record<string, string>[], rules: AiRules): Trade[] {
+  const { fieldMapping: fm, sideValues } = rules;
+  const longSet = new Set(sideValues.long.map(s => s.toLowerCase()));
+
+  // Group by symbol
+  const bySymbol: Record<string, Record<string, string>[]> = {};
+  rows.forEach(row => {
+    const sym = fm.symbol ? (row[fm.symbol] || '').trim().toUpperCase() : 'UNKNOWN';
+    if (!bySymbol[sym]) bySymbol[sym] = [];
+    bySymbol[sym].push(row);
+  });
+
+  const trades: Trade[] = [];
+  let idx = 0;
+
+  Object.entries(bySymbol).forEach(([symbol, symRows]) => {
+    // Sort by time
+    symRows.sort((a, b) => {
+      const ta = fm.openTime ? new Date(a[fm.openTime]).getTime() : 0;
+      const tb = fm.openTime ? new Date(b[fm.openTime]).getTime() : 0;
+      return ta - tb;
+    });
+
+    // Stack-based pairing: match each SELL with the most recent unmatched BUY
+    const openStack: Record<string, string>[] = [];
+
+    symRows.forEach(row => {
+      const rawSide = fm.side ? (row[fm.side] || '').trim().toLowerCase() : '';
+      const isBuy = longSet.has(rawSide);
+
+      if (isBuy) {
+        openStack.push(row);
+      } else {
+        // SELL — match with oldest open BUY
+        const openRow = openStack.shift();
+        const entryRow = openRow || row;
+        const exitRow = row;
+
+        const entryDate = fm.openTime ? parseDate(entryRow[fm.openTime]) : new Date().toISOString();
+        const exitDate = fm.openTime ? parseDate(exitRow[fm.openTime]) : entryDate;
+        const entryPrice = fm.openPrice ? parseNum(entryRow[fm.openPrice]) : 0;
+        const exitPrice = fm.openPrice ? parseNum(exitRow[fm.openPrice]) : 0;
+        const quantity = fm.quantity ? (parseNum(entryRow[fm.quantity]) || 1) : 1;
+
+        // Use Realized Profit if available, else calculate
+        let pnl = 0;
+        if (fm.netPnl && exitRow[fm.netPnl]) {
+          pnl = parseNum(exitRow[fm.netPnl]);
+        } else if (entryPrice > 0 && exitPrice > 0) {
+          pnl = (exitPrice - entryPrice) * quantity;
+        }
+        const fees = fm.commission ? Math.abs(parseNum(exitRow[fm.commission!])) : 0;
+        const status = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
+
+        trades.push({
+          id: `import_${Date.now()}_${idx++}`,
+          symbol,
+          entryDate,
+          exitDate,
+          entryPrice,
+          exitPrice,
+          quantity,
+          direction: Direction.LONG, // BUY→SELL is long
+          status,
+          pnl,
+          fees,
+          setup: '',
+          notes: '',
+          leverage: 1,
+          riskAmount: 0,
+        } as Trade);
+      }
+    });
+
+    // Remaining unmatched BUYs = open positions
+    openStack.forEach(row => {
+      const entryDate = fm.openTime ? parseDate(row[fm.openTime]) : new Date().toISOString();
+      const entryPrice = fm.openPrice ? parseNum(row[fm.openPrice]) : 0;
+      const quantity = fm.quantity ? (parseNum(row[fm.quantity]) || 1) : 1;
+      trades.push({
+        id: `import_${Date.now()}_${idx++}`,
+        symbol,
+        entryDate,
+        exitDate: entryDate,
+        entryPrice,
+        exitPrice: 0,
+        quantity,
+        direction: Direction.LONG,
+        status: TradeStatus.BE,
+        pnl: 0,
+        fees: 0,
+        setup: '',
+        notes: '',
+        leverage: 1,
+        riskAmount: 0,
+      } as Trade);
+    });
+  });
+
+  return trades;
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
