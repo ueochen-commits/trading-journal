@@ -607,7 +607,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         console.error('Error importing trades:', error);
       }
     } else {
-      setTrades(prev => [...imported, ...prev]);
+      // Reload from DB to get real IDs and accountId correctly reflected
+      const result = await userDataService.loadUserData();
+      if (result?.trades) setTrades(result.trades.map(formatTradeFromDB));
+      else setTrades(prev => [...imported, ...prev]);
     }
   };
 
