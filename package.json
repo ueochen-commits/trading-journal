@@ -44,10 +44,12 @@
     "jspdf": "^4.2.1",
     "lightweight-charts": "^5.1.0",
     "lucide-react": "^0.560.0",
+    "papaparse": "^5.5.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "recharts": "^3.5.1",
-    "tiptap-extension-global-drag-handle": "^0.1.18"
+    "tiptap-extension-global-drag-handle": "^0.1.18",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/canvas-confetti": "^1.9.0",

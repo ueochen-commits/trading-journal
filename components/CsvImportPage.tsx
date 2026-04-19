@@ -1,5 +1,8 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Trade } from '../types';
+import Papa from 'papaparse';
+import * as XLSX from 'xlsx';
+import { Trade, Direction, TradeStatus } from '../types';
+import { supabase } from '../supabaseClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -12,6 +15,29 @@ interface ParsedTrade {
   netPnl: number;
 }
 
+interface FieldMapping {
+  openTime: string;
+  closeTime: string | null;
+  symbol: string;
+  side: string;
+  quantity: string;
+  openPrice: string;
+  closePrice: string | null;
+  netPnl: string;
+  grossPnl: string | null;
+  commission: string | null;
+}
+
+interface AiRules {
+  detectedExchange: string;
+  detectedAccountType: string;
+  confidence: number;
+  fieldMapping: FieldMapping;
+  sideValues: { long: string[]; short: string[] };
+  dateFormat: string;
+  warnings: string[];
+}
+
 interface ParseResult {
   total: number;
   duplicates: number;
@@ -22,6 +48,8 @@ interface ParseResult {
   exchange: string;
   confidence: number;
   preview: ParsedTrade[];
+  convertedTrades: Trade[];
+  newTrades: Trade[];
 }
 
 interface Props {
@@ -137,6 +165,93 @@ const BigCheck = () => (
   </div>
 );
 
+// ─── Helper: fallback rules when AI fails ────────────────────────────────────
+
+function buildFallbackRules(headers: string[], _rows: Record<string, string>[], exchange: string): AiRules {
+  const h = headers.map(s => s.toLowerCase());
+  const find = (...keys: string[]) => headers.find((_, i) => keys.some(k => h[i].includes(k))) || null;
+  return {
+    detectedExchange: exchange || 'Unknown',
+    detectedAccountType: 'unknown',
+    confidence: 40,
+    fieldMapping: {
+      openTime: find('time', 'date', 'open', '时间', '开仓') || headers[0],
+      closeTime: find('close time', 'exit', '平仓时间'),
+      symbol: find('symbol', 'pair', 'contract', '品种', '合约') || headers[1],
+      side: find('side', 'direction', 'type', '方向', '类型') || headers[2],
+      quantity: find('qty', 'quantity', 'size', 'amount', '数量') || headers[3],
+      openPrice: find('open price', 'entry', 'avg', '开仓价') || headers[4],
+      closePrice: find('close price', 'exit price', '平仓价'),
+      netPnl: find('pnl', 'profit', 'realized', '盈亏', '收益') || headers[5],
+      grossPnl: null,
+      commission: find('fee', 'commission', 'cost', '手续费'),
+    },
+    sideValues: { long: ['Buy', 'Long', 'BUY', 'LONG', '做多', '买入'], short: ['Sell', 'Short', 'SELL', 'SHORT', '做空', '卖出'] },
+    dateFormat: 'auto',
+    warnings: ['AI 识别失败，使用自动规则，请在预览页确认字段是否正确'],
+  };
+}
+
+// ─── Helper: parse date string ────────────────────────────────────────────────
+
+function parseDate(raw: string): string {
+  if (!raw) return new Date().toISOString();
+  // Try direct parse first
+  const d = new Date(raw);
+  if (!isNaN(d.getTime())) return d.toISOString();
+  // Try common formats: 2026/04/18 22:52:00
+  const cleaned = raw.replace(/\//g, '-').replace(/(\d{4}-\d{2}-\d{2})\s/, '$1T');
+  const d2 = new Date(cleaned);
+  return isNaN(d2.getTime()) ? new Date().toISOString() : d2.toISOString();
+}
+
+function parseNum(raw: string | undefined): number {
+  if (!raw) return 0;
+  const n = parseFloat(String(raw).replace(/,/g, '').trim());
+  return isNaN(n) ? 0 : n;
+}
+
+// ─── Helper: convert all rows to Trade[] ─────────────────────────────────────
+
+function convertRows(rows: Record<string, string>[], rules: AiRules): Trade[] {
+  const { fieldMapping: fm, sideValues } = rules;
+  const longSet = new Set(sideValues.long.map(s => s.toLowerCase()));
+  const shortSet = new Set(sideValues.short.map(s => s.toLowerCase()));
+
+  return rows.map((row, i) => {
+    const rawSide = (row[fm.side] || '').trim().toLowerCase();
+    const direction: Direction = shortSet.has(rawSide) ? Direction.SHORT : Direction.LONG;
+
+    const pnl = parseNum(row[fm.netPnl]);
+    const fees = fm.commission ? Math.abs(parseNum(row[fm.commission])) : 0;
+    const entryDate = parseDate(row[fm.openTime]);
+    const exitDate = fm.closeTime ? parseDate(row[fm.closeTime]) : entryDate;
+    const entryPrice = parseNum(row[fm.openPrice]);
+    const exitPrice = fm.closePrice ? parseNum(row[fm.closePrice]) : entryPrice;
+    const quantity = parseNum(row[fm.quantity]) || 1;
+
+    const status = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
+
+    return {
+      id: `import_${Date.now()}_${i}`,
+      symbol: (row[fm.symbol] || '').trim().toUpperCase(),
+      entryDate,
+      exitDate,
+      entryPrice,
+      exitPrice,
+      quantity,
+      direction,
+      status,
+      pnl,
+      fees,
+      setup: '',
+      notes: '',
+      leverage: 1,
+      riskAmount: 0,
+    } as Trade;
+  }).filter(t => t.symbol && t.entryDate);
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const CsvImportPage: React.FC<Props> = ({
@@ -162,38 +277,110 @@ const CsvImportPage: React.FC<Props> = ({
   const tutorial = TUTORIALS[exchangeName] || DEFAULT_TUTORIAL;
   const isCustom = !TUTORIALS[exchangeName];
 
-  // Simulate parsing
-  const startParsing = useCallback((f: File) => {
+  // Real parsing pipeline
+  const startParsing = useCallback(async (f: File) => {
     setStep('parsing');
     setParseProgress(0);
-    const delays = [400, 800, 1400, 900, 600];
-    let done = 0;
-    delays.forEach((d, i) => {
-      setTimeout(() => {
-        done = i + 1;
-        setParseProgress(done);
-        if (done === delays.length) {
-          setTimeout(() => {
-            setParseResult({
-              total: 287, duplicates: 12, netPnl: 1284.56,
-              winRate: 47.3, profitFactor: 1.84,
-              dateRange: '2026.1.3 → 4.18',
-              exchange: `${exchangeName} 衍生品`,
-              confidence: 94,
-              preview: [
-                { time: '04-18 22:52', symbol: 'BTCUSDT', direction: '做多', netPnl: 331.04 },
-                { time: '04-17 14:23', symbol: 'ETHUSDT', direction: '做空', netPnl: -88.50 },
-                { time: '04-16 09:11', symbol: 'SOLUSDT', direction: '做多', netPnl: 142.30 },
-                { time: '04-15 18:44', symbol: 'BNBUSDT', direction: '做空', netPnl: 56.20 },
-                { time: '04-14 11:02', symbol: 'ONTUSDT', direction: '做多', netPnl: -23.10 },
-              ],
-            });
-            setStep('preview');
-          }, 400);
+
+    try {
+      // ── Step 1: Read file ──────────────────────────────────────────────────
+      let headers: string[] = [];
+      let allRows: Record<string, string>[] = [];
+
+      if (/\.csv$/i.test(f.name) || /\.txt$/i.test(f.name)) {
+        const text = await f.text();
+        const parsed = Papa.parse<Record<string, string>>(text, {
+          header: true, skipEmptyLines: true, dynamicTyping: false,
+        });
+        headers = parsed.meta.fields || [];
+        allRows = parsed.data;
+      } else {
+        const buf = await f.arrayBuffer();
+        const wb = XLSX.read(buf, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: '' });
+        headers = Object.keys(json[0] || {});
+        allRows = json;
+      }
+      setParseProgress(1);
+
+      // ── Step 2: Detect columns ─────────────────────────────────────────────
+      const sampleRows = allRows.slice(0, 15);
+      setParseProgress(2);
+
+      // ── Step 3: AI identifies format ───────────────────────────────────────
+      let rules: AiRules;
+      try {
+        const resp = await fetch('/api/csv-analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ headers, sampleRows, exchangeName, timezone }),
+        });
+        if (!resp.ok) throw new Error('AI API error');
+        rules = await resp.json();
+      } catch {
+        // Fallback: try to auto-detect common column names
+        rules = buildFallbackRules(headers, sampleRows, exchangeName);
+      }
+      setParseProgress(3);
+
+      // ── Step 4: Code-based batch conversion ────────────────────────────────
+      const converted = convertRows(allRows, rules);
+      setParseProgress(4);
+
+      // ── Step 5: Duplicate detection ────────────────────────────────────────
+      const { data: { user } } = await supabase.auth.getUser();
+      let newTrades = converted;
+      let duplicateCount = 0;
+
+      if (user) {
+        const sigs = converted.map(t => `${t.entryDate}_${t.symbol}_${t.quantity}_${t.direction}`);
+        const { data: existing } = await supabase
+          .from('trading_journals')
+          .select('date, symbol, quantity, direction')
+          .eq('user_id', user.id);
+
+        if (existing) {
+          const existSet = new Set(
+            existing.map((r: any) => `${r.date}_${r.symbol}_${r.quantity}_${r.direction === 'long' ? '做多' : '做空'}`)
+          );
+          newTrades = converted.filter((_, i) => !existSet.has(sigs[i]));
+          duplicateCount = converted.length - newTrades.length;
         }
-      }, delays.slice(0, i + 1).reduce((a, b) => a + b, 0));
-    });
-  }, [exchangeName]);
+      }
+      setParseProgress(5);
+
+      // ── Build result ───────────────────────────────────────────────────────
+      const wins = newTrades.filter(t => t.pnl > 0).length;
+      const grossWins = newTrades.filter(t => t.pnl > 0).reduce((s, t) => s + t.pnl, 0);
+      const grossLosses = Math.abs(newTrades.filter(t => t.pnl < 0).reduce((s, t) => s + t.pnl, 0));
+      const dates = newTrades.map(t => t.entryDate).sort();
+
+      setParseResult({
+        total: converted.length,
+        duplicates: duplicateCount,
+        netPnl: newTrades.reduce((s, t) => s + (t.pnl - t.fees), 0),
+        winRate: newTrades.length > 0 ? (wins / newTrades.length) * 100 : 0,
+        profitFactor: grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0,
+        dateRange: dates.length > 0 ? `${dates[0].slice(0, 10)} → ${dates[dates.length - 1].slice(0, 10)}` : '—',
+        exchange: `${rules.detectedExchange} ${rules.detectedAccountType}`,
+        confidence: rules.confidence,
+        preview: newTrades.slice(0, 5).map(t => ({
+          time: new Date(t.entryDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
+          symbol: t.symbol,
+          direction: t.direction,
+          netPnl: t.pnl - t.fees,
+        })),
+        convertedTrades: converted,
+        newTrades,
+      });
+      setStep('preview');
+    } catch (err) {
+      console.error('Parsing failed:', err);
+      setStep('upload');
+      alert('文件解析失败，请检查文件格式后重试');
+    }
+  }, [exchangeName, timezone]);
 
   const handleFile = useCallback((f: File) => {
     const ok = /\.(csv|xlsx|xls|txt)$/i.test(f.name);
@@ -209,7 +396,12 @@ const CsvImportPage: React.FC<Props> = ({
     if (f) handleFile(f);
   }, [handleFile]);
 
-  const handleConfirmImport = () => setStep('done');
+  const handleConfirmImport = useCallback(() => {
+    if (parseResult?.newTrades) {
+      onImportComplete?.(parseResult.newTrades);
+    }
+    setStep('done');
+  }, [parseResult, onImportComplete]);
 
   // ── Shared nav chrome ──────────────────────────────────────────────────────
 

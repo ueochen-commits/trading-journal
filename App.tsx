@@ -1387,6 +1387,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 exchangeBrandColor={connectingExchange.brandColor}
                 onBack={() => { setShowCsvImport(false); setShowSelectImportMethod(true); }}
                 onClose={() => setShowCsvImport(false)}
+                onImportComplete={async (trades) => {
+                  await handleImportTrades(trades);
+                  setShowCsvImport(false);
+                }}
               />
           )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
