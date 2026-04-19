@@ -986,6 +986,26 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onViewPsychology={() => handleSetActiveTab('psychology')}
                           onNavigateToJournal={() => handleSetActiveTab('journal')}
                           onNavigateToPlans={() => handleSetActiveTab('plans')}
+                          onResync={async (accountId) => {
+                            // Reuse the same sync logic from SettingsPage
+                            const account = tradingAccounts.find(a => a.id === accountId);
+                            if (!account || !account.exchangeConnectionId) { showToast(language === 'cn' ? '该账户不支持自动同步' : 'This account does not support auto-sync'); return; }
+                            const connections = await userDataService.loadExchangeConnections();
+                            const conn = connections.find((c: any) => c.id === account.exchangeConnectionId);
+                            if (!conn) { showToast(language === 'cn' ? '找不到 API 凭证，请重新连接' : 'API credentials not found'); return; }
+                            showToast(language === 'cn' ? '正在同步...' : 'Syncing...');
+                            try {
+                              const { trades: newTrades, balance, currency } = await fetchTradesFromExchange(account.exchange ?? conn.exchange, conn.apiKey, conn.apiSecret, undefined, accountId, undefined);
+                              const toKey = (symbol: string, date: string, entryPrice: number, quantity: number) => `${symbol}-${new Date(date).toISOString().slice(0, 16)}-${entryPrice}-${quantity}`;
+                              const existingKeys = await userDataService.getAccountTradeKeys(accountId);
+                              const uniqueTrades = newTrades.filter((t: any) => !existingKeys.has(toKey(t.symbol, t.entryDate, t.entryPrice, t.quantity)));
+                              if (uniqueTrades.length > 0) await handleImportTrades(uniqueTrades.map((t: any) => ({ ...t, accountId })));
+                              const now = new Date().toISOString();
+                              await userDataService.updateTradingAccount(accountId, { syncStatus: 'synced', lastSync: now, balance, currency });
+                              setTradingAccounts(prev => prev.map(a => a.id === accountId ? { ...a, balance, currency, syncStatus: 'synced', lastSync: now } : a));
+                              showToast(language === 'cn' ? `同步完成，新增 ${uniqueTrades.length} 笔` : `Synced, ${uniqueTrades.length} new trades`);
+                            } catch (e) { showToast(language === 'cn' ? '同步失败，请检查 API 凭证' : 'Sync failed'); }
+                          }}
                           userProfile={{ level: 5, currentXp: 450, nextLevelXp: 1000, totalLifetimeXp: 4500 }} // Mock
                           disciplineHistory={disciplineHistory}
                           disciplineRules={disciplineRules}

@@ -1045,6 +1045,7 @@ interface DashboardProps {
   onViewPsychology?: () => void;
   onNavigateToJournal?: () => void;
   onNavigateToPlans?: () => void;
+  onResync?: (accountId: string) => void;
   tradingAccounts?: TradingAccount[];
   onManageAccounts?: () => void;
   selectedAccountId?: string;
@@ -1075,7 +1076,7 @@ const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
 const Dashboard: React.FC<DashboardProps> = ({
     trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
-    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology, onNavigateToJournal, onNavigateToPlans,
+    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology, onNavigateToJournal, onNavigateToPlans, onResync,
     tradingAccounts, onManageAccounts, selectedAccountId: externalAccountId, onAccountChange, onOpenTradeReview
 }) => {
   const { t, language } = useLanguage();
@@ -1581,7 +1582,33 @@ const Dashboard: React.FC<DashboardProps> = ({
       </div>
 
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
-        <div><h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">{greeting}</h2><p className="text-slate-500 dark:text-slate-400 text-sm mt-1">{t.sidebar.dashboard}</p></div>
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">{greeting}</h2>
+          <div className="flex items-center gap-3 mt-1">
+            <p className="text-slate-500 dark:text-slate-400 text-sm">{t.sidebar.dashboard}</p>
+            {(() => {
+              const currentAccount = accounts.find(a => a.id === selectedAccountId);
+              if (!currentAccount || currentAccount.type === 'demo') return null;
+              const lastSync = currentAccount.lastSync;
+              const lastSyncLabel = lastSync
+                ? `${language === 'cn' ? '上次同步' : 'Last sync'} ${new Date(lastSync).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}`
+                : (language === 'cn' ? '从未同步' : 'Never synced');
+              return (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{lastSyncLabel}</span>
+                  <button
+                    onClick={() => onResync?.(selectedAccountId)}
+                    className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
+                    title={language === 'cn' ? '重新同步' : 'Resync'}
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    {language === 'cn' ? '重新同步' : 'Resync'}
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        </div>
         <div className="flex flex-col sm:flex-row gap-3 relative z-30">
             <div className="relative z-30" ref={datePickerRef}>
                 <button onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group min-w-[220px]"><div className="flex items-center gap-2.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Z"/></svg><div className="text-left"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">{(datePresets.find(p => p.id === activeDatePreset)?.label || (activeDatePreset === 'Custom' ? 'Custom Range' : activeDatePreset)).toUpperCase()}</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none">
