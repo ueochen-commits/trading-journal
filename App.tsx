@@ -589,12 +589,14 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       };
     });
 
-    const { error } = await supabase.from('trading_journals').insert(data);
+    const { error } = await supabase
+      .from('trading_journals')
+      .upsert(data, { onConflict: 'user_id,date,symbol,direction,pnl', ignoreDuplicates: true });
 
     if (error) {
       console.error('Error importing trades:', error);
     } else {
-      setTrades([...imported, ...trades]);
+      setTrades(prev => [...imported, ...prev]);
     }
   };
 
