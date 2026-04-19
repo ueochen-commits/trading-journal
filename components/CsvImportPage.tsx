@@ -503,7 +503,7 @@ const CsvImportPage: React.FC<Props> = ({
                 onDrop={handleDrop}
                 onClick={() => { if (!selectedFile) fileInputRef.current?.click(); }}
                 style={{
-                  height: 140, boxSizing: 'border-box', borderRadius: 10,
+                  height: 170, boxSizing: 'border-box', borderRadius: 10,
                   transition: 'border-color 200ms ease, background-color 200ms ease',
                   ...(selectedFile ? {
                     border: '1px solid #C7D2FE', background: '#FAFBFF',
