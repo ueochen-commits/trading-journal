@@ -255,28 +255,26 @@ const CsvImportPage: React.FC<Props> = ({
       {navChrome()}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', '上传文件')}
-        <div style={{ width: '100%', display: 'flex', gap: 24 }}>
+
+        {/* Two-column layout — no cards, matches BrokerSyncPage style */}
+        <div style={{ width: '100%', maxWidth: '97vw', display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
 
           {/* LEFT */}
-          <div style={{ flex: 1, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '28px 28px 24px' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>上传你的文件</span>
-              <span style={{ background: '#ede9fe', color: '#6366f1', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>用时少于 2 分钟</span>
-            </div>
+          <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 20 }}>
 
             {/* Timezone */}
-            <div style={{ marginBottom: 6 }}>
-              <label style={{ fontSize: 12, fontWeight: 600, color: '#6b6b9a', letterSpacing: '0.04em', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>时区</label>
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#8888b0', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>时区</label>
               <div style={{ position: 'relative' }}>
-                <button onClick={() => setTzOpen(v => !v)} style={{ width: '100%', height: 44, background: '#fff', border: '1.5px solid #e0e0f0', borderRadius: 10, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: 14, color: '#1a1a3a', fontFamily: 'inherit' }}>
+                <button onClick={() => setTzOpen(v => !v)}
+                  style={{ width: '100%', height: 46, background: '#fff', border: '1px solid #d8d4ee', borderRadius: 10, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: 14, color: '#1a1a3a', fontFamily: 'inherit', boxShadow: 'none' }}>
                   <span>{TIMEZONES.find(t => t.value === timezone)?.label}</span>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="#94A3B8"><path d="M12 15.5a1 1 0 0 1-.7-.3l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 4.3-4.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-.7.3Z"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8888b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 {tzOpen && (
                   <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setTzOpen(false)} />
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 4, background: '#fff', border: '1px solid #e0e0f0', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 2, background: '#fff', border: '1px solid #d8d4ee', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
                       {TIMEZONES.map(tz => (
                         <button key={tz.value} onClick={() => { setTimezone(tz.value); setTzOpen(false); }}
                           style={{ width: '100%', padding: '10px 14px', textAlign: 'left', background: tz.value === timezone ? '#f0f0ff' : 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, color: tz.value === timezone ? '#5b5bd6' : '#1a1a3a', fontFamily: 'inherit', fontWeight: tz.value === timezone ? 600 : 400 }}>
@@ -287,68 +285,91 @@ const CsvImportPage: React.FC<Props> = ({
                   </>
                 )}
               </div>
-              <p style={{ fontSize: 11.5, color: '#9396aa', marginTop: 6, lineHeight: 1.5 }}>请选择数据文件的时区。想在应用中以其他时区查看数据请到设置修改</p>
+              <p style={{ fontSize: 12, color: '#9396aa', marginTop: 6, lineHeight: 1.6 }}>请选择数据文件的时区。想在应用中以其他时区查看数据请到设置修改</p>
             </div>
 
             {/* Drop zone */}
-            <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
-              onClick={() => fileInputRef.current?.click()}
-              style={{ marginTop: 18, border: `2px dashed ${dragOver ? '#6366f1' : '#d0d0e8'}`, borderRadius: 14, padding: '32px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, cursor: 'pointer', background: dragOver ? '#f0f0ff' : '#fafaff', transition: 'all 0.15s' }}>
-              <div style={{ width: 48, height: 48, borderRadius: 12, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div>
+              <label style={{ fontSize: 11, fontWeight: 600, color: '#8888b0', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>上传文件</label>
+              <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                style={{ border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`, borderRadius: 12, padding: '36px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer', background: dragOver ? '#f4f2ff' : 'transparent', transition: 'all 0.15s' }}>
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8888b0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
                 </svg>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ fontSize: 14, fontWeight: 500, color: '#1a1a3a', margin: '0 0 4px' }}>拖拽文件到此处，或</p>
+                  <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                    style={{ fontSize: 14, fontWeight: 600, color: '#5b5bd6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
+                    点击选择文件
+                  </button>
+                </div>
+                <p style={{ fontSize: 12, color: '#a0a0c0', margin: 0 }}>支持 CSV、Excel（.xlsx/.xls）、TXT</p>
               </div>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ fontSize: 14, fontWeight: 600, color: '#1a1a3a', margin: '0 0 4px' }}>拖拽文件到此处或点击选择</p>
-                <p style={{ fontSize: 12, color: '#9396aa', margin: 0 }}>支持 CSV、Excel（.xlsx/.xls）、TXT 格式</p>
-              </div>
-              <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                style={{ marginTop: 4, height: 36, padding: '0 20px', background: '#6366f1', color: '#fff', border: 'none', borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                选择文件
-              </button>
+              <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls,.txt" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
             </div>
-            <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls,.txt" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+
+            {/* Continue button */}
+            <button
+              style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', background: '#5b5bd6', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 4, fontFamily: 'inherit' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4a4ac4'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#5b5bd6'; }}
+            >
+              继续
+            </button>
           </div>
 
           {/* RIGHT */}
-          <div style={{ width: 360, flexShrink: 0, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '28px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div style={{ width: 400, minWidth: 400, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+
             {/* Exchange header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: exchangeBrandColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
-                {exchangeLogoUrl ? <img src={exchangeLogoUrl} alt={exchangeName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 20, fontWeight: 900, color: '#fff' }}>{exchangeName[0]}</span>}
+              <div style={{ width: 56, height: 56, borderRadius: 12, background: exchangeBrandColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden' }}>
+                {exchangeLogoUrl ? <img src={exchangeLogoUrl} alt={exchangeName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>{exchangeName[0]}</span>}
               </div>
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#1a1a3a' }}>{exchangeName}</span>
+              <div>
+                <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>{exchangeName}</span>
+              </div>
             </div>
 
             {/* Supported assets */}
             <div>
-              <p style={{ fontSize: 11, fontWeight: 600, color: '#9396aa', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>支持的资产类型</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {tutorial.assets.map(a => (
-                  <span key={a} style={{ padding: '3px 10px', borderRadius: 20, background: '#ede9fe', color: '#5b5bd6', fontSize: 12, fontWeight: 500 }}>{a}</span>
-                ))}
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a', marginBottom: 8 }}>支持的资产类型：</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px' }}>
+                {['股票', '期货', '期权', '外汇', '加密货币', '差价合约'].map(asset => {
+                  const supported = tutorial.assets.includes(asset);
+                  return (
+                    <div key={asset} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      {supported
+                        ? <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#5b5bd6"/><polyline points="4,8 7,11 12,5" stroke="white" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                        : <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="#c8c8d8" strokeWidth="1.5"/><line x1="5" y1="5" x2="11" y2="11" stroke="#c0c0d0" strokeWidth="1.5" strokeLinecap="round"/><line x1="11" y1="5" x2="5" y2="11" stroke="#c0c0d0" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                      }
+                      <span style={{ fontSize: 12, fontWeight: supported ? 500 : 400, color: supported ? '#1a1a3a' : '#b8b8d0' }}>{asset}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
-            <div style={{ height: 1, background: '#f0f0f8' }} />
-
             {/* Tutorial */}
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-                <p style={{ fontSize: 13, fontWeight: 700, color: '#1a1a3a', margin: 0 }}>
-                  {isCustom ? 'AI 智能解析任何格式' : `如何从 ${exchangeName} 导出`}
-                </p>
-                <button style={{ fontSize: 12, color: '#6366f1', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>详细指引</button>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a3a', marginBottom: 6 }}>
+                {isCustom ? 'AI 智能解析任何格式' : `如何从 ${exchangeName} 导出交易记录`}
               </div>
+              {!isCustom && (
+                <p style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.75, margin: '0 0 12px 0' }}>
+                  请按照以下步骤从 {exchangeName} 导出你的交易记录：
+                </p>
+              )}
               {(tutorialExpanded ? tutorial.steps : tutorial.steps.slice(0, 4)).map((s, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: '#6366f1', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
-                  <p style={{ fontSize: 13, color: '#3a3a5a', margin: 0, lineHeight: 1.55 }}>{s}</p>
+                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#5b5bd6', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
+                  <p style={{ fontSize: 14, color: '#3a3a5a', margin: 0, lineHeight: 1.65 }}>{s}</p>
                 </div>
               ))}
               {tutorial.steps.length > 4 && (
-                <button onClick={() => setTutorialExpanded(v => !v)} style={{ fontSize: 12, color: '#6366f1', background: 'none', border: 'none', cursor: 'pointer', padding: 0, marginTop: 2 }}>
+                <button onClick={() => setTutorialExpanded(v => !v)}
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#5b5bd6', fontSize: 14, fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', padding: 0, marginTop: 2, fontFamily: 'inherit' }}>
                   {tutorialExpanded ? '收起 ▴' : '展开完整指令 ▾'}
                 </button>
               )}
