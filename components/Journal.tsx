@@ -1186,26 +1186,24 @@ const Journal: React.FC<JournalProps> = ({
 
             <div className="flex flex-wrap gap-3">
                 <div className="relative" ref={datePickerRef}>
-                    <button 
+                    <button
                         onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
-                        className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 shadow-sm hover:border-indigo-300 transition-all min-w-[240px]"
+                        className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all min-w-[220px]"
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
-                                <Calendar className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center gap-2.5">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Z"/></svg>
                             <div className="text-left">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">
                                     {(datePresets.find(p => p.id === activeDatePreset)?.label || activeDatePreset).toUpperCase()}
                                 </p>
-                                <p className="text-sm font-bold text-slate-900 dark:text-white leading-none whitespace-nowrap">
+                                <p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none whitespace-nowrap">
                                     {activeDatePreset === 'All Time' ? (language === 'cn' ? '所有时间' : 'All Time') : (
                                         <>{dateRange.start.toLocaleDateString()} <span className="mx-0.5 text-slate-400">➞</span> {dateRange.end.toLocaleDateString()}</>
                                     )}
                                 </p>
                             </div>
                         </div>
-                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#94A3B8" xmlns="http://www.w3.org/2000/svg" className={`transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`}><path d="M12 15.5a1 1 0 0 1-.7-.3l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 4.3-4.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-.7.3Z"/></svg>
                     </button>
 
                     {isDatePickerOpen && (
@@ -1230,20 +1228,19 @@ const Journal: React.FC<JournalProps> = ({
                 </div>
 
                 <div className="relative" ref={accountSwitcherRef}>
-                    <button 
+                    <button
                         onClick={() => setIsAccountSwitcherOpen(!isAccountSwitcherOpen)}
-                        className="flex items-center justify-between gap-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 shadow-sm hover:border-indigo-300 transition-all min-w-[200px]"
+                        className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all min-w-[200px]"
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-indigo-600 dark:text-indigo-400">
-                                <Briefcase className="w-4 h-4" />
-                            </div>
+                        <div className="flex items-center gap-2.5">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H4V5Zm16 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9h16Zm-4 5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1Z"/></svg>
                             <div className="text-left flex-1">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">ACCOUNT</p>
-                                <p className="text-sm font-bold text-slate-900 dark:text-white leading-none truncate max-w-[110px]">{currentAccountName}</p>
+                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Trading Account</p>
+                                <p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none truncate max-w-[120px]">{currentAccountName}</p>
                             </div>
                         </div>
-                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#94A3B8" xmlns="http://www.w3.org/2000/svg" className={`transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`}><path d="M12 15.5a1 1 0 0 1-.7-.3l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 4.3-4.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-.7.3Z"/></svg>
+                    </button>
                     </button>
 
                     {isAccountSwitcherOpen && (
