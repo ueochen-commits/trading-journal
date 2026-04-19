@@ -659,59 +659,96 @@ const CsvImportPage: React.FC<Props> = ({
       {navChrome(false)}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', 'AI 解析中')}
-        <div style={{ width: '100%', display: 'flex', gap: 24 }}>
+
+        {/* Two-column — no white cards, matches upload page */}
+        <div style={{ width: '100%', maxWidth: '97vw', display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+
           {/* LEFT */}
-          <div style={{ flex: 1, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '28px 28px 24px' }}>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a', marginBottom: 16 }}>正在处理你的文件</p>
-            <div style={{ background: '#f8f8fc', borderRadius: 10, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
-              <div style={{ width: 36, height: 36, borderRadius: 8, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>正在处理你的文件</div>
+
+            {/* File card — reuse upload page "selected" style */}
+            <div style={{ border: '1px solid #C7D2FE', background: '#FAFBFF', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 34, height: 34, background: '#EEF2FF', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="#4338CA">
+                  <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-6-6H7Zm6 1.5V8h4.5L13 3.5Z"/>
                 </svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 13.5, fontWeight: 600, color: '#1a1a3a', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file?.name || 'trades.csv'}</p>
-                <p style={{ fontSize: 12, color: '#9396aa', margin: 0 }}>{file ? `${(file.size / 1024).toFixed(1)} KB` : '—'}</p>
+                <div style={{ fontSize: 12, color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }} title={file?.name}>{file?.name || 'trades.csv'}</div>
+                <div style={{ fontSize: 10.5, color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
+                  {file ? (file.size < 1024 * 1024 ? `${(file.size / 1024).toFixed(1)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`) : '—'}
+                </div>
               </div>
             </div>
+
+            {/* Progress steps */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {PARSE_STEPS.map((s, i) => {
                 const done = i < parseProgress;
                 const active = i === parseProgress;
                 return (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    {done ? <CheckCircle size={20} /> : active ? <SpinnerCircle size={20} /> : <EmptyCircle size={20} />}
-                    <span style={{ fontSize: 13.5, color: done ? '#1a1a3a' : active ? '#6366f1' : '#b0b0c8', fontWeight: done || active ? 500 : 400 }}>{s.label}</span>
-                    {done && i === 1 && <span style={{ marginLeft: 'auto', fontSize: 11.5, color: '#9396aa', fontVariantNumeric: 'tabular-nums' }}>287 行</span>}
-                    {done && i === 0 && file && <span style={{ marginLeft: 'auto', fontSize: 11.5, color: '#9396aa', fontVariantNumeric: 'tabular-nums' }}>{(file.size / 1024).toFixed(1)} KB</span>}
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, opacity: (!done && !active) ? 0.4 : 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      {done ? (
+                        <div style={{ width: 18, height: 18, background: '#DCFCE7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="#15803D"><path d="M20.285 2 9 13.567 3.714 8.611 0 12.322 9 21 24 5.711Z"/></svg>
+                        </div>
+                      ) : active ? (
+                        <div style={{ width: 18, height: 18, background: '#EEF2FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.9s linear infinite', transformOrigin: 'center' }}>
+                            <path d="M12 2a10 10 0 0 1 10 10"/>
+                          </svg>
+                        </div>
+                      ) : (
+                        <div style={{ width: 18, height: 18, background: '#F1F5F9', borderRadius: '50%', flexShrink: 0 }} />
+                      )}
+                      <span style={{ color: '#0F172A', fontWeight: active ? 500 : 400 }}>{s.label}</span>
+                    </div>
+                    {(done || active) && (
+                      <span style={{ fontSize: 11.5, color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
+                        {done && i === 0 && file ? (file.size < 1024 * 1024 ? `${(file.size / 1024).toFixed(1)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`) : ''}
+                      </span>
+                    )}
                   </div>
                 );
               })}
             </div>
-            <div style={{ marginTop: 24, background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, color: '#92400e', lineHeight: 1.5 }}>
-              通常需要 3–8 秒，你可以切换到其他页面，解析完成后会通知你
+
+            {/* Warning strip */}
+            <div style={{ padding: '12px 14px', background: '#FEF9E8', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}>
+                <path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/>
+              </svg>
+              <div style={{ fontSize: 11.5, color: '#713F12', lineHeight: 1.5 }}>通常需要 3-8 秒，请保持页面打开。</div>
             </div>
           </div>
+
           {/* RIGHT */}
-          <div style={{ width: 360, flexShrink: 0, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '28px 24px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-                <img src="/lion-care.png" alt="TradeGrail" style={{ width: 36, height: 36, objectFit: 'cover' }} />
+          <div style={{ width: 400, minWidth: 400, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {/* Logo + brand — matches exchange logo area in upload page */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 8, background: 'linear-gradient(135deg, #1E1B4B 0%, #3B1563 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
+                <img src="/TRADEGRAIL-lion.png" alt="TradeGrail" style={{ width: 28, height: 28, filter: 'brightness(0) invert(1)', objectFit: 'contain' }} />
               </div>
-              <span style={{ fontSize: 14, fontWeight: 700, color: '#1a1a3a' }}>TradeGrail AI</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>TradeGrail AI</span>
             </div>
-            <p style={{ fontSize: 13, color: '#5a5a7a', lineHeight: 1.65, margin: 0 }}>AI 不是简单做字段映射，而是逐行理解你的数据：识别日期时间格式、判断方向字段的表达方式、计算手续费扣除前后的盈亏差异、处理重复开平仓的合并。</p>
-            <div style={{ height: 1, background: '#f0f0f8' }} />
-            <p style={{ fontSize: 11, fontWeight: 600, color: '#9396aa', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>正在理解什么</p>
+
+            <p style={{ fontSize: 13, color: '#6b6b9a', lineHeight: 1.75, margin: 0 }}>AI 不是简单做字段映射，而是逐行理解你的数据：识别日期时间格式、判断方向字段的表达方式、计算手续费扣除前后的盈亏差异、处理重复开平仓的合并。</p>
+
+            <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 600 }}>正在理解什么</div>
+
             {[
-              ['时间格式', '识别 2026-04-15 05:40:58、2026/4/15 5:40 等多种写法'],
-              ['方向字段', 'Buy / Sell / 做多 / 做空 / Long / Short'],
-              ['盈亏计算', '是否已扣除手续费、是否已计算资金费率'],
-              ['开平仓合并', '自动配对同一笔交易的开仓和平仓记录'],
-            ].map(([title, desc]) => (
-              <div key={title} style={{ display: 'flex', gap: 10 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#6366f1', flexShrink: 0, marginTop: 6 }} />
-                <div><span style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a' }}>{title}：</span><span style={{ fontSize: 13, color: '#5a5a7a' }}>{desc}</span></div>
+              ['时间格式：', '识别 2026-04-15 05:40:58、2026/4/15 5:40 等多种写法'],
+              ['方向字段：', 'Buy / Sell / 做多 / 做空 / Long / Short'],
+              ['盈亏计算：', '是否已扣除手续费、是否已计算资金费率'],
+              ['开平仓合并：', '自动配对同一笔交易的开仓和平仓记录'],
+            ].map(([label, content]) => (
+              <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+                <span style={{ width: 5, height: 5, background: '#0F172A', borderRadius: '50%', marginTop: 7, flexShrink: 0 }} />
+                <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.65 }}>
+                  <span style={{ color: '#0F172A', fontWeight: 500 }}>{label}</span>{content}
+                </div>
               </div>
             ))}
           </div>
