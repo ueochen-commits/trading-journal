@@ -13,6 +13,7 @@ import { useUser } from './UserContext';
 import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
 import MentorWidget from './MentorWidget';
+import TradeGrailDailyCard from './TradeGrailDailyCard';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
 
@@ -1042,6 +1043,8 @@ interface DashboardProps {
   onViewGoals?: () => void;
   onViewLeaderboard?: () => void;
   onViewPsychology?: () => void;
+  onNavigateToJournal?: () => void;
+  onNavigateToPlans?: () => void;
   tradingAccounts?: TradingAccount[];
   onManageAccounts?: () => void;
   selectedAccountId?: string;
@@ -1072,7 +1075,7 @@ const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
 const Dashboard: React.FC<DashboardProps> = ({
     trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
-    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology,
+    weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology, onNavigateToJournal, onNavigateToPlans,
     tradingAccounts, onManageAccounts, selectedAccountId: externalAccountId, onAccountChange, onOpenTradeReview
 }) => {
   const { t, language } = useLanguage();
@@ -1325,17 +1328,7 @@ const Dashboard: React.FC<DashboardProps> = ({
       return { current, percent: Math.min(100, Math.max(0, (current / weeklyGoal.value) * 100)) };
   }, [weeklyGoal, trades, riskSettings.accountSize]);
 
-  const rankData = useMemo(() => {
-    const { profitFactor, winRate, totalTrades } = stats;
-    let currentTier = t.dashboard.rank.tiers.bronze, nextTier = t.dashboard.rank.tiers.silver, color = 'from-orange-700 to-orange-500', icon = Shield, progress = 0;
-    if (totalTrades < 10) { progress = (totalTrades / 10) * 100; }
-    else if (profitFactor < 1.2 || winRate < 40) { currentTier = t.dashboard.rank.tiers.silver; nextTier = t.dashboard.rank.tiers.gold; color = 'from-slate-400 to-slate-500'; icon = Star; progress = Math.min(100, (profitFactor / 1.2) * 100); }
-    else if (profitFactor < 1.5 || winRate < 50) { currentTier = t.dashboard.rank.tiers.gold; nextTier = t.dashboard.rank.tiers.platinum; color = 'from-yellow-400 to-yellow-600'; icon = Trophy; progress = Math.min(100, (profitFactor / 1.5) * 100); }
-    else if (profitFactor < 2.0 || winRate < 55) { currentTier = t.dashboard.rank.tiers.platinum; nextTier = t.dashboard.rank.tiers.blackGold; color = 'from-cyan-400 to-blue-500'; icon = Medal; progress = Math.min(100, (profitFactor / 2.0) * 100); }
-    else if (profitFactor < 3.0 || winRate < 60) { currentTier = t.dashboard.rank.tiers.blackGold; nextTier = t.dashboard.rank.tiers.legend; color = 'from-slate-900 via-amber-900 to-slate-950 border border-amber-500/20'; icon = Gem; progress = Math.min(100, (profitFactor / 3.0) * 100); }
-    else { currentTier = t.dashboard.rank.tiers.legend; nextTier = "Max Rank"; color = 'from-fuchsia-600 via-purple-600 to-indigo-600'; icon = Crown; progress = 100; }
-    return { currentTier, nextTier, color, icon, progress };
-  }, [stats, t]);
+
 
   const mergedEquityData = useMemo(() => {
     const initialEquity = riskSettings.accountSize || 1;
@@ -1635,9 +1628,14 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div id="dashboard-rank" className={`md:col-span-2 relative overflow-hidden rounded-2xl p-6 shadow-lg text-white bg-gradient-to-r ${rankData.color}`}>
-                    <div className="absolute top-0 right-0 p-8 opacity-20"><rankData.icon className="w-32 h-32 text-white" /></div>
-                    <div className="relative z-10 flex flex-col h-full justify-between"><div className="flex justify-between items-start"><div><h3 className="text-sm font-bold uppercase tracking-widest opacity-80 mb-1">{t.dashboard.rank.title}</h3><h2 className="text-3xl md:text-4xl font-black tracking-tight flex items-baseline gap-3"><rankData.icon className="w-8 h-8 md:w-10 md:h-10" />{rankData.currentTier}</h2></div><button onClick={onViewLeaderboard} className="bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm transition-colors border border-white/20 flex items-center gap-1"><Trophy className="w-3 h-3" />{t.dashboard.rank.viewLeaderboard}</button></div><div className="mt-6 max-w-md"><div className="flex justify-between text-xs font-semibold mb-2 opacity-90"><span>{t.dashboard.rank.progress}</span><span>{rankData.nextTier}</span></div><div className="h-2.5 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm"><div className="h-full bg-white/90 shadow-[0_0_10px_rgba(255,255,255,0.5)] transition-all duration-1000 ease-out" style={{ width: `${rankData.progress}%` }}></div></div></div></div>
+                <div id="dashboard-rank" className="md:col-span-2">
+                  <TradeGrailDailyCard
+                    trades={allTrades}
+                    plans={plans}
+                    language={language}
+                    onNavigateToJournal={onNavigateToJournal}
+                    onNavigateToPlans={onNavigateToPlans}
+                  />
                 </div>
                  {(() => {
                     const todayLoss = Math.abs(Math.min(stats.todayPnl, 0));

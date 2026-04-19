@@ -984,6 +984,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onViewGoals={() => {/* Navigate to goals detail if needed */}}
                           onViewLeaderboard={() => handleSetActiveTab('leaderboard')}
                           onViewPsychology={() => handleSetActiveTab('psychology')}
+                          onNavigateToJournal={() => handleSetActiveTab('journal')}
+                          onNavigateToPlans={() => handleSetActiveTab('plans')}
                           userProfile={{ level: 5, currentXp: 450, nextLevelXp: 1000, totalLifetimeXp: 4500 }} // Mock
                           disciplineHistory={disciplineHistory}
                           disciplineRules={disciplineRules}
