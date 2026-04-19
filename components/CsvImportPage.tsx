@@ -294,7 +294,9 @@ const CsvImportPage: React.FC<Props> = ({
               <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 style={{ border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`, borderRadius: 12, padding: '36px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer', background: dragOver ? '#f4f2ff' : 'transparent', transition: 'all 0.15s' }}>
-                <img src="/upload-icon.svg" alt="upload" style={{ width: 48, height: 48 }} />
+                <svg viewBox="0 0 1024 1024" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M112 438.08L35.36 717.76V181.12a50.08 50.08 0 0 1 50.08-50.08h238.24a50.24 50.24 0 0 1 35.52 14.72l102.56 102.72a10.72 10.72 0 0 0 7.2 2.88h358.4a50.08 50.08 0 0 1 50.08 50.08v70.24H198.72A90.24 90.24 0 0 0 112 438.08zM978.24 432a49.92 49.92 0 0 0-39.84-19.84H198.72a50.24 50.24 0 0 0-48 37.12L46.4 829.76a50.08 50.08 0 0 0 35.2 61.44 53.12 53.12 0 0 0 13.28 1.76h739.68a50.24 50.24 0 0 0 48-36.96l104-380.96a49.92 49.92 0 0 0-8.32-43.04z" fill="#5b5bd6"/>
+                </svg>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: '#1a1a3a', margin: '0 0 4px' }}>拖拽文件到此处，或</p>
                   <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
