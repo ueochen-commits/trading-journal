@@ -1388,7 +1388,27 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onBack={() => { setShowCsvImport(false); setShowSelectImportMethod(true); }}
                 onClose={() => setShowCsvImport(false)}
                 onImportComplete={async (trades) => {
-                  await handleImportTrades(trades);
+                  // 1. 创建「文件导入」账户
+                  const accountName = `${connectingExchange.name}（文件导入）`;
+                  const { data: accountData } = await userDataService.saveTradingAccount({
+                    name: accountName,
+                    exchange: connectingExchange.name,
+                    brokerLogoUrl: connectingExchange.logoUrl,
+                    brokerBrandColor: connectingExchange.brandColor,
+                    balance: 0,
+                    currency: 'USDT',
+                    profitMethod: 'FIFO',
+                    accountType: 'manual',
+                    syncStatus: 'synced',
+                  });
+                  const accountId = accountData?.id;
+                  // 2. 把所有 trades 的 accountId 指向新账户
+                  const tradesWithAccount = trades.map(t => ({ ...t, accountId: accountId || t.accountId }));
+                  // 3. 批量入库
+                  await handleImportTrades(tradesWithAccount);
+                  // 4. 刷新账户列表
+                  const freshAccounts = await userDataService.loadTradingAccounts();
+                  setTradingAccounts(freshAccounts);
                   setShowCsvImport(false);
                 }}
               />
