@@ -105,13 +105,11 @@ const TradeGrailDailyCard: React.FC<TradeGrailDailyCardProps> = ({
     <div style={{ position: 'relative', height: 160, borderRadius: 10, background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)', overflow: 'hidden', padding: banner ? '50px 24px 20px' : '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box', transition: 'padding-top 0.2s ease' }}>
 
       {/* Lion watermark */}
-      <svg width="200" height="200" viewBox="0 0 100 100" fill="none" style={{ position: 'absolute', right: -20, top: '50%', transform: 'translateY(-50%)', opacity: 0.12, pointerEvents: 'none', zIndex: 1 }}>
-        <path d="M50 10 L20 25 L20 55 Q20 78 50 90 Q80 78 80 55 L80 25 Z" fill="#FFFFFF" opacity="0.8"/>
-        <circle cx="42" cy="45" r="3.5" fill="#1E1B4B"/>
-        <circle cx="58" cy="45" r="3.5" fill="#1E1B4B"/>
-        <path d="M40 60 Q50 68 60 60" stroke="#1E1B4B" strokeWidth="2.5" fill="none" strokeLinecap="round"/>
-        <path d="M30 35 Q25 30 22 35 M70 35 Q75 30 78 35" stroke="#FFFFFF" strokeWidth="1.5" fill="none"/>
-      </svg>
+      <img
+        src="/band-lion.png"
+        alt=""
+        style={{ position: 'absolute', right: -10, top: '50%', transform: 'translateY(-50%)', width: 180, height: 180, objectFit: 'contain', opacity: 0.18, pointerEvents: 'none', zIndex: 1, mixBlendMode: 'luminosity' as const }}
+      />
 
       {/* Report banner */}
       {banner && (
