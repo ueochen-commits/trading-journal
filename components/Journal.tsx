@@ -74,6 +74,7 @@ interface JournalProps {
   onAddTrade: (trade: Trade) => void;
   onUpdateTrade: (trade: Trade) => Promise<void>;
   onDeleteTrade: (id: string) => void;
+  onBatchDeleteTrades?: (ids: string[]) => Promise<void>;
   checklist: ChecklistItem[];
   onUpdateChecklist: (checklist: ChecklistItem[]) => void;
   onImportTrades?: (trades: Trade[]) => void;
@@ -135,7 +136,7 @@ const getChecklistPreference = () => {
 };
 
 const Journal: React.FC<JournalProps> = ({
-    trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade,
+    trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade, onBatchDeleteTrades,
     checklist, onUpdateChecklist, onImportTrades, onShare,
     riskSettings, onSavePlan, autoOpen, onResetAutoOpen, strategies,
     onNavigateToNote, onCreateNoteIntent, tradingAccounts, initialAccountId,
@@ -832,10 +833,14 @@ const Journal: React.FC<JournalProps> = ({
     }
   };
 
-  const handleBatchDelete = () => {
+  const handleBatchDelete = async () => {
     const idsToDelete = Array.from(selectedIds);
     setSelectedIds(new Set());
-    idsToDelete.forEach(id => onDeleteTrade(id));
+    if (onBatchDeleteTrades) {
+      await onBatchDeleteTrades(idsToDelete);
+    } else {
+      idsToDelete.forEach(id => onDeleteTrade(id));
+    }
   };
 
   // Clear selection when viewMode or filters change

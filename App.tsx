@@ -547,6 +547,15 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     setTrades(prev => prev.filter(t => t.id !== id));
   };
 
+  // 批量删除 — 一条 SQL 删除所有，避免 N 次串行请求
+  const handleBatchDeleteTrades = async (ids: string[]) => {
+    if (!ids.length) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    await supabase.from('trading_journals').delete().in('id', ids).eq('user_id', user.id);
+    setTrades(prev => prev.filter(t => !ids.includes(t.id)));
+  };
+
   // 导入交易到 Supabase
   const handleImportTrades = async (imported: Trade[]) => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -984,7 +993,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           plans={plans}
                           onAddTrade={handleAddTrade}
                           onUpdateTrade={handleUpdateTrade}
-                          onDeleteTrade={handleDeleteTrade}
+                          onDeleteTrade={handleDeleteTrade} onBatchDeleteTrades={handleBatchDeleteTrades}
                           checklist={checklist}
                           onUpdateChecklist={handleUpdateChecklist}
                           onImportTrades={handleImportTrades}
@@ -1019,7 +1028,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onUpdateStrategy={handleUpdateStrategy}
                           onDeleteStrategy={handleDeleteStrategy}
                           onUpdateTrade={handleUpdateTrade}
-                          onDeleteTrade={handleDeleteTrade}
+                          onDeleteTrade={handleDeleteTrade} onBatchDeleteTrades={handleBatchDeleteTrades}
                           onSavePlan={handleSavePlan}
                           autoCreate={playbookAutoCreate}
                           onResetAutoCreate={() => setPlaybookAutoCreate(false)}
