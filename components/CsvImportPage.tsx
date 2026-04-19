@@ -253,7 +253,7 @@ const CsvImportPage: React.FC<Props> = ({
   // ── Step 1: Upload ─────────────────────────────────────────────────────────
 
   if (step === 'upload') return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "-apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif", zIndex: 200 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 200 }}>
       {navChrome()}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', '上传文件')}
@@ -364,7 +364,7 @@ const CsvImportPage: React.FC<Props> = ({
   // ── Step 2: Parsing ────────────────────────────────────────────────────────
 
   if (step === 'parsing') return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "-apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif", zIndex: 200 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 200 }}>
       {navChrome(false)}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', 'AI 解析中')}
@@ -432,7 +432,7 @@ const CsvImportPage: React.FC<Props> = ({
   // ── Step 3: Preview ────────────────────────────────────────────────────────
 
   if (step === 'preview' && parseResult) return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "-apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif", zIndex: 200 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 200 }}>
       {navChrome()}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', '预览并确认')}
@@ -507,7 +507,7 @@ const CsvImportPage: React.FC<Props> = ({
   const skipped = parseResult?.duplicates ?? 12;
 
   return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: "-apple-system, BlinkMacSystemFont, \\"Segoe UI\\", sans-serif", zIndex: 200 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: "#f5f5ff", display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 200 }}>
       {navChrome(false)}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
