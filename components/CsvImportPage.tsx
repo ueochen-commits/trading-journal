@@ -294,9 +294,7 @@ const CsvImportPage: React.FC<Props> = ({
               <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 style={{ border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`, borderRadius: 12, padding: '36px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer', background: dragOver ? '#f4f2ff' : 'transparent', transition: 'all 0.15s' }}>
-                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8888b0" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
+                <img src="/upload-empty.svg" alt="upload" style={{ width: 48, height: 48 }} />
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: '#1a1a3a', margin: '0 0 4px' }}>拖拽文件到此处，或</p>
                   <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
