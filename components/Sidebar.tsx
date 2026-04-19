@@ -4,6 +4,7 @@ import { useLanguage } from '../LanguageContext';
 import { useTour } from './TourContext';
 import { useUser } from './UserContext';
 import { useSocial } from './SocialContext';
+import TierBadge from './TierBadge';
 
 interface SidebarProps {
   activeTab: string;
@@ -178,30 +179,6 @@ const Sidebar = ({
   ];
 
   const toggleLanguage = () => setLanguage(language === 'cn' ? 'en' : 'cn');
-
-  const getTierLabel = () => {
-    if (user.tier === 'elite') return 'ELITE';
-    if (user.tier === 'pro') return 'PRO';
-    return 'FREE';
-  };
-
-  const getTierBadgeStyle = (): React.CSSProperties => {
-    if (user.tier === 'elite') return {
-      fontSize: 8.5, fontWeight: 800, color: '#F59E0B',
-      background: 'rgba(245,158,11,0.12)', border: '0.5px solid rgba(245,158,11,0.28)',
-      padding: '1px 5px', borderRadius: 3, width: 'fit-content',
-    };
-    if (user.tier === 'pro') return {
-      fontSize: 8.5, fontWeight: 800, color: '#8B7CF6',
-      background: 'rgba(139,124,246,0.18)', border: '0.5px solid rgba(139,124,246,0.35)',
-      padding: '1px 5px', borderRadius: 3, width: 'fit-content',
-    };
-    return {
-      fontSize: 8.5, fontWeight: 800, color: 'rgba(255,255,255,0.35)',
-      background: 'rgba(255,255,255,0.07)', border: '0.5px solid rgba(255,255,255,0.15)',
-      padding: '1px 5px', borderRadius: 3, width: 'fit-content',
-    };
-  };
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -627,9 +604,7 @@ const Sidebar = ({
               <div style={{ fontSize: 12.5, fontWeight: 500, color: 'rgba(255,255,255,0.82)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', minWidth: 0 }}>
                 {user.name}
               </div>
-              <div style={{ ...getTierBadgeStyle(), flexShrink: 0 }}>
-                {getTierLabel()}
-              </div>
+              <TierBadge tier={(user.tier as 'free' | 'pro' | 'elite') || 'free'} />
             </div>
           )}
           {/* Chevron */}
