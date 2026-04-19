@@ -201,14 +201,28 @@ function buildFallbackRules(headers: string[], rows: Record<string, string>[], e
 // ─── Helper: parse date string ────────────────────────────────────────────────
 
 function parseDate(raw: string): string {
-  if (!raw) return new Date().toISOString();
-  // Try direct parse first
-  const d = new Date(raw);
-  if (!isNaN(d.getTime())) return d.toISOString();
-  // Try common formats: 2026/04/18 22:52:00
-  const cleaned = raw.replace(/\//g, '-').replace(/(\d{4}-\d{2}-\d{2})\s/, '$1T');
-  const d2 = new Date(cleaned);
-  return isNaN(d2.getTime()) ? new Date().toISOString() : d2.toISOString();
+  if (!raw || !raw.trim()) return '';
+  const s = raw.trim();
+
+  // Already ISO-like
+  const d1 = new Date(s);
+  if (!isNaN(d1.getTime())) return d1.toISOString();
+
+  // YYYY/MM/DD HH:mm:ss or YYYY/M/D H:m:s (with or without zero-padding)
+  const slashFmt = s.replace(/\//g, '-').replace(/(\d{4}-\d{1,2}-\d{1,2})\s+/, '$1T');
+  const d2 = new Date(slashFmt);
+  if (!isNaN(d2.getTime())) return d2.toISOString();
+
+  // DD/MM/YYYY or MM/DD/YYYY — try both
+  const parts = s.split(/[\/\-\s]/);
+  if (parts.length >= 3) {
+    // Try YYYY-MM-DD
+    const iso = `${parts[0].padStart(4,'0')}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+    const d3 = new Date(iso);
+    if (!isNaN(d3.getTime())) return d3.toISOString();
+  }
+
+  return ''; // caller will handle empty
 }
 
 function parseNum(raw: string | undefined): number {
@@ -238,9 +252,12 @@ function convertPairedRows(rows: Record<string, string>[], rules: AiRules): Trad
 
     const pnl = fm.netPnl ? parseNum(row[fm.netPnl]) : 0;
     const fees = fm.commission ? Math.abs(parseNum(row[fm.commission])) : 0;
-    const rawTime = fm.openTime ? row[fm.openTime] : Object.values(row).find(v => /\d{4}[-/]\d{2}[-/]\d{2}/.test(String(v))) || '';
-    const entryDate = parseDate(String(rawTime));
-    const exitDate = fm.closeTime ? parseDate(row[fm.closeTime]) : entryDate;
+    // Try mapped column first, then scan all values for a date-like string
+    const rawTime = fm.openTime
+      ? row[fm.openTime]
+      : Object.values(row).find(v => /\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(String(v))) || '';
+    const entryDate = parseDate(String(rawTime)) || new Date().toISOString();
+    const exitDate = fm.closeTime ? (parseDate(row[fm.closeTime]) || entryDate) : entryDate;
     const entryPrice = fm.openPrice ? parseNum(row[fm.openPrice]) : 0;
     const exitPrice = fm.closePrice ? parseNum(row[fm.closePrice]) : entryPrice;
     const quantity = fm.quantity ? (parseNum(row[fm.quantity]) || 1) : 1;
