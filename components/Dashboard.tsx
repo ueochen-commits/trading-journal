@@ -1627,7 +1627,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <button onClick={() => setIsMarketConfigOpen(true)} className="absolute -top-3 -right-2 p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-500 opacity-0 group-hover/config:opacity-100 transition-all hover:scale-110 z-10" title={t.dashboard.marketHours.configure}><Settings className="w-3.5 h-3.5" /></button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
                 <div id="dashboard-rank" className="md:col-span-2">
                   <TradeGrailDailyCard
                     trades={allTrades}

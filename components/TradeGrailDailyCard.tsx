@@ -102,7 +102,7 @@ const TradeGrailDailyCard: React.FC<TradeGrailDailyCardProps> = ({
   const isMonthly = banner?.type === 'monthly';
 
   return (
-    <div style={{ position: 'relative', height: 160, borderRadius: 10, background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)', overflow: 'hidden', padding: banner ? '50px 24px 20px' : '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box', transition: 'padding-top 0.2s ease' }}>
+    <div style={{ position: 'relative', minHeight: 160, borderRadius: 10, background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)', overflow: 'hidden', padding: banner ? '50px 24px 20px' : '20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxSizing: 'border-box', transition: 'padding-top 0.2s ease', height: '100%' }}>
 
       {/* Lion watermark */}
       <img
