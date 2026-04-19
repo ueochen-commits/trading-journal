@@ -216,8 +216,10 @@ function parseDate(raw: string): string {
   // DD/MM/YYYY or MM/DD/YYYY — try both
   const parts = s.split(/[\/\-\s]/);
   if (parts.length >= 3) {
-    // Try YYYY-MM-DD
-    const iso = `${parts[0].padStart(4,'0')}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+    // Fix 2-digit year: "26" → "2026"
+    let year = parts[0];
+    if (year.length <= 2) year = `20${year.padStart(2,'0')}`;
+    const iso = `${year}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
     const d3 = new Date(iso);
     if (!isNaN(d3.getTime())) return d3.toISOString();
   }
