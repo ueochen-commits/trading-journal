@@ -204,19 +204,33 @@ function parseDate(raw: string): string {
   if (!raw || !raw.trim()) return '';
   const s = raw.trim();
 
-  // Already ISO-like
+  // Already ISO-like (YYYY-MM-DD...)
+  if (/^\d{4}-\d{1,2}-\d{1,2}/.test(s)) {
+    const d = new Date(s.replace(/(\d{4}-\d{1,2}-\d{1,2})\s+/, '$1T'));
+    if (!isNaN(d.getTime())) return d.toISOString();
+  }
+
+  // YYYY/M/D H:m or YYYY/MM/DD HH:mm:ss
+  if (/^\d{4}\//.test(s)) {
+    const normalized = s.replace(/\//g, '-').replace(/(\d{4}-\d{1,2}-\d{1,2})\s+/, '$1T');
+    const d = new Date(normalized);
+    if (!isNaN(d.getTime())) return d.toISOString();
+    // Manual parse for edge cases
+    const m = s.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?/);
+    if (m) {
+      const iso = `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}T${(m[4]||'00').padStart(2,'0')}:${(m[5]||'00')}:${(m[6]||'00')}`;
+      const d2 = new Date(iso);
+      if (!isNaN(d2.getTime())) return d2.toISOString();
+    }
+  }
+
+  // Generic fallback
   const d1 = new Date(s);
   if (!isNaN(d1.getTime())) return d1.toISOString();
 
-  // YYYY/MM/DD HH:mm:ss or YYYY/M/D H:m:s (with or without zero-padding)
-  const slashFmt = s.replace(/\//g, '-').replace(/(\d{4}-\d{1,2}-\d{1,2})\s+/, '$1T');
-  const d2 = new Date(slashFmt);
-  if (!isNaN(d2.getTime())) return d2.toISOString();
-
-  // DD/MM/YYYY or MM/DD/YYYY — try both
-  const parts = s.split(/[\/\-\s]/);
+  // Split by separators, fix 2-digit year
+  const parts = s.split(/[\/\-\s:]/);
   if (parts.length >= 3) {
-    // Fix 2-digit year: "26" → "2026"
     let year = parts[0];
     if (year.length <= 2) year = `20${year.padStart(2,'0')}`;
     const iso = `${year}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
@@ -312,59 +326,53 @@ function pairRawOrders(rows: Record<string, string>[], rules: AiRules): Trade[] 
     });
 
     // Stack-based pairing: match each SELL with the most recent unmatched BUY
-    const openStack: Record<string, string>[] = [];
+    // Also handle SHORT: first SELL = open short, matched BUY = close short
+    const openStack: { row: Record<string, string>; isBuy: boolean }[] = [];
 
     symRows.forEach(row => {
       const rawSide = fm.side ? (row[fm.side] || '').trim().toLowerCase() : '';
       const isBuy = longSet.has(rawSide);
 
-      if (isBuy) {
-        openStack.push(row);
-      } else {
-        // SELL — match with oldest open BUY
-        const openRow = openStack.shift();
-        const entryRow = openRow || row;
+      // Check if there's an open position in the opposite direction to close
+      const oppositeIdx = openStack.findIndex(o => o.isBuy !== isBuy);
+      if (oppositeIdx >= 0) {
+        // Close the matched open position
+        const { row: openRow, isBuy: openIsBuy } = openStack.splice(oppositeIdx, 1)[0];
+        const entryRow = openRow;
         const exitRow = row;
+        const direction = openIsBuy ? Direction.LONG : Direction.SHORT;
 
-        const entryDate = fm.openTime ? parseDate(entryRow[fm.openTime]) : new Date().toISOString();
-        const exitDate = fm.openTime ? parseDate(exitRow[fm.openTime]) : entryDate;
+        const entryDate = fm.openTime ? (parseDate(entryRow[fm.openTime]) || new Date().toISOString()) : new Date().toISOString();
+        const exitDate = fm.openTime ? (parseDate(exitRow[fm.openTime]) || entryDate) : entryDate;
         const entryPrice = fm.openPrice ? parseNum(entryRow[fm.openPrice]) : 0;
         const exitPrice = fm.openPrice ? parseNum(exitRow[fm.openPrice]) : 0;
         const quantity = fm.quantity ? (parseNum(entryRow[fm.quantity]) || 1) : 1;
 
-        // Use Realized Profit if available, else calculate
         let pnl = 0;
         if (fm.netPnl && exitRow[fm.netPnl]) {
           pnl = parseNum(exitRow[fm.netPnl]);
         } else if (entryPrice > 0 && exitPrice > 0) {
-          pnl = (exitPrice - entryPrice) * quantity;
+          pnl = direction === Direction.LONG
+            ? (exitPrice - entryPrice) * quantity
+            : (entryPrice - exitPrice) * quantity;
         }
         const fees = fm.commission ? Math.abs(parseNum(exitRow[fm.commission!])) : 0;
         const status = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
 
         trades.push({
           id: `import_${Date.now()}_${idx++}`,
-          symbol,
-          entryDate,
-          exitDate,
-          entryPrice,
-          exitPrice,
-          quantity,
-          direction: Direction.LONG, // BUY→SELL is long
-          status,
-          pnl,
-          fees,
-          setup: '',
-          notes: '',
-          leverage: 1,
-          riskAmount: 0,
+          symbol, entryDate, exitDate, entryPrice, exitPrice, quantity,
+          direction, status, pnl, fees, setup: '', notes: '', leverage: 1, riskAmount: 0,
         } as Trade);
+      } else {
+        // No matching opposite — this is an opening order
+        openStack.push({ row, isBuy });
       }
     });
 
-    // Remaining unmatched BUYs = open positions
-    openStack.forEach(row => {
-      const entryDate = fm.openTime ? parseDate(row[fm.openTime]) : new Date().toISOString();
+    // Remaining unmatched orders = open positions
+    openStack.forEach(({ row, isBuy }) => {
+      const entryDate = fm.openTime ? (parseDate(row[fm.openTime]) || new Date().toISOString()) : new Date().toISOString();
       const entryPrice = fm.openPrice ? parseNum(row[fm.openPrice]) : 0;
       const quantity = fm.quantity ? (parseNum(row[fm.quantity]) || 1) : 1;
       trades.push({
@@ -375,7 +383,7 @@ function pairRawOrders(rows: Record<string, string>[], rules: AiRules): Trade[] 
         entryPrice,
         exitPrice: 0,
         quantity,
-        direction: Direction.LONG,
+        direction: isBuy ? Direction.LONG : Direction.SHORT,
         status: TradeStatus.BE,
         pnl: 0,
         fees: 0,
