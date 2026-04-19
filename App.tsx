@@ -589,12 +589,23 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       };
     });
 
-    const { error } = await supabase
-      .from('trading_journals')
-      .upsert(data, { onConflict: 'user_id,date,symbol,direction,pnl', ignoreDuplicates: true });
+    const { error } = await supabase.from('trading_journals').insert(data);
 
     if (error) {
-      console.error('Error importing trades:', error);
+      if (error.code === '23505') {
+        // 唯一约束冲突：部分或全部记录已存在，逐条插入跳过重复
+        const results = await Promise.allSettled(
+          data.map(row => supabase.from('trading_journals').insert(row))
+        );
+        const inserted = results.filter(r => r.status === 'fulfilled' && !(r.value as any).error);
+        const insertedTrades = imported.filter((_, i) => {
+          const r = results[i];
+          return r.status === 'fulfilled' && !(r.value as any).error;
+        });
+        if (insertedTrades.length > 0) setTrades(prev => [...insertedTrades, ...prev]);
+      } else {
+        console.error('Error importing trades:', error);
+      }
     } else {
       setTrades(prev => [...imported, ...prev]);
     }
