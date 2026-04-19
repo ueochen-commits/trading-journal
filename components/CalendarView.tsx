@@ -2,6 +2,18 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { DailyPlan, Trade } from '../types';
+
+// Extract YYYY-MM-DD from an ISO string without timezone conversion
+// e.g. "2025-01-03T16:00:00.000Z" → "2025-01-03" (the date as stored, not local)
+const tradeDateKey = (entryDate: string): string => {
+  if (!entryDate) return '';
+  // If it looks like an ISO string, take the date part directly
+  if (/^\d{4}-\d{2}-\d{2}/.test(entryDate)) return entryDate.slice(0, 10);
+  // Fallback: parse and use local date
+  const d = new Date(entryDate);
+  if (isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
 import {
   ChevronLeft, ChevronRight, X, Edit3, CheckCircle2, ArrowLeft, Save,
   Undo2, Redo2, Mic, MicOff, Bold, Italic, Underline as UnderlineIcon, Code2,
@@ -486,14 +498,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
 
   const monthStats = useMemo(() => {
-    const start = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const end = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const yyyy = currentDate.getFullYear();
+    const mm = currentDate.getMonth() + 1;
     const monthTrades = trades.filter(tr => {
-      const d = new Date(tr.entryDate);
-      return d >= start && d <= end;
+      const k = tradeDateKey(tr.entryDate);
+      const [y, m] = k.split('-').map(Number);
+      return y === yyyy && m === mm;
     });
     const totalPnl = monthTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
-    const tradingDaySet = new Set(monthTrades.map(tr => new Date(tr.entryDate).toDateString()));
+    const tradingDaySet = new Set(monthTrades.map(tr => tradeDateKey(tr.entryDate)));
     return { totalPnl, totalTrades: monthTrades.length, tradingDays: tradingDaySet.size };
   }, [currentDate, trades]);
 
@@ -513,11 +526,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         if (day < 1 || day > daysInMonth) continue;
         const cellDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
         if (isCurrentMonth && cellDate.toDateString() === now.toDateString()) containsToday = true;
-        const dateStr = cellDate.toDateString();
-        const dayTrades = trades.filter(tr => new Date(tr.entryDate).toDateString() === dateStr);
+        const cellKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+        const dayTrades = trades.filter(tr => tradeDateKey(tr.entryDate) === cellKey);
         weekPnl += dayTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
         weekCount += dayTrades.length;
-        if (dayTrades.length > 0) daySet.add(dateStr);
+        if (dayTrades.length > 0) daySet.add(cellKey);
       }
       weeks.push({ pnl: weekPnl, count: weekCount, tradingDays: daySet.size, isCurrent: containsToday });
     }
@@ -525,12 +538,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   }, [currentDate, trades, firstDayOfMonth, daysInMonth]);
 
   const getDayData = (day: number) => {
-    const dateStr = new Date(currentDate.getFullYear(), currentDate.getMonth(), day).toDateString();
-    const daysTrades = trades.filter(tr => new Date(tr.entryDate).toDateString() === dateStr);
     const yyyy = currentDate.getFullYear();
     const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
     const dd = String(day).padStart(2, '0');
     const dateKey = `${yyyy}-${mm}-${dd}`;
+    const daysTrades = trades.filter(tr => tradeDateKey(tr.entryDate) === dateKey);
     const dayPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
     if (daysTrades.length === 0 && !dayPlan) return null;
     const netPnl = daysTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
@@ -578,7 +590,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const selectedDayTrades = useMemo(() => {
     if (!selectedDay) return [];
-    return trades.filter(tr => new Date(tr.entryDate).toDateString() === selectedDay.toDateString());
+    const key = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth()+1).padStart(2,'0')}-${String(selectedDay.getDate()).padStart(2,'0')}`;
+    return trades.filter(tr => tradeDateKey(tr.entryDate) === key);
   }, [selectedDay, trades]);
 
   const filteredPickerTrades = useMemo(() => {
