@@ -411,7 +411,7 @@ const Sidebar = ({
           title={isCollapsed ? t.journal.addTrade : undefined}
           style={{
             width: '100%', height: 38,
-            background: 'linear-gradient(135deg, #5B6BF0, #7C5CF6)',
+            background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)',
             borderRadius: 8, border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             gap: 7, color: '#fff', fontSize: 13, fontWeight: 600,
