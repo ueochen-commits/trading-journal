@@ -1241,7 +1241,6 @@ const Journal: React.FC<JournalProps> = ({
                         </div>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="#94A3B8" xmlns="http://www.w3.org/2000/svg" className={`transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`}><path d="M12 15.5a1 1 0 0 1-.7-.3l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 4.3-4.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-.7.3Z"/></svg>
                     </button>
-                    </button>
 
                     {isAccountSwitcherOpen && (
                         <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in-up z-50 origin-top-right">
