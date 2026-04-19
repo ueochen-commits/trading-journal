@@ -12,9 +12,14 @@ export default async function handler(req: any, res: any) {
   const systemPrompt = `你是一个交易数据结构分析专家。用户会提供一个交易记录 CSV/Excel 的表头和前15行数据。
 你的任务是分析这个文件来自哪个交易所，以及每一列对应我们系统中的哪个字段。
 
+关于时间字段的处理规则（非常重要）：
+- 如果文件只有一个时间列（如"时间"、"Time"、"Date"、"日期"等），把它映射到 openTime，closeTime 设为 null
+- 如果文件有两个时间列（如"开仓时间"+"平仓时间"，或"Open Time"+"Close Time"），分别映射到 openTime 和 closeTime
+- openTime 必须映射到一个真实存在的列名，绝对不能为 null
+
 我们的目标字段结构：
-- openTime: 开仓时间（ISO 8601 格式）
-- closeTime: 平仓时间（可选，没有则为 null）
+- openTime: 开仓/交易时间（必填，如果只有一个时间列就用它）
+- closeTime: 平仓时间（可选，只有文件明确有两个时间列时才填，否则为 null）
 - symbol: 交易品种（如 BTCUSDT）
 - side: 方向，必须是 'long' 或 'short'
 - quantity: 数量（浮点数）
@@ -30,7 +35,7 @@ export default async function handler(req: any, res: any) {
   "detectedAccountType": "futures" | "spot" | "margin" | "unknown",
   "confidence": 0到100的整数,
   "fieldMapping": {
-    "openTime": "源表格中的列名",
+    "openTime": "源表格中真实存在的列名（必填，不能为null）",
     "closeTime": "源表格中的列名或null",
     "symbol": "源表格中的列名",
     "side": "源表格中的列名",

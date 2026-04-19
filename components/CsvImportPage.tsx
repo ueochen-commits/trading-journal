@@ -175,8 +175,8 @@ function buildFallbackRules(headers: string[], _rows: Record<string, string>[], 
     detectedAccountType: 'unknown',
     confidence: 40,
     fieldMapping: {
-      openTime: find('time', 'date', 'open', '时间', '开仓') || headers[0],
-      closeTime: find('close time', 'exit', '平仓时间'),
+      openTime: find('time', 'date', 'open', '时间', '开仓', '日期', 'datetime', 'timestamp') || headers[0],
+      closeTime: find('close time', 'exit', '平仓时间', 'close_time', 'closetime'),
       symbol: find('symbol', 'pair', 'contract', '品种', '合约') || headers[1],
       side: find('side', 'direction', 'type', '方向', '类型') || headers[2],
       quantity: find('qty', 'quantity', 'size', 'amount', '数量') || headers[3],
@@ -224,7 +224,9 @@ function convertRows(rows: Record<string, string>[], rules: AiRules): Trade[] {
 
     const pnl = parseNum(row[fm.netPnl]);
     const fees = fm.commission ? Math.abs(parseNum(row[fm.commission])) : 0;
-    const entryDate = parseDate(row[fm.openTime]);
+    // openTime must exist; if AI returned null, try first column that looks like a date
+    const rawTime = fm.openTime ? row[fm.openTime] : Object.values(row).find(v => /\d{4}[-/]\d{2}[-/]\d{2}/.test(String(v))) || '';
+    const entryDate = parseDate(String(rawTime));
     const exitDate = fm.closeTime ? parseDate(row[fm.closeTime]) : entryDate;
     const entryPrice = parseNum(row[fm.openPrice]);
     const exitPrice = fm.closePrice ? parseNum(row[fm.closePrice]) : entryPrice;
