@@ -728,9 +728,7 @@ const CsvImportPage: React.FC<Props> = ({
           <div style={{ width: 400, minWidth: 400, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 14 }}>
             {/* Logo + brand — matches exchange logo area in upload page */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 42, height: 42, borderRadius: 8, background: 'linear-gradient(135deg, #1E1B4B 0%, #3B1563 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0 }}>
-                <img src="/lion-care.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'cover', borderRadius: 8 }} />
-              </div>
+              <img src="/lion-care.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
               <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>TradeGrail AI</span>
             </div>
 
