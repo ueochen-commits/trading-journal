@@ -1358,13 +1358,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onClose={() => setShowSelectImportMethod(false)}
                 onContinue={(method) => {
                   if (method === 'auto') {
-                    setShowSelectImportMethod(false);
                     setShowBrokerSync(true);
-                  } else if (method === 'file') {
                     setShowSelectImportMethod(false);
+                  } else if (method === 'file') {
                     setShowCsvImport(true);
+                    setShowSelectImportMethod(false);
                   } else {
-                    console.log('导入方式：', method, '交易所：', connectingExchange.name);
                     setShowSelectImportMethod(false);
                   }
                 }}
