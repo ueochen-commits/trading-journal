@@ -219,8 +219,6 @@ const CsvImportPage: React.FC<Props> = ({
     <>
       <style>{`
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        .csv-page { animation: fadeUp 0.25s ease-out; }
       `}</style>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, display: 'flex', zIndex: 100, height: 3 }}>
         <div style={{ flex: progressFill, background: '#5b5bd6', transition: 'flex 0.4s ease' }} />
