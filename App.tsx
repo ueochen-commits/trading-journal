@@ -66,6 +66,7 @@ import WelcomeModal from './components/WelcomeModal';
 import ConnectExchangePage from './components/ConnectExchangePage';
 import SelectImportMethodPage from './components/SelectImportMethodPage';
 import BrokerSyncPage from './components/BrokerSyncPage';
+import CsvImportPage from './components/CsvImportPage';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
@@ -188,6 +189,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [showConnectExchange, setShowConnectExchange] = useState(false);
   const [showSelectImportMethod, setShowSelectImportMethod] = useState(false);
   const [showBrokerSync, setShowBrokerSync] = useState(false);
+  const [showCsvImport, setShowCsvImport] = useState(false);
   const [connectingExchange, setConnectingExchange] = useState<{ id: string; name: string; logoUrl?: string; brandColor?: string } | null>(null);
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
@@ -1358,6 +1360,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   if (method === 'auto') {
                     setShowSelectImportMethod(false);
                     setShowBrokerSync(true);
+                  } else if (method === 'file') {
+                    setShowSelectImportMethod(false);
+                    setShowCsvImport(true);
                   } else {
                     console.log('导入方式：', method, '交易所：', connectingExchange.name);
                     setShowSelectImportMethod(false);
@@ -1374,6 +1379,15 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onBack={() => { setShowBrokerSync(false); setShowSelectImportMethod(true); }}
                 onClose={() => setShowBrokerSync(false)}
                 onConnect={async (data) => { await handleExchangeConnect(data); }}
+              />
+          )}
+          {showCsvImport && connectingExchange && (
+              <CsvImportPage
+                exchangeName={connectingExchange.name}
+                exchangeLogoUrl={connectingExchange.logoUrl}
+                exchangeBrandColor={connectingExchange.brandColor}
+                onBack={() => { setShowCsvImport(false); setShowSelectImportMethod(true); }}
+                onClose={() => setShowCsvImport(false)}
               />
           )}
           {isShareModalOpen && shareIntent?.type === 'trade' && (
