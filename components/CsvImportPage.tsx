@@ -267,6 +267,7 @@ const CsvImportPage: React.FC<Props> = ({
   const [tzOpen, setTzOpen] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [tutorialExpanded, setTutorialExpanded] = useState(false);
   const [parseProgress, setParseProgress] = useState(0); // 0-4 steps done
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
@@ -382,19 +383,32 @@ const CsvImportPage: React.FC<Props> = ({
     }
   }, [exchangeName, timezone]);
 
-  const handleFile = useCallback((f: File) => {
+  // Only saves to state — does NOT trigger parsing
+  const handleFileSelected = useCallback((f: File) => {
     const ok = /\.(csv|xlsx|xls|txt)$/i.test(f.name);
     if (!ok) { alert('暂不支持此格式，请上传 CSV 或 Excel'); return; }
     if (f.size > 50 * 1024 * 1024) { alert('文件过大，请分段导出后多次上传'); return; }
+    setSelectedFile(f);
     setFile(f);
-    startParsing(f);
-  }, [startParsing]);
+  }, []);
+
+  const handleRemoveFile = useCallback(() => {
+    setSelectedFile(null);
+    setFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault(); setDragOver(false);
     const f = e.dataTransfer.files[0];
-    if (f) handleFile(f);
-  }, [handleFile]);
+    if (f) handleFileSelected(f);
+  }, [handleFileSelected]);
+
+  // Continue button — only here do we trigger AI parsing
+  const handleContinueClick = useCallback(() => {
+    if (!selectedFile) return;
+    startParsing(selectedFile);
+  }, [selectedFile, startParsing]);
 
   const handleConfirmImport = useCallback(() => {
     if (parseResult?.newTrades) {
@@ -480,34 +494,100 @@ const CsvImportPage: React.FC<Props> = ({
               <p style={{ fontSize: 12, color: '#9396aa', marginTop: 6, lineHeight: 1.6 }}>请选择数据文件的时区。想在应用中以其他时区查看数据请到设置修改</p>
             </div>
 
-            {/* Drop zone */}
+            {/* Drop zone — fixed 140px height, two states */}
             <div>
               <label style={{ fontSize: 11, fontWeight: 600, color: '#8888b0', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>上传文件</label>
-              <div onDragOver={e => { e.preventDefault(); setDragOver(true); }} onDragLeave={() => setDragOver(false)} onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                style={{ border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`, borderRadius: 12, padding: '36px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer', background: dragOver ? '#f4f2ff' : 'transparent', transition: 'all 0.15s' }}>
-                <svg viewBox="0 0 1024 1024" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M112 438.08L35.36 717.76V181.12a50.08 50.08 0 0 1 50.08-50.08h238.24a50.24 50.24 0 0 1 35.52 14.72l102.56 102.72a10.72 10.72 0 0 0 7.2 2.88h358.4a50.08 50.08 0 0 1 50.08 50.08v70.24H198.72A90.24 90.24 0 0 0 112 438.08zM978.24 432a49.92 49.92 0 0 0-39.84-19.84H198.72a50.24 50.24 0 0 0-48 37.12L46.4 829.76a50.08 50.08 0 0 0 35.2 61.44 53.12 53.12 0 0 0 13.28 1.76h739.68a50.24 50.24 0 0 0 48-36.96l104-380.96a49.92 49.92 0 0 0-8.32-43.04z" fill="#C7D2FE"/>
-                </svg>
-                <div style={{ textAlign: 'center' }}>
-                  <p style={{ fontSize: 14, fontWeight: 500, color: '#1a1a3a', margin: '0 0 4px' }}>拖拽文件到此处，或</p>
-                  <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                    style={{ fontSize: 14, fontWeight: 600, color: '#5b5bd6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
-                    点击选择文件
-                  </button>
-                </div>
-                <p style={{ fontSize: 12, color: '#a0a0c0', margin: 0 }}>支持 CSV、Excel（.xlsx/.xls）、TXT</p>
+              <div
+                onDragOver={e => { e.preventDefault(); if (!selectedFile) setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => { if (!selectedFile) fileInputRef.current?.click(); }}
+                style={{
+                  height: 140, boxSizing: 'border-box', borderRadius: 10,
+                  transition: 'border-color 200ms ease, background-color 200ms ease',
+                  ...(selectedFile ? {
+                    border: '1px solid #C7D2FE', background: '#FAFBFF',
+                    padding: 14, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'default',
+                  } : {
+                    border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`,
+                    background: dragOver ? '#f4f2ff' : 'transparent',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer',
+                  }),
+                }}
+              >
+                {selectedFile ? (
+                  <>
+                    {/* File card */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ width: 34, height: 34, background: '#EEF2FF', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="#4338CA">
+                          <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-6-6H7Zm6 1.5V8h4.5L13 3.5Z"/>
+                        </svg>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }} title={selectedFile.name}>
+                          {selectedFile.name}
+                        </div>
+                        <div style={{ fontSize: 11.5, color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
+                          {selectedFile.size < 1024 * 1024 ? `${(selectedFile.size / 1024).toFixed(1)} KB` : `${(selectedFile.size / 1024 / 1024).toFixed(1)} MB`}
+                          {' · '}{selectedFile.name.split('.').pop()?.toUpperCase()}
+                        </div>
+                      </div>
+                      <button onClick={e => { e.stopPropagation(); handleRemoveFile(); }}
+                        style={{ width: 22, height: 22, background: 'transparent', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, flexShrink: 0, padding: 0, transition: 'all 150ms ease' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLButtonElement).style.color = '#DC2626'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#94A3B8'; }}
+                        title="移除文件">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                      </button>
+                    </div>
+                    {/* Status bar */}
+                    <div style={{ borderTop: '1px solid #E0E7FF', paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 11.5, color: '#64748B', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="#6366F1"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
+                        准备就绪
+                      </div>
+                      <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                        style={{ background: 'transparent', border: 'none', color: '#6366F1', fontSize: 11.5, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                        </svg>
+                        换一个文件
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 1024 1024" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M112 438.08L35.36 717.76V181.12a50.08 50.08 0 0 1 50.08-50.08h238.24a50.24 50.24 0 0 1 35.52 14.72l102.56 102.72a10.72 10.72 0 0 0 7.2 2.88h358.4a50.08 50.08 0 0 1 50.08 50.08v70.24H198.72A90.24 90.24 0 0 0 112 438.08zM978.24 432a49.92 49.92 0 0 0-39.84-19.84H198.72a50.24 50.24 0 0 0-48 37.12L46.4 829.76a50.08 50.08 0 0 0 35.2 61.44 53.12 53.12 0 0 0 13.28 1.76h739.68a50.24 50.24 0 0 0 48-36.96l104-380.96a49.92 49.92 0 0 0-8.32-43.04z" fill="#C7D2FE"/>
+                    </svg>
+                    <div style={{ textAlign: 'center' }}>
+                      <p style={{ fontSize: 13.5, fontWeight: 500, color: '#1a1a3a', margin: '0 0 3px' }}>拖拽文件到此处，或</p>
+                      <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                        style={{ fontSize: 13.5, fontWeight: 600, color: '#5b5bd6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
+                        点击选择文件
+                      </button>
+                    </div>
+                    <p style={{ fontSize: 12, color: '#a0a0c0', margin: 0 }}>支持 CSV、Excel（.xlsx/.xls）、TXT</p>
+                  </>
+                )}
               </div>
-              <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls,.txt" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
+              <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls,.txt"
+                style={{ position: 'absolute', width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+                onChange={e => { const f = e.target.files?.[0]; if (f) handleFileSelected(f); }} />
             </div>
 
-            {/* Continue button */}
+            {/* Continue button — disabled until file selected */}
             <button
-              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: '#3730a3', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: '0 4px 16px rgba(55,48,163,0.30)' }}
-              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#312e81'; b.style.boxShadow = '0 6px 20px rgba(55,48,163,0.40)'; b.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#3730a3'; b.style.boxShadow = '0 4px 16px rgba(55,48,163,0.30)'; b.style.transform = 'translateY(0)'; }}
+              onClick={handleContinueClick}
+              disabled={!selectedFile}
+              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: selectedFile ? '#3730a3' : '#e0ddf0', color: selectedFile ? '#fff' : '#a8a8c8', fontSize: 15, fontWeight: 600, cursor: selectedFile ? 'pointer' : 'not-allowed', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: selectedFile ? '0 4px 16px rgba(55,48,163,0.30)' : 'none' }}
+              onMouseEnter={e => { if (selectedFile) { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#312e81'; b.style.boxShadow = '0 6px 20px rgba(55,48,163,0.40)'; b.style.transform = 'translateY(-1px)'; } }}
+              onMouseLeave={e => { if (selectedFile) { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#3730a3'; b.style.boxShadow = '0 4px 16px rgba(55,48,163,0.30)'; b.style.transform = 'translateY(0)'; } }}
             >
-              继续
+              继续 {selectedFile ? '→' : ''}
             </button>
           </div>
 
