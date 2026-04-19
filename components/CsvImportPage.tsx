@@ -311,9 +311,9 @@ const CsvImportPage: React.FC<Props> = ({
 
             {/* Continue button */}
             <button
-              style={{ width: '100%', height: 50, borderRadius: 12, border: 'none', background: '#5b5bd6', color: '#fff', fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 4, fontFamily: 'inherit' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#4a4ac4'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#5b5bd6'; }}
+              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: '#5b5bd6', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: '0 4px 16px rgba(91,91,214,0.30)' }}
+              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#4a4ac8'; b.style.boxShadow = '0 6px 20px rgba(91,91,214,0.40)'; b.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#5b5bd6'; b.style.boxShadow = '0 4px 16px rgba(91,91,214,0.30)'; b.style.transform = 'translateY(0)'; }}
             >
               继续
             </button>
@@ -362,9 +362,9 @@ const CsvImportPage: React.FC<Props> = ({
                 </p>
               )}
               {(tutorialExpanded ? tutorial.steps : tutorial.steps.slice(0, 4)).map((s, i) => (
-                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                  <div style={{ width: 22, height: 22, borderRadius: '50%', background: '#5b5bd6', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>{i + 1}</div>
-                  <p style={{ fontSize: 14, color: '#3a3a5a', margin: 0, lineHeight: 1.65 }}>{s}</p>
+                <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5b5bd6', flexShrink: 0, marginTop: 6 }} />
+                  <p style={{ fontSize: 14, color: '#6b6b9a', margin: 0, lineHeight: 1.7 }}>{s}</p>
                 </div>
               ))}
               {tutorial.steps.length > 4 && (
