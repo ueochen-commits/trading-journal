@@ -417,6 +417,7 @@ const CsvImportPage: React.FC<Props> = ({
   const [tutorialExpanded, setTutorialExpanded] = useState(false);
   const [parseProgress, setParseProgress] = useState(0); // 0-4 steps done
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
   const [backHovered, setBackHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -558,12 +559,16 @@ const CsvImportPage: React.FC<Props> = ({
     startParsing(selectedFile);
   }, [selectedFile, startParsing]);
 
-  const handleConfirmImport = useCallback(() => {
-    if (parseResult?.newTrades) {
-      onImportComplete?.(parseResult.newTrades);
+  const handleConfirmImport = useCallback(async () => {
+    if (!parseResult?.newTrades || isImporting) return;
+    setIsImporting(true);
+    try {
+      await onImportComplete?.(parseResult.newTrades);
+      setStep('done');
+    } finally {
+      setIsImporting(false);
     }
-    setStep('done');
-  }, [parseResult, onImportComplete]);
+  }, [parseResult, onImportComplete, isImporting]);
 
   // ── Shared nav chrome ──────────────────────────────────────────────────────
 
@@ -905,75 +910,183 @@ const CsvImportPage: React.FC<Props> = ({
 
   // ── Step 3: Preview ────────────────────────────────────────────────────────
 
-  if (step === 'preview' && parseResult) return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
-      {navChrome()}
-      <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        {pageTitle('添加交易', '预览并确认')}
-        <div style={{ width: '100%', display: 'flex', gap: 24 }}>
-          {/* LEFT */}
-          <div style={{ flex: 1, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '28px 28px 24px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>导入摘要</span>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 5, background: '#dcfce7', color: '#15803d', fontSize: 12, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>
-                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }} />
-                已识别：{parseResult.exchange}
-              </span>
+  if (step === 'preview' && parseResult) {
+    const isFutures = parseResult.exchange.toLowerCase().includes('futures') ||
+      parseResult.exchange.toLowerCase().includes('contract') ||
+      parseResult.exchange.toLowerCase().includes('perp') ||
+      parseResult.exchange.toLowerCase().includes('衍生') ||
+      parseResult.exchange.toLowerCase().includes('合约');
+
+    const confidence = parseResult.confidence;
+    const isCustomExchange = parseResult.exchange.toLowerCase().includes('unknown') || parseResult.exchange.toLowerCase().includes('custom');
+    const badgeGreen = confidence >= 85 || isCustomExchange;
+    const badgeText = isCustomExchange
+      ? '已识别交易记录'
+      : confidence >= 85
+        ? `已识别 ${parseResult.exchange.split(' ')[0]} 交易记录`
+        : confidence >= 60
+          ? `疑似 ${parseResult.exchange.split(' ')[0]}，请复查`
+          : '建议手动复查';
+    const badgeColor = badgeGreen ? '#15803D' : '#C2410C';
+
+    const newCount = parseResult.total - parseResult.duplicates;
+    const allDuplicate = newCount === 0;
+
+    return (
+      <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
+        {navChrome()}
+        <div style={{ width: '100%', maxWidth: 880, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          {pageTitle('添加交易', '预览并确认')}
+
+          {/* Low confidence extra warning */}
+          {confidence < 60 && (
+            <div style={{ width: '100%', maxWidth: '97vw', marginBottom: 20, padding: '11px 14px', background: '#FEF9E8', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
+              <div style={{ fontSize: 11.5, color: '#713F12', lineHeight: 1.5 }}>AI 识别置信度较低，请仔细核对每一笔数据后再导入</div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-              {[
-                { label: '总交易数', value: String(parseResult.total), color: '#0F172A' },
-                { label: '累计净盈亏', value: `+$${parseResult.netPnl.toFixed(2)}`, color: '#15803d' },
-                { label: '时间范围', value: parseResult.dateRange, color: '#0F172A' },
-                { label: '重复将跳过', value: `${parseResult.duplicates} 笔`, color: '#0F172A' },
-              ].map(kpi => (
-                <div key={kpi.label} style={{ background: '#f8f8fc', borderRadius: 10, padding: '14px 16px' }}>
-                  <p style={{ fontSize: 11.5, color: '#9396aa', margin: '0 0 6px', fontWeight: 500 }}>{kpi.label}</p>
-                  <p style={{ fontSize: 22, fontWeight: 700, color: kpi.color, margin: 0, fontVariantNumeric: 'tabular-nums' }}>{kpi.value}</p>
+          )}
+
+          <div style={{ width: '100%', maxWidth: '97vw', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 72, alignItems: 'flex-start' }}>
+
+            {/* ── LEFT: Summary ── */}
+            <div>
+              {/* Title row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+                <div style={{ fontSize: 15, color: '#0F172A', fontWeight: 600 }}>导入摘要</div>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: badgeColor, fontSize: 11.5, fontWeight: 500 }}>
+                  {badgeGreen
+                    ? <svg width="12" height="12" viewBox="0 0 24 24" fill={badgeColor}><path d="M20.285 2 9 13.567 3.714 8.611 0 12.322 9 21 24 5.711Z"/></svg>
+                    : <svg width="12" height="12" viewBox="0 0 24 24" fill={badgeColor}><path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
+                  }
+                  {badgeText}
+                </span>
+              </div>
+
+              {/* KPI rows */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 32 }}>
+                {[
+                  {
+                    label: '总交易数',
+                    value: `${parseResult.total} 笔`,
+                    big: true,
+                    color: '#0F172A',
+                    last: false,
+                  },
+                  {
+                    label: isFutures ? '累计净盈亏' : '累计金额',
+                    value: isFutures
+                      ? `${parseResult.netPnl >= 0 ? '+' : '−'}$${Math.abs(parseResult.netPnl).toFixed(2)}`
+                      : `$${Math.abs(parseResult.netPnl).toFixed(2)}`,
+                    big: true,
+                    color: isFutures ? (parseResult.netPnl >= 0 ? '#15803D' : '#DC2626') : '#0F172A',
+                    last: false,
+                  },
+                  {
+                    label: '时间范围',
+                    value: parseResult.dateRange,
+                    big: false,
+                    color: '#0F172A',
+                    last: false,
+                  },
+                  {
+                    label: '重复将跳过',
+                    value: `${parseResult.duplicates} 笔`,
+                    big: false,
+                    color: '#0F172A',
+                    last: true,
+                  },
+                ].map(kpi => (
+                  <div key={kpi.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingBottom: 14, paddingTop: 14, borderBottom: kpi.last ? 'none' : '1px solid rgba(148,163,184,0.2)' }}>
+                    <div style={{ fontSize: 13, color: '#64748B' }}>{kpi.label}</div>
+                    <div style={{ fontSize: kpi.big ? 22 : 14, fontWeight: kpi.big ? 600 : 500, color: kpi.color, letterSpacing: kpi.big ? '-0.02em' : 'normal', fontVariantNumeric: 'tabular-nums' }}>{kpi.value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Warning strip */}
+              <div style={{ padding: '11px 13px', background: '#FEF9E8', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 24 }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
+                <div style={{ fontSize: 11.5, color: '#713F12', lineHeight: 1.5 }}>
+                  {parseResult.duplicates > 0
+                    ? `检测到 ${parseResult.duplicates} 笔交易可能与已有记录重复（基于时间 + 品种 + 数量），导入时将自动跳过`
+                    : `未检测到重复交易，${parseResult.total} 笔全部为新数据`}
                 </div>
-              ))}
+              </div>
+
+              {/* Large count warning */}
+              {parseResult.total > 1000 && (
+                <div style={{ fontSize: 11.5, color: '#64748B', marginBottom: 16 }}>数据量较大，导入可能需要 10-30 秒</div>
+              )}
+
+              {/* Buttons */}
+              {allDuplicate ? (
+                <div>
+                  <div style={{ fontSize: 13, color: '#DC2626', marginBottom: 12 }}>所有 {parseResult.total} 笔交易均已存在，无需重复导入</div>
+                  <button onClick={onBack} style={{ width: '100%', padding: 13, background: 'transparent', color: '#64748B', border: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>返回重新上传</button>
+                </div>
+              ) : (
+                <>
+                  <button onClick={handleConfirmImport} disabled={isImporting}
+                    style={{ width: '100%', padding: 13, background: isImporting ? '#a5b4fc' : '#4F46E5', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: isImporting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    {isImporting ? (
+                      <>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.9s linear infinite' }}><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                        导入中...
+                      </>
+                    ) : `确认导入 ${newCount} 笔 →`}
+                  </button>
+                  <button onClick={onBack} style={{ width: '100%', padding: 10, background: 'transparent', color: '#64748B', border: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>取消</button>
+                </>
+              )}
             </div>
-            <div style={{ background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, padding: '10px 14px', fontSize: 12.5, color: '#92400e', lineHeight: 1.5 }}>
-              检测到 {parseResult.duplicates} 笔交易可能与已有记录重复（基于时间 + 品种 + 数量），导入时将自动跳过
+
+            {/* ── RIGHT: Preview ── */}
+            <div>
+              {/* TradeGrail AI identity */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 28 }}>
+                <img src="/lion-care.png" alt="TradeGrail" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                <div>
+                  <div style={{ fontSize: 16, color: '#0F172A', fontWeight: 700, letterSpacing: '-0.01em' }}>TradeGrail AI</div>
+                  <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 1 }}>已解析 {parseResult.total} 笔交易</div>
+                </div>
+              </div>
+
+              {/* Preview title row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>前 5 笔预览</div>
+                <span style={{ fontSize: 11, color: '#94A3B8' }}>共 {parseResult.total} 笔</span>
+              </div>
+
+              {/* Table header */}
+              <div style={{ display: 'grid', gridTemplateColumns: '76px 1fr 44px 76px', gap: 10, paddingBottom: 10, borderBottom: '1px solid rgba(148,163,184,0.25)', fontSize: 11, color: '#94A3B8', fontWeight: 500, marginBottom: 4 }}>
+                <span>时间</span><span>品种</span><span>方向</span>
+                <span style={{ textAlign: 'right' }}>{isFutures ? '净盈亏' : '金额'}</span>
+              </div>
+
+              {/* Table rows */}
+              {parseResult.preview.map((t, i) => {
+                const isLast = i === parseResult.preview.length - 1;
+                return (
+                  <div key={i} style={{ padding: '13px 0', borderBottom: isLast ? 'none' : '1px solid rgba(148,163,184,0.15)', display: 'grid', gridTemplateColumns: '76px 1fr 44px 76px', gap: 10, fontSize: 12.5, alignItems: 'center' }}>
+                    <span style={{ color: '#64748B', fontFamily: 'monospace', fontSize: 11 }}>{t.time}</span>
+                    <span><span style={{ padding: '2px 7px', background: '#EEF2FF', color: '#4338CA', borderRadius: 3, fontSize: 11, fontWeight: 500 }}>{t.symbol}</span></span>
+                    <span style={{ color: '#0F172A', fontSize: 12 }}>{t.direction}</span>
+                    <span style={{ textAlign: 'right', fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: isFutures ? (t.netPnl >= 0 ? '#15803D' : '#DC2626') : '#0F172A' }}>
+                      {isFutures ? `${t.netPnl >= 0 ? '+' : '−'}$${Math.abs(t.netPnl).toFixed(2)}` : `$${Math.abs(t.netPnl).toFixed(2)}`}
+                    </span>
+                  </div>
+                );
+              })}
+
+              <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 20, lineHeight: 1.6 }}>
+                如果数据看起来不对（如方向识别错误、{isFutures ? '盈亏' : '金额'}异常），请点击取消并重新检查源文件。
+              </div>
             </div>
-            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-              <button onClick={onBack} style={{ flex: 1, height: 44, background: '#fff', border: '1.5px solid #e0e0f0', borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#6b6b9a', cursor: 'pointer', fontFamily: 'inherit' }}>取消</button>
-              <button onClick={handleConfirmImport} style={{ flex: 2, height: 44, background: '#6366f1', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>确认导入 {parseResult.total} 笔</button>
-            </div>
-          </div>
-          {/* RIGHT */}
-          <div style={{ width: 360, flexShrink: 0, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '28px 24px 24px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13.5, fontWeight: 700, color: '#1a1a3a' }}>前 5 笔预览</span>
-              <span style={{ fontSize: 11.5, color: '#9396aa' }}>下滑查看完整 {parseResult.total} 笔</span>
-            </div>
-            <div style={{ overflowY: 'auto', maxHeight: 280 }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #f0f0f8' }}>
-                    {['时间', '品种', '方向', '净盈亏'].map(h => (
-                      <th key={h} style={{ fontSize: 11, fontWeight: 600, color: '#9396aa', textAlign: 'left', padding: '0 8px 8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {parseResult.preview.map((t, i) => (
-                    <tr key={i} style={{ borderBottom: '1px solid #f8f8fc' }}>
-                      <td style={{ padding: '10px 8px', fontSize: 12, color: '#6b6b9a', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{t.time}</td>
-                      <td style={{ padding: '10px 8px' }}><span style={{ background: '#ede9fe', color: '#5b5bd6', fontSize: 11.5, fontWeight: 500, padding: '2px 7px', borderRadius: 4 }}>{t.symbol}</span></td>
-                      <td style={{ padding: '10px 8px', fontSize: 13, color: '#1a1a3a', fontWeight: 500 }}>{t.direction}</td>
-                      <td style={{ padding: '10px 8px', fontSize: 13, fontWeight: 600, color: t.netPnl >= 0 ? '#15803d' : '#dc2626', fontVariantNumeric: 'tabular-nums' }}>{t.netPnl >= 0 ? '+' : ''}${t.netPnl.toFixed(2)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p style={{ fontSize: 11.5, color: '#9396aa', lineHeight: 1.55, margin: 0 }}>如果数据看起来不对（比如方向识别错误、盈亏数字异常），请点击取消并重新检查源文件</p>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
   // ── Step 4: Done ───────────────────────────────────────────────────────────
 
