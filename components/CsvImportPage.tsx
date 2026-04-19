@@ -295,7 +295,7 @@ const CsvImportPage: React.FC<Props> = ({
                 onClick={() => fileInputRef.current?.click()}
                 style={{ border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`, borderRadius: 12, padding: '36px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, cursor: 'pointer', background: dragOver ? '#f4f2ff' : 'transparent', transition: 'all 0.15s' }}>
                 <svg viewBox="0 0 1024 1024" width="48" height="48" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M112 438.08L35.36 717.76V181.12a50.08 50.08 0 0 1 50.08-50.08h238.24a50.24 50.24 0 0 1 35.52 14.72l102.56 102.72a10.72 10.72 0 0 0 7.2 2.88h358.4a50.08 50.08 0 0 1 50.08 50.08v70.24H198.72A90.24 90.24 0 0 0 112 438.08zM978.24 432a49.92 49.92 0 0 0-39.84-19.84H198.72a50.24 50.24 0 0 0-48 37.12L46.4 829.76a50.08 50.08 0 0 0 35.2 61.44 53.12 53.12 0 0 0 13.28 1.76h739.68a50.24 50.24 0 0 0 48-36.96l104-380.96a49.92 49.92 0 0 0-8.32-43.04z" fill="#EEF2FF"/>
+                  <path d="M112 438.08L35.36 717.76V181.12a50.08 50.08 0 0 1 50.08-50.08h238.24a50.24 50.24 0 0 1 35.52 14.72l102.56 102.72a10.72 10.72 0 0 0 7.2 2.88h358.4a50.08 50.08 0 0 1 50.08 50.08v70.24H198.72A90.24 90.24 0 0 0 112 438.08zM978.24 432a49.92 49.92 0 0 0-39.84-19.84H198.72a50.24 50.24 0 0 0-48 37.12L46.4 829.76a50.08 50.08 0 0 0 35.2 61.44 53.12 53.12 0 0 0 13.28 1.76h739.68a50.24 50.24 0 0 0 48-36.96l104-380.96a49.92 49.92 0 0 0-8.32-43.04z" fill="#C7D2FE"/>
                 </svg>
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ fontSize: 14, fontWeight: 500, color: '#1a1a3a', margin: '0 0 4px' }}>拖拽文件到此处，或</p>
@@ -311,9 +311,9 @@ const CsvImportPage: React.FC<Props> = ({
 
             {/* Continue button */}
             <button
-              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: '#5b5bd6', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: '0 4px 16px rgba(91,91,214,0.30)' }}
-              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#4a4ac8'; b.style.boxShadow = '0 6px 20px rgba(91,91,214,0.40)'; b.style.transform = 'translateY(-1px)'; }}
-              onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#5b5bd6'; b.style.boxShadow = '0 4px 16px rgba(91,91,214,0.30)'; b.style.transform = 'translateY(0)'; }}
+              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: '#3730a3', color: '#fff', fontSize: 15, fontWeight: 600, cursor: 'pointer', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: '0 4px 16px rgba(55,48,163,0.30)' }}
+              onMouseEnter={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#312e81'; b.style.boxShadow = '0 6px 20px rgba(55,48,163,0.40)'; b.style.transform = 'translateY(-1px)'; }}
+              onMouseLeave={e => { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#3730a3'; b.style.boxShadow = '0 4px 16px rgba(55,48,163,0.30)'; b.style.transform = 'translateY(0)'; }}
             >
               继续
             </button>
