@@ -457,6 +457,8 @@ const CsvImportPage: React.FC<Props> = ({
         });
         if (!resp.ok) throw new Error('AI API error');
         rules = await resp.json();
+        console.log('[CSV Import] AI rules:', JSON.stringify(rules, null, 2));
+        console.log('[CSV Import] Sample row[0]:', JSON.stringify(sampleRows[0]));
       } catch {
         // Fallback: try to auto-detect common column names
         rules = buildFallbackRules(headers, sampleRows, exchangeName);
