@@ -1628,11 +1628,11 @@ const Dashboard: React.FC<DashboardProps> = ({
               onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)'; }}
               onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
             >
-              <span style={{ color: 'rgba(224,231,255,0.95)', fontSize: 12, fontWeight: 400, fontFamily: '"Inter", -apple-system, sans-serif', lineHeight: 1 }}>
+              <span style={{ color: 'rgba(224,231,255,0.95)', fontSize: 13, fontWeight: 500, fontFamily: '"Inter", -apple-system, sans-serif', lineHeight: 1 }}>
                 开启
               </span>
-              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.03em', lineHeight: 1, fontFamily: '"Georgia", "Times New Roman", serif', background: 'linear-gradient(135deg, #F8FAFC 0%, #E0E7FF 50%, #C7D2FE 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>
-                GRAIL
+              <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1, fontFamily: '"Georgia", "Times New Roman", serif', background: 'linear-gradient(135deg, #F8FAFC 0%, #E0E7FF 50%, #C7D2FE 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>
+                GRAIL 交易
               </span>
             </button>
             <div className="relative z-30" ref={datePickerRef}>
