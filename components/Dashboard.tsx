@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Trade, TradeStatus, RiskSettings, TrackerRule, TrackerRuleType, DailyPlan, Friend, UserLevelProfile, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, TradingAccount } from '../types';
 import {
   AreaChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -18,14 +18,112 @@ import SymbolMatrixCard from './dashboard/SymbolMatrixCard';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
 
-const TZInfoIcon = () => (
-  <span style={{
-    width: 14, height: 14, borderRadius: '50%',
-    border: '1px solid #d1d5db', display: 'inline-flex',
-    alignItems: 'center', justifyContent: 'center',
-    fontSize: 9, color: '#9ca3af', flexShrink: 0,
-  }}>i</span>
-);
+// ─── Card Info Tooltip Data ───────────────────────────────────────────────────
+const CARD_INFO: Record<string, { title: string; body: string }> = {
+  netPnL:       { title: '净盈亏 · Net P/L',           body: '所有已平仓交易的盈亏总和（扣除手续费后）。机构交易员区分 Gross P/L（毛盈亏）和 Net P/L（扣费后），这里显示的是 Net。每笔仅在完全平仓后计入。' },
+  winRate:      { title: '胜率 · Win Rate',             body: '盈利笔数 ÷ 总笔数。华尔街自营台对单一策略胜率的基准是 45-55%，但机构更看 Expectancy 而非胜率本身——高胜率 + 低盈亏比未必赚钱。' },
+  profitFactor: { title: '盈利因子 · Profit Factor',    body: '总盈利 ÷ 总亏损。量化圈公认门槛：>1.3 及格、>1.75 优秀、>2.0 顶级。顶级量化基金的核心策略通常在 1.5-2.0 区间。' },
+  dailyWinRate: { title: '日胜率 · Daily Win Rate',     body: '盈利交易日 ÷ 总交易日。对冲基金用这个衡量策略的日级稳定性——单日大赚 + 多日小亏的账户在机构审计里是警报信号。' },
+  profitLossRatio: { title: '盈亏比 · Payoff Ratio',   body: '平均盈利 ÷ 平均亏损。海龟交易法核心指标——Richard Dennis 的规则要求 ≥ 2.0。反映截断亏损、让利润奔跑的执行力。' },
+  cumulativePnL:{ title: '累计净盈亏 · Equity Curve',  body: '账户净值曲线。机构审计交易员时最看这条线——不是看终点高度，而是看平滑度。抖动越大说明风险管理越差。' },
+  winRateTrend: { title: '胜率 · 平均胜场 · 平均负场', body: '策略在时间维度上的漂移分析。专业 CTA 基金每月对这三条线做一次斜率检查——任何一条出现趋势性恶化都会触发策略复审。' },
+  dailyPnL:     { title: '每日净盈亏 · Daily P/L',     body: '日级盈亏分布。对冲基金风控会重点关注左尾（最差的 5% 交易日）——这些尾部风险决定了策略的 Risk-of-Ruin（破产概率）。' },
+  symbolMatrix: { title: '品种表现 · Symbol Matrix',   body: '按频次与期望收益分布的品种象限图。自营交易团队用这个做品种裁员——右上象限是核心品种，右下象限是强制下架候选。' },
+  grailScore:   { title: 'Grail Score · 策略健康度',   body: '六维度综合评分——胜率、盈利因子、盈亏比、恢复因子、最大回撤、稳定性。机构通常用 Sharpe + Calmar 双指标评估，此处把更多维度可视化。' },
+  drawdown:     { title: '回撤分析 · Drawdown',         body: '净值从历史高点的下跌幅度。机构风控的一级指标——最大回撤 MDD 直接决定杠杆上限。专业基金通常将 MDD 控制在 15% 以内。' },
+  tradeTiming:  { title: '交易时间表现',                body: '按入场/出场时刻分布的盈亏。纽约自营台的交易员会用这个找自己的 alpha 时段——大部分人只在 2-3 个时段稳定赚钱，其他时段都是负贡献。' },
+  performanceHeatmap: { title: '追踪热力图',            body: '周几 × 小时盈亏强度矩阵。对冲基金交易员用它识别结构性优势时段——比如某些策略只在周二美盘开盘后的两小时有效。' },
+  default:      { title: '指标说明',                   body: '鼠标悬停查看该指标的详细说明。' },
+};
+
+// ─── TZInfoIcon with tooltip ─────────────────────────────────────────────────
+const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
+  const [visible, setVisible] = useState(false);
+  const [arrowX, setArrowX] = useState<number | null>(null);
+  const [isBelow, setIsBelow] = useState(false);
+  const iconRef = useRef<HTMLSpanElement>(null);
+  const cardRef = useRef<HTMLElement | null>(null);
+  const showTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const info = CARD_INFO[infoKey] ?? CARD_INFO.default;
+
+  const measure = useCallback(() => {
+    const icon = iconRef.current;
+    if (!icon) return;
+    // Walk up to find the nearest positioned ancestor (the card)
+    let el: HTMLElement | null = icon.parentElement;
+    while (el && getComputedStyle(el).position === 'static') el = el.parentElement;
+    cardRef.current = el;
+    if (!el) return;
+    const iconRect = icon.getBoundingClientRect();
+    const cardRect = el.getBoundingClientRect();
+    setArrowX(iconRect.left + iconRect.width / 2 - cardRect.left);
+    setIsBelow(cardRect.top < 150);
+  }, []);
+
+  const handleEnter = useCallback(() => {
+    if (showTimer.current) clearTimeout(showTimer.current);
+    showTimer.current = setTimeout(() => { measure(); setVisible(true); }, 150);
+  }, [measure]);
+
+  const handleLeave = useCallback(() => {
+    if (showTimer.current) clearTimeout(showTimer.current);
+    setVisible(false);
+  }, []);
+
+  return (
+    <span style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}>
+      <span
+        ref={iconRef}
+        onMouseEnter={handleEnter}
+        onMouseLeave={handleLeave}
+        style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid #d1d5db', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#9ca3af', flexShrink: 0, cursor: 'help', transition: 'border-color 0.15s, color 0.15s' }}
+        onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = '#6366f1'; (e.currentTarget as HTMLElement).style.color = '#6366f1'; }}
+        onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = '#d1d5db'; (e.currentTarget as HTMLElement).style.color = '#9ca3af'; }}
+      >i</span>
+
+      {/* Tooltip — positioned relative to the card via fixed positioning */}
+      {visible && (
+        <span
+          role="tooltip"
+          style={{
+            position: 'fixed',
+            ...((() => {
+              const icon = iconRef.current;
+              const card = cardRef.current;
+              if (!icon || !card) return {};
+              const cardRect = card.getBoundingClientRect();
+              if (isBelow) {
+                return { top: cardRect.bottom + 12, left: cardRect.left, width: cardRect.width };
+              }
+              return { bottom: window.innerHeight - cardRect.top + 12, left: cardRect.left, width: cardRect.width };
+            })()),
+            background: '#0F172A', color: '#fff',
+            padding: '12px 16px', borderRadius: 8,
+            boxShadow: '0 12px 32px -6px rgba(15,23,42,0.3)',
+            zIndex: 9999, pointerEvents: 'none',
+            fontFamily: '"Inter", -apple-system, "PingFang SC", sans-serif',
+          }}
+        >
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: '#fff', marginBottom: 6, letterSpacing: '0.01em', lineHeight: 1.4 }}>{info.title}</div>
+          <div style={{ fontSize: 11.5, color: '#CBD5E1', lineHeight: 1.65, fontWeight: 400 }}>{info.body}</div>
+          {/* Arrow */}
+          <span style={{
+            position: 'absolute',
+            ...(isBelow
+              ? { bottom: '100%', borderBottom: '6px solid #0F172A', borderTop: 'none' }
+              : { top: '100%', borderTop: '6px solid #0F172A', borderBottom: 'none' }),
+            left: arrowX !== null ? arrowX : '50%',
+            transform: 'translateX(-50%)',
+            width: 0, height: 0,
+            borderLeft: '6px solid transparent',
+            borderRight: '6px solid transparent',
+          }} />
+        </span>
+      )}
+    </span>
+  );
+};
 
 const tzCardShell: React.CSSProperties = {
   background: '#ffffff',
@@ -73,7 +171,7 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; wins: number; losse
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
       <div style={tzLabelRow} className="dark:text-slate-400">
-        {label}<TZInfoIcon />
+        {label}<TZInfoIcon infoKey="netPnL" />
         <span style={{ fontSize: 12, color: '#6b7280', fontVariantNumeric: 'tabular-nums' }} className="dark:text-slate-400">{total}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flex: 1 }}>
@@ -89,7 +187,7 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
   const total = wins + losses + breakEven;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
+      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="winRate" /></div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
         <div style={tzBigVal('#111827')} className="dark:text-white">
           {total === 0 ? '--' : `${winRate.toFixed(2)}%`}
@@ -108,7 +206,7 @@ const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value,
   const greenLen = fill * circ;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
+      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="profitFactor" /></div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
         <div>
           <div style={tzBigVal('#111827')} className="dark:text-white">
@@ -133,7 +231,7 @@ const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: nu
   const total = winDays + lossDays + breakEvenDays;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
+      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="dailyWinRate" /></div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
         <div style={tzBigVal('#111827')} className="dark:text-white">
           {total === 0 ? '--' : `${dayWinRate.toFixed(2)}%`}
@@ -152,7 +250,7 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
   const winPct = total > 0 ? (avgWin / total) * 100 : 50;
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
-      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon /></div>
+      <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="profitLossRatio" /></div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
         <div style={{ ...tzBigVal('#111827'), flexShrink: 0 }} className="dark:text-white">
           {ratio === 0 ? '--' : ratio.toFixed(2)}
@@ -221,7 +319,7 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时间表现' : 'Trade Time Performance'}</span>
-          <TZInfoIcon />
+          <TZInfoIcon infoKey="tradeTiming" />
         </div>
         <div style={{ display: 'flex', background: isDark ? '#1e293b' : '#f5f5fa', borderRadius: 7, padding: 3, gap: 2 }}>
           {(['entry', 'exit'] as const).map(key => (
@@ -297,7 +395,7 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
     <div style={{ background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14, flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时长表现' : 'Trade Duration Performance'}</span>
-        <TZInfoIcon />
+        <TZInfoIcon infoKey="tradeTiming" />
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         {tdData.length === 0 ? (
@@ -498,7 +596,7 @@ const DashboardHeatmap: React.FC<{
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
-          <TZInfoIcon />
+          <TZInfoIcon infoKey="performanceHeatmap" />
         </div>
       </div>
 
@@ -926,9 +1024,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
         <span className="text-[15px] font-semibold" style={{ color: '#1a1a2e' }}>
           <span className="dark:text-slate-100">Grail Score</span>
         </span>
-        <div className="w-5 h-5 rounded-full border border-[#ccc] dark:border-slate-600 flex items-center justify-center cursor-pointer hover:border-indigo-400 transition-colors">
-          <span className="text-[10px] font-bold leading-none" style={{ color: '#aaa' }}>i</span>
-        </div>
+        <TZInfoIcon infoKey="grailScore" />
       </div>
       <div className="h-px mt-3 mb-2" style={{ backgroundColor: '#f0f0f0' }} />
 
@@ -1783,7 +1879,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '累计净盈亏' : 'Daily net cumulative P&L'}</span>
-                    <TZInfoIcon />
+                    <TZInfoIcon infoKey="cumulativePnL" />
                     <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span>
                   </div>
                   <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
@@ -1895,7 +1991,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', height: 420 }} className="dark:bg-slate-900 dark:border-slate-800">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
-                      <TZInfoIcon />
+                      <TZInfoIcon infoKey="winRateTrend" />
                     </div>
                     <div style={{ flex: 1, minHeight: 0 }}>
                       <ResponsiveContainer width="100%" height="100%">
@@ -1956,7 +2052,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
-                    <TZInfoIcon />
+                    <TZInfoIcon infoKey="dailyPnL" />
                   </div>
                   <div style={{ flex: 1, minHeight: 0 }}>
                     {(() => {
@@ -2066,7 +2162,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 280, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '回撤分析' : 'Drawdown'}</span>
-                      <TZInfoIcon />
+                      <TZInfoIcon infoKey="drawdown" />
                     </div>
                     {ddData.length === 0 ? (
                       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无回撤数据' : 'No drawdown data'}</div>
