@@ -98,7 +98,9 @@ const BubbleShape = (props: any) => {
       onMouseLeave={onLeave}
       style={{ cursor: 'default' }}
     >
-      <circle cx={cx} cy={cy} r={r} fill={fill} stroke="none" />
+      <circle cx={cx} cy={cy} r={r} fill={fill}
+        stroke={isPos ? 'rgba(5,150,105,0.18)' : 'rgba(220,38,38,0.18)'}
+        strokeWidth={1} />
       {fs > 0 && (
         <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
           fill={textColor} fontSize={fs} fontWeight={500} fontFamily="Inter, sans-serif"
