@@ -1615,21 +1615,23 @@ const Dashboard: React.FC<DashboardProps> = ({
               type="button"
               onClick={() => onNavigateToPlans?.()}
               style={{
-                display: 'inline-flex', alignItems: 'center', gap: 0, padding: 0,
-                background: '#0F0B2E', border: '1px solid rgba(167,139,250,0.25)',
-                borderRadius: 7, cursor: 'pointer', transition: 'background 0.18s ease, border-color 0.18s ease',
-                fontFamily: 'inherit', overflow: 'hidden', height: 38,
-                WebkitAppearance: 'none', outline: 'none', flexShrink: 0,
+                display: 'inline-flex', alignItems: 'center', gap: 10,
+                padding: '0 18px 0 14px', height: 38,
+                background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)',
+                border: '1px solid rgba(167,139,250,0.3)', borderRadius: 7,
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
+                cursor: 'pointer', transition: 'background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease',
+                fontFamily: 'inherit', flexShrink: 0, outline: 'none',
               }}
-              onMouseEnter={e => { const b = e.currentTarget; b.style.background = '#1E1B4B'; b.style.borderColor = 'rgba(167,139,250,0.45)'; }}
-              onMouseLeave={e => { const b = e.currentTarget; b.style.background = '#0F0B2E'; b.style.borderColor = 'rgba(167,139,250,0.25)'; }}
+              onMouseEnter={e => { const b = e.currentTarget; b.style.background = 'linear-gradient(135deg, #312E81 0%, #4338CA 50%, #6366F1 100%)'; b.style.borderColor = 'rgba(167,139,250,0.5)'; }}
+              onMouseLeave={e => { const b = e.currentTarget; b.style.background = 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)'; b.style.borderColor = 'rgba(167,139,250,0.3)'; }}
               onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)'; }}
               onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
             >
-              <span style={{ padding: '0 11px 0 13px', color: 'rgba(199,210,254,0.82)', fontSize: 12, fontWeight: 400, letterSpacing: '0.01em', height: '100%', display: 'flex', alignItems: 'center', borderRight: '1px solid rgba(167,139,250,0.22)', fontFamily: '"Inter", -apple-system, sans-serif' }}>
+              <span style={{ color: 'rgba(199,210,254,0.85)', fontSize: 12, fontWeight: 400, fontFamily: '"Inter", -apple-system, sans-serif', lineHeight: 1 }}>
                 Launch
               </span>
-              <span style={{ padding: '0 15px', fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', height: '100%', display: 'flex', alignItems: 'center', fontFamily: '"Inter", -apple-system, sans-serif', background: 'linear-gradient(135deg, #A78BFA 0%, #C084FC 50%, #818CF8 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>
+              <span style={{ fontSize: 14, fontWeight: 700, letterSpacing: '0.03em', lineHeight: 1, fontFamily: '"Georgia", "Times New Roman", serif', background: 'linear-gradient(135deg, #F8FAFC 0%, #E0E7FF 50%, #C7D2FE 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>
                 GRAIL
               </span>
             </button>
