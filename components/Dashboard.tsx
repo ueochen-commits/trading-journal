@@ -16,6 +16,7 @@ import MentorWidget from './MentorWidget';
 import TradeGrailDailyCard from './TradeGrailDailyCard';
 import SymbolMatrixCard from './dashboard/SymbolMatrixCard';
 import TimeHeatmapCard from './dashboard/TimeHeatmapCard';
+import RMultipleCard from './dashboard/RMultipleCard';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
 
@@ -35,6 +36,7 @@ const CARD_INFO: Record<string, { title: string; body: string }> = {
   tradeTiming:  { title: '交易时间表现',                body: '按入场/出场时刻分布的盈亏。纽约自营台的交易员会用这个找自己的 alpha 时段——大部分人只在 2-3 个时段稳定赚钱，其他时段都是负贡献。' },
   performanceHeatmap: { title: '追踪热力图',            body: '周几 × 小时盈亏强度矩阵。对冲基金交易员用它识别结构性优势时段——比如某些策略只在周二美盘开盘后的两小时有效。' },
   timeHeatmap:        { title: '时段 × 星期 · 盈亏热力图', body: '周几 × 时段的 Expectancy 分布矩阵。对冲基金交易员用它识别结构性优势时段——你的 80% 利润通常来自 20% 的交易时间，找出那 20%。' },
+  rMultiple:          { title: 'R-Multiple 分布 · 策略 Edge 诊断', body: '按 R 值（盈亏 ÷ 初始风险）分布的交易直方图。这是机构交易员的"体检指标"——Van Tharp、Market Wizards 里所有顶级交易员都用 Expectancy + R-Multiple 思维衡量系统。Expectancy > 0.3R 是职业级系统的门槛。' },
   default:      { title: '指标说明',                   body: '鼠标悬停查看该指标的详细说明。' },
 };
 
@@ -2155,7 +2157,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
           <div className="lg:col-span-4 xl:col-span-3 space-y-6">
               <GrailScoreWidget composite={grailScore.composite} radarData={grailScore.radarData} language={language} />
-              {userProfile && (<div id="dashboard-level" className="bg-gradient-to-br from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-xl relative"><div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 rounded-full blur-2xl -mr-10 -mt-10"></div><div className="absolute top-4 right-4 z-20"><MentorWidget trades={trades} plans={plans} riskSettings={riskSettings} className="flex flex-col items-end" /></div><div className="relative z-10"><div className="flex justify-between items-start mb-4"><div><p className="text-xs font-bold text-indigo-400 uppercase tracking-wider mb-1">{t.dashboard.level.current}</p><h2 className="text-4xl font-black flex items-baseline gap-1"><span className="text-2xl text-slate-400">Lv.</span>{userProfile.level}</h2></div></div><div className="mb-2 flex justify-between text-xs font-semibold text-slate-300"><span>{userProfile.currentXp} XP</span><span>{userProfile.nextLevelXp} XP</span></div><div className="h-3 bg-slate-700/50 rounded-full overflow-hidden mb-4 border border-slate-600/50"><div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_10px_rgba(99,102,241,0.5)] transition-all duration-700 ease-out" style={{ width: `${(userProfile.currentXp / userProfile.nextLevelXp) * 100}%` }}></div></div><p className="text-xs text-center text-slate-400">{t.dashboard.level.lifetimeXp} {userProfile.totalLifetimeXp.toLocaleString()}</p></div></div>)}
+              <RMultipleCard trades={trades} language={language} infoIcon={<TZInfoIcon infoKey="rMultiple" />} />
 
               <TradeDurationChart trades={trades} language={language} />
 
