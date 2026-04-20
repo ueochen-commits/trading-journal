@@ -1609,7 +1609,30 @@ const Dashboard: React.FC<DashboardProps> = ({
             })()}
           </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 relative z-30">
+        <div className="flex flex-col sm:flex-row gap-3 relative z-30 items-center">
+            {/* Launch GRAIL button */}
+            <button
+              type="button"
+              onClick={() => onNavigateToPlans?.()}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 0, padding: 0,
+                background: '#0F0B2E', border: '1px solid rgba(167,139,250,0.25)',
+                borderRadius: 7, cursor: 'pointer', transition: 'background 0.18s ease, border-color 0.18s ease',
+                fontFamily: 'inherit', overflow: 'hidden', height: 38,
+                WebkitAppearance: 'none', outline: 'none', flexShrink: 0,
+              }}
+              onMouseEnter={e => { const b = e.currentTarget; b.style.background = '#1E1B4B'; b.style.borderColor = 'rgba(167,139,250,0.45)'; }}
+              onMouseLeave={e => { const b = e.currentTarget; b.style.background = '#0F0B2E'; b.style.borderColor = 'rgba(167,139,250,0.25)'; }}
+              onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.98)'; }}
+              onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)'; }}
+            >
+              <span style={{ padding: '0 11px 0 13px', color: 'rgba(199,210,254,0.82)', fontSize: 12, fontWeight: 400, letterSpacing: '0.01em', height: '100%', display: 'flex', alignItems: 'center', borderRight: '1px solid rgba(167,139,250,0.22)', fontFamily: '"Inter", -apple-system, sans-serif' }}>
+                Launch
+              </span>
+              <span style={{ padding: '0 15px', fontSize: 14, fontWeight: 700, letterSpacing: '0.04em', height: '100%', display: 'flex', alignItems: 'center', fontFamily: '"Inter", -apple-system, sans-serif', background: 'linear-gradient(135deg, #A78BFA 0%, #C084FC 50%, #818CF8 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>
+                GRAIL
+              </span>
+            </button>
             <div className="relative z-30" ref={datePickerRef}>
                 <button onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group min-w-[220px]"><div className="flex items-center gap-2.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Z"/></svg><div className="text-left"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">{(datePresets.find(p => p.id === activeDatePreset)?.label || (activeDatePreset === 'Custom' ? 'Custom Range' : activeDatePreset)).toUpperCase()}</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none">
                     {activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : (
