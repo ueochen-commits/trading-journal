@@ -217,7 +217,7 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
     return (
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, cursor: 'default' }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
           <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天</span>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 260, gap: 8 }}>
@@ -241,7 +241,7 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
       <div style={cardStyle}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14, flexShrink: 0 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, cursor: 'default' }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
           <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天 · 气泡大小 = 总盈亏</span>
         </div>
 
