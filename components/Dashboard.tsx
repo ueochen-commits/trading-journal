@@ -14,6 +14,7 @@ import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
 import MentorWidget from './MentorWidget';
 import TradeGrailDailyCard from './TradeGrailDailyCard';
+import SymbolMatrixCard from './dashboard/SymbolMatrixCard';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
 
@@ -1858,6 +1859,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                   </ResponsiveContainer>
                 </div>
               </div>
+
+              {/* Symbol Performance Matrix */}
+              <SymbolMatrixCard trades={trades} language={language} />
 
               {/* Win Rate · Avg Win · Avg Loss chart */}
               {(() => {
