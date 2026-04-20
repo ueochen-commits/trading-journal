@@ -1632,7 +1632,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 开启
               </span>
               <span style={{ fontSize: 15, fontWeight: 700, letterSpacing: '0.04em', lineHeight: 1, fontFamily: '"Georgia", "Times New Roman", serif', background: 'linear-gradient(135deg, #F8FAFC 0%, #E0E7FF 50%, #C7D2FE 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', WebkitTextFillColor: 'transparent' }}>
-                GRAIL 交易
+                GRAIL 计划
               </span>
             </button>
             <div className="relative z-30" ref={datePickerRef}>
