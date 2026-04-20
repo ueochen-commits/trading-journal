@@ -15,6 +15,7 @@ import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
 import MentorWidget from './MentorWidget';
 import TradeGrailDailyCard from './TradeGrailDailyCard';
 import SymbolMatrixCard from './dashboard/SymbolMatrixCard';
+import TimeHeatmapCard from './dashboard/TimeHeatmapCard';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
 
@@ -33,6 +34,7 @@ const CARD_INFO: Record<string, { title: string; body: string }> = {
   drawdown:     { title: '回撤分析 · Drawdown',         body: '净值从历史高点的下跌幅度。机构风控的一级指标——最大回撤 MDD 直接决定杠杆上限。专业基金通常将 MDD 控制在 15% 以内。' },
   tradeTiming:  { title: '交易时间表现',                body: '按入场/出场时刻分布的盈亏。纽约自营台的交易员会用这个找自己的 alpha 时段——大部分人只在 2-3 个时段稳定赚钱，其他时段都是负贡献。' },
   performanceHeatmap: { title: '追踪热力图',            body: '周几 × 小时盈亏强度矩阵。对冲基金交易员用它识别结构性优势时段——比如某些策略只在周二美盘开盘后的两小时有效。' },
+  timeHeatmap:        { title: '时段 × 星期 · 盈亏热力图', body: '周几 × 时段的 Expectancy 分布矩阵。对冲基金交易员用它识别结构性优势时段——你的 80% 利润通常来自 20% 的交易时间，找出那 20%。' },
   default:      { title: '指标说明',                   body: '鼠标悬停查看该指标的详细说明。' },
 };
 
@@ -2046,6 +2048,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                   </div>
                 );
               })()}
+
+              {/* Time × Day Heatmap */}
+              <TimeHeatmapCard
+                trades={trades}
+                language={language}
+                infoIcon={<TZInfoIcon infoKey="timeHeatmap" />}
+              />
 
               </div>
 
