@@ -1616,7 +1616,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               onClick={() => onNavigateToPlans?.()}
               style={{
                 display: 'inline-flex', alignItems: 'center', gap: 10,
-                padding: '0 18px 0 14px', height: 38,
+                padding: '0 18px 0 14px', height: 34,
                 background: 'linear-gradient(135deg, #1E1B4B 0%, #312E81 50%, #4338CA 100%)',
                 border: '1px solid rgba(167,139,250,0.3)', borderRadius: 7,
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)',
