@@ -2062,7 +2062,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div id="dashboard-strategy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', alignItems: 'stretch' }}>
                 {/* Left: Daily P&L bar chart */}
-                <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
                     <TZInfoIcon infoKey="dailyPnL" />
@@ -2110,7 +2110,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     .slice(0, 10);
                   const fmtDate = (d: string) => { const dt = new Date(d); return `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`; };
                   return (
-                    <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', minHeight: 320 }}>
+                    <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
                       {/* Tab header */}
                       <div style={{ padding: '14px 20px 0', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', paddingBottom: 12, display: 'inline-block', borderBottom: '2px solid #6366f1' }}>
