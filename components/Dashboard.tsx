@@ -17,6 +17,7 @@ import TradeGrailDailyCard from './TradeGrailDailyCard';
 import SymbolMatrixCard from './dashboard/SymbolMatrixCard';
 import TimeHeatmapCard from './dashboard/TimeHeatmapCard';
 import RMultipleCard from './dashboard/RMultipleCard';
+import DrawdownCard from './dashboard/DrawdownCard';
 
 // ── TradeZella-style stat cards ──────────────────────────────────────────────
 
@@ -2162,72 +2163,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <TradeDurationChart trades={trades} language={language} />
 
               {/* --- DRAWDOWN CHART --- */}
-              {(() => {
-                const ddTooltipStyle: React.CSSProperties = { background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
-                const sorted = [...trades].filter(t => t.exitDate).sort((a, b) => new Date(a.exitDate).getTime() - new Date(b.exitDate).getTime());
-                const dayMap: Record<string, number> = {};
-                sorted.forEach(t => { const d = new Date(t.exitDate).toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: '2-digit' }); dayMap[d] = (dayMap[d] || 0) + (t.pnl - t.fees); });
-                let cum = 0, peak = 0;
-                const ddData = Object.entries(dayMap).map(([date, pnl]) => { cum += pnl; if (cum > peak) peak = cum; const dd = peak > 0 ? cum - peak : Math.min(0, cum); return { date, drawdown: parseFloat(dd.toFixed(2)) }; });
-                const minVal = ddData.length ? Math.min(...ddData.map(d => d.drawdown)) : 0;
-                const yMin = Math.floor(minVal / 100) * 100 - 100;
-                return (
-                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 280, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '回撤分析' : 'Drawdown'}</span>
-                      <TZInfoIcon infoKey="drawdown" />
-                    </div>
-                    {ddData.length === 0 ? (
-                      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无回撤数据' : 'No drawdown data'}</div>
-                    ) : (
-                      <div style={{ flex: 1, minHeight: 0 }}>
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={ddData} margin={{ top: 10, right: 8, left: 0, bottom: 0 }}
-                            style={{ cursor: 'pointer' }}
-                            onClick={(data: any) => {
-                              const label = data?.activeLabel;
-                              if (!label) return;
-                              // format is MM/DD/YY
-                              const [mm, dd, yy] = label.split('/');
-                              if (!mm || !dd || !yy) return;
-                              const d = new Date(`20${yy}-${mm}-${dd}T00:00:00`);
-                              if (!isNaN(d.getTime())) setChartClickDay(d);
-                            }}
-                          >
-                            <defs>
-                              <linearGradient id="ddGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stopColor="#FB7185" stopOpacity={0}/>
-                                <stop offset="100%" stopColor="#FB7185" stopOpacity={0.4}/>
-                              </linearGradient>
-                            </defs>
-                            <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} domain={[yMin, 0]} width={55}
-                              tickFormatter={(v: number) => v === 0 ? `${currencySymbol}0` : `-${currencySymbol}${Math.abs(v).toLocaleString('en-US')}`} />
-                            <Tooltip cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                              content={({ active, payload, label }: any) => {
-                                if (!active || !payload?.length) return null;
-                                const val = payload[0]?.value ?? 0;
-                                return (
-                                  <div style={ddTooltipStyle}>
-                                    <div style={{ fontWeight: 600, color: '#1a1d2e', marginBottom: 5 }}>{label}</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                      <span style={{ width: 10, height: 10, background: '#FB7185', borderRadius: 2, display: 'inline-block' }} />
-                                      <span style={{ color: val < 0 ? '#e05c8a' : '#1a1d2e', fontWeight: 600 }}>
-                                        {val < 0 ? '-' : ''}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              }} />
-                            <Area type="monotone" dataKey="drawdown" stroke="#6366F1" strokeWidth={1.2} fill="url(#ddGradient)" fillOpacity={1} dot={false} activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }} isAnimationActive={false} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
+              <DrawdownCard trades={trades} language={language} infoIcon={<TZInfoIcon infoKey="drawdown" />} />
 
               {/* --- TRADE TIME PERFORMANCE --- */}
               <TradeTimeChart trades={trades} language={language} />
