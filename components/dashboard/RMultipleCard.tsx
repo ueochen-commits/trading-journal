@@ -208,6 +208,7 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
     padding: '20px 22px',
     display: 'flex',
     flexDirection: 'column',
+    height: 320,
   };
 
   // Empty state
@@ -249,8 +250,8 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
         <span style={{ fontSize: 11, color: '#94A3B8' }}>近 {stats.totalTrades} 笔 · R = 盈亏 / 初始风险</span>
       </div>
 
-      {/* Chart */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', flex: 1, minHeight: 100, gap: 3, padding: '0 2px' }}>
+      {/* Chart — explicit height so children's height:% resolves correctly */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', height: 130, gap: 3, padding: '0 2px', flexShrink: 0 }}>
         {BIN_CENTERS.map((center, idx) => {
           const bin = bins[idx];
           const heightPct = (bin.count / maxCount) * 100;
