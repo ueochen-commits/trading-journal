@@ -1801,14 +1801,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                       }}
                     >
                       <defs>
-                        <linearGradient id="eqGreenGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#34D399" stopOpacity={0.4} />
-                          <stop offset="100%" stopColor="#34D399" stopOpacity={0} />
-                        </linearGradient>
-                        <linearGradient id="eqRedGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#FB7185" stopOpacity={0} />
-                          <stop offset="100%" stopColor="#FB7185" stopOpacity={0.4} />
-                        </linearGradient>
+                        {(() => {
+                          // Compute y=0 as % from top so gradient transitions exactly at zero
+                          const vals = mergedEquityData.map((d: any) => d.cumulativePnl ?? 0);
+                          const maxV = Math.max(...vals, 0);
+                          const minV = Math.min(...vals, 0);
+                          const range = maxV - minV;
+                          const zeroPct = range > 0 ? `${((maxV / range) * 100).toFixed(2)}%` : '50%';
+                          return (
+                            <linearGradient id="eqCombinedGrad" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#34D399" stopOpacity={0.35} />
+                              <stop offset={zeroPct} stopColor="#34D399" stopOpacity={0.02} />
+                              <stop offset={zeroPct} stopColor="#FB7185" stopOpacity={0.02} />
+                              <stop offset="100%" stopColor="#FB7185" stopOpacity={0.35} />
+                            </linearGradient>
+                          );
+                        })()}
                       </defs>
                       <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
                       <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
@@ -1833,20 +1841,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                           );
                         }}
                       />
-                      {/* Green fill: pnlAbove with baseline at 0 */}
-                      <Area type="monotone" dataKey="pnlAbove" baseValue={0} stroke="none"
-                        fill="url(#eqGreenGrad)" fillOpacity={1} dot={false} activeDot={false}
-                        isAnimationActive={false}
-                      />
-                      {/* Red fill: pnlBelow with baseline at 0 */}
-                      <Area type="monotone" dataKey="pnlBelow" baseValue={0} stroke="none"
-                        fill="url(#eqRedGrad)" fillOpacity={1} dot={false} activeDot={false}
-                        isAnimationActive={false}
-                      />
-                      {/* Line — indigo */}
+                      {/* Single Area: line + fill from same path — no gap possible */}
                       <Area type="monotone" dataKey="cumulativePnl"
                         stroke="#6366F1" strokeWidth={1.2}
-                        fill="none" dot={false}
+                        fill="url(#eqCombinedGrad)" fillOpacity={1}
+                        dot={false}
                         activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }}
                         isAnimationActive={false}
                       />
