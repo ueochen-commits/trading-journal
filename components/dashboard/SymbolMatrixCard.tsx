@@ -90,7 +90,7 @@ const BubbleShape = (props: any) => {
   const fs = calcFontSize(r);
   const isPos = payload.totalPnL >= 0;
   const fill = isPos ? '#D1FAE5' : '#FEE2E2';
-  const textColor = isPos ? '#10B981' : '#EF4444';
+  const textColor = isPos ? '#047857' : '#B91C1C';
 
   return (
     <g
@@ -101,7 +101,7 @@ const BubbleShape = (props: any) => {
       <circle cx={cx} cy={cy} r={r} fill={fill} stroke="none" />
       {fs > 0 && (
         <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
-          fill={textColor} fontSize={fs} fontWeight={400} fontFamily="Inter, sans-serif"
+          fill={textColor} fontSize={fs} fontWeight={500} fontFamily="Inter, sans-serif"
           letterSpacing="0.06em">
           {payload.shortCode}
         </text>
