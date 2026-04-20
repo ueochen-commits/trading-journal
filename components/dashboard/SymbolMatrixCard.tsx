@@ -55,12 +55,22 @@ function computeSymbolData(trades: Trade[]): SymbolData[] {
       const totalPnL = ts.reduce((s, t) => s + (t.pnl - t.fees), 0);
       const wins = ts.filter(t => t.pnl > 0).length;
       const winRate = wins / ts.length;
-      const avgR = totalPnL / ts.length;
-      // expectancyR: winRate * avgWin - lossRate * avgLoss (simplified as avgR / avgLoss)
-      const avgWin = wins > 0 ? ts.filter(t => t.pnl > 0).reduce((s, t) => s + t.pnl, 0) / wins : 0;
-      const losses = ts.filter(t => t.pnl <= 0);
-      const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((s, t) => s + t.pnl, 0) / losses.length) : 1;
-      const expectancyR = winRate * (avgWin / avgLoss) - (1 - winRate);
+
+      // True R: pnl / riskAmount per trade; fallback to 1% of position value
+      const rValues = ts.map(t => {
+        const risk = t.riskAmount && t.riskAmount > 0
+          ? t.riskAmount
+          : t.entryPrice * t.quantity * 0.01;
+        return (t.pnl - t.fees) / risk;
+      });
+      const avgR = rValues.reduce((s, r) => s + r, 0) / rValues.length;
+
+      // expectancyR using true R values
+      const winRValues = rValues.filter((_, i) => ts[i].pnl > 0);
+      const lossRValues = rValues.filter((_, i) => ts[i].pnl <= 0);
+      const avgWinR = winRValues.length > 0 ? winRValues.reduce((s, r) => s + r, 0) / winRValues.length : 0;
+      const avgLossR = lossRValues.length > 0 ? Math.abs(lossRValues.reduce((s, r) => s + r, 0) / lossRValues.length) : 1;
+      const expectancyR = winRate * avgWinR - (1 - winRate) * avgLossR;
 
       // max loss streak
       let maxStreak = 0, streak = 0;
