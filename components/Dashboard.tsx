@@ -50,8 +50,8 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
   const measure = useCallback(() => {
     const icon = iconRef.current;
     if (!icon) return;
-    // Walk up to find the nearest positioned ancestor (the card)
-    let el: HTMLElement | null = icon.parentElement;
+    // Skip the TZInfoIcon's own wrapper span, then walk up to find the card
+    let el: HTMLElement | null = icon.parentElement?.parentElement ?? null;
     while (el && getComputedStyle(el).position === 'static') el = el.parentElement;
     cardRef.current = el;
     if (!el) return;
@@ -103,6 +103,7 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
             boxShadow: '0 12px 32px -6px rgba(15,23,42,0.3)',
             zIndex: 9999, pointerEvents: 'none',
             fontFamily: '"Inter", -apple-system, "PingFang SC", sans-serif',
+            minWidth: 220,
           }}
         >
           <div style={{ fontSize: 12.5, fontWeight: 600, color: '#fff', marginBottom: 6, letterSpacing: '0.01em', lineHeight: 1.4 }}>{info.title}</div>
@@ -126,6 +127,7 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
 };
 
 const tzCardShell: React.CSSProperties = {
+  position: 'relative',
   background: '#ffffff',
   border: '0.5px solid #e8e8f0',
   borderRadius: 14,
@@ -315,7 +317,7 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时间表现' : 'Trade Time Performance'}</span>
@@ -392,7 +394,7 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
   const tooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14, flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时长表现' : 'Trade Duration Performance'}</span>
         <TZInfoIcon infoKey="tradeTiming" />
@@ -590,7 +592,7 @@ const DashboardHeatmap: React.FC<{
   });
 
   return (
-    <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
+    <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
       {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 10, padding: '4px 8px', borderRadius: 5, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}：{Math.round((heatmapData[tip.key] ?? 0) * 100)}%</div>}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -1018,7 +1020,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
   const labelDy = ['-0.3em', '0.35em', '0.35em', '1em', '0.35em', '0.35em'];
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#f0f0f0] dark:border-slate-800 p-6">
+    <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#f0f0f0] dark:border-slate-800 p-6">
       {/* Title row */}
       <div className="flex items-center justify-between">
         <span className="text-[15px] font-semibold" style={{ color: '#1a1a2e' }}>
@@ -1874,7 +1876,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, width: '100%', alignItems: 'stretch' }}>
 
-              <div id="dashboard-equity" style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
+              <div id="dashboard-equity" style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -1988,7 +1990,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 const tickCount = Math.round((yAmtMax - yAmtMin) / stepSize) + 1;
                 const legendItems = [{ color: '#4A6CF7', label: 'Win %' }, { color: '#1D9E75', label: 'Avg win' }, { color: '#E24B4A', label: 'Avg loss' }];
                 return (
-                  <div style={{ background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', height: 420 }} className="dark:bg-slate-900 dark:border-slate-800">
+                  <div style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', height: 420 }} className="dark:bg-slate-900 dark:border-slate-800">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
                       <TZInfoIcon infoKey="winRateTrend" />
@@ -2049,7 +2051,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div id="dashboard-strategy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', alignItems: 'stretch' }}>
                 {/* Left: Daily P&L bar chart */}
-                <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
+                <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', minHeight: 320, display: 'flex', flexDirection: 'column' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
                     <TZInfoIcon infoKey="dailyPnL" />
@@ -2159,7 +2161,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 const minVal = ddData.length ? Math.min(...ddData.map(d => d.drawdown)) : 0;
                 const yMin = Math.floor(minVal / 100) * 100 - 100;
                 return (
-                  <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 280, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
+                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 280, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '回撤分析' : 'Drawdown'}</span>
                       <TZInfoIcon infoKey="drawdown" />
