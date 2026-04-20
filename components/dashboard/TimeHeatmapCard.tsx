@@ -28,16 +28,33 @@ interface TooltipState {
 
 // ─── Color helpers ────────────────────────────────────────────────────────────
 
-const PROFIT_COLORS = ['#F0FDF4', '#DCFCE7', '#BBF7D0', '#86EFAC', '#4ADE80', '#22C55E', '#15803D'];
-const LOSS_COLORS   = ['#FEF2F2', '#FEE2E2', '#FECACA', '#FCA5A5', '#F87171', '#EF4444', '#B91C1C'];
-const NO_DATA_COLOR = '#F1F5F9';
+const HEATMAP_CONFIG = {
+  profit:   { rgb: '16, 185, 129' },
+  loss:     { rgb: '239, 68, 68'  },
+  alphaMin: 0.10,
+  alphaMax: 0.70,
+  noData:   '#F8FAFC',
+};
 
-function getCellColor(cell: CellData | null, maxAbsExpectancy: number): string {
-  if (!cell || cell.tradeCount === 0) return NO_DATA_COLOR;
-  if (maxAbsExpectancy === 0) return '#FFFFFF';
-  const ratio = Math.abs(cell.expectancy) / maxAbsExpectancy;
-  const idx = Math.min(6, Math.floor(ratio * 7));
-  return cell.expectancy >= 0 ? PROFIT_COLORS[idx] : LOSS_COLORS[idx];
+function getCellColor(allCells: CellData[], cell: CellData | null): string {
+  if (!cell || cell.tradeCount === 0) return HEATMAP_CONFIG.noData;
+  if (cell.expectancy === 0) return '#FFFFFF';
+
+  const valid = allCells.filter(c => c.tradeCount > 0);
+
+  if (cell.expectancy > 0) {
+    const positives = valid.filter(c => c.expectancy > 0).sort((a, b) => a.expectancy - b.expectancy);
+    const rank = positives.findIndex(c => c.dayOfWeek === cell.dayOfWeek && c.timeSlot === cell.timeSlot);
+    const pct  = positives.length > 1 ? rank / (positives.length - 1) : 1;
+    const alpha = HEATMAP_CONFIG.alphaMin + pct * (HEATMAP_CONFIG.alphaMax - HEATMAP_CONFIG.alphaMin);
+    return `rgba(${HEATMAP_CONFIG.profit.rgb}, ${alpha.toFixed(2)})`;
+  } else {
+    const negatives = valid.filter(c => c.expectancy < 0).sort((a, b) => b.expectancy - a.expectancy);
+    const rank = negatives.findIndex(c => c.dayOfWeek === cell.dayOfWeek && c.timeSlot === cell.timeSlot);
+    const pct  = negatives.length > 1 ? rank / (negatives.length - 1) : 1;
+    const alpha = HEATMAP_CONFIG.alphaMin + pct * (HEATMAP_CONFIG.alphaMax - HEATMAP_CONFIG.alphaMin);
+    return `rgba(${HEATMAP_CONFIG.loss.rgb}, ${alpha.toFixed(2)})`;
+  }
 }
 
 // ─── Data computation ─────────────────────────────────────────────────────────
@@ -180,11 +197,6 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
   const cells = useMemo(() => computeHeatmap(trades), [trades]);
   const totalTrades = useMemo(() => cells.reduce((s, c) => s + c.tradeCount, 0), [cells]);
 
-  const maxAbsExpectancy = useMemo(() =>
-    cells.length ? Math.max(...cells.map(c => Math.abs(c.expectancy)), 0.01) : 0.01,
-    [cells]
-  );
-
   const cellMap = useMemo(() => {
     const m: Record<string, CellData> = {};
     cells.forEach(c => { m[`${c.dayOfWeek}-${c.timeSlot}`] = c; });
@@ -277,7 +289,7 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
               {/* Cells */}
               {[1, 2, 3, 4, 5, 6, 7].map(dow => {
                 const cell = cellMap[`${dow}-${slot}`] ?? null;
-                const color = getCellColor(cell, maxAbsExpectancy);
+                const color = getCellColor(cells, cell);
                 const hasData = cell && cell.tradeCount > 0;
                 return (
                   <div
@@ -318,7 +330,7 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
         {/* Legend */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 10, color: '#94A3B8' }}>亏损</span>
-          <div style={{ width: 72, height: 6, borderRadius: 3, background: 'linear-gradient(to right, #B91C1C 0%, #FCA5A5 25%, #F1F5F9 50%, #86EFAC 75%, #15803D 100%)' }} />
+          <div style={{ width: 80, height: 6, borderRadius: 3, background: 'linear-gradient(to right, rgba(239,68,68,0.70) 0%, rgba(239,68,68,0.40) 30%, rgba(239,68,68,0.10) 45%, #F8FAFC 50%, rgba(16,185,129,0.10) 55%, rgba(16,185,129,0.40) 70%, rgba(16,185,129,0.70) 100%)' }} />
           <span style={{ fontSize: 10, color: '#94A3B8' }}>盈利</span>
         </div>
         {/* Best / Worst */}
