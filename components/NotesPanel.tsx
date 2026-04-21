@@ -226,7 +226,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       Placeholder.configure({
         placeholder: '为什么要做这笔交易？是否遵循了交易规则？记录情绪、形态与经验教训...',
       }),
-      Image,
+      Image.configure({ allowBase64: true }),
       Table.configure({ resizable: true }),
       TableRow, TableCell, TableHeader,
       TaskList, TaskItem.configure({ nested: true }),
@@ -696,6 +696,19 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
         ref={editorContainerRef}
         className={`flex-1 overflow-y-auto ${isFullscreen ? 'max-w-[800px] mx-auto w-full' : ''}`}
         style={{ padding: '4px 0 20px 0' }}
+        onPaste={(e) => {
+          const items = Array.from(e.clipboardData?.items || []);
+          const imageItem = items.find(item => item.type.startsWith('image/'));
+          if (!imageItem) return;
+          e.preventDefault();
+          const file = imageItem.getAsFile();
+          if (!file || !editor) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            editor.chain().focus().setImage({ src: reader.result as string }).run();
+          };
+          reader.readAsDataURL(file);
+        }}
       >
         <EditorContent
           editor={editor}
