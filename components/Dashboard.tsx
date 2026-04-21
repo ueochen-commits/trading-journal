@@ -297,7 +297,7 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
 
 // ── Position Heat Card ────────────────────────────────────────────────────────
 const VW = 560; const VH = 210;
-const PL = 38; const PR = 16; const PT = 10; const PB = 26;
+const PL = 38; const PR = 16; const PT = 8; const PB = 36;
 const PW = VW - PL - PR; const PH = VH - PT - PB;
 const X_MAX_H = 4; const WARN_X = 2; const DANG_X = 3;
 const Y_MAX_H = 5; const Y_MIN_H = -5;
@@ -362,7 +362,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
 
   return (
     <div style={cardStyle}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
         </div>
@@ -396,10 +396,11 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
             {r > 0 ? `+${r}R` : `${r}R`}
           </text>
         ))}
-        {/* X axis labels */}
-        <text x={warnX} y={VH - PB + 16} textAnchor="middle" fontSize="9" fill="#f59e0b" fontFamily="SF Mono, monospace">2x</text>
-        <text x={dangX} y={VH - PB + 16} textAnchor="middle" fontSize="9" fill="#dc2626" fontFamily="SF Mono, monospace">3x</text>
-        <text x={VW / 2} y={VH - 6} textAnchor="middle" fontSize="9" fill="#64748b">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
+        {/* X axis tick labels — just below plot area */}
+        <text x={warnX} y={PT + PH + 13} textAnchor="middle" fontSize="9" fill="#f59e0b" fontFamily="SF Mono, monospace">2x</text>
+        <text x={dangX} y={PT + PH + 13} textAnchor="middle" fontSize="9" fill="#dc2626" fontFamily="SF Mono, monospace">3x</text>
+        {/* X axis title — one line below tick labels */}
+        <text x={VW / 2} y={PT + PH + 26} textAnchor="middle" fontSize="9" fill="#64748b">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
         {/* data points */}
         {points.map(p => {
           const fill = p.color === 'profit' ? '#059669' : p.color === 'loss-small' ? '#f87171' : '#dc2626';
