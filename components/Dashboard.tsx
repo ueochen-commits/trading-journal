@@ -297,7 +297,7 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
 
 // ── Position Heat Card ────────────────────────────────────────────────────────
 const VW = 560; const VH = 230;
-const PL = 38; const PR = 16; const PT = 22; const PB = 28;
+const PL = 38; const PR = 16; const PT = 14; const PB = 20;
 const PW = VW - PL - PR; const PH = VH - PT - PB;
 const X_MAX_H = 4; const WARN_X = 2; const DANG_X = 3;
 const Y_MAX_H = 5; const Y_MIN_H = -5;
