@@ -296,8 +296,8 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
 };
 
 // ── Position Heat Card ────────────────────────────────────────────────────────
-const VW = 560; const VH = 230;
-const PL = 38; const PR = 16; const PT = 14; const PB = 20;
+const VW = 560; const VH = 210;
+const PL = 38; const PR = 16; const PT = 10; const PB = 26;
 const PW = VW - PL - PR; const PH = VH - PT - PB;
 const X_MAX_H = 4; const WARN_X = 2; const DANG_X = 3;
 const Y_MAX_H = 5; const Y_MIN_H = -5;
@@ -339,7 +339,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
   if (totalCount === 0) return (
     <div style={cardStyle}>
       <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: 14 }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</div>
-      <div style={{ height: 230, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
+      <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
     </div>
   );
 
@@ -349,7 +349,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
         <span style={{ fontSize: 10, color: '#94a3b8' }}>{language === 'cn' ? '每笔交易一个点' : 'One dot per trade'}</span>
       </div>
-      <div style={{ height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center', padding: '0 20px' }}>
+      <div style={{ height: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center', padding: '0 20px' }}>
         <div style={{ fontSize: 28, opacity: 0.35 }}>🔒</div>
         <p style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', margin: 0 }}>{language === 'cn' ? '仓位情绪分析待解锁' : 'Unlock Position Analysis'}</p>
         <p style={{ fontSize: 11, color: '#64748b', margin: 0, lineHeight: 1.5 }}>{language === 'cn' ? '在交易记录中补充"止损金额"即可启用此分析' : 'Add Risk Amount to your trades to enable this chart'}</p>
@@ -369,7 +369,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         <span style={{ fontSize: 10, color: '#94a3b8' }}>{reviewedCount}{language === 'cn' ? ' 笔已复盘交易' : ' reviewed trades'}</span>
       </div>
 
-      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: 230 }}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: 210 }}>
         {/* zone backgrounds */}
         <rect x={PL} y={PT} width={warnX - PL} height={PH} fill="#15803d" opacity="0.04" />
         <rect x={warnX} y={PT} width={dangX - warnX} height={PH} fill="#f59e0b" opacity="0.05" />
@@ -399,7 +399,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         {/* X axis labels */}
         <text x={warnX} y={VH - PB + 16} textAnchor="middle" fontSize="9" fill="#f59e0b" fontFamily="SF Mono, monospace">2x</text>
         <text x={dangX} y={VH - PB + 16} textAnchor="middle" fontSize="9" fill="#dc2626" fontFamily="SF Mono, monospace">3x</text>
-        <text x={VW / 2} y={VH - 4} textAnchor="middle" fontSize="9" fill="#64748b">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
+        <text x={VW / 2} y={VH - 6} textAnchor="middle" fontSize="9" fill="#64748b">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
         {/* data points */}
         {points.map(p => {
           const fill = p.color === 'profit' ? '#059669' : p.color === 'loss-small' ? '#f87171' : '#dc2626';
