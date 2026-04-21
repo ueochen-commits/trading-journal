@@ -11,7 +11,7 @@ interface DdStats {
   deepestIdx: number;
   daysAtMaxDrawdown: number;
   longestUnderwater: number;
-  recoveryDays: number | null;
+  maxRecoveryDays: number | null; // historical max recovery (completed cycles only)
   currentStatus: 'new_high' | 'underwater';
 }
 
@@ -21,12 +21,11 @@ function daysBetween(a: string, b: string): number {
   return Math.round(Math.abs(new Date(b).getTime() - new Date(a).getTime()) / 86400000);
 }
 
-function computeDrawdown(trades: Trade[]): DdStats {
+function computeDrawdown(trades: Trade[], accountSize: number): DdStats {
   const closed = trades.filter(t => t.exitDate).sort(
     (a, b) => new Date(a.exitDate).getTime() - new Date(b.exitDate).getTime()
   );
 
-  // Group by day
   const dayMap: Record<string, number> = {};
   closed.forEach(t => {
     const d = new Date(t.exitDate).toISOString().slice(0, 10);
@@ -35,27 +34,43 @@ function computeDrawdown(trades: Trade[]): DdStats {
 
   const days = Object.keys(dayMap).sort();
   if (days.length < 2) {
-    return { points: [], maxDrawdown: 0, deepestIdx: 0, daysAtMaxDrawdown: 0, longestUnderwater: 0, recoveryDays: null, currentStatus: 'new_high' };
+    return { points: [], maxDrawdown: 0, deepestIdx: 0, daysAtMaxDrawdown: 0, longestUnderwater: 0, maxRecoveryDays: null, currentStatus: 'new_high' };
   }
 
-  // Build equity curve + drawdown %
-  let cum = 0, peak = 0;
+  // Use accountSize as the equity base so % stays in [-100, 0]
+  const base = accountSize > 0 ? accountSize : 10000;
+  let cum = 0;
+  let peakEquity = base; // starts at initial capital
   let underwaterStart: string | null = null;
   let longestUnderwater = 0;
+  let maxRecoveryDays: number | null = null;
   const points: DdPoint[] = [];
 
   days.forEach(date => {
     cum += dayMap[date];
-    if (cum > peak) {
+    const equity = base + cum;
+
+    if (equity > peakEquity) {
+      // New high — close any underwater period
       if (underwaterStart) {
-        longestUnderwater = Math.max(longestUnderwater, daysBetween(underwaterStart, date));
+        const uwDays = daysBetween(underwaterStart, date);
+        longestUnderwater = Math.max(longestUnderwater, uwDays);
+        // Find deepest point in this underwater period to measure recovery
+        const deepestInPeriod = points
+          .filter(p => p.date >= underwaterStart! && p.date <= date)
+          .reduce((min, p) => p.drawdown < min.drawdown ? p : min, { drawdown: 0, date: '' });
+        if (deepestInPeriod.date) {
+          const recDays = daysBetween(deepestInPeriod.date, date);
+          maxRecoveryDays = maxRecoveryDays == null ? recDays : Math.max(maxRecoveryDays, recDays);
+        }
         underwaterStart = null;
       }
-      peak = cum;
-    } else if (!underwaterStart && cum < peak) {
+      peakEquity = equity;
+    } else if (!underwaterStart && equity < peakEquity) {
       underwaterStart = date;
     }
-    const dd = peak > 0 ? ((cum - peak) / peak) * 100 : Math.min(0, cum);
+
+    const dd = ((equity - peakEquity) / peakEquity) * 100;
     points.push({ date, drawdown: parseFloat(dd.toFixed(2)) });
   });
 
@@ -73,19 +88,45 @@ function computeDrawdown(trades: Trade[]): DdStats {
   }
   const daysAtMaxDrawdown = daysBetween(points[lastHighBeforeDeep].date, points[deepestIdx].date);
 
-  // Recovery days: deepest → next new high
-  const recoveryIdx = points.findIndex((p, i) => i > deepestIdx && p.drawdown >= -0.01);
-  const recoveryDays = recoveryIdx > 0 ? daysBetween(points[deepestIdx].date, points[recoveryIdx].date) : null;
-
   const currentStatus = points[points.length - 1].drawdown >= -0.01 ? 'new_high' : 'underwater';
 
-  return { points, maxDrawdown, deepestIdx, daysAtMaxDrawdown, longestUnderwater, recoveryDays, currentStatus };
+  return { points, maxDrawdown, deepestIdx, daysAtMaxDrawdown, longestUnderwater, maxRecoveryDays, currentStatus };
+}
+
+// ─── X-axis label generation (month-change based) ────────────────────────────
+
+function buildXLabels(points: DdPoint[]): { idx: number; text: string }[] {
+  if (points.length === 0) return [];
+
+  const raw: { idx: number; text: string }[] = [];
+  let lastMonth = -1;
+  points.forEach((p, i) => {
+    const m = new Date(p.date).getMonth();
+    if (m !== lastMonth) {
+      raw.push({ idx: i, text: `${m + 1}月` });
+      lastMonth = m;
+    }
+  });
+
+  // Thin out if too many
+  let labels = raw;
+  if (labels.length > 6) {
+    const step = Math.ceil(labels.length / 5);
+    labels = labels.filter((_, i) => i % step === 0);
+    if (labels[labels.length - 1] !== raw[raw.length - 1]) {
+      labels.push(raw[raw.length - 1]);
+    }
+  }
+
+  // Last label = "现在"
+  if (labels.length > 0) labels[labels.length - 1] = { ...labels[labels.length - 1], text: '现在' };
+  return labels;
 }
 
 // ─── SVG Chart ────────────────────────────────────────────────────────────────
 
 const VW = 600, VH = 200;
-const PL = 38, PR = 16, PT = 18, PB = 22;
+const PL = 36, PR = 16, PT = 18, PB = 22;
 const PW = VW - PL - PR, PH = VH - PT - PB;
 
 function xS(idx: number, total: number) { return PL + (idx / Math.max(total - 1, 1)) * PW; }
@@ -95,53 +136,47 @@ function DrawdownSVG({ stats }: { stats: DdStats }) {
   const { points, maxDrawdown, deepestIdx, daysAtMaxDrawdown } = stats;
   if (points.length < 2) return null;
 
-  // Y axis: at least -20%, expand if deeper
-  const yMin = Math.min(-20, Math.floor(maxDrawdown / 10) * 10 - 5);
+  // Y axis: at least -20%, expand if deeper (step of 5)
+  const yMin = Math.min(-20, Math.floor(maxDrawdown / 5) * 5 - 5);
 
   const warningY = yS(-10, yMin);
   const dangerY  = yS(-20, yMin);
-  const zeroY    = PT; // 0% is always at top
+  const zeroY    = PT;
 
   // Paths
   const pts = points.map((p, i) => ({ x: xS(i, points.length), y: yS(p.drawdown, yMin) }));
   const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   const areaPath = `${linePath} L${pts[pts.length-1].x.toFixed(1)},${(VH-PB).toFixed(1)} L${PL},${(VH-PB).toFixed(1)} Z`;
 
-  // Deepest point
+  // Deepest point bubble
   const dx = pts[deepestIdx].x;
   const dy = pts[deepestIdx].y;
   const bubbleLabel = `${maxDrawdown.toFixed(1)}% · ${daysAtMaxDrawdown}天`;
-  // Clamp bubble so it doesn't overflow left/right
-  const bubbleW = 84;
+  const bubbleW = 86;
   const bubbleX = Math.max(PL, Math.min(VW - PR - bubbleW, dx - bubbleW / 2));
 
-  // X-axis labels: ~5 evenly spaced
-  const labelCount = Math.min(5, points.length);
-  const labelIndices = Array.from({ length: labelCount }, (_, i) =>
-    Math.round(i * (points.length - 1) / (labelCount - 1))
-  );
-  const fmtLabel = (date: string) => {
-    const d = new Date(date);
-    return `${d.getMonth() + 1}月`;
-  };
+  // Y-axis: exactly 4 ticks — 0, -10, -20, yMin (deduplicated)
+  const yTicks = Array.from(new Set([0, -10, -20, yMin])).sort((a, b) => b - a);
 
-  // Y-axis ticks
-  const yTicks: number[] = [0];
-  for (let v = -10; v >= yMin; v -= 10) yTicks.push(v);
+  // X-axis labels
+  const xLabels = buildXLabels(points);
 
   return (
     <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: '100%', overflow: 'visible' }}>
       <defs>
         <linearGradient id="dd-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#F5A5A0" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#F5A5A0" stopOpacity="0.08" />
+          <stop offset="0%"   stopColor="#F5A5A0" stopOpacity="0.05" />
+          <stop offset="30%"  stopColor="#F5A5A0" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#F5A5A0" stopOpacity="0.50" />
         </linearGradient>
       </defs>
 
-      {/* Y-axis tick labels */}
+      {/* Y-axis ticks — exactly 4, no overlap */}
       {yTicks.map(v => (
         <text key={v} x={PL - 4} y={yS(v, yMin) + 3} textAnchor="end"
-          fontSize="8" fill="#94A3B8" fontFamily='"SF Mono", monospace'>
+          fontSize="8" fill={v === 0 ? '#059669' : v === -10 ? '#F59E0B' : '#DC2626'}
+          fontWeight={v === 0 || v === yMin ? '500' : '400'}
+          fontFamily='"SF Mono", monospace'>
           {v}%
         </text>
       ))}
@@ -149,28 +184,20 @@ function DrawdownSVG({ stats }: { stats: DdStats }) {
       {/* 0% new-high line */}
       <line x1={PL} y1={zeroY} x2={VW - PR} y2={zeroY}
         stroke="#059669" strokeWidth="1.2" strokeDasharray="4,3" />
-      <text x={PL + 4} y={zeroY - 4} fontSize="8.5" fill="#059669" fontWeight="500"
+      <text x={PL + 4} y={zeroY - 4} fontSize="8" fill="#059669" fontWeight="500"
         fontFamily='"SF Mono", monospace'>新高水位线</text>
 
       {/* -10% warning line */}
-      {warningY < VH - PB && (
-        <>
-          <line x1={PL} y1={warningY} x2={VW - PR} y2={warningY}
-            stroke="#F59E0B" strokeWidth="1" strokeDasharray="3,3" opacity="0.7" />
-          <text x={PL + 4} y={warningY - 3} fontSize="8" fill="#F59E0B"
-            fontFamily='"SF Mono", monospace'>-10% 警戒</text>
-        </>
-      )}
+      <line x1={PL} y1={warningY} x2={VW - PR} y2={warningY}
+        stroke="#F59E0B" strokeWidth="1" strokeDasharray="3,3" opacity="0.75" />
+      <text x={PL + 4} y={warningY - 3} fontSize="8" fill="#F59E0B"
+        fontFamily='"SF Mono", monospace'>-10% 警戒</text>
 
       {/* -20% danger line */}
-      {dangerY < VH - PB && (
-        <>
-          <line x1={PL} y1={dangerY} x2={VW - PR} y2={dangerY}
-            stroke="#DC2626" strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
-          <text x={PL + 4} y={dangerY - 3} fontSize="8" fill="#DC2626"
-            fontFamily='"SF Mono", monospace'>-20% 危险</text>
-        </>
-      )}
+      <line x1={PL} y1={dangerY} x2={VW - PR} y2={dangerY}
+        stroke="#DC2626" strokeWidth="1" strokeDasharray="3,3" opacity="0.65" />
+      <text x={PL + 4} y={dangerY - 3} fontSize="8" fill="#DC2626"
+        fontFamily='"SF Mono", monospace'>-20% 危险</text>
 
       {/* Fill */}
       <path d={areaPath} fill="url(#dd-grad)" />
@@ -178,10 +205,8 @@ function DrawdownSVG({ stats }: { stats: DdStats }) {
       {/* Main line */}
       <path d={linePath} fill="none" stroke="#DC2626" strokeWidth="1.25" strokeLinejoin="round" />
 
-      {/* Deepest point dot */}
+      {/* Deepest point */}
       <circle cx={dx} cy={dy} r="3.5" fill="#DC2626" stroke="white" strokeWidth="1.5" />
-
-      {/* Bubble annotation */}
       <polygon points={`${dx - 5},${dy + 8} ${dx + 5},${dy + 8} ${dx},${dy + 4}`} fill="#DC2626" />
       <rect x={bubbleX} y={dy + 8} width={bubbleW} height={18} fill="#DC2626" rx="3" />
       <text x={bubbleX + bubbleW / 2} y={dy + 20} textAnchor="middle"
@@ -190,16 +215,15 @@ function DrawdownSVG({ stats }: { stats: DdStats }) {
       </text>
 
       {/* X-axis labels */}
-      {labelIndices.map((idx, i) => {
+      {xLabels.map(({ idx, text }) => {
         const isDeep = Math.abs(idx - deepestIdx) < points.length / 10;
-        const isLast = i === labelIndices.length - 1;
         return (
           <text key={idx} x={xS(idx, points.length)} y={VH - 4}
             textAnchor="middle" fontSize="8.5"
             fill={isDeep ? '#DC2626' : '#94A3B8'}
             fontWeight={isDeep ? '600' : '400'}
             fontFamily='"SF Mono", monospace'>
-            {isLast ? '现在' : fmtLabel(points[idx].date)}
+            {text}
           </text>
         );
       })}
@@ -211,12 +235,13 @@ function DrawdownSVG({ stats }: { stats: DdStats }) {
 
 interface DrawdownCardProps {
   trades: Trade[];
+  accountSize: number;
   language?: string;
   infoIcon?: React.ReactNode;
 }
 
-const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, language = 'cn', infoIcon }) => {
-  const stats = useMemo(() => computeDrawdown(trades), [trades]);
+const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, language = 'cn', infoIcon }) => {
+  const stats = useMemo(() => computeDrawdown(trades, accountSize), [trades, accountSize]);
 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
@@ -263,7 +288,8 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, language = 'cn', in
           {[
             { label: '最大回撤', value: `${stats.maxDrawdown.toFixed(1)}%`, color: '#DC2626' },
             { label: '最长水下', value: `${stats.longestUnderwater} 天`, color: '#DC2626' },
-            { label: '恢复天数', value: stats.recoveryDays != null ? `${stats.recoveryDays} 天` : '--', color: '#F59E0B' },
+            // Show historical max recovery (completed cycles). If still underwater and no history, show "--"
+            { label: '历史恢复', value: stats.maxRecoveryDays != null ? `${stats.maxRecoveryDays} 天` : '--', color: '#F59E0B' },
             { label: '当前状态', value: stats.currentStatus === 'new_high' ? '新高 ✓' : '水下中', color: stats.currentStatus === 'new_high' ? '#059669' : '#DC2626' },
           ].map(s => (
             <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>

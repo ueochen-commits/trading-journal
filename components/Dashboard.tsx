@@ -2163,7 +2163,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               <TradeDurationChart trades={trades} language={language} />
 
               {/* --- DRAWDOWN CHART --- */}
-              <DrawdownCard trades={trades} language={language} infoIcon={<TZInfoIcon infoKey="drawdown" />} />
+              <DrawdownCard trades={trades} accountSize={riskSettings.accountSize} language={language} infoIcon={<TZInfoIcon infoKey="drawdown" />} />
 
               {/* --- TRADE TIME PERFORMANCE --- */}
               <TradeTimeChart trades={trades} language={language} />
