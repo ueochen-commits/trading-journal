@@ -475,7 +475,7 @@ const Journal: React.FC<JournalProps> = ({
       if (riskSettings) {
           const today = new Date().toDateString();
           const todaysTrades = trades.filter(t => t.entryDate && new Date(t.entryDate).toDateString() === today);
-          const todayLoss = todaysTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+          const todayLoss = todaysTrades.reduce((acc, t) => acc + t.pnl, 0);
           if (todayLoss <= -Math.abs(riskSettings.maxDailyLoss)) {
               setStopTradingAlert({ show: true, reason: 'daily_loss', value: riskSettings.maxDailyLoss });
               return;
@@ -755,7 +755,7 @@ const Journal: React.FC<JournalProps> = ({
         map[displayDate] = { trades: [], netPnl: 0, grossPnl: 0, fees: 0, volume: 0, dateKey };
       }
       map[displayDate].trades.push(t);
-      const net = t.pnl - t.fees;
+      const net = t.pnl;
       map[displayDate].netPnl += net;
       map[displayDate].grossPnl += t.pnl;
       map[displayDate].fees += t.fees;
@@ -775,7 +775,7 @@ const Journal: React.FC<JournalProps> = ({
       // Construct simple equity curve data for the chart
       let runningPnl = 0;
       const equityCurve = data.trades.sort((a,b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).map((t, idx) => {
-          runningPnl += (t.pnl - t.fees);
+          runningPnl += t.pnl;
           return { name: idx, pnl: runningPnl };
       });
 
@@ -987,7 +987,7 @@ const Journal: React.FC<JournalProps> = ({
         const wins = filteredTrades.filter(t => t.pnl > 0);
         const losses = filteredTrades.filter(t => t.pnl < 0);
         const breakEvens = filteredTrades.filter(t => t.pnl === 0);
-        const totalPnl = filteredTrades.reduce((s, t) => s + (t.pnl - t.fees), 0);
+        const totalPnl = filteredTrades.reduce((s, t) => s + t.pnl, 0);
         const grossProfit = wins.reduce((s, t) => s + t.pnl, 0);
         const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
         const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
@@ -999,7 +999,7 @@ const Journal: React.FC<JournalProps> = ({
         // Cumulative PnL sparkline data
         const sorted = [...filteredTrades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
         let cum = 0;
-        const cumPoints = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
+        const cumPoints = sorted.map(t => { cum += t.pnl; return cum; });
         const sparkColor = totalPnl >= 0 ? '#1D9E75' : '#E24B4A';
         const sparkGradId = `jsc-grad-${totalPnl >= 0 ? 'g' : 'r'}`;
 

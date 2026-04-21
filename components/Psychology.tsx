@@ -378,14 +378,14 @@ const Psychology: React.FC<PsychologyProps> = ({
   useEffect(() => {
     if (!todayRuleIds.length) return;
     const todayTrades = trades.filter(t => t.entryDate.startsWith(todayKey));
-    const todayNetPnl = todayTrades.reduce((a, t) => a + (t.pnl - t.fees), 0);
+    const todayNetPnl = todayTrades.reduce((a, t) => a + t.pnl, 0);
     const results: Record<string, boolean> = {};
     if (ruleSettings.start_my_day_enabled) results['start_my_day'] = todayTrades.length > 0;
     if (ruleSettings.link_to_playbook_enabled) results['link_playbook'] = todayTrades.length > 0 && todayTrades.every(t => t.setup && t.setup !== '');
     if (ruleSettings.input_stop_loss_enabled) results['stop_loss'] = todayTrades.length > 0 && todayTrades.every(t => t.riskAmount && t.riskAmount > 0);
     if (ruleSettings.net_max_loss_per_trade_enabled) {
       const limit = ruleSettings.net_max_loss_per_trade_value;
-      results['max_loss_trade'] = todayTrades.every(t => (t.pnl - t.fees) >= -limit);
+      results['max_loss_trade'] = todayTrades.every(t => t.pnl >= -limit);
     }
     if (ruleSettings.net_max_loss_per_day_enabled) results['max_loss_day'] = todayNetPnl >= -ruleSettings.net_max_loss_per_day_value;
     manualRules.filter(r => r.active_days.includes(todayDayAbbr)).forEach(r => {
@@ -427,7 +427,7 @@ const Psychology: React.FC<PsychologyProps> = ({
       let avgPerf: number | null = null;
       if (completedDays.length > 0) {
         const pnls = completedDays.map(log =>
-          trades.filter(t => t.entryDate.startsWith(log.date)).reduce((a, t) => a + (t.pnl - t.fees), 0)
+          trades.filter(t => t.entryDate.startsWith(log.date)).reduce((a, t) => a + t.pnl, 0)
         );
         avgPerf = parseFloat((pnls.reduce((a, b) => a + b, 0) / pnls.length).toFixed(2));
       }
@@ -492,9 +492,9 @@ const Psychology: React.FC<PsychologyProps> = ({
             <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
               {(() => {
                 const todayTrades = trades.filter(t => t.entryDate.startsWith(todayKey));
-                const todayNetPnl = todayTrades.reduce((a, t) => a + (t.pnl - t.fees), 0);
-                const worstTrade = todayTrades.length > 0 ? todayTrades.reduce((a, b) => (a.pnl - a.fees) < (b.pnl - b.fees) ? a : b) : null;
-                const worstTradePnl = worstTrade ? (worstTrade.pnl - worstTrade.fees) : 0;
+                const todayNetPnl = todayTrades.reduce((a, t) => a + t.pnl, 0);
+                const worstTrade = todayTrades.length > 0 ? todayTrades.reduce((a, b) => a.pnl < b.pnl ? a : b) : null;
+                const worstTradePnl = worstTrade ? worstTrade.pnl : 0;
 
                 const ruleRows: { id: string; name: string; value: string; status: 'pass' | 'fail' | 'pending' }[] = todayRulesList.map(rule => {
                   if (rule.id === 'start_my_day') {
@@ -517,7 +517,7 @@ const Psychology: React.FC<PsychologyProps> = ({
                   if (rule.id === 'max_loss_trade') {
                     const limit = ruleSettings.net_max_loss_per_trade_value;
                     const type = ruleSettings.net_max_loss_per_trade_type;
-                    const exceeded = todayTrades.some(t => (t.pnl - t.fees) < -(type === '%' ? (ruleSettings.net_max_loss_per_trade_value / 100) * 10000 : limit));
+                    const exceeded = todayTrades.some(t => t.pnl < -(type === '%' ? (ruleSettings.net_max_loss_per_trade_value / 100) * 10000 : limit));
                     const status = todayTrades.length === 0 ? 'pending' : exceeded ? 'fail' : 'pass';
                     const value = worstTrade ? `$${Math.abs(worstTradePnl).toFixed(0)} / ${type}${limit}` : `${type}${limit}`;
                     return { id: rule.id, name: rule.name, value, status };

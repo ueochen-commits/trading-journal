@@ -308,7 +308,7 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
     const hour = timeToHour(f);
     if (hour === null) return null;
     const d = new Date(f);
-    return { x: parseFloat(hour.toFixed(4)), pnl: parseFloat((t.pnl - t.fees).toFixed(2)), symbol: t.symbol, timeLabel: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`, date: d.toLocaleDateString() };
+    return { x: parseFloat(hour.toFixed(4)), pnl: parseFloat(t.pnl.toFixed(2)), symbol: t.symbol, timeLabel: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`, date: d.toLocaleDateString() };
   }).filter(Boolean) as { x: number; pnl: number; symbol: string; timeLabel: string; date: string }[], [trades, mode]);
 
   const pnlVals = ttData.map(d => d.pnl);
@@ -384,7 +384,7 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
   const tdData = useMemo(() => trades.filter(t => t.exitDate && t.entryDate).map(t => {
     const hours = (new Date(t.exitDate).getTime() - new Date(t.entryDate).getTime()) / 3600000;
     if (hours <= 0 || isNaN(hours)) return null;
-    const pnl = parseFloat((t.pnl - t.fees).toFixed(2));
+    const pnl = parseFloat(t.pnl.toFixed(2));
     return { x: parseFloat(hours.toFixed(2)), pnl, symbol: t.symbol, date: new Date(t.exitDate).toLocaleDateString(), durationLabel: hours < 24 ? `${hours.toFixed(1)}h` : `${(hours / 24).toFixed(1)}d` };
   }).filter(Boolean) as { x: number; pnl: number; symbol: string; date: string; durationLabel: string }[], [trades]);
 
@@ -539,9 +539,9 @@ const DashboardHeatmap: React.FC<{
     if (!isTradingDay) return [];
 
     const todayTrades = trades.filter(t => t.entryDate?.startsWith(todayKey));
-    const todayNetPnl = todayTrades.reduce((a: number, t: any) => a + (t.pnl - t.fees), 0);
-    const worstTrade = todayTrades.length > 0 ? todayTrades.reduce((a: any, b: any) => (a.pnl - a.fees) < (b.pnl - b.fees) ? a : b) : null;
-    const worstTradePnl = worstTrade ? (worstTrade.pnl - worstTrade.fees) : 0;
+    const todayNetPnl = todayTrades.reduce((a: number, t: any) => a + t.pnl, 0);
+    const worstTrade = todayTrades.length > 0 ? todayTrades.reduce((a: any, b: any) => a.pnl < b.pnl ? a : b) : null;
+    const worstTradePnl = worstTrade ? worstTrade.pnl : 0;
     const todayRecord = disciplineHistory.find((r: any) => r.date === todayKey);
 
     // Build today's rule list (same as Psychology todayRulesList)
@@ -571,7 +571,7 @@ const DashboardHeatmap: React.FC<{
       if (rule.id === 'max_loss_trade') {
         const limit = ruleSettings.net_max_loss_per_trade_value;
         const type = ruleSettings.net_max_loss_per_trade_type;
-        const exceeded = todayTrades.some((t: any) => (t.pnl - t.fees) < -(type === '%' ? (limit / 100) * 10000 : limit));
+        const exceeded = todayTrades.some((t: any) => t.pnl < -(type === '%' ? (limit / 100) * 10000 : limit));
         const status = todayTrades.length === 0 ? 'pending' : exceeded ? 'fail' : 'pass';
         return { ...rule, value: worstTrade ? `$${Math.abs(worstTradePnl).toFixed(0)} / ${type}${limit}` : `${type}${limit}`, status };
       }
@@ -1330,32 +1330,32 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const stats = useMemo(() => {
     const totalTrades = trades.length;
-    const winTrades = trades.filter(t => (t.pnl - t.fees) > 0);
-    const lossTrades = trades.filter(t => (t.pnl - t.fees) < 0);
-    const breakEvenTrades = trades.filter(t => (t.pnl - t.fees) === 0);
+    const winTrades = trades.filter(t => t.pnl > 0);
+    const lossTrades = trades.filter(t => t.pnl < 0);
+    const breakEvenTrades = trades.filter(t => t.pnl === 0);
     const wins = winTrades.length;
     const winRate = totalTrades > 0 ? (wins / totalTrades) * 100 : 0;
-    const netPnl = trades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
-    const grossProfit = winTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
-    const grossLoss = lossTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+    const netPnl = trades.reduce((acc, t) => acc + t.pnl, 0);
+    const grossProfit = winTrades.reduce((acc, t) => acc + t.pnl, 0);
+    const grossLoss = lossTrades.reduce((acc, t) => acc + t.pnl, 0);
     const profitFactor = Math.abs(grossLoss) > 0 ? Math.abs(grossProfit / grossLoss) : grossProfit > 0 ? grossProfit : 0;
     const today = new Date().toDateString();
     const todayTrades = allTrades.filter(t =>
       new Date(t.entryDate).toDateString() === today &&
       (selectedAccountId === 'all' || t.accountId === selectedAccountId)
     );
-    const todayPnl = todayTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+    const todayPnl = todayTrades.reduce((acc, t) => acc + t.pnl, 0);
     // Sparkline: last 12 trades cumulative PnL
     const sorted = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).slice(-12);
     let cum = 0;
-    const pnlSpark = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
-    const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => (t.pnl - t.fees) > 0).length / slice.length * 100; });
-    const avgWin = winTrades.length > 0 ? winTrades.reduce((a, t) => a + (t.pnl - t.fees), 0) / winTrades.length : 0;
-    const avgLoss = lossTrades.length > 0 ? lossTrades.reduce((a, t) => a + (t.pnl - t.fees), 0) / lossTrades.length : 0;
+    const pnlSpark = sorted.map(t => { cum += t.pnl; return cum; });
+    const wrSpark = sorted.map((_, i) => { const slice = sorted.slice(0, i + 1); return slice.filter(t => t.pnl > 0).length / slice.length * 100; });
+    const avgWin = winTrades.length > 0 ? winTrades.reduce((a, t) => a + t.pnl, 0) / winTrades.length : 0;
+    const avgLoss = lossTrades.length > 0 ? lossTrades.reduce((a, t) => a + t.pnl, 0) / lossTrades.length : 0;
     const avgWinLossRatio = avgWin > 0 && Math.abs(avgLoss) > 0 ? avgWin / Math.abs(avgLoss) : 0;
     // Day stats
     const dayMap: Record<string, number> = {};
-    trades.forEach(t => { const d = new Date(t.entryDate).toDateString(); dayMap[d] = (dayMap[d] || 0) + (t.pnl - t.fees); });
+    trades.forEach(t => { const d = new Date(t.entryDate).toDateString(); dayMap[d] = (dayMap[d] || 0) + t.pnl; });
     const dayVals = Object.values(dayMap);
     const winDays = dayVals.filter(v => v > 0).length;
     const lossDays = dayVals.filter(v => v < 0).length;
@@ -1368,16 +1368,16 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const grailScore = useMemo(() => {
     const { winRate, profitFactor, totalTrades } = stats;
-    const wins = trades.filter(t => (t.pnl - t.fees) > 0);
-    const losses = trades.filter(t => (t.pnl - t.fees) < 0);
-    const avgWin = wins.length > 0 ? wins.reduce((a, t) => a + (t.pnl - t.fees), 0) / wins.length : 0;
-    const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((a, t) => a + (t.pnl - t.fees), 0) / losses.length) : 1;
+    const wins = trades.filter(t => t.pnl > 0);
+    const losses = trades.filter(t => t.pnl < 0);
+    const avgWin = wins.length > 0 ? wins.reduce((a, t) => a + t.pnl, 0) / wins.length : 0;
+    const avgLoss = losses.length > 0 ? Math.abs(losses.reduce((a, t) => a + t.pnl, 0) / losses.length) : 1;
     const rr = avgWin / avgLoss;
 
     // Max consecutive losses
     let maxConsecLoss = 0, curConsec = 0;
     [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime()).forEach(t => {
-      if ((t.pnl - t.fees) < 0) { curConsec++; maxConsecLoss = Math.max(maxConsecLoss, curConsec); } else curConsec = 0;
+      if (t.pnl < 0) { curConsec++; maxConsecLoss = Math.max(maxConsecLoss, curConsec); } else curConsec = 0;
     });
 
     // Std dev of daily trade counts
@@ -1427,9 +1427,9 @@ const Dashboard: React.FC<DashboardProps> = ({
       startOfWeek.setHours(0, 0, 0, 0);
       const currentWeekTrades = trades.filter(t => new Date(t.entryDate) >= startOfWeek);
       let current = 0;
-      if (weeklyGoal.type === 'amount') current = currentWeekTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
-      else if (weeklyGoal.type === 'r_multiple') current = currentWeekTrades.reduce((acc, t) => acc + (t.riskAmount && t.riskAmount > 0 ? (t.pnl - t.fees) / t.riskAmount : 0), 0);
-      else if (weeklyGoal.type === 'percentage') current = (currentWeekTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0) / (riskSettings.accountSize || 10000)) * 100;
+      if (weeklyGoal.type === 'amount') current = currentWeekTrades.reduce((acc, t) => acc + t.pnl, 0);
+      else if (weeklyGoal.type === 'r_multiple') current = currentWeekTrades.reduce((acc, t) => acc + (t.riskAmount && t.riskAmount > 0 ? t.pnl / t.riskAmount : 0), 0);
+      else if (weeklyGoal.type === 'percentage') current = (currentWeekTrades.reduce((acc, t) => acc + t.pnl, 0) / (riskSettings.accountSize || 10000)) * 100;
       return { current, percent: Math.min(100, Math.max(0, (current / weeklyGoal.value) * 100)) };
   }, [weeklyGoal, trades, riskSettings.accountSize]);
 
@@ -1447,7 +1447,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     let currentEquity = initialEquity;
     sortedDates.forEach((date, i) => {
       const dayTrades = grouped[date];
-      dayTrades.forEach(t => { currentEquity += (t.pnl - t.fees); });
+      dayTrades.forEach(t => { currentEquity += t.pnl; });
       const cumulativePnl = parseFloat((currentEquity - initialEquity).toFixed(2));
       const dataPoint: any = { date, equity: currentEquity, returnPct: ((currentEquity - initialEquity) / initialEquity) * 100, cumulativePnl };
       selectedFriends.forEach(friendId => { const friend = friends.find(f => f.id === friendId); if (friend) dataPoint[friendId] = friend.equityCurve[Math.min(i + 1, friend.equityCurve.length - 1)]; });
@@ -1484,7 +1484,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const setupPerformance = useMemo(() => {
     const setups: Record<string, number> = {};
-    trades.forEach(t => { if (!setups[t.setup]) setups[t.setup] = 0; setups[t.setup] += (t.pnl - t.fees); });
+    trades.forEach(t => { if (!setups[t.setup]) setups[t.setup] = 0; setups[t.setup] += t.pnl; });
     return Object.keys(setups).map(key => ({ name: key, value: setups[key] })).sort((a, b) => b.value - a.value).slice(0, 8);
   }, [trades]);
 
@@ -1977,11 +1977,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                 let cumTrades: typeof trades = [];
                 const winRateData = sortedDates.map(date => {
                   cumTrades = cumTrades.concat(grouped[date]);
-                  const wins = cumTrades.filter(t => (t.pnl - t.fees) > 0);
-                  const losses = cumTrades.filter(t => (t.pnl - t.fees) < 0);
+                  const wins = cumTrades.filter(t => t.pnl > 0);
+                  const losses = cumTrades.filter(t => t.pnl < 0);
                   const winPct = cumTrades.length > 0 ? parseFloat((wins.length / cumTrades.length * 100).toFixed(1)) : 0;
-                  const avgWin = wins.length > 0 ? parseFloat((wins.reduce((s, t) => s + (t.pnl - t.fees), 0) / wins.length).toFixed(2)) : 0;
-                  const avgLoss = losses.length > 0 ? parseFloat((losses.reduce((s, t) => s + (t.pnl - t.fees), 0) / losses.length).toFixed(2)) : 0;
+                  const avgWin = wins.length > 0 ? parseFloat((wins.reduce((s, t) => s + t.pnl, 0) / wins.length).toFixed(2)) : 0;
+                  const avgLoss = losses.length > 0 ? parseFloat((losses.reduce((s, t) => s + t.pnl, 0) / losses.length).toFixed(2)) : 0;
                   return { date, winPct, avgWin, avgLoss };
                 });
                 // Dynamic right-axis domain
@@ -2072,7 +2072,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     {(() => {
                       const fmt = (d: string) => { const dt = new Date(d); return `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${String(dt.getFullYear()).slice(2)}`; };
                       const dayMap: Record<string, number> = {};
-                      trades.forEach(t => { const k = fmt(t.entryDate); dayMap[k] = (dayMap[k] || 0) + (t.pnl - t.fees); });
+                      trades.forEach(t => { const k = fmt(t.entryDate); dayMap[k] = (dayMap[k] || 0) + t.pnl; });
                       const data = Object.entries(dayMap).sort(([a],[b]) => new Date(a).getTime() - new Date(b).getTime()).map(([date, pnl]) => ({ date, pnl: parseFloat(pnl.toFixed(2)) }));
                       if (!data.length) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b3c6', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>;
                       return (
@@ -2131,7 +2131,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             {language === 'cn' ? '暂无交易记录' : 'No trades yet'}
                           </div>
                         ) : recent.map((trade, idx) => {
-                          const netPnl = trade.pnl - trade.fees;
+                          const netPnl = trade.pnl;
                           return (
                             <div key={trade.id || idx}
                               onClick={() => trade.id && onOpenTradeReview?.(trade.id)}
