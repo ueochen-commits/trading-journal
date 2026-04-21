@@ -824,7 +824,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
               <CheckCircle2 className="w-4 h-4 text-emerald-400" /> {toastMessage}
           </div>
       )}
-      <div className="border-r border-[#E5E7EB] dark:border-slate-800 flex flex-col bg-white dark:bg-slate-950 flex-shrink-0" style={{ width: '220px' }}>
+      <div className="border-r border-[#E5E7EB] dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900 flex-shrink-0" style={{ width: '220px' }}>
           <div className="px-4 pt-4 pb-3 space-y-3">
               <span className="text-[15px] font-medium text-[#1F2937] dark:text-slate-100 px-[6px]">{language === 'cn' ? '笔记本' : 'Notebook'}</span>
               <button
@@ -1057,7 +1057,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
               )}
           </div>
       </div>
-      <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-slate-950/30 relative overflow-hidden">
+      <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 relative overflow-hidden">
           {activePlan ? (
               <div className="flex flex-col h-full">
                 <div className="px-10 pt-7 pb-2 flex items-start justify-between relative">
