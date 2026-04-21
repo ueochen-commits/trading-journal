@@ -94,32 +94,41 @@ function daysUnderwaterAt(points: DdPoint[], idx: number): number | null {
   return idx + 1;
 }
 
-function buildXLabels(points: DdPoint[]): { idx: number; text: string }[] {
-  if (points.length === 0) return [];
-  const raw: { idx: number; text: string }[] = [];
-  let lastMonth = -1;
-  points.forEach((p, i) => {
-    const m = new Date(p.date).getMonth();
-    if (m !== lastMonth) { raw.push({ idx: i, text: `${m + 1}月` }); lastMonth = m; }
-  });
-  let labels = raw;
-  if (labels.length > 6) {
-    const step = Math.ceil(labels.length / 5);
-    labels = labels.filter((_, i) => i % step === 0);
-    if (labels[labels.length - 1] !== raw[raw.length - 1]) labels.push(raw[raw.length - 1]);
-  }
-  if (labels.length > 0) labels[labels.length - 1] = { ...labels[labels.length - 1], text: '现在' };
-  return labels;
-}
 
 // ─── SVG constants ────────────────────────────────────────────────────────────
 
 const VW = 600, VH = 380;
-const PL = 40, PR = 16, PT = 24, PB = 28;
+const PL = 40, PR = 16, PT = 28, PB = 28;
 const PW = VW - PL - PR, PH = VH - PT - PB;
 
 function xS(idx: number, total: number) { return PL + (idx / Math.max(total - 1, 1)) * PW; }
 function yS(pct: number, yMin: number)  { return PT + (pct / yMin) * PH; }
+
+// Dynamic Y-axis range based on actual max drawdown
+function calcYAxis(maxDrawdown: number): { yMin: number; ticks: number[]; thresholds: number[] } {
+  const abs = Math.abs(maxDrawdown);
+  if (abs < 5)  return { yMin: -Math.ceil(abs * 1.5 / 1) * 1 || -6, ticks: [0, -Math.ceil(abs * 0.5), -Math.ceil(abs * 1.5) || -6], thresholds: [] };
+  if (abs < 10) return { yMin: -12,  ticks: [0, -4, -8, -12],       thresholds: [-10] };
+  if (abs < 20) return { yMin: -24,  ticks: [0, -8, -16, -24],      thresholds: [-10, -20] };
+  if (abs < 35) return { yMin: -40,  ticks: [0, -10, -20, -30, -40], thresholds: [-10, -20] };
+  const yMin = Math.floor(maxDrawdown * 1.3 / 10) * 10;
+  const step = Math.ceil(Math.abs(yMin) / 4 / 10) * 10;
+  const ticks: number[] = [];
+  for (let v = 0; v >= yMin; v -= step) ticks.push(v);
+  return { yMin, ticks, thresholds: [-10, -20, -30] };
+}
+
+// 5 evenly-spaced X-axis ticks
+function buildXTicks(points: DdPoint[]): { idx: number; text: string; isLast: boolean }[] {
+  if (points.length < 2) return [];
+  return Array.from({ length: 5 }, (_, i) => {
+    const idx = Math.round((i / 4) * (points.length - 1));
+    const isLast = i === 4;
+    const d = new Date(points[idx].date);
+    const text = isLast ? '现在' : `${d.getMonth() + 1}/${String(d.getDate()).padStart(2, '0')}`;
+    return { idx, text, isLast };
+  });
+}
 
 // ─── SVG Chart ────────────────────────────────────────────────────────────────
 
@@ -134,28 +143,26 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
   const { points, maxDrawdown, deepestIdx, daysAtMaxDrawdown } = stats;
   if (points.length < 2) return null;
 
-  const yMin = Math.min(-20, Math.floor(maxDrawdown / 5) * 5 - 5);
-  const warningY = yS(-10, yMin);
-  const dangerY  = yS(-20, yMin);
-  const zeroY    = PT;
+  const { yMin, ticks, thresholds } = calcYAxis(maxDrawdown);
+  const zeroY = PT;
 
   const pts = points.map((p, i) => ({ x: xS(i, points.length), y: yS(p.drawdown, yMin) }));
   const linePath = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
   const areaPath = `${linePath} L${pts[pts.length-1].x.toFixed(1)},${(VH-PB).toFixed(1)} L${PL},${(VH-PB).toFixed(1)} Z`;
 
+  // Deepest point bubble — always above the dot, flip below if near top
   const dx = pts[deepestIdx].x;
   const dy = pts[deepestIdx].y;
   const bubbleLabel = `${maxDrawdown.toFixed(1)}% · ${daysAtMaxDrawdown}天`;
-  const bubbleW = 90;
-  const bubbleH = 20;
+  const bubbleW = 92, bubbleH = 19;
   const bubbleX = Math.max(PL, Math.min(VW - PR - bubbleW, dx - bubbleW / 2));
-  // Flip bubble above the dot if it would overflow the bottom
-  const bubbleBelow = dy + 8 + bubbleH < VH - PB - 10;
-  const bubbleY = bubbleBelow ? dy + 8 : dy - 8 - bubbleH;
+  const nearTop = dy < PT + 50;
+  const bubbleY = nearTop ? dy + 14 : dy - 14 - bubbleH;
+  const arrowPts = nearTop
+    ? `${dx-5},${dy+10} ${dx+5},${dy+10} ${dx},${dy+5}`
+    : `${dx-5},${dy-10} ${dx+5},${dy-10} ${dx},${dy-5}`;
 
-  const yTicks = Array.from(new Set([0, -10, -20, yMin])).sort((a, b) => b - a);
-  const xLabels = buildXLabels(points);
-
+  const xTicks = buildXTicks(points);
   const hoverPt = hoverIdx !== null ? pts[hoverIdx] : null;
 
   return (
@@ -167,41 +174,44 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
     >
       <defs>
         <linearGradient id="dd-grad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%"   stopColor="#F5A5A0" stopOpacity="0.05" />
-          <stop offset="30%"  stopColor="#F5A5A0" stopOpacity="0.22" />
+          <stop offset="0%"   stopColor="#F5A5A0" stopOpacity="0.04" />
+          <stop offset="40%"  stopColor="#F5A5A0" stopOpacity="0.22" />
           <stop offset="100%" stopColor="#F5A5A0" stopOpacity="0.50" />
         </linearGradient>
       </defs>
 
       {/* Y-axis ticks */}
-      {yTicks.map(v => (
-        <text key={v} x={PL - 4} y={yS(v, yMin) + 3} textAnchor="end"
-          fontSize="8" fill={v === 0 ? '#059669' : v === -10 ? '#F59E0B' : '#DC2626'}
-          fontWeight={v === 0 || v === yMin ? '500' : '400'}
+      {ticks.map(v => (
+        <text key={v} x={PL - 5} y={yS(v, yMin) + 3} textAnchor="end"
+          fontSize="9" fill={v === 0 ? '#64748B' : '#CBD5E1'}
+          fontWeight={v === 0 ? '500' : '400'}
           fontFamily='"SF Mono", monospace'>{v}%</text>
       ))}
 
-      {/* 0% line */}
+      {/* 0% new-high line */}
       <line x1={PL} y1={zeroY} x2={VW-PR} y2={zeroY} stroke="#059669" strokeWidth="1.2" strokeDasharray="4,3" />
-      <text x={PL+4} y={zeroY-4} fontSize="8" fill="#059669" fontWeight="500" fontFamily='"SF Mono", monospace'>新高水位线</text>
+      <text x={PL+4} y={zeroY-5} fontSize="8" fill="#059669" fontWeight="500" fontFamily='"SF Mono", monospace'>新高水位线</text>
 
-      {/* -10% warning */}
-      <line x1={PL} y1={warningY} x2={VW-PR} y2={warningY} stroke="#F59E0B" strokeWidth="1" strokeDasharray="3,3" opacity="0.75" />
-      <text x={PL+4} y={warningY-3} fontSize="8" fill="#F59E0B" fontFamily='"SF Mono", monospace'>-10% 警戒</text>
-
-      {/* -20% danger */}
-      <line x1={PL} y1={dangerY} x2={VW-PR} y2={dangerY} stroke="#DC2626" strokeWidth="1" strokeDasharray="3,3" opacity="0.65" />
-      <text x={PL+4} y={dangerY-3} fontSize="8" fill="#DC2626" fontFamily='"SF Mono", monospace'>-20% 危险</text>
+      {/* Dynamic threshold lines */}
+      {thresholds.map(t => {
+        const ty = yS(t, yMin);
+        const color = t === -10 ? '#F59E0B' : t === -20 ? '#DC2626' : '#9333EA';
+        const label = t === -10 ? '警戒' : t === -20 ? '危险' : '极限';
+        return (
+          <g key={t}>
+            <line x1={PL} y1={ty} x2={VW-PR} y2={ty} stroke={color} strokeWidth="1" strokeDasharray="3,3" opacity="0.55" />
+            <text x={VW-PR-3} y={ty-3} textAnchor="end" fontSize="8" fill={color} fontFamily='"SF Mono", monospace'>{label}</text>
+          </g>
+        );
+      })}
 
       {/* Fill + line */}
       <path d={areaPath} fill="url(#dd-grad)" />
       <path d={linePath} fill="none" stroke="#DC2626" strokeWidth="1.25" strokeLinejoin="round" />
 
-      {/* Deepest point bubble (always visible) */}
+      {/* Deepest point: dot + leader line + bubble */}
       <circle cx={dx} cy={dy} r="3.5" fill="#DC2626" stroke="white" strokeWidth="1.5" />
-      {bubbleBelow
-        ? <polygon points={`${dx-5},${dy+8} ${dx+5},${dy+8} ${dx},${dy+4}`} fill="#DC2626" />
-        : <polygon points={`${dx-5},${dy-8} ${dx+5},${dy-8} ${dx},${dy-4}`} fill="#DC2626" />}
+      <polygon points={arrowPts} fill="#DC2626" />
       <rect x={bubbleX} y={bubbleY} width={bubbleW} height={bubbleH} fill="#DC2626" rx="3" />
       <text x={bubbleX+bubbleW/2} y={bubbleY+13} textAnchor="middle" fontSize="9.5" fill="white" fontWeight="600" fontFamily='"SF Mono", monospace'>{bubbleLabel}</text>
 
@@ -215,14 +225,13 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
       )}
 
       {/* X-axis labels */}
-      {xLabels.map(({ idx, text }) => {
-        const isDeep = Math.abs(idx - deepestIdx) < points.length / 10;
-        return (
-          <text key={idx} x={xS(idx, points.length)} y={VH-4} textAnchor="middle" fontSize="8.5"
-            fill={isDeep ? '#DC2626' : '#94A3B8'} fontWeight={isDeep ? '600' : '400'}
-            fontFamily='"SF Mono", monospace'>{text}</text>
-        );
-      })}
+      {xTicks.map(({ idx, text, isLast }, i) => (
+        <text key={idx} x={xS(idx, points.length)} y={VH-6}
+          textAnchor={i === 0 ? 'start' : i === 4 ? 'end' : 'middle'}
+          fontSize="9" fill={isLast ? '#64748B' : '#94A3B8'}
+          fontWeight={isLast ? '500' : '400'}
+          fontFamily='"SF Mono", monospace'>{text}</text>
+      ))}
     </svg>
   );
 }
