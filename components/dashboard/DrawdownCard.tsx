@@ -114,8 +114,8 @@ function buildXLabels(points: DdPoint[]): { idx: number; text: string }[] {
 
 // ─── SVG constants ────────────────────────────────────────────────────────────
 
-const VW = 600, VH = 200;
-const PL = 36, PR = 16, PT = 18, PB = 22;
+const VW = 600, VH = 380;
+const PL = 40, PR = 16, PT = 24, PB = 28;
 const PW = VW - PL - PR, PH = VH - PT - PB;
 
 function xS(idx: number, total: number) { return PL + (idx / Math.max(total - 1, 1)) * PW; }
@@ -146,8 +146,12 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
   const dx = pts[deepestIdx].x;
   const dy = pts[deepestIdx].y;
   const bubbleLabel = `${maxDrawdown.toFixed(1)}% · ${daysAtMaxDrawdown}天`;
-  const bubbleW = 86;
+  const bubbleW = 90;
+  const bubbleH = 20;
   const bubbleX = Math.max(PL, Math.min(VW - PR - bubbleW, dx - bubbleW / 2));
+  // Flip bubble above the dot if it would overflow the bottom
+  const bubbleBelow = dy + 8 + bubbleH < VH - PB - 10;
+  const bubbleY = bubbleBelow ? dy + 8 : dy - 8 - bubbleH;
 
   const yTicks = Array.from(new Set([0, -10, -20, yMin])).sort((a, b) => b - a);
   const xLabels = buildXLabels(points);
@@ -195,9 +199,11 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
 
       {/* Deepest point bubble (always visible) */}
       <circle cx={dx} cy={dy} r="3.5" fill="#DC2626" stroke="white" strokeWidth="1.5" />
-      <polygon points={`${dx-5},${dy+8} ${dx+5},${dy+8} ${dx},${dy+4}`} fill="#DC2626" />
-      <rect x={bubbleX} y={dy+8} width={bubbleW} height={18} fill="#DC2626" rx="3" />
-      <text x={bubbleX+bubbleW/2} y={dy+20} textAnchor="middle" fontSize="9.5" fill="white" fontWeight="600" fontFamily='"SF Mono", monospace'>{bubbleLabel}</text>
+      {bubbleBelow
+        ? <polygon points={`${dx-5},${dy+8} ${dx+5},${dy+8} ${dx},${dy+4}`} fill="#DC2626" />
+        : <polygon points={`${dx-5},${dy-8} ${dx+5},${dy-8} ${dx},${dy-4}`} fill="#DC2626" />}
+      <rect x={bubbleX} y={bubbleY} width={bubbleW} height={bubbleH} fill="#DC2626" rx="3" />
+      <text x={bubbleX+bubbleW/2} y={bubbleY+13} textAnchor="middle" fontSize="9.5" fill="white" fontWeight="600" fontFamily='"SF Mono", monospace'>{bubbleLabel}</text>
 
       {/* Hover indicator */}
       {hoverIdx !== null && hoverPt && (
