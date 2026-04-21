@@ -312,11 +312,25 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   }).filter(Boolean) as { x: number; pnl: number; symbol: string; timeLabel: string; date: string }[], [trades, mode]);
 
   const pnlVals = ttData.map(d => d.pnl);
-  const maxP = pnlVals.length ? Math.max(...pnlVals) : 1000;
-  const minP = pnlVals.length ? Math.min(...pnlVals) : -1000;
-  const pad = Math.max(Math.abs(maxP), Math.abs(minP)) * 0.2 || 200;
-  const yMax = Math.ceil((maxP + pad) / 500) * 500;
-  const yMin = Math.floor((minP - pad) / 500) * 500;
+  const maxP = pnlVals.length ? Math.max(...pnlVals) : 10;
+  const minP = pnlVals.length ? Math.min(...pnlVals) : -10;
+  const absMax = Math.max(Math.abs(maxP), Math.abs(minP)) || 10;
+  const pad = absMax * 0.25;
+  const rawMax = maxP + pad;
+  const rawMin = minP - pad;
+  const range = rawMax - rawMin || 1;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(range / 4)));
+  const niceStep = [1, 2, 2.5, 5, 10].map(f => f * magnitude).find(s => range / s <= 6) || magnitude * 10;
+  const yMax = Math.ceil(rawMax / niceStep) * niceStep;
+  const yMin = Math.floor(rawMin / niceStep) * niceStep;
+  const ttTickFormatter = (v: number) => {
+    const abs = Math.abs(v);
+    const sign = v < 0 ? '-' : '';
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
+    if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`;
+    if (abs >= 1) return `${sign}$${abs % 1 === 0 ? abs : abs.toFixed(1)}`;
+    return `${sign}$${abs.toFixed(2)}`;
+  };
 
   const isDark = document.documentElement.classList.contains('dark');
   const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
@@ -344,8 +358,8 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
             <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" />
               <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,4,8,12,16,20,24]} tickFormatter={(h: number) => `${String(h).padStart(2,'0')}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} />
-              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={46}
-                tickFormatter={(v: number) => v >= 0 ? `$${(v/1000).toFixed(0)}k` : `-$${(Math.abs(v)/1000).toFixed(0)}k`} />
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={52}
+                tickFormatter={ttTickFormatter} />
               <ReferenceLine y={0} stroke="rgba(0,0,0,0.12)" strokeWidth={1} />
               <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
                 content={({ active, payload }: any) => {
@@ -389,11 +403,25 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
   }).filter(Boolean) as { x: number; pnl: number; symbol: string; date: string; durationLabel: string }[], [trades]);
 
   const pnlVals = tdData.map(d => d.pnl);
-  const maxP = pnlVals.length ? Math.max(...pnlVals) : 1000;
-  const minP = pnlVals.length ? Math.min(...pnlVals) : -1000;
-  const pad = Math.max(Math.abs(maxP), Math.abs(minP)) * 0.2 || 200;
-  const yMax = Math.ceil((maxP + pad) / 500) * 500;
-  const yMin = Math.floor((minP - pad) / 500) * 500;
+  const maxP = pnlVals.length ? Math.max(...pnlVals) : 10;
+  const minP = pnlVals.length ? Math.min(...pnlVals) : -10;
+  const absMax = Math.max(Math.abs(maxP), Math.abs(minP)) || 10;
+  const pad = absMax * 0.25;
+  const rawMax = maxP + pad;
+  const rawMin = minP - pad;
+  const range = rawMax - rawMin || 1;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(range / 4)));
+  const niceStep = [1, 2, 2.5, 5, 10].map(f => f * magnitude).find(s => range / s <= 6) || magnitude * 10;
+  const yMax = Math.ceil(rawMax / niceStep) * niceStep;
+  const yMin = Math.floor(rawMin / niceStep) * niceStep;
+  const tdTickFormatter = (v: number) => {
+    const abs = Math.abs(v);
+    const sign = v < 0 ? '-' : '';
+    if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
+    if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`;
+    if (abs >= 1) return `${sign}$${abs % 1 === 0 ? abs : abs.toFixed(1)}`;
+    return `${sign}$${abs.toFixed(2)}`;
+  };
 
   const isDark = document.documentElement.classList.contains('dark');
   const tooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
@@ -413,8 +441,8 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" />
               <XAxis type="number" dataKey="x" domain={['dataMin', 'dataMax']} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }}
                 tickFormatter={(v: number) => v < 24 ? `${Math.round(v)}h` : `${(v / 24).toFixed(0)}d`} />
-              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={46}
-                tickFormatter={(v: number) => v >= 0 ? `$${(v/1000).toFixed(0)}k` : `-$${(Math.abs(v)/1000).toFixed(0)}k`} />
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={52}
+                tickFormatter={tdTickFormatter} />
               <ReferenceLine y={0} stroke="rgba(0,0,0,0.12)" strokeWidth={1} />
               <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
                 content={({ active, payload }: any) => {
