@@ -296,7 +296,7 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
 };
 
 // ── Position Heat Card ────────────────────────────────────────────────────────
-const VW = 560; const VH = 178;
+const VW = 560; const VH = 216;
 const PL = 38; const PR = 16; const PT = 8; const PB = 20;
 const PW = VW - PL - PR; const PH = VH - PT - PB;
 const X_MAX_H = 4; const WARN_X = 2; const DANG_X = 3;
@@ -331,8 +331,8 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
 
   const cardStyle: React.CSSProperties = {
     background: isDark ? '#0f172a' : '#fff',
-    border: `1px solid ${isDark ? '#1e293b' : '#e2e8f0'}`,
-    borderRadius: 16, padding: '18px 20px',
+    border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`,
+    borderRadius: 12, padding: '16px 20px',
     boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
   };
 
@@ -373,7 +373,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
 
   return (
     <div style={cardStyle}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
         </div>
