@@ -295,6 +295,162 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
   );
 };
 
+// ── Position Heat Card ────────────────────────────────────────────────────────
+const VW = 560; const VH = 230;
+const PL = 38; const PR = 16; const PT = 22; const PB = 28;
+const PW = VW - PL - PR; const PH = VH - PT - PB;
+const X_MAX_H = 4; const WARN_X = 2; const DANG_X = 3;
+const Y_MAX_H = 5; const Y_MIN_H = -5;
+
+function buildHeatPoints(trades: any[]) {
+  const quantities = trades.map(t => t.quantity).filter(q => q > 0).sort((a, b) => a - b);
+  if (quantities.length === 0) return { points: [] as any[], standardSize: 0, totalCount: trades.length, reviewedCount: 0 };
+  const mid = Math.floor(quantities.length / 2);
+  const standardSize = quantities.length % 2 === 0 ? (quantities[mid - 1] + quantities[mid]) / 2 : quantities[mid];
+  const reviewable = trades.filter(t => t.riskAmount != null && t.riskAmount > 0);
+  const points = reviewable.map(trade => {
+    const sizeMultiple = standardSize > 0 ? trade.quantity / standardSize : 0;
+    const rValue = trade.pnl / trade.riskAmount;
+    let color: 'profit' | 'loss-small' | 'loss-danger';
+    if (rValue > 0) color = 'profit';
+    else if (sizeMultiple >= WARN_X || rValue <= -2) color = 'loss-danger';
+    else color = 'loss-small';
+    return { tradeId: trade.id, sizeMultiple, rValue, color };
+  });
+  return { points, standardSize, totalCount: trades.length, reviewedCount: reviewable.length };
+}
+
+const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const { points, totalCount, reviewedCount } = useMemo(() => buildHeatPoints(trades), [trades]);
+
+  const xScale = (m: number) => PL + (Math.min(m, X_MAX_H) / X_MAX_H) * PW;
+  const yScale = (r: number) => PT + ((Y_MAX_H - Math.max(Y_MIN_H, Math.min(Y_MAX_H, r))) / (Y_MAX_H - Y_MIN_H)) * PH;
+  const warnX = xScale(WARN_X); const dangX = xScale(DANG_X); const zeroY = yScale(0);
+
+  const cardStyle: React.CSSProperties = {
+    background: isDark ? '#0f172a' : '#fff',
+    border: `1px solid ${isDark ? '#1e293b' : '#e2e8f0'}`,
+    borderRadius: 16, padding: '18px 20px',
+    boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
+  };
+
+  if (totalCount === 0) return (
+    <div style={cardStyle}>
+      <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: 14 }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</div>
+      <div style={{ height: 230, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
+    </div>
+  );
+
+  if (reviewedCount === 0) return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
+        <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
+        <span style={{ fontSize: 10, color: '#94a3b8' }}>{language === 'cn' ? '每笔交易一个点' : 'One dot per trade'}</span>
+      </div>
+      <div style={{ height: 230, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center', padding: '0 20px' }}>
+        <div style={{ fontSize: 28, opacity: 0.35 }}>🔒</div>
+        <p style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', margin: 0 }}>{language === 'cn' ? '仓位情绪分析待解锁' : 'Unlock Position Analysis'}</p>
+        <p style={{ fontSize: 11, color: '#64748b', margin: 0, lineHeight: 1.5 }}>{language === 'cn' ? '在交易记录中补充"止损金额"即可启用此分析' : 'Add Risk Amount to your trades to enable this chart'}</p>
+        <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 500 }}>{language === 'cn' ? `已有 0 / ${totalCount} 笔填写止损金额` : `0 / ${totalCount} trades have risk amount`}</span>
+      </div>
+    </div>
+  );
+
+  const overLimitLosses = points.filter(p => p.sizeMultiple >= WARN_X && p.rValue < 0);
+
+  return (
+    <div style={cardStyle}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
+        </div>
+        <span style={{ fontSize: 10, color: '#94a3b8' }}>{reviewedCount}{language === 'cn' ? ' 笔已复盘交易' : ' reviewed trades'}</span>
+      </div>
+
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: 230 }}>
+        {/* zone backgrounds */}
+        <rect x={PL} y={PT} width={warnX - PL} height={PH} fill="#15803d" opacity="0.04" />
+        <rect x={warnX} y={PT} width={dangX - warnX} height={PH} fill="#f59e0b" opacity="0.05" />
+        <rect x={dangX} y={PT} width={VW - PR - dangX} height={PH} fill="#dc2626" opacity="0.05" />
+        {/* grid lines */}
+        {[5,2,0,-2,-5].map(r => (
+          <line key={r} x1={PL} y1={yScale(r)} x2={VW - PR} y2={yScale(r)}
+            stroke={isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'} strokeWidth="0.8" />
+        ))}
+        {/* warning / danger vertical lines */}
+        <line x1={warnX} y1={PT} x2={warnX} y2={PT + PH} stroke="#f59e0b" strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
+        <line x1={dangX} y1={PT} x2={dangX} y2={PT + PH} stroke="#dc2626" strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
+        {/* 0R reference line */}
+        <line x1={PL} y1={zeroY} x2={VW - PR} y2={zeroY} stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+        {/* zone labels */}
+        <text x={(PL + warnX) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="#15803d" fontWeight="500">{language === 'cn' ? '正常仓位区' : 'Normal'}</text>
+        <text x={(warnX + dangX) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="#f59e0b" fontWeight="500">{language === 'cn' ? '警戒区' : 'Caution'}</text>
+        <text x={(dangX + VW - PR) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="#dc2626" fontWeight="500">{language === 'cn' ? '超限区' : 'Danger'}</text>
+        {/* Y axis labels */}
+        {[5,2,0,-2,-5].map(r => (
+          <text key={r} x={PL - 4} y={yScale(r) + 3.5} textAnchor="end" fontSize="9"
+            fill={r === 0 ? (isDark ? '#94a3b8' : '#64748b') : '#94a3b8'}
+            fontWeight={r === 0 ? '500' : '400'} fontFamily="SF Mono, monospace">
+            {r > 0 ? `+${r}R` : `${r}R`}
+          </text>
+        ))}
+        {/* X axis labels */}
+        <text x={warnX} y={VH - PB + 16} textAnchor="middle" fontSize="9" fill="#f59e0b" fontFamily="SF Mono, monospace">2x</text>
+        <text x={dangX} y={VH - PB + 16} textAnchor="middle" fontSize="9" fill="#dc2626" fontFamily="SF Mono, monospace">3x</text>
+        <text x={VW / 2} y={VH - 4} textAnchor="middle" fontSize="9" fill="#64748b">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
+        {/* data points */}
+        {points.map(p => {
+          const fill = p.color === 'profit' ? '#059669' : p.color === 'loss-small' ? '#f87171' : '#dc2626';
+          const isHov = hoveredId === p.tradeId;
+          return (
+            <circle key={p.tradeId}
+              cx={xScale(p.sizeMultiple)} cy={yScale(p.rValue)}
+              r={isHov ? 5 : 2.5} fill={fill}
+              stroke={isHov ? (isDark ? '#1e293b' : '#fff') : 'none'} strokeWidth={isHov ? 1.5 : 0}
+              opacity={isHov ? 1 : 0.6}
+              style={{ cursor: 'pointer', transition: 'r 0.1s, opacity 0.1s' }}
+              onMouseEnter={() => setHoveredId(p.tradeId)}
+              onMouseLeave={() => setHoveredId(null)}
+            />
+          );
+        })}
+        {/* hover tooltip */}
+        {hoveredId && (() => {
+          const hp = points.find(p => p.tradeId === hoveredId);
+          if (!hp) return null;
+          const tx = xScale(hp.sizeMultiple); const ty = yScale(hp.rValue);
+          const toLeft = tx > VW * 0.6;
+          const rColor = hp.rValue > 0 ? '#059669' : hp.rValue <= -2 ? '#dc2626' : '#f59e0b';
+          return (
+            <foreignObject x={toLeft ? tx - 128 : tx + 10} y={ty - 36} width="118" height="52" style={{ overflow: 'visible', pointerEvents: 'none' }}>
+              <div style={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : 'rgba(148,163,184,0.3)'}`, borderRadius: 8, padding: '7px 10px', boxShadow: '0 4px 12px rgba(15,23,42,0.1)', fontSize: 11, fontFamily: '-apple-system, Inter, sans-serif' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 3 }}>
+                  <span style={{ color: '#94a3b8' }}>{language === 'cn' ? '仓位' : 'Size'}</span>
+                  <span style={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600, fontFamily: 'SF Mono, monospace' }}>{hp.sizeMultiple.toFixed(1)}x</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
+                  <span style={{ color: '#94a3b8' }}>R</span>
+                  <span style={{ color: rColor, fontWeight: 600, fontFamily: 'SF Mono, monospace' }}>{hp.rValue > 0 ? '+' : ''}{hp.rValue.toFixed(2)}R</span>
+                </div>
+              </div>
+            </foreignObject>
+          );
+        })()}
+      </svg>
+
+      {overLimitLosses.length > 0 && (
+        <div style={{ marginTop: 8, padding: '7px 10px', background: isDark ? 'rgba(220,38,38,0.1)' : '#fef2f2', border: `1px solid ${isDark ? 'rgba(220,38,38,0.25)' : '#fecaca'}`, borderRadius: 8, fontSize: 11, color: isDark ? '#fca5a5' : '#dc2626', lineHeight: 1.5 }}>
+          ⚠️ {language === 'cn'
+            ? `超限仓位 ${overLimitLosses.length} 笔交易全部亏损——这是过度自信偏差的典型信号。`
+            : `${overLimitLosses.length} oversized trades all resulted in losses — classic Conviction Bias.`}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ── Trade Time Performance scatter chart ─────────────────────────────────────
 const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
   const { currencySymbol } = useUser();
@@ -2203,7 +2359,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 disciplineRules={disciplineRules}
               />
 
-              <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col h-[300px]"><div className="flex justify-between items-center mb-4"><h3 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2 text-sm uppercase tracking-wide"><Users className="w-4 h-4 text-indigo-500" />{t.social.title}</h3><button onClick={() => setIsAddFriendModalOpen(true)} className="p-1.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors"><UserPlus className="w-3 h-3" /></button></div><div className="flex-1 overflow-y-auto pr-1 custom-scrollbar"><table className="w-full text-xs"><tbody className="divide-y divide-slate-100 dark:divide-slate-800">{friends.sort((a,b) => b.pnl - a.pnl).map((friend, index) => { const isSelected = selectedFriends.includes(friend.id); return (<tr key={friend.id} className="group"><td className="py-2.5 w-6 text-center">{index === 0 && <span className="text-base">🥇</span>}{index === 1 && <span className="text-base">🥈</span>}{index === 2 && <span className="text-base">🥉</span>}{index > 2 && <span className="text-slate-400 font-mono">{index + 1}</span>}</td><td className="py-2.5"><div className="flex items-center gap-2"><div className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white" style={{backgroundColor: friend.color}}>{friend.initials}</div><div className="overflow-hidden"><p className="font-bold text-slate-700 dark:text-slate-200 truncate max-w-[80px]">{friend.name}</p></div></div></td><td className={`py-2.5 text-right font-bold tabular-nums ${friend.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{currencySymbol}{friend.pnl.toLocaleString()}</td><td className="py-2.5 text-right"><button onClick={() => toggleFriend(friend.id)} className={`p-1 rounded transition-colors ${isSelected ? 'text-indigo-500' : 'text-slate-300 hover:text-slate-500'}`}>{isSelected ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}</button></td></tr>); })}</tbody></table></div></div>
+              <PositionHeatCard trades={trades} language={language} />
           </div>
       </div>
 
