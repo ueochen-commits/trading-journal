@@ -18,6 +18,7 @@ import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
 import FontSize from '../lib/tiptapFontSize';
+import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
 import { exportNoteToPdf, TradeMetadata } from '../lib/pdfExport';
 import { useLanguage } from '../LanguageContext';
 import {
@@ -213,6 +214,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         horizontalRule: false,
+        dropcursor: { color: '#6366F1', width: 2 },
       }),
       Underline,
       Link.configure({ openOnClick: false, autolink: true }),
@@ -230,6 +232,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       TaskList, TaskItem.configure({ nested: true }),
       HorizontalRule,
       FontSize,
+      GlobalDragHandle.configure({ dragHandleWidth: 30 }),
     ],
     content: currentContent,
     onUpdate: ({ editor: ed }) => {
@@ -388,6 +391,35 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       reader.readAsDataURL(file);
     };
     input.click();
+  }, [editor]);
+
+  // ─── Inject Plus button into drag handle ───
+  useEffect(() => {
+    if (!editor) return;
+    const parent = editor.view.dom.parentElement;
+    if (!parent) return;
+    const injectPlus = (handle: Element) => {
+      if (handle.querySelector('.drag-plus-btn')) return;
+      const btn = document.createElement('button');
+      btn.className = 'drag-plus-btn';
+      btn.textContent = '+';
+      btn.title = '插入新段落';
+      btn.addEventListener('mousedown', e => { e.preventDefault(); e.stopPropagation(); });
+      btn.addEventListener('dragstart', e => e.stopPropagation());
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        editor.chain().focus().createParagraphNear().run();
+      });
+      handle.insertBefore(btn, handle.firstChild);
+    };
+    const observer = new MutationObserver(() => {
+      const handle = parent.querySelector('.drag-handle');
+      if (handle) injectPlus(handle);
+    });
+    observer.observe(parent, { childList: true });
+    const existing = parent.querySelector('.drag-handle');
+    if (existing) injectPlus(existing);
+    return () => observer.disconnect();
   }, [editor]);
 
   // ─── Escape fullscreen ───
