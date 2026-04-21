@@ -407,6 +407,162 @@ function pairRawOrders(rows: Record<string, string>[], rules: AiRules): Trade[] 
   return trades;
 }
 
+// ─── Bitget dedicated parsers ─────────────────────────────────────────────────
+
+type BitgetFileType = 'bitget_position' | 'bitget_order' | 'unknown';
+
+function detectBitgetFile(headers: string[]): BitgetFileType {
+  const set = new Set(headers.map(h => h.trim()));
+  // Position history signature
+  if (set.has('合约') && set.has('开仓时间') && set.has('全部平仓时间') && set.has('开仓手续费') && set.has('平仓手续费')) {
+    return 'bitget_position';
+  }
+  // Order history signature
+  if (set.has('订单号') && set.has('委托价格') && set.has('成交均价') && set.has('净盈亏')) {
+    return 'bitget_order';
+  }
+  return 'unknown';
+}
+
+/** Strip numeric value from strings like "0.05ETH", "-0.88USDT", "103.88" */
+function stripUnit(raw: string | undefined): number {
+  if (!raw) return 0;
+  const m = String(raw).trim().match(/^(-?\d+(?:\.\d+)?)/);
+  return m ? parseFloat(m[1]) : 0;
+}
+
+/** Parse Bitget time "2026-03-31 23:53:55" as UTC+8 → ISO UTC */
+function parseBitgetTime(s: string): string {
+  if (!s) return new Date().toISOString();
+  const m = s.trim().match(/^(\d{4})-(\d{2})-(\d{2})\s+(\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return new Date(s).toISOString();
+  const utc = Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4] - 8, +m[5], +m[6]);
+  return new Date(utc).toISOString();
+}
+
+/** Parse "ETHUSDT Short·Cross" → { symbol, direction } */
+function parseBitgetContract(raw: string): { symbol: string; direction: Direction } {
+  const m = raw?.trim().match(/^(\w+)\s+(Long|Short)/i);
+  if (!m) return { symbol: raw?.trim().toUpperCase() || 'UNKNOWN', direction: Direction.LONG };
+  return {
+    symbol: m[1].toUpperCase(),
+    direction: m[2].toLowerCase() === 'short' ? Direction.SHORT : Direction.LONG,
+  };
+}
+
+function parseBitgetPosition(rows: Record<string, string>[]): { trades: Trade[]; warnings: string[] } {
+  const warnings: string[] = [];
+  const trades: Trade[] = [];
+
+  rows.forEach((row, i) => {
+    try {
+      const { symbol, direction } = parseBitgetContract(row['合约'] || '');
+      const entryDate = parseBitgetTime(row['开仓时间']);
+      const exitDate  = parseBitgetTime(row['全部平仓时间']);
+      const entryPrice = parseFloat(row['开仓均价']) || 0;
+      const exitPrice  = parseFloat(row['平仓均价']) || 0;
+      const quantity   = stripUnit(row['平仓量']) || 1;
+      // 仓位盈亏 = final net PnL (includes fees + funding)
+      const pnl  = stripUnit(row['仓位盈亏']);
+      const fees = Math.abs(stripUnit(row['开仓手续费'])) + Math.abs(stripUnit(row['平仓手续费']));
+      const status = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
+
+      trades.push({
+        id: `bitget_pos_${Date.now()}_${i}`,
+        symbol,
+        entryDate,
+        exitDate,
+        entryPrice,
+        exitPrice,
+        quantity,
+        direction,
+        status,
+        pnl,
+        fees,
+        setup: '',
+        notes: '',
+        leverage: 1,
+        riskAmount: 0,
+      } as Trade);
+    } catch (e: any) {
+      warnings.push(`第 ${i + 2} 行解析失败: ${e.message}`);
+    }
+  });
+
+  return { trades, warnings };
+}
+
+/** Parse Bitget order history — pair open/close orders by symbol+side */
+function parseBitgetOrder(rows: Record<string, string>[]): { trades: Trade[]; warnings: string[] } {
+  const warnings: string[] = [];
+  const DIRECTION_MAP: Record<string, { direction: Direction; action: 'open' | 'close' }> = {
+    'open long':   { direction: Direction.LONG,  action: 'open' },
+    'open short':  { direction: Direction.SHORT, action: 'open' },
+    'close long':  { direction: Direction.LONG,  action: 'close' },
+    'close short': { direction: Direction.SHORT, action: 'close' },
+  };
+
+  // Only use fully executed orders
+  const filled = rows.filter(r => (r['状态'] || '').toLowerCase().includes('executed') || (r['状态'] || '').toLowerCase().includes('filled'));
+
+  // Group by symbol
+  const bySymbol: Record<string, typeof filled> = {};
+  filled.forEach(r => {
+    const sym = (r['合约'] || r['交易对'] || 'UNKNOWN').trim().toUpperCase();
+    if (!bySymbol[sym]) bySymbol[sym] = [];
+    bySymbol[sym].push(r);
+  });
+
+  const trades: Trade[] = [];
+  let idx = 0;
+
+  Object.entries(bySymbol).forEach(([symbol, symRows]) => {
+    symRows.sort((a, b) => new Date(a['时间']).getTime() - new Date(b['时间']).getTime());
+    const openStack: typeof symRows = [];
+
+    symRows.forEach(row => {
+      const dirKey = (row['方向'] || '').toLowerCase().trim();
+      const mapped = DIRECTION_MAP[dirKey];
+      if (!mapped) return;
+
+      if (mapped.action === 'open') {
+        openStack.push(row);
+      } else {
+        const openRow = openStack.shift();
+        if (!openRow) { warnings.push(`${symbol}: 找不到匹配的开仓订单`); return; }
+
+        const entryDate  = parseBitgetTime(openRow['时间']);
+        const exitDate   = parseBitgetTime(row['时间']);
+        const entryPrice = parseFloat(openRow['成交均价']) || 0;
+        const exitPrice  = parseFloat(row['成交均价']) || 0;
+        const quantity   = parseFloat(openRow['成交数量'] || openRow['数量'] || '1') || 1;
+        const pnl        = parseFloat(row['净盈亏']) || 0;
+        const status     = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
+
+        trades.push({
+          id: `bitget_ord_${Date.now()}_${idx++}`,
+          symbol,
+          entryDate,
+          exitDate,
+          entryPrice,
+          exitPrice,
+          quantity,
+          direction: mapped.direction,
+          status,
+          pnl,
+          fees: 0,
+          setup: '',
+          notes: '',
+          leverage: 1,
+          riskAmount: 0,
+        } as Trade);
+      }
+    });
+  });
+
+  return { trades, warnings };
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const CsvImportPage: React.FC<Props> = ({
@@ -465,27 +621,43 @@ const CsvImportPage: React.FC<Props> = ({
       const sampleRows = allRows.slice(0, 15);
       setParseProgress(2);
 
-      // ── Step 3: AI identifies format ───────────────────────────────────────
-      let rules: AiRules;
-      try {
-        const resp = await fetch('/api/csv-analyze', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ headers, sampleRows, exchangeName, timezone }),
-        });
-        if (!resp.ok) throw new Error('AI API error');
-        rules = await resp.json();
-        console.log('[CSV Import] AI rules:', JSON.stringify(rules, null, 2));
-        console.log('[CSV Import] Sample row[0]:', JSON.stringify(sampleRows[0]));
-      } catch {
-        // Fallback: try to auto-detect common column names
-        rules = buildFallbackRules(headers, sampleRows, exchangeName);
-      }
-      setParseProgress(3);
+      // ── Step 2.5: Bitget dedicated parser (bypasses AI) ───────────────────
+      const bitgetType = detectBitgetFile(headers);
+      let converted: Trade[];
+      let detectedExchangeLabel: string;
+      let detectedConfidence: number;
 
-      // ── Step 4: Code-based batch conversion ────────────────────────────────
-      const converted = convertRows(allRows, rules);
-      setParseProgress(4);
+      if (bitgetType !== 'unknown') {
+        const { trades: bgTrades, warnings: bgWarnings } = bitgetType === 'bitget_position'
+          ? parseBitgetPosition(allRows)
+          : parseBitgetOrder(allRows);
+        if (bgWarnings.length > 0) console.warn('[Bitget Import]', bgWarnings);
+        converted = bgTrades;
+        detectedExchangeLabel = bitgetType === 'bitget_position' ? 'Bitget 历史仓位' : 'Bitget 历史委托';
+        detectedConfidence = 95;
+        setParseProgress(4);
+      } else {
+        // ── Step 3: AI identifies format ─────────────────────────────────────
+        let rules: AiRules;
+        try {
+          const resp = await fetch('/api/csv-analyze', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ headers, sampleRows, exchangeName, timezone }),
+          });
+          if (!resp.ok) throw new Error('AI API error');
+          rules = await resp.json();
+          console.log('[CSV Import] AI rules:', JSON.stringify(rules, null, 2));
+          console.log('[CSV Import] Sample row[0]:', JSON.stringify(sampleRows[0]));
+        } catch {
+          rules = buildFallbackRules(headers, sampleRows, exchangeName);
+        }
+        setParseProgress(3);
+        converted = convertRows(allRows, rules);
+        detectedExchangeLabel = `${rules.detectedExchange} ${rules.detectedAccountType}`;
+        detectedConfidence = rules.confidence;
+        setParseProgress(4);
+      }
 
       // ── Step 5: Duplicate detection ────────────────────────────────────────
       const { data: { user } } = await supabase.auth.getUser();
@@ -522,8 +694,8 @@ const CsvImportPage: React.FC<Props> = ({
         winRate: newTrades.length > 0 ? (wins / newTrades.length) * 100 : 0,
         profitFactor: grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0,
         dateRange: dates.length > 0 ? `${dates[0].slice(0, 10)} → ${dates[dates.length - 1].slice(0, 10)}` : '—',
-        exchange: `${rules.detectedExchange} ${rules.detectedAccountType}`,
-        confidence: rules.confidence,
+        exchange: detectedExchangeLabel,
+        confidence: detectedConfidence,
         preview: newTrades.slice(0, 5).map(t => ({
           time: new Date(t.entryDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
           symbol: t.symbol,
