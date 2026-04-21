@@ -1098,7 +1098,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               );
           case 'plans':
               return (
-                  <div className="h-full overflow-hidden p-4 bg-slate-50 dark:bg-slate-950">
+                  <div className="h-full overflow-hidden bg-white dark:bg-slate-900">
                       <TradingPlans 
                           plans={plans}
                           trades={trades}
