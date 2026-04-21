@@ -154,7 +154,7 @@ function buildXTicks(points: DdPoint[]): { idx: number; text: string; isLast: bo
 // ─── SVG constants ────────────────────────────────────────────────────────────
 
 const VW = 480, VH = 160;
-const PL = 42, PR = 10, PT = 8, PB = 14;
+const PL = 42, PR = 10, PT = 8, PB = 6;
 const PW = VW - PL - PR, PH = VH - PT - PB;
 
 function xS(idx: number, total: number) { return PL + (idx / Math.max(total - 1, 1)) * PW; }
@@ -201,8 +201,8 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
       <defs>
         <linearGradient id="dd-grad" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%"   stopColor="#F5A5A0" stopOpacity="0.04" />
-          <stop offset="40%"  stopColor="#F5A5A0" stopOpacity="0.22" />
-          <stop offset="100%" stopColor="#F5A5A0" stopOpacity="0.50" />
+          <stop offset="50%"  stopColor="#F5A5A0" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#F5A5A0" stopOpacity="0.00" />
         </linearGradient>
       </defs>
 
