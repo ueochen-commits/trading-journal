@@ -189,7 +189,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           const s = stats[dayIndex];
           
           s.count++;
-          s.netPnl += (t.pnl - t.fees);
+          s.netPnl += t.pnl;
           if (t.pnl > 0) {
               s.grossProfit += t.pnl;
               s.wins++;
@@ -239,7 +239,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           
           if (bucket) {
               bucket.count++;
-              bucket.netPnl += (t.pnl - t.fees);
+              bucket.netPnl += t.pnl;
               if (t.pnl > 0) {
                   bucket.grossProfit += t.pnl;
                   bucket.wins++;
@@ -289,7 +289,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           if (buckets[bucketIndex]) {
               const b = buckets[bucketIndex];
               b.count++;
-              b.netPnl += (t.pnl - t.fees);
+              b.netPnl += t.pnl;
               if (t.pnl > 0) {
                   b.grossProfit += t.pnl;
                   b.wins++;
@@ -341,7 +341,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           if (!t.riskAmount || t.riskAmount <= 0) {
               isNone = true;
           } else {
-              const netPnl = t.pnl - t.fees;
+              const netPnl = t.pnl;
               r = netPnl / t.riskAmount;
           }
 
@@ -356,7 +356,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
           if (bucket) {
               bucket.count++;
-              const net = t.pnl - t.fees;
+              const net = t.pnl;
               bucket.netPnl += net;
               if (net > 0) {
                   bucket.grossProfit += net;
@@ -388,7 +388,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const grossProfit = wins.reduce((acc, t) => acc + t.pnl, 0);
       const grossLoss = losses.reduce((acc, t) => acc + t.pnl, 0); // Negative number
       const totalFees = trades.reduce((acc, t) => acc + t.fees, 0);
-      const netPnl = grossProfit + grossLoss - totalFees;
+      const netPnl = grossProfit + grossLoss;
       const totalVolume = trades.reduce((acc, t) => acc + (t.quantity * t.entryPrice), 0); 
 
       // Averages
