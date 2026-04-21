@@ -987,7 +987,7 @@ const Journal: React.FC<JournalProps> = ({
         const wins = filteredTrades.filter(t => t.pnl > 0);
         const losses = filteredTrades.filter(t => t.pnl < 0);
         const breakEvens = filteredTrades.filter(t => t.pnl === 0);
-        const totalPnl = filteredTrades.reduce((s, t) => s + t.pnl, 0);
+        const totalPnl = filteredTrades.reduce((s, t) => s + (t.pnl - t.fees), 0);
         const grossProfit = wins.reduce((s, t) => s + t.pnl, 0);
         const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
         const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0;
@@ -999,7 +999,7 @@ const Journal: React.FC<JournalProps> = ({
         // Cumulative PnL sparkline data
         const sorted = [...filteredTrades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
         let cum = 0;
-        const cumPoints = sorted.map(t => { cum += t.pnl; return cum; });
+        const cumPoints = sorted.map(t => { cum += (t.pnl - t.fees); return cum; });
         const sparkColor = totalPnl >= 0 ? '#1D9E75' : '#E24B4A';
         const sparkGradId = `jsc-grad-${totalPnl >= 0 ? 'g' : 'r'}`;
 
