@@ -414,10 +414,10 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       }`}
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif' }}
     >
-      {/* ─── Rich Text Toolbar (裸露，底部分割线) ─── */}
+      {/* ─── Rich Text Toolbar ─── */}
       <div
         className="flex items-center gap-0.5 flex-wrap"
-        style={{ padding: '0 0 10px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}
+        style={{ paddingBottom: '10px', marginBottom: '10px' }}
         onMouseDown={(e) => e.preventDefault()}
       >
         {/* Group 1: History & Input */}

@@ -809,7 +809,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
   const trashCount = plans.filter(p => p.isDeleted === true).length;
 
   return (
-    <div className="flex h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden transition-colors relative">
+    <div className="flex h-full bg-white dark:bg-slate-900 overflow-hidden transition-colors relative">
       {(menuOpenFolderId || isSortMenuOpen || noteMenuOpenId || editorMenuOpen || folderSelectorOpen) && (
           <div className="fixed inset-0 z-10" onClick={() => {
               setMenuOpenFolderId(null);
