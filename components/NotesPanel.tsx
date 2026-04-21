@@ -441,33 +441,6 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
         </div>
       </div>
 
-      {/* ─── Layer 2: Tabs + Template Button ─── */}
-      <div className="flex items-center justify-between px-6 mb-4" style={{ height: '32px' }}>
-        <div className="inline-flex p-[3px] bg-[#f3f4f6] dark:bg-[#1a1a1a] rounded-lg">
-          {(['trade-note', 'daily-journal'] as NoteTab[]).map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => handleTabSwitch(tab)}
-              className={`px-4 py-[6px] text-[13px] rounded-[6px] transition-all ${
-                activeTab === tab
-                  ? 'bg-white dark:bg-[#0a0a0a] font-medium text-[#1a1a1a] dark:text-[#ededed] shadow-sm'
-                  : 'text-[#6b7280] dark:text-[#9ca3af] hover:text-[#1a1a1a] dark:hover:text-[#ededed]'
-              }`}
-            >
-              {tab === 'trade-note' ? 'Trade note' : 'Daily journal'}
-            </button>
-          ))}
-        </div>
-        <button
-          type="button"
-          onClick={() => setTemplateModalOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-[6px] border border-[rgba(0,0,0,0.12)] dark:border-[rgba(255,255,255,0.16)] rounded-[6px] text-[12px] text-[#6b7280] dark:text-[#9ca3af] hover:bg-[#f3f4f6] dark:hover:bg-[#1a1a1a] transition-colors"
-        >
-          <Plus className="w-3 h-3" />
-          添加模板
-        </button>
-      </div>
 
       {/* ─── Layer 3: Separator ─── */}
       <div className="mx-6 border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]" style={{ borderTopWidth: '0.5px', marginBottom: '12px' }} />
