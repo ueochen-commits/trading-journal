@@ -222,7 +222,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       FontFamily,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({
-        placeholder: '为什么要做这笔交易? 是否遵循了交易规则? 记录情绪、形态与经验教训…',
+        placeholder: '为什么要做这笔交易？是否遵循了交易规则？记录情绪、形态与经验教训...',
       }),
       Image,
       Table.configure({ resizable: true }),
@@ -414,41 +414,10 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       }`}
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif' }}
     >
-      {/* ─── Layer 1: Title Bar ─── */}
-      <div className="flex items-center justify-between px-6" style={{ height: '38px' }}>
-        <div className="flex items-center gap-[10px]">
-          <div className="w-1 h-4 bg-[#1a1a1a] dark:bg-[#ededed] rounded-sm" />
-          <span className="text-[15px] font-medium text-[#1a1a1a] dark:text-[#ededed]">Notes</span>
-          {tagText && (
-            <span className="px-2 py-0.5 bg-[#f3f4f6] dark:bg-[#1a1a1a] rounded-[4px] text-[11px] text-[#9ca3af] dark:text-[#6b7280]">
-              {tagText}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="text-[12px] text-[#9ca3af] dark:text-[#6b7280]">
-            {saveStatus === 'saving' ? '正在保存...' : saveStatus === 'unsaved' ? '未保存' : '已保存'}
-          </span>
-          {saveStatus === 'saved' && (
-            <div className="w-1.5 h-1.5 rounded-full bg-[#10b981]" />
-          )}
-          {saveStatus === 'unsaved' && (
-            <div className="w-1.5 h-1.5 rounded-full bg-[#EF9F27]" />
-          )}
-          {saveStatus === 'saving' && (
-            <div className="w-1.5 h-1.5 rounded-full bg-[#9ca3af] animate-pulse" />
-          )}
-        </div>
-      </div>
-
-
-      {/* ─── Layer 3: Separator ─── */}
-      <div className="mx-6 border-t border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]" style={{ borderTopWidth: '0.5px', marginBottom: '12px' }} />
-
-      {/* ─── Layer 4: Rich Text Toolbar ─── */}
+      {/* ─── Rich Text Toolbar (裸露，底部分割线) ─── */}
       <div
-        className="flex items-center gap-0.5 flex-wrap px-6"
-        style={{ marginBottom: '14px' }}
+        className="flex items-center gap-0.5 flex-wrap"
+        style={{ padding: '0 0 10px', marginBottom: '14px', borderBottom: '0.5px solid #E5E7EB' }}
         onMouseDown={(e) => e.preventDefault()}
       >
         {/* Group 1: History & Input */}
@@ -690,15 +659,15 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
         </ToolBtn>
       </div>
 
-      {/* ─── Layer 5: Editor Area ─── */}
+      {/* ─── Editor Area ─── */}
       <div
         ref={editorContainerRef}
         className={`flex-1 overflow-y-auto ${isFullscreen ? 'max-w-[800px] mx-auto w-full' : ''}`}
-        style={{ padding: '4px 24px 20px 24px' }}
+        style={{ padding: '4px 0 20px 0' }}
       >
         <EditorContent
           editor={editor}
-          className="notes-panel-editor outline-none min-h-[200px] text-[15px] leading-[1.8] text-[#1a1a1a] dark:text-[#ededed]"
+          className="notes-panel-editor outline-none min-h-[180px] text-[14px] leading-[1.8] text-[#1F2937] dark:text-[#ededed]"
         />
       </div>
 

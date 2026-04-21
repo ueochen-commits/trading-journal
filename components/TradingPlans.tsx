@@ -8,7 +8,8 @@ import {
     Tag, LayoutTemplate, MoreVertical, FilePlus, ChevronDown, FolderPlus, RotateCcw, RotateCw,
     AlignLeft, AlignCenter, AlignRight, List, ListOrdered, Code, Eraser, CheckCircle2, Circle, Copy,
     Edit2, CornerDownLeft, Play, CornerDownRight, Share, FolderInput, ArrowRight, ArrowUpDown, Check,
-    Printer, FileDown, Files, RefreshCw, Cloud, Wand2, AlertCircle, BookMarked, Undo2, Layout, AppWindow
+    Printer, FileDown, Files, RefreshCw, Cloud, Wand2, AlertCircle, BookMarked, Undo2, Layout, AppWindow,
+    TrendingUp
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import NotesPanel from './NotesPanel';
@@ -823,468 +824,233 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
               <CheckCircle2 className="w-4 h-4 text-emerald-400" /> {toastMessage}
           </div>
       )}
-      <div className="w-64 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-950 flex-shrink-0">
-          <div className="p-4 pb-2 space-y-3">
-              <button 
-                onClick={() => setIsCreatingRootFolder(true)}
-                className="flex items-center gap-2 text-slate-500 dark:text-slate-400 font-bold text-xs hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors px-1"
-              >
-                  <FolderPlus className="w-4 h-4" />
-                  {t.plans.addFolder}
-              </button>
-              <button 
+      <div className="border-r border-[#E5E7EB] dark:border-slate-800 flex flex-col bg-white dark:bg-slate-950 flex-shrink-0" style={{ width: '220px' }}>
+          <div className="px-4 pt-4 pb-3 space-y-3">
+              <span className="text-[15px] font-medium text-[#1F2937] dark:text-slate-100 px-[6px]">{language === 'cn' ? '笔记本' : 'Notebook'}</span>
+              <button
                 onClick={() => handleCreateNote()}
-                className="w-full flex items-center justify-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-600 text-slate-700 dark:text-slate-200 py-3 rounded-xl font-bold shadow-sm hover:shadow transition-all group"
+                className="w-full flex items-center justify-center gap-2 bg-[#6366F1] hover:bg-[#4F46E5] text-white py-[9px] px-3 rounded-[8px] text-[13px] font-medium transition-colors"
               >
-                  <div className="bg-indigo-100 dark:bg-indigo-500/20 p-1 rounded-md text-indigo-600 dark:text-indigo-300 group-hover:scale-110 transition-transform">
-                    <FilePlus className="w-4 h-4" />
-                  </div>
-                  {t.plans.addNote}
+                  <Plus className="w-4 h-4" />
+                  {language === 'cn' ? '新建笔记' : 'New Note'}
+              </button>
+              <button
+                onClick={() => setIsCreatingRootFolder(true)}
+                className="flex items-center gap-1.5 text-[#9CA3AF] text-[12px] hover:text-[#6B7280] transition-colors px-[6px]"
+              >
+                  <Plus className="w-3 h-3" />
+                  {language === 'cn' ? '添加文件夹' : 'Add Folder'}
               </button>
           </div>
-          <div className="flex-1 overflow-y-auto custom-scrollbar px-2 space-y-6">
-              <div>
-                  <div 
-                    className="flex items-center justify-between px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 transition-colors"
-                    onClick={() => setIsFoldersOpen(!isFoldersOpen)}
-                  >
-                      <span>{t.plans.folders}</span>
-                      <ChevronDown className={`w-3 h-3 transition-transform ${isFoldersOpen ? '' : '-rotate-90'}`} />
-                  </div>
-                  {isFoldersOpen && (
-                      <div className="space-y-0.5 mt-1">
-                          <button
-                            onClick={() => setActiveFolder('all')}
-                            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all group relative ${
-                                activeFolder === 'all' 
-                                ? 'bg-[#F3F0FF] dark:bg-indigo-900/20 text-[#7C5CFC] dark:text-indigo-300 font-semibold' 
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                            }`}
+          <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-4">
+              <div className="space-y-0.5">
+                  {/* 所有笔记 */}
+                  {[
+                      { id: 'all', label: language === 'cn' ? '所有笔记' : 'All Notes', icon: FileText },
+                      { id: 'favorites', label: language === 'cn' ? '收藏' : 'Favorites', icon: BookMarked },
+                  ].map(item => {
+                      const isActive = activeFolder === item.id;
+                      return (
+                          <button key={item.id} onClick={() => setActiveFolder(item.id)}
+                            className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${isActive ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
                           >
-                              <div className="flex items-center gap-3">
-                                  {activeFolder === 'all' && <Play className="w-3 h-3 fill-current rotate-0" />}
-                                  {t.plans.allNotes}
-                              </div>
+                              <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
+                              <item.icon className={`w-[13px] h-[13px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
+                              <span className={`text-[13px] flex-1 truncate ${isActive ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{item.label}</span>
+                              <span className={`text-[11px] ml-auto ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`}>
+                                  {item.id === 'all' ? plans.filter(p => !p.isDeleted).length : plans.filter(p => !p.isDeleted && p.focusTickers?.includes('⭐')).length || ''}
+                              </span>
                           </button>
-                          {isCreatingRootFolder && (
-                              <div className="px-3 py-1 animate-fade-in-up">
-                                  <input 
-                                    autoFocus
-                                    type="text" 
-                                    value={newFolderName}
-                                    onChange={(e) => setNewFolderName(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleCreateRootFolder()}
-                                    onBlur={() => handleCreateRootFolder()}
-                                    className="w-full text-sm bg-slate-50 dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded px-2 py-1.5 outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400"
-                                    placeholder="Folder Name..."
-                                  />
-                              </div>
-                          )}
-                          {folders.filter(f => f.parentId === null).map(folder => {
-                              const isExpanded = expandedFolderIds.includes(folder.id);
-                              const subfolders = folders.filter(f => f.parentId === folder.id);
-                              const isMenuOpen = menuOpenFolderId === folder.id;
-                              return (
-                                  <div key={folder.id} className="relative select-none">
-                                      <div className="relative group">
-                                          {editingFolderId === folder.id ? (
-                                              <input 
-                                                autoFocus
-                                                type="text" 
-                                                value={editFolderName}
-                                                onChange={(e) => setEditFolderName(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && saveEditFolder(folder.id)}
-                                                onBlur={() => saveEditFolder(folder.id)}
-                                                className="w-[90%] text-sm bg-slate-50 dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded px-2 py-1 ml-2 outline-none text-slate-800 dark:text-slate-200"
-                                              />
-                                          ) : (
-                                              <div className="relative">
-                                                  <button
-                                                    onClick={() => {
-                                                        setActiveFolder(folder.id);
-                                                        toggleFolderExpand(folder.id);
-                                                    }}
-                                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all relative pr-14 ${
-                                                        activeFolder === folder.id 
-                                                        ? 'bg-[#F3F0FF] dark:bg-indigo-900/20 text-[#7C5CFC] dark:text-indigo-300 font-semibold' 
-                                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                                    }`}
-                                                  >
-                                                      <div className="flex items-center gap-2 overflow-hidden">
-                                                          <div 
-                                                            className={`p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors ${subfolders.length === 0 ? 'invisible' : ''}`}
-                                                            onClick={(e) => { e.stopPropagation(); toggleFolderExpand(folder.id); }}
-                                                          >
-                                                              <ChevronRight className={`w-3 h-3 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
-                                                          </div>
-                                                          <span className="truncate">{folder.name}</span>
-                                                      </div>
-                                                  </button>
-                                                  <div className={`absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 ${isMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
-                                                      <div 
-                                                        onClick={(e) => { e.stopPropagation(); setCreatingSubfolderFor(folder.id); if(!isExpanded) toggleFolderExpand(folder.id); }}
-                                                        className="p-1 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer transition-colors"
-                                                        title="Add Subfolder"
-                                                      >
-                                                          <Plus className="w-3.5 h-3.5" />
-                                                      </div>
-                                                      <div 
-                                                        onClick={(e) => { e.stopPropagation(); setMenuOpenFolderId(isMenuOpen ? null : folder.id); }}
-                                                        className={`p-1 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer transition-colors ${isMenuOpen ? 'text-indigo-500 bg-slate-100 dark:bg-slate-700' : ''}`}
-                                                      >
-                                                          <MoreHorizontal className="w-3.5 h-3.5" />
-                                                      </div>
-                                                  </div>
-                                                  {isMenuOpen && (
-                                                      <div className="absolute right-0 top-8 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 py-1 animate-fade-in-up origin-top-right">
-                                                          <button onClick={(e) => { e.stopPropagation(); startEditFolder(folder.id, folder.name); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200">
-                                                              <Edit2 className="w-3 h-3" /> Rename
-                                                          </button>
-                                                          <button onClick={(e) => { e.stopPropagation(); showShareToast(folder.name); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200">
-                                                              <Share2 className="w-3 h-3" /> Share
-                                                          </button>
-                                                          <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                                                          <button onClick={(e) => { handleDeleteFolder(folder.id); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-rose-500">
-                                                              <Trash2 className="w-3 h-3" /> Delete
-                                                          </button>
-                                                      </div>
-                                                  )}
-                                              </div>
-                                          )}
-                                      </div>
-                                      {isExpanded && (
-                                          <div className="ml-2 border-l border-slate-200 dark:border-slate-800">
-                                              {subfolders.map(sub => {
-                                                  const isSubMenuOpen = menuOpenFolderId === sub.id;
-                                                  return (
-                                                      <div key={sub.id} className="relative group">
-                                                          {editingFolderId === sub.id ? (
-                                                              <input 
-                                                                autoFocus
-                                                                type="text" 
-                                                                value={editFolderName}
-                                                                onChange={(e) => setEditFolderName(e.target.value)}
-                                                                onKeyDown={(e) => e.key === 'Enter' && saveEditFolder(sub.id)}
-                                                                onBlur={() => saveEditFolder(sub.id)}
-                                                                className="w-[90%] ml-4 text-sm bg-slate-50 dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded px-2 py-1 outline-none text-slate-800 dark:text-slate-200"
-                                                              />
-                                                          ) : (
-                                                              <div className="relative">
-                                                                  <button
-                                                                    onClick={() => setActiveFolder(sub.id)}
-                                                                    className={`w-full flex items-center justify-between pl-6 pr-8 py-1.5 rounded-r-lg text-sm transition-all relative ${
-                                                                        activeFolder === sub.id 
-                                                                        ? 'bg-[#F3F0FF] dark:bg-indigo-900/20 text-[#7C5CFC] dark:text-indigo-300 font-medium' 
-                                                                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/30'
-                                                                    }`}
-                                                                  >
-                                                                      <div className="flex items-center gap-2">
-                                                                          <CornerDownRight className="w-3 h-3 text-slate-300 dark:text-slate-600" />
-                                                                          <span className="truncate">{sub.name}</span>
-                                                                      </div>
-                                                                  </button>
-                                                                  <div className={`absolute right-1 top-1/2 -translate-y-1/2 ${isSubMenuOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity`}>
-                                                                      <div 
-                                                                        onClick={(e) => { e.stopPropagation(); setMenuOpenFolderId(isSubMenuOpen ? null : sub.id); }}
-                                                                        className={`p-1 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer transition-colors ${isSubMenuOpen ? 'text-indigo-500 bg-slate-100 dark:bg-slate-700' : ''}`}
-                                                                      >
-                                                                          <MoreHorizontal className="w-3.5 h-3.5" />
-                                                                      </div>
-                                                                  </div>
-                                                                  {isSubMenuOpen && (
-                                                                      <div className="absolute right-0 top-8 w-36 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 py-1 animate-fade-in-up origin-top-right">
-                                                                          <button onClick={(e) => { e.stopPropagation(); startEditFolder(sub.id, sub.name); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                                                              <Edit2 className="w-3 h-3" /> Rename
-                                                                          </button>
-                                                                          <button onClick={(e) => { e.stopPropagation(); initiateMoveFolder(sub.id); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                                                              <FolderInput className="w-3 h-3" /> Move to...
-                                                                          </button>
-                                                                          <button onClick={(e) => { e.stopPropagation(); showShareToast(sub.name); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-2">
-                                                                              <Share2 className="w-3 h-3" /> Share
-                                                                          </button>
-                                                                          <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                                                                          <button onClick={(e) => { handleDeleteFolder(sub.id); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-rose-500 flex items-center gap-2">
-                                                                              <Trash2 className="w-3 h-3" /> Delete
-                                                                          </button>
-                                                                      </div>
-                                                                  )}
-                                                              </div>
-                                                          )}
-                                                      </div>
-                                                  );
-                                              })}
-                                              {creatingSubfolderFor === folder.id && (
-                                                  <div className="pl-6 pr-2 py-1 animate-fade-in-up">
-                                                      <input 
-                                                        autoFocus
-                                                        type="text" 
-                                                        value={newSubfolderName}
-                                                        onChange={(e) => setNewSubfolderName(e.target.value)}
-                                                        onKeyDown={(e) => e.key === 'Enter' && handleCreateSubfolder(folder.id)}
-                                                        onBlur={() => handleCreateSubfolder(folder.id)}
-                                                        className="w-full text-xs bg-slate-50 dark:bg-slate-800 border border-indigo-300 dark:border-indigo-700 rounded px-2 py-1.5 outline-none text-slate-800 dark:text-slate-200 placeholder-slate-400"
-                                                        placeholder="Subfolder Name..."
-                                                      />
-                                                  </div>
-                                              )}
-                                          </div>
-                                      )}
-                                  </div>
-                              );
-                          })}
-                          <div className="my-2 border-t border-slate-100 dark:border-slate-800"></div>
-                          {systemFolders.map(folder => {
-                              if (folder.id === 'templates') {
-                                  return (
-                                      <div key={folder.id}>
-                                          <button
-                                            onClick={() => {
-                                                setIsTemplatesOpen(!isTemplatesOpen);
-                                            }}
-                                            className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all group relative ${
-                                                isTemplatesOpen 
-                                                ? 'bg-[#F3F0FF] dark:bg-indigo-900/20 text-[#7C5CFC] dark:text-indigo-300 font-semibold' 
-                                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                            }`}
-                                          >
-                                              <div className="flex items-center gap-3">
-                                                  <folder.icon className={`w-4 h-4 ${isTemplatesOpen ? 'text-[#7C5CFC] dark:text-indigo-300' : 'text-slate-400'}`} />
-                                                  {folder.label}
-                                              </div>
-                                              <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isTemplatesOpen ? 'rotate-180' : ''}`} />
-                                          </button>
-                                          {isTemplatesOpen && (
-                                              <div className="pl-9 pr-2 space-y-0.5 mt-1 animate-fade-in-up origin-top">
-                                                  {getTemplates(language).map(t => (
-                                                      <button
-                                                          key={t.id}
-                                                          onClick={(e) => handleInsertTemplate(t.content)}
-                                                          className="w-full text-left text-xs py-1.5 px-2 rounded-md truncate transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-50 flex items-center gap-2 group"
-                                                          title="Click to insert"
-                                                      >
-                                                          <Wand2 className="w-3 h-3 opacity-50 group-hover:opacity-100 group-hover:text-indigo-50" />
-                                                          {t.name}
-                                                      </button>
-                                                  ))}
-                                                  {savedTemplates.length > 0 && <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>}
-                                                  {savedTemplates.map(t => (
-                                                      <div key={t.id} className="relative group">
-                                                          <button
-                                                              onClick={(e) => handleInsertTemplate(t.content)}
-                                                              className="w-full text-left text-xs py-1.5 px-2 pr-6 rounded-md truncate transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-2 group"
-                                                              title="Click to insert"
-                                                          >
-                                                              <Wand2 className="w-3 h-3 opacity-50 group-hover:opacity-100 group-hover:text-indigo-50" />
-                                                              {t.title}
-                                                          </button>
-                                                          <button 
-                                                              onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleSoftDelete(e, t); }}
-                                                              className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"
-                                                              title="Delete Template"
-                                                          >
-                                                              <Trash2 className="w-3 h-3" />
-                                                          </button>
-                                                      </div>
-                                                  ))}
-                                              </div>
-                                          )}
-                                      </div>
-                                  );
-                              }
-                              return (
-                                <button
-                                    key={folder.id}
-                                    onClick={() => setActiveFolder(folder.id)}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all group relative ${
-                                        activeFolder === folder.id 
-                                        ? 'bg-[#F3F0FF] dark:bg-indigo-900/20 text-[#7C5CFC] dark:text-indigo-300 font-semibold' 
-                                        : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <folder.icon className={`w-4 h-4 ${activeFolder === folder.id ? 'text-[#7C5CFC] dark:text-indigo-300' : 'text-slate-400'}`} />
-                                        {folder.label}
-                                    </div>
-                                </button>
-                              );
-                          })}
+                      );
+                  })}
 
-                          <div className="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                                <button 
-                                    onClick={() => setActiveFolder('trash')}
-                                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all group relative ${
-                                        activeFolder === 'trash' 
-                                        ? 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 font-bold' 
-                                        : 'text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/10'
-                                    }`}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <Trash2 className="w-4 h-4" />
-                                        {language === 'cn' ? '回收站' : 'Recently Deleted'}
-                                    </div>
-                                    {trashCount > 0 && (
-                                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${activeFolder === 'trash' ? 'bg-rose-600 text-white' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}`}>{trashCount}</span>
-                                    )}
-                                </button>
-                          </div>
-                      </div>
-                  )}
-              </div>
-              <div>
-                  <div 
-                    className="flex items-center justify-between px-2 py-2 text-xs font-bold text-slate-400 uppercase tracking-wider cursor-pointer hover:text-slate-600 transition-colors"
-                    onClick={() => setIsTagsOpen(!isTagsOpen)}
+                  {/* 分组分隔线 */}
+                  <div className="my-2 border-t border-[#F3F4F6] dark:border-slate-800 mx-1" />
+
+                  {/* 交易笔记分类 */}
+                  {[
+                      { id: 'trade-notes', label: language === 'cn' ? '交易笔记' : 'Trade Notes', icon: FileText },
+                      { id: 'daily-journal', label: language === 'cn' ? '每日复盘' : 'Daily Review', icon: Calendar },
+                      { id: 'weekly-review', label: language === 'cn' ? '周度复盘' : 'Weekly Review', icon: TrendingUp },
+                      { id: 'monthly-review', label: language === 'cn' ? '月度复盘' : 'Monthly Review', icon: BarChart3 },
+                      { id: 'chart-analysis', label: language === 'cn' ? '图表分析' : 'Chart Analysis', icon: CandlestickChart },
+                  ].map(item => {
+                      const isActive = activeFolder === item.id;
+                      const count = plans.filter(p => !p.isDeleted && p.folder === item.id).length;
+                      return (
+                          <button key={item.id} onClick={() => setActiveFolder(item.id)}
+                            className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${isActive ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
+                          >
+                              <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
+                              <item.icon className={`w-[13px] h-[13px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
+                              <span className={`text-[13px] flex-1 truncate ${isActive ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{item.label}</span>
+                              {count > 0 && <span className={`text-[11px] ml-auto ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`}>{count}</span>}
+                          </button>
+                      );
+                  })}
+
+                  {/* 分组分隔线 */}
+                  <div className="my-2 border-t border-[#F3F4F6] dark:border-slate-800 mx-1" />
+
+                  {/* 标签 */}
+                  <button onClick={() => setActiveFolder('tags')}
+                    className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${activeFolder === 'tags' ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
                   >
-                      <span>{t.plans.tags}</span>
-                      <ChevronDown className={`w-3 h-3 transition-transform ${isTagsOpen ? '' : '-rotate-90'}`} />
-                  </div>
-                  {isTagsOpen && (
-                      <div className="mt-1 space-y-1">
-                          {uniqueTags.length === 0 && <p className="px-3 text-xs text-slate-400 italic">No tags yet</p>}
-                          {uniqueTags.map((tag, i) => (
-                              <div key={i} className="px-3 py-1.5 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg cursor-pointer">
-                                  <span className="w-2 h-2 rounded-full bg-indigo-200 dark:bg-indigo-800"></span>
-                                  {tag}
-                                  <span className="ml-auto text-xs text-slate-300">1</span>
-                              </div>
-                          ))}
+                      <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${activeFolder === 'tags' ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
+                      <Tag className={`w-[13px] h-[13px] flex-shrink-0 ${activeFolder === 'tags' ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
+                      <span className={`text-[13px] flex-1 ${activeFolder === 'tags' ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{language === 'cn' ? '标签' : 'Tags'}</span>
+                  </button>
+
+                  {/* 回收站 */}
+                  <button onClick={() => setActiveFolder('trash')}
+                    className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${activeFolder === 'trash' ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
+                  >
+                      <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${activeFolder === 'trash' ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
+                      <Trash2 className={`w-[13px] h-[13px] flex-shrink-0 ${activeFolder === 'trash' ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
+                      <span className={`text-[13px] flex-1 ${activeFolder === 'trash' ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{language === 'cn' ? '回收站' : 'Trash'}</span>
+                      {trashCount > 0 && <span className={`text-[11px] ml-auto ${activeFolder === 'trash' ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`}>{trashCount}</span>}
+                  </button>
+
+                  {/* 自定义文件夹（保留功能） */}
+                  {isCreatingRootFolder && (
+                      <div className="px-2 py-1">
+                          <input autoFocus type="text" value={newFolderName}
+                            onChange={(e) => setNewFolderName(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleCreateRootFolder()}
+                            onBlur={() => handleCreateRootFolder()}
+                            className="w-full text-[13px] bg-[#F9FAFB] dark:bg-slate-800 border border-[#6366F1] rounded-[6px] px-2 py-1.5 outline-none text-[#1F2937] dark:text-slate-200 placeholder-[#9CA3AF]"
+                            placeholder={language === 'cn' ? '文件夹名称...' : 'Folder name...'}
+                          />
                       </div>
                   )}
               </div>
           </div>
       </div>
-      <div className="w-80 border-r border-slate-200 dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900 flex-shrink-0">
-          <div className="p-3 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 z-20">
+      <div className="border-r border-[#E5E7EB] dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900 flex-shrink-0" style={{ width: '280px' }}>
+          <div className="p-3 border-b border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-slate-900 z-20">
               <div className="relative mb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <input 
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[13px] h-[13px] text-[#9CA3AF]" />
+                  <input
                       ref={searchInputRef}
-                      type="text" 
-                      placeholder={language === 'cn' ? "搜索笔记 (F6)" : "Search notes (F6)"} 
+                      type="text"
+                      placeholder={language === 'cn' ? "搜索笔记" : "Search notes"}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-slate-50 dark:bg-slate-800 border-none rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all placeholder-slate-400"
+                      className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] pl-8 pr-10 py-2 text-[12px] outline-none focus:border-[#6366F1] transition-colors placeholder-[#9CA3AF] text-[#1F2937] dark:text-slate-200"
                   />
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#9CA3AF] bg-white dark:bg-slate-700 border border-[#E5E7EB] dark:border-slate-600 rounded px-1 py-0.5">F6</span>
               </div>
-              <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-0">
-                   <button 
-                      onClick={() => { setActiveFolder('all'); setSearchScope('all'); }}
-                      className={`px-3 py-1 rounded-full text-xs font-bold transition-all border whitespace-nowrap ${activeFolder === 'all' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-300 border-indigo-200 dark:border-indigo-800' : 'bg-transparent text-slate-500 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                   >
-                      {t.plans.allNotes}
-                   </button>
-                   {activeFolder !== 'all' && activeFolder !== 'trash' && (
-                       <button 
-                          onClick={() => setSearchScope('current')}
-                          className={`px-3 py-1 rounded-full text-xs font-bold transition-all border whitespace-nowrap flex items-center gap-1 ${searchScope === 'current' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-transparent text-slate-500 border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                       >
-                          <Folder className="w-3 h-3" />
-                          {currentFolderName}
-                       </button>
-                   )}
-              </div>
+              {activeFolder !== 'all' && activeFolder !== 'trash' && (
+                  <div className="flex items-center gap-2 pb-1">
+                      <span className="px-[10px] py-[3px] bg-[#EEF0FF] text-[#6366F1] text-[11px] font-medium rounded-[10px]">{currentFolderName}</span>
+                  </div>
+              )}
           </div>
-          <div className="p-3 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center relative bg-slate-50/50 dark:bg-slate-900">
-                <div className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.plans.selectAll}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <div className="relative">
-                        <button 
-                            onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-                            className={`p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${isSortMenuOpen ? 'text-indigo-600 dark:text-indigo-400 bg-slate-100 dark:bg-slate-800' : 'text-slate-400 dark:text-slate-500'}`}
-                            title="Sort by..."
-                        >
-                            <ArrowUpDown className="w-4 h-4" />
-                        </button>
-                        {isSortMenuOpen && (
-                            <div className="absolute right-0 top-8 w-40 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 animate-fade-in-up origin-top-right z-30">
-                                {[
-                                    { id: 'updated', label: language === 'cn' ? '更新时间' : 'Updated' },
-                                    { id: 'created', label: language === 'cn' ? '创建时间' : 'Created' },
-                                    { id: 'title', label: language === 'cn' ? '标题' : 'Title' },
-                                    { id: 'tag', label: language === 'cn' ? '标签' : 'Tag' },
-                                ].map((option) => (
-                                    <button
-                                        key={option.id}
-                                        onClick={() => { setSortType(option.id as SortType); setIsSortMenuOpen(false); }}
-                                        className="w-full text-left px-3 py-2 text-xs flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"
-                                    >
-                                        {option.label}
-                                        {sortType === option.id && <Check className="w-3 h-3 text-indigo-500" />}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                </div>
+          <div className="px-4 py-2 border-b border-[#E5E7EB] dark:border-slate-800 flex justify-between items-center">
+              <span className="text-[11px] text-[#9CA3AF]">{filteredPlans.length} {language === 'cn' ? '篇' : 'notes'}</span>
+              <div className="relative">
+                  <button
+                      onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
+                      className="flex items-center gap-1 text-[11px] text-[#6B7280] hover:text-[#1F2937] dark:hover:text-slate-200 transition-colors"
+                  >
+                      {language === 'cn' ? '最新' : 'Latest'} <ChevronDown className="w-3 h-3" />
+                  </button>
+                  {isSortMenuOpen && (
+                      <div className="absolute right-0 top-6 w-36 bg-white dark:bg-slate-800 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-700 py-1 z-30">
+                          {[
+                              { id: 'updated', label: language === 'cn' ? '更新时间' : 'Updated' },
+                              { id: 'created', label: language === 'cn' ? '创建时间' : 'Created' },
+                              { id: 'title', label: language === 'cn' ? '标题' : 'Title' },
+                          ].map((option) => (
+                              <button key={option.id} onClick={() => { setSortType(option.id as SortType); setIsSortMenuOpen(false); }}
+                                className="w-full text-left px-3 py-2 text-[12px] flex items-center justify-between hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"
+                              >
+                                  {option.label}
+                                  {sortType === option.id && <Check className="w-3 h-3 text-[#6366F1]" />}
+                              </button>
+                          ))}
+                      </div>
+                  )}
+              </div>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
               {filteredPlans.length === 0 ? (
-                  <div className="p-8 text-center text-slate-400 text-sm italic">
+                  <div className="p-8 text-center text-[#9CA3AF] text-[13px]">
                       {activeFolder === 'trash' ? (language === 'cn' ? '回收站为空' : 'Trash is empty') : t.plans.noNotes}
                   </div>
               ) : (
                   filteredPlans.map(plan => {
                       const isSelected = selectedPlanId === plan.id;
                       const linkedTrades = trades.filter(t => plan.linkedTradeIds?.includes(t.id));
-                      let displayPnl = null;
+                      let displayPnl: number | null = null;
                       if (linkedTrades.length > 0) displayPnl = linkedTrades.reduce((acc, t) => acc + t.pnl - t.fees, 0);
                       const isMenuOpen = noteMenuOpenId === plan.id;
+                      const relativeTime = (() => {
+                          const now = Date.now();
+                          const created = parseInt(plan.id) || new Date(plan.date).getTime();
+                          const diff = now - created;
+                          if (diff < 3600000) return `${Math.max(1, Math.floor(diff / 60000))} ${language === 'cn' ? '分钟前' : 'min ago'}`;
+                          if (diff < 86400000) return `${Math.floor(diff / 3600000)} ${language === 'cn' ? '小时前' : 'hr ago'}`;
+                          return `${Math.floor(diff / 86400000)} ${language === 'cn' ? '天前' : 'd ago'}`;
+                      })();
+                      const dateLabel = (() => {
+                          const d = new Date(plan.date + 'T00:00:00');
+                          return language === 'cn'
+                              ? `${d.getMonth() + 1} 月 ${d.getDate()} 日`
+                              : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                      })();
+                      const previewText = plan.content ? plan.content.replace(/<[^>]+>/g, '').slice(0, 80) : '';
                       return (
-                        <div 
+                        <div
                             key={plan.id}
                             onClick={() => setSelectedPlanId(plan.id)}
-                            className={`p-4 border-b border-slate-50 dark:border-slate-800 cursor-pointer transition-all hover:bg-slate-50 dark:hover:bg-slate-800/50 group relative
-                                ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20 border-l-4 border-l-indigo-500' : 'border-l-4 border-l-transparent'}
-                                ${isMenuOpen ? 'z-[25]' : 'z-0'}
-                                ${plan.isDeleted ? 'opacity-70 grayscale-[0.5]' : ''}
-                            `}
+                            className={`cursor-pointer transition-all group relative ${isMenuOpen ? 'z-[25]' : 'z-0'} ${plan.isDeleted ? 'opacity-70' : ''}`}
+                            style={{
+                                padding: '12px 14px',
+                                borderBottom: '0.5px solid #F3F4F6',
+                                borderLeft: isSelected ? '2px solid #6366F1' : '2px solid transparent',
+                                paddingLeft: isSelected ? '12px' : '14px',
+                                background: isSelected ? '#EEF0FF' : undefined,
+                            }}
                         >
-                            <div className="flex justify-between items-start mb-1">
-                                <h4 className={`text-sm font-bold truncate pr-2 ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-800 dark:text-slate-200'}`}>
+                            <div className="flex justify-between items-start mb-0.5">
+                                <h4 className={`text-[13px] truncate pr-2 flex-1 ${isSelected ? 'font-medium text-[#1F2937] dark:text-indigo-100' : 'font-normal text-[#1F2937] dark:text-slate-200'}`}>
                                     {plan.title || plan.date}
                                 </h4>
-                                {plan.focusTickers && plan.focusTickers.length > 0 && (
-                                    <div className="flex gap-1">
-                                        {plan.focusTickers.slice(0, 2).map((tag, i) => (
-                                            <span key={i} className="w-2 h-2 rounded-full bg-indigo-400" title={tag}></span>
-                                        ))}
-                                    </div>
+                                {displayPnl !== null ? (
+                                    <span className={`text-[11px] font-medium flex-shrink-0 ${displayPnl >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
+                                        {displayPnl >= 0 ? `+$${displayPnl.toFixed(0)}` : `-$${Math.abs(displayPnl).toFixed(0)}`}
+                                    </span>
+                                ) : (
+                                    <span className="text-[11px] font-medium text-[#9CA3AF] flex-shrink-0">$0</span>
                                 )}
                             </div>
-                            {displayPnl !== null && (
-                                <div className={`text-xs font-mono font-bold mb-1 ${displayPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                                    {t.dashboard.netPnl}: {displayPnl >= 0 ? '+' : ''}${displayPnl.toFixed(2)}
+                            <p className="text-[11px] text-[#9CA3AF] mb-0.5">{dateLabel} · {relativeTime}</p>
+                            {previewText && (
+                                <p className="text-[12px] text-[#6B7280] dark:text-slate-400 overflow-hidden" style={{ lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                                    {previewText}
+                                </p>
+                            )}
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                {plan.isDeleted && (
+                                    <button onClick={(e) => handleRestore(e, plan)} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] hover:text-[#10B981] transition-colors" title="Restore"><Undo2 className="w-3.5 h-3.5" /></button>
+                                )}
+                                <button onClick={(e) => handleSoftDelete(e, plan)} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] hover:text-[#EF4444] transition-colors" title={plan.isDeleted ? 'Delete' : 'Trash'}><Trash2 className="w-3.5 h-3.5" /></button>
+                                {!plan.isDeleted && (
+                                    <button onClick={(e) => { e.stopPropagation(); setNoteMenuOpenId(isMenuOpen ? null : plan.id); }} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                                )}
+                            </div>
+                            {isMenuOpen && !plan.isDeleted && (
+                                <div className="absolute right-0 top-10 w-40 bg-white dark:bg-slate-800 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-700 z-50 py-1">
+                                    <button onClick={(e) => { e.stopPropagation(); setSelectedPlanId(plan.id); setNoteMenuOpenId(null); }} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Folder className="w-3 h-3" /> Open</button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleDuplicatePlan(plan); }} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Copy className="w-3 h-3" /> Duplicate</button>
+                                    <button onClick={(e) => { e.stopPropagation(); showShareToast(plan.title || 'Note'); }} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Share2 className="w-3 h-3" /> Share</button>
+                                    <div className="h-px bg-[#F3F4F6] dark:bg-slate-700 my-1"></div>
+                                    <button onClick={(e) => { e.stopPropagation(); handleExport(plan, 'pdf'); }} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Printer className="w-3 h-3" /> Export PDF</button>
+                                    <div className="h-px bg-[#F3F4F6] dark:bg-slate-700 my-1"></div>
+                                    <button onClick={(e) => handleSoftDelete(e, plan)} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-red-50 dark:hover:bg-rose-900/20 text-[#EF4444]"><Trash2 className="w-3 h-3" /> {language === 'cn' ? '移至回收站' : 'Move to Trash'}</button>
                                 </div>
                             )}
-                            <div className="flex justify-between items-center relative">
-                                <p className="text-xs text-slate-400 dark:text-slate-500">
-                                    {new Date(plan.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                                </p>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    {plan.isDeleted && (
-                                        <button onClick={(e) => handleRestore(e, plan)} className="p-1 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/30 text-slate-400 hover:text-emerald-500 transition-colors" title="Restore"><Undo2 className="w-3.5 h-3.5" /></button>
-                                    )}
-                                    <button onClick={(e) => handleSoftDelete(e, plan)} className="p-1 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 transition-colors" title={plan.isDeleted ? "Permanent Delete" : "Move to Trash"}><Trash2 className="w-3.5 h-3.5" /></button>
-                                    {!plan.isDeleted && (
-                                        <button onClick={(e) => { e.stopPropagation(); setNoteMenuOpenId(isMenuOpen ? null : plan.id); }} className={`p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-400 transition-colors ${isMenuOpen ? 'opacity-100 bg-slate-200 dark:bg-slate-700 text-slate-600' : ''}`}><MoreHorizontal className="w-4 h-4" /></button>
-                                    )}
-                                </div>
-                                {isMenuOpen && !plan.isDeleted && (
-                                    <div className="absolute right-0 top-6 w-40 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 py-1 animate-fade-in-up origin-top-right">
-                                        <button onClick={(e) => { e.stopPropagation(); setSelectedPlanId(plan.id); setNoteMenuOpenId(null); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Folder className="w-3 h-3" /> Open</button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleDuplicatePlan(plan); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Copy className="w-3 h-3" /> Duplicate</button>
-                                        <button onClick={(e) => { e.stopPropagation(); showShareToast(plan.title || 'Note'); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Share2 className="w-3 h-3" /> Share</button>
-                                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                                        <button onClick={(e) => { e.stopPropagation(); handleExport(plan, 'word'); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><FileDown className="w-3 h-3" /> Export Word</button>
-                                        <button onClick={(e) => { e.stopPropagation(); handleExport(plan, 'pdf'); }} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Printer className="w-3 h-3" /> Export PDF</button>
-                                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                                        <button onClick={(e) => handleSoftDelete(e, plan)} className="w-full text-left px-3 py-2 text-xs flex items-center gap-2 hover:bg-rose-50 dark:hover:bg-rose-900/20 text-rose-500"><Trash2 className="w-3 h-3" /> {language === 'cn' ? '移至回收站' : 'Move to Trash'}</button>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                       );
                   })
@@ -1294,94 +1060,127 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
       <div className="flex-1 flex flex-col bg-slate-50/50 dark:bg-slate-950/30 relative overflow-hidden">
           {activePlan ? (
               <div className="flex flex-col h-full">
-                <div className="px-8 pt-6 pb-2 flex items-start justify-between relative">
+                <div className="px-10 pt-7 pb-2 flex items-start justify-between relative">
                     <div className="flex-1">
-                        <input type="text" placeholder={t.plans.untitled} value={activePlan.title || ''} onChange={(e) => handleUpdateActivePlan({ title: e.target.value })} className="w-full text-3xl font-bold text-slate-900 dark:text-white bg-transparent border-none outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 mb-1" />
-                        <div className="flex items-center gap-4 text-xs text-slate-400 mb-2">
-                            <span>{t.plans.created}: {new Date(parseInt(activePlan.id) || Date.now()).toLocaleString()}</span>
-                            <span>{t.plans.lastUpdated}: {new Date().toLocaleTimeString()}</span>
-                            <span className={`flex items-center gap-1 transition-colors duration-300 ${saveStatus === 'saving' ? 'text-indigo-500' : 'text-emerald-500'}`}>
-                                {saveStatus === 'saving' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Cloud className="w-3 h-3" />}
+                        <input type="text" placeholder={t.plans.untitled} value={activePlan.title || ''} onChange={(e) => handleUpdateActivePlan({ title: e.target.value })} className="w-full bg-transparent border-none outline-none placeholder:text-[#9CA3AF] dark:placeholder:text-slate-700 mb-1" style={{ fontSize: '22px', fontWeight: 600, color: '#1F2937', lineHeight: '1.3' }} />
+                        {/* 元信息行 */}
+                        <div className="flex items-center gap-1.5 text-[11px] text-[#9CA3AF] mb-5">
+                            <span>{language === 'cn' ? '创建' : 'Created'} {new Date(parseInt(activePlan.id) || Date.now()).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>·</span>
+                            <span>{language === 'cn' ? '最后更新' : 'Updated'} {new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
+                            <span>·</span>
+                            <span className={`flex items-center gap-1 ${saveStatus === 'saving' ? 'text-[#6366F1]' : 'text-[#10B981]'}`}>
+                                {saveStatus === 'saving' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                                 {saveStatus === 'saving' ? (language === 'cn' ? '保存中...' : 'Saving...') : (language === 'cn' ? '已自动保存' : 'Auto Saved')}
                             </span>
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            {activePlan.focusTickers?.map(tag => (
-                                <span key={tag} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold border border-indigo-100 dark:border-indigo-500/20">#{tag}<button onClick={() => handleRemoveTag(tag)} className="hover:text-rose-500"><X className="w-3 h-3" /></button></span>
-                            ))}
-                        </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                         {activePlan.isDeleted && (
-                            <button onClick={(e) => handleRestore(e, activePlan)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-bold shadow-lg transition-all"><Undo2 className="w-4 h-4" /> {language === 'cn' ? '恢复笔记' : 'Restore Note'}</button>
+                            <button onClick={(e) => handleRestore(e, activePlan)} className="flex items-center gap-2 px-3 py-1.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-[8px] text-[13px] font-medium transition-colors"><Undo2 className="w-4 h-4" /> {language === 'cn' ? '恢复笔记' : 'Restore'}</button>
                         )}
-                        <button onClick={(e) => handleSoftDelete(e, activePlan)} className="p-2 hover:bg-rose-100 dark:hover:bg-rose-900/30 text-slate-400 hover:text-rose-500 rounded-full transition-colors" title={activePlan.isDeleted ? 'Permanent Delete' : t.plans.delete}><Trash2 className="w-5 h-5" /></button>
+                        <button onClick={(e) => handleSoftDelete(e, activePlan)} className="w-[30px] h-[30px] flex items-center justify-center hover:bg-[#F9FAFB] dark:hover:bg-slate-800 text-[#6B7280] hover:text-[#EF4444] rounded-[6px] transition-colors" title={activePlan.isDeleted ? 'Delete' : t.plans.delete}><Trash2 className="w-4 h-4" /></button>
                         {!activePlan.isDeleted && (
                             <div className="relative">
-                                <button onClick={() => setEditorMenuOpen(!editorMenuOpen)} className={`p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full text-slate-400 transition-colors ${editorMenuOpen ? 'bg-slate-200 dark:bg-slate-800 text-slate-600' : ''}`}><MoreHorizontal className="w-5 h-5" /></button>
+                                <button onClick={() => setEditorMenuOpen(!editorMenuOpen)} className={`w-[30px] h-[30px] flex items-center justify-center hover:bg-[#F9FAFB] dark:hover:bg-slate-800 text-[#6B7280] rounded-[6px] transition-colors ${editorMenuOpen ? 'bg-[#F9FAFB] dark:bg-slate-800' : ''}`}><MoreHorizontal className="w-4 h-4" /></button>
                                 {editorMenuOpen && (
-                                    <div className="absolute right-0 top-10 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-30 py-1 animate-fade-in-up origin-top-right">
-                                        <button onClick={() => handleDuplicatePlan(activePlan)} className="w-full text-left px-3 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Copy className="w-4 h-4 text-slate-400" /> Duplicate Note</button>
-                                        <button onClick={() => showShareToast(activePlan.title || 'Note')} className="w-full text-left px-3 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Share2 className="w-4 h-4 text-slate-400" /> Share Link</button>
-                                        <div className="h-px bg-slate-100 dark:bg-slate-700 my-1"></div>
-                                        <button onClick={() => handleExport(activePlan, 'word')} className="w-full text-left px-3 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><FileDown className="w-4 h-4 text-slate-400" /> Export as Word</button>
-                                        <button onClick={() => handleExport(activePlan, 'pdf')} className="w-full text-left px-3 py-2 text-sm flex items-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200"><Printer className="w-4 h-4 text-slate-400" /> Print / PDF</button>
+                                    <div className="absolute right-0 top-9 w-44 bg-white dark:bg-slate-800 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-700 z-30 py-1">
+                                        <button onClick={() => handleDuplicatePlan(activePlan)} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Copy className="w-4 h-4 text-[#6B7280]" /> Duplicate</button>
+                                        <button onClick={() => showShareToast(activePlan.title || 'Note')} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Share2 className="w-4 h-4 text-[#6B7280]" /> Share</button>
+                                        <div className="h-px bg-[#F3F4F6] dark:bg-slate-700 my-1"></div>
+                                        <button onClick={() => handleExport(activePlan, 'pdf')} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Printer className="w-4 h-4 text-[#6B7280]" /> Export PDF</button>
                                     </div>
                                 )}
                             </div>
                         )}
                     </div>
                 </div>
-                <div className="flex-1 overflow-y-auto px-8 pb-8 custom-scrollbar">
-                    {activePlanTrades.length > 0 ? (
-                        <TradeSummaryCard trades={activePlanTrades} onViewDetails={openLinkTradeModal} />
-                    ) : (
-                        <div className="mb-6 p-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl flex items-center justify-center">
-                            <button onClick={openLinkTradeModal} className="flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors py-2 px-4"><LinkIcon className="w-4 h-4" />{t.plans.linkTradesBtn}</button>
+                <div className="flex-1 overflow-y-auto px-10 pb-8 custom-scrollbar">
+                    {/* Net P&L 信息卡 */}
+                    {activePlanTrades.length > 0 ? (() => {
+                        const netPnl = activePlanTrades.reduce((acc, t) => acc + t.pnl - t.fees, 0);
+                        const winCount = activePlanTrades.filter(t => t.pnl - t.fees > 0).length;
+                        const winRate = activePlanTrades.length > 0 ? Math.round((winCount / activePlanTrades.length) * 100) : 0;
+                        return (
+                            <div className="mb-5 bg-[#F9FAFB] dark:bg-slate-800/50 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] px-4 py-3 flex items-center">
+                                <div className="flex items-center gap-6 flex-1">
+                                    <div>
+                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5">{language === 'cn' ? '当日净盈亏' : 'Net P&L'}</p>
+                                        <p className={`text-[15px] font-semibold ${netPnl >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>{netPnl >= 0 ? '+' : ''}${netPnl.toFixed(2)}</p>
+                                    </div>
+                                    <div className="w-px h-8 bg-[#E5E7EB] dark:bg-slate-700" />
+                                    <div>
+                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5">{language === 'cn' ? '交易' : 'Trades'}</p>
+                                        <p className="text-[13px] font-medium text-[#1F2937] dark:text-slate-200">{activePlanTrades.length}</p>
+                                    </div>
+                                    <div className="w-px h-8 bg-[#E5E7EB] dark:bg-slate-700" />
+                                    <div>
+                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5">{language === 'cn' ? '胜率' : 'Win Rate'}</p>
+                                        <p className="text-[13px] font-medium text-[#1F2937] dark:text-slate-200">{winRate}%</p>
+                                    </div>
+                                </div>
+                                <button onClick={openLinkTradeModal} className="text-[11px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors flex-shrink-0">
+                                    {language === 'cn' ? '查看交易 →' : 'View Trades →'}
+                                </button>
+                            </div>
+                        );
+                    })() : (
+                        <div className="mb-5 bg-[#F9FAFB] dark:bg-slate-800/50 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] px-4 py-3 flex items-center justify-between">
+                            <span className="text-[12px] text-[#9CA3AF]">{language === 'cn' ? '当日无交易记录' : 'No trades for this day'}</span>
+                            <button onClick={openLinkTradeModal} className="text-[11px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+                                {language === 'cn' ? '添加一笔交易 →' : 'Link a trade →'}
+                            </button>
                         </div>
                     )}
-                    <div className="flex items-center gap-3 mb-4 relative">
+                    {/* 快捷按钮行 */}
+                    <div className="flex items-center gap-2 mb-5 flex-wrap">
                         <div className="relative">
-                             <button onClick={() => setFolderSelectorOpen(!folderSelectorOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors">{activePlan.isDeleted ? <Trash2 className="w-4 h-4 text-rose-500" /> : <Folder className="w-4 h-4 text-slate-400" />}{activePlan.isDeleted ? (language === 'cn' ? '回收站' : 'Trash') : getFolderNameById(activePlan.folder)}<ChevronDown className="w-3 h-3 text-slate-400" /></button>
-                             {folderSelectorOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 z-20 p-1 animate-fade-in-up max-h-60 overflow-y-auto">
-                                    <div className="px-2 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.plans.folders}</div>
-                                    {systemFolders.filter(f => f.id !== 'templates').map(f => (
-                                        <button key={f.id} onClick={() => { handleUpdateActivePlan({ folder: f.id, isDeleted: false }); setFolderSelectorOpen(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 ${!activePlan.isDeleted && activePlan.folder === f.id ? 'text-indigo-600 font-bold bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-300'}`}><f.icon className="w-4 h-4" />{f.label}</button>
+                            <button onClick={() => setFolderSelectorOpen(!folderSelectorOpen)} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
+                                <Folder className="w-3.5 h-3.5 text-[#6B7280]" />
+                                {activePlan.isDeleted ? (language === 'cn' ? '回收站' : 'Trash') : getFolderNameById(activePlan.folder)}
+                                <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+                            </button>
+                            {folderSelectorOpen && (
+                                <div className="absolute top-full left-0 mt-1 w-52 bg-white dark:bg-slate-900 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-800 z-20 p-1 max-h-60 overflow-y-auto">
+                                    {[
+                                        { id: 'trade-notes', label: language === 'cn' ? '交易笔记' : 'Trade Notes' },
+                                        { id: 'daily-journal', label: language === 'cn' ? '每日复盘' : 'Daily Review' },
+                                        { id: 'weekly-review', label: language === 'cn' ? '周度复盘' : 'Weekly Review' },
+                                        { id: 'monthly-review', label: language === 'cn' ? '月度复盘' : 'Monthly Review' },
+                                        { id: 'chart-analysis', label: language === 'cn' ? '图表分析' : 'Chart Analysis' },
+                                    ].map(f => (
+                                        <button key={f.id} onClick={() => { handleUpdateActivePlan({ folder: f.id, isDeleted: false }); setFolderSelectorOpen(false); }}
+                                          className={`w-full text-left px-3 py-2 text-[13px] rounded-[6px] hover:bg-[#F9FAFB] dark:hover:bg-slate-800 transition-colors flex items-center gap-2 ${!activePlan.isDeleted && activePlan.folder === f.id ? 'text-[#6366F1] font-medium bg-[#EEF0FF] dark:bg-indigo-900/20' : 'text-[#4B5563] dark:text-slate-300'}`}>
+                                            <Folder className="w-3.5 h-3.5" />{f.label}
+                                        </button>
                                     ))}
-                                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                                    {folders.length > 0 && (
-                                        <>
-                                            {folders.filter(f => f.parentId === null).map(f => (
-                                                <React.Fragment key={f.id}>
-                                                    <button key={f.id} onClick={() => { handleUpdateActivePlan({ folder: f.id, isDeleted: false }); setFolderSelectorOpen(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 ${!activePlan.isDeleted && activePlan.folder === f.id ? 'text-indigo-600 font-bold bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-600 dark:text-slate-300'}`}><Folder className="w-4 h-4" />{f.name}</button>
-                                                    {folders.filter(sub => sub.parentId === f.id).map(sub => (
-                                                        <button key={sub.id} onClick={() => { handleUpdateActivePlan({ folder: sub.id, isDeleted: false }); setFolderSelectorOpen(false); }} className={`w-full text-left pl-8 pr-3 py-2 text-sm rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 ${!activePlan.isDeleted && activePlan.folder === sub.id ? 'text-indigo-600 font-bold bg-indigo-50 dark:bg-indigo-900/20' : 'text-slate-50 dark:text-slate-400'}`}><CornerDownRight className="w-3 h-3" />{sub.name}</button>
-                                                    ))}
-                                                </React.Fragment>
-                                            ))}
-                                        </>
-                                    )}
-                                    <div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>
-                                    <button onClick={() => { handleUpdateActivePlan({ isDeleted: true }); setFolderSelectorOpen(false); }} className={`w-full text-left px-3 py-2 text-sm rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center gap-2 ${activePlan.isDeleted ? 'text-rose-600 font-bold bg-rose-50 dark:bg-rose-900/20' : 'text-slate-500 dark:text-slate-400'}`}><Trash2 className="w-4 h-4" />{language === 'cn' ? '回收站' : 'Recently Deleted'}</button>
                                 </div>
-                             )}
+                            )}
                         </div>
                         <div className="relative">
-                            <button onClick={() => setIsTagPopoverOpen(!isTagPopoverOpen)} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors"><Tag className="w-4 h-4 text-slate-400" />{t.plans.addTag}<ChevronDown className="w-3 h-3 text-slate-400" /></button>
+                            <button onClick={() => setIsTagPopoverOpen(!isTagPopoverOpen)} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
+                                <Tag className="w-3.5 h-3.5 text-[#6B7280]" />
+                                {language === 'cn' ? '添加标签' : 'Add Tag'}
+                            </button>
                             {isTagPopoverOpen && (
-                                <div className="absolute top-full left-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-20 p-3 animate-fade-in-up">
-                                    <input type="text" autoFocus placeholder="Type tag name..." className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 mb-2" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(newTagInput); }} />
-                                    <div className="flex flex-wrap gap-2">
+                                <div className="absolute top-full left-0 mt-1 w-60 bg-white dark:bg-slate-900 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-700 z-20 p-3">
+                                    <input type="text" autoFocus placeholder={language === 'cn' ? '输入标签...' : 'Tag name...'} className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[#6366F1] mb-2 text-[#1F2937] dark:text-white" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(newTagInput); }} />
+                                    <div className="flex flex-wrap gap-1.5">
                                         {commonTags.map(tag => (
-                                            <button key={tag} onClick={() => handleAddTag(tag)} className="px-2 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 text-xs rounded text-slate-600 dark:text-slate-300 hover:text-indigo-600 transition-colors">{tag}</button>
+                                            <button key={tag} onClick={() => handleAddTag(tag)} className="px-2 py-1 bg-[#F3F4F6] dark:bg-slate-800 hover:bg-[#EEF0FF] text-[11px] rounded-[6px] text-[#4B5563] dark:text-slate-300 hover:text-[#6366F1] transition-colors">{tag}</button>
                                         ))}
                                     </div>
                                 </div>
                             )}
                         </div>
-                        <button onClick={openSaveTemplateModal} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors"><Save className="w-4 h-4 text-slate-400" />{t.plans.saveAsTemplate}</button>
-                        <button onClick={() => setIsTemplateGridModalOpen(true)} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-indigo-500 transition-colors"><Layout className="w-4 h-4 text-indigo-500" />{language === 'cn' ? '选择模板' : 'Select Template'}</button>
+                        <button onClick={() => setIsTemplateGridModalOpen(true)} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
+                            <Layout className="w-3.5 h-3.5 text-[#6B7280]" />
+                            {language === 'cn' ? '选择模板' : 'Template'}
+                        </button>
+                        <button onClick={openSaveTemplateModal} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
+                            <BookMarked className="w-3.5 h-3.5 text-[#6B7280]" />
+                            {language === 'cn' ? '保存为模板' : 'Save Template'}
+                        </button>
                     </div>
                     <NotesPanel
                       symbol={activePlanTrades[0]?.symbol}
