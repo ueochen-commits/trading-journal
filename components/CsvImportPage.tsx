@@ -172,27 +172,36 @@ function buildFallbackRules(headers: string[], rows: Record<string, string>[], e
   const h = headers.map(s => s.toLowerCase());
   const find = (...keys: string[]) => headers.find((_, i) => keys.some(k => h[i].includes(k))) || null;
   // Detect raw_orders: has side column but no pnl column
-  const hasPnl = !!find('pnl', 'profit', 'realized', '盈亏', '收益', '盈利');
+  const hasPnl = !!find('pnl', 'profit', 'realized', '盈亏', '收益', '盈利', '已实现');
   const hasSide = !!find('side', 'direction', 'type', '方向', '类型');
   const recordType: 'paired_trades' | 'raw_orders' = (hasSide && !hasPnl) ? 'raw_orders' : 'paired_trades';
+
+  // Detect Bitget-style Chinese columns
+  const isBitget = exchange.toLowerCase().includes('bitget') ||
+    !!find('开仓时间') || !!find('平仓时间') || !!find('已实现盈亏') || !!find('开仓均价');
+
+  const sideValues = isBitget
+    ? { long: ['做多', 'Buy', 'Long', 'BUY', 'LONG', '买入'], short: ['做空', 'Sell', 'Short', 'SELL', 'SHORT', '卖出'] }
+    : { long: ['Buy', 'Long', 'BUY', 'LONG', '做多', '买入'], short: ['Sell', 'Short', 'SELL', 'SHORT', '做空', '卖出'] };
+
   return {
     recordType,
-    detectedExchange: exchange || 'Unknown',
+    detectedExchange: isBitget ? 'Bitget' : (exchange || 'Unknown'),
     detectedAccountType: 'unknown',
     confidence: 40,
     fieldMapping: {
-      openTime: find('time', 'date', 'open', '时间', '开仓', '日期', 'datetime', 'timestamp') || headers[0],
-      closeTime: find('close time', 'exit', '平仓时间', 'close_time', 'closetime'),
-      symbol: find('symbol', 'pair', 'contract', '品种', '合约') || headers[1],
-      side: find('side', 'direction', 'type', '方向', '类型') || headers[2],
-      quantity: find('qty', 'quantity', 'size', 'amount', '数量') || headers[3],
-      openPrice: find('open price', 'entry', 'avg', '开仓价', 'price') || headers[4],
-      closePrice: find('close price', 'exit price', '平仓价'),
-      netPnl: find('pnl', 'profit', 'realized', '盈亏', '收益', '盈利') || headers[5],
-      grossPnl: null,
-      commission: find('fee', 'commission', 'cost', '手续费'),
+      openTime:   find('开仓时间', 'open time', 'time', 'date', 'open', '时间', '日期', 'datetime', 'timestamp') || headers[0],
+      closeTime:  find('平仓时间', 'close time', 'exit', '平仓', 'close_time', 'closetime'),
+      symbol:     find('合约', '交易对', 'symbol', 'pair', 'contract', '品种') || headers[1],
+      side:       find('方向', 'side', 'direction', 'type', '类型') || headers[2],
+      quantity:   find('成交量', '数量', '持仓量', 'qty', 'quantity', 'size', 'amount') || headers[3],
+      openPrice:  find('开仓均价', '开仓价格', '开仓价', 'open price', 'entry', 'avg', 'price') || headers[4],
+      closePrice: find('平仓均价', '平仓价格', '平仓价', 'close price', 'exit price'),
+      netPnl:     find('已实现盈亏', '盈亏', 'pnl', 'profit', 'realized', '收益', '盈利') || headers[5],
+      grossPnl:   null,
+      commission: find('手续费', 'fee', 'commission', 'cost'),
     },
-    sideValues: { long: ['Buy', 'Long', 'BUY', 'LONG', '做多', '买入'], short: ['Sell', 'Short', 'SELL', 'SHORT', '做空', '卖出'] },
+    sideValues,
     dateFormat: 'auto',
     warnings: ['AI 识别失败，使用自动规则，请在预览页确认字段是否正确'],
   };

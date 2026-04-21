@@ -19,7 +19,7 @@ export default async function handler(req: any, res: any) {
 
 "paired_trades"（已整理的完整交易记录）：
 - 每行已经是一笔完整交易，包含开仓和平仓信息
-- 通常有盈亏字段（盈利、PnL、Profit、收益等）
+- 通常有盈亏字段（盈利、PnL、Profit、收益、已实现盈亏等）
 - 可能有方向字段（long/short/做多/做空）
 - 示例：手写交易日志、已整理的复盘表格、交易所的 Trade History
 
@@ -41,6 +41,52 @@ export default async function handler(req: any, res: any) {
 - side 缺失 → 映射为 null（代码会默认 long）
 - netPnl 缺失但有 grossPnl → 映射 grossPnl 到 netPnl
 - 手写记录可能只有盈亏金额，没有价格和品种，这是正常的
+
+## 第四步：各交易所常见列名参考
+
+### Bitget 合约历史（paired_trades）
+- 合约 / 交易对 → symbol
+- 开仓时间 → openTime
+- 平仓时间 → closeTime
+- 方向（做多/做空）→ side，sideValues: long=["做多"], short=["做空"]
+- 开仓均价 / 开仓价格 → openPrice
+- 平仓均价 / 平仓价格 → closePrice
+- 成交量 / 数量 / 持仓量 → quantity
+- 已实现盈亏 / 盈亏 → netPnl
+- 手续费 → commission
+
+### Binance 合约历史（paired_trades）
+- Symbol → symbol
+- Open Time / Entry Time → openTime
+- Close Time / Exit Time → closeTime
+- Side / Direction → side，sideValues: long=["BUY","LONG"], short=["SELL","SHORT"]
+- Entry Price / Open Price → openPrice
+- Exit Price / Close Price → closePrice
+- Quantity / Size → quantity
+- Realized Profit / PnL → netPnl
+- Commission → commission
+
+### Bybit 合约历史（paired_trades）
+- Symbol → symbol
+- Created Time / Open Time → openTime
+- Updated Time / Close Time → closeTime
+- Side → side，sideValues: long=["Buy"], short=["Sell"]
+- Avg Entry Price → openPrice
+- Avg Exit Price → closePrice
+- Qty / Size → quantity
+- Closed P&L / Realized PnL → netPnl
+- Trading Fee → commission
+
+### OKX 合约历史（paired_trades）
+- 合约 / Instrument → symbol
+- 开仓时间 / Open time → openTime
+- 平仓时间 / Close time → closeTime
+- 方向 / Side → side
+- 开仓均价 / Avg open → openPrice
+- 平仓均价 / Avg close → closePrice
+- 数量 / Qty → quantity
+- 已实现盈亏 / Realized PnL → netPnl
+- 手续费 / Fee → commission
 
 ## 返回格式
 
