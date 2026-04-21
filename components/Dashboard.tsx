@@ -339,7 +339,15 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
   if (totalCount === 0) return (
     <div style={cardStyle}>
       <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: 14 }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</div>
-      <div style={{ height: 210, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 210, gap: 8 }}>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>
+        </svg>
+        <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</p>
+        <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 260, lineHeight: 1.5 }}>
+          {language === 'cn' ? '导入或添加交易记录后即可生成分析' : 'Import or add trades to generate this chart'}
+        </p>
+      </div>
     </div>
   );
 
@@ -349,11 +357,14 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
         <span style={{ fontSize: 10, color: '#94a3b8' }}>{language === 'cn' ? '每笔交易一个点' : 'One dot per trade'}</span>
       </div>
-      <div style={{ height: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, textAlign: 'center', padding: '0 20px' }}>
-        <div style={{ fontSize: 28, opacity: 0.35 }}>🔒</div>
-        <p style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', margin: 0 }}>{language === 'cn' ? '仓位情绪分析待解锁' : 'Unlock Position Analysis'}</p>
-        <p style={{ fontSize: 11, color: '#64748b', margin: 0, lineHeight: 1.5 }}>{language === 'cn' ? '在交易记录中补充"止损金额"即可启用此分析' : 'Add Risk Amount to your trades to enable this chart'}</p>
-        <span style={{ fontSize: 11, color: '#6366f1', fontWeight: 500 }}>{language === 'cn' ? `已有 0 / ${totalCount} 笔填写止损金额` : `0 / ${totalCount} trades have risk amount`}</span>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 210, gap: 8 }}>
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
+          <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+        </svg>
+        <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>{language === 'cn' ? '仓位情绪分析待解锁' : 'Unlock Position Analysis'}</p>
+        <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 260, lineHeight: 1.5 }}>
+          {language === 'cn' ? `在交易记录中补充"止损金额"即可启用（0 / ${totalCount} 笔）` : `Add Risk Amount to your trades to enable (0 / ${totalCount})`}
+        </p>
       </div>
     </div>
   );
