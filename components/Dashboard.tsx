@@ -296,8 +296,8 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
 };
 
 // ── Position Heat Card ────────────────────────────────────────────────────────
-const VW = 560; const VH = 190;
-const PL = 38; const PR = 16; const PT = 8; const PB = 32;
+const VW = 560; const VH = 178;
+const PL = 38; const PR = 16; const PT = 8; const PB = 20;
 const PW = VW - PL - PR; const PH = VH - PT - PB;
 const X_MAX_H = 4; const WARN_X = 2; const DANG_X = 3;
 const Y_MAX_H = 5; const Y_MIN_H = -5;
@@ -380,7 +380,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         <span style={{ fontSize: 10, color: '#94a3b8' }}>{reviewedCount}{language === 'cn' ? ' 笔已复盘交易' : ' reviewed trades'}</span>
       </div>
 
-      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: 190 }}>
+      <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: VH }}>
         {/* zone backgrounds */}
         <rect x={PL} y={PT} width={warnX - PL} height={PH} fill="#15803d" opacity="0.04" />
         <rect x={warnX} y={PT} width={dangX - warnX} height={PH} fill="#f59e0b" opacity="0.05" />
