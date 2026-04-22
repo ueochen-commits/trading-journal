@@ -351,6 +351,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const doSaveReview = useCallback((html: string) => {
     if (!selectedDay || !onSavePlan) return;
+    // 不保存空内容（去掉 HTML 标签后没有实际文字）
+    const textContent = html.replace(/<[^>]*>/g, '').trim();
+    if (!textContent) return;
     setSaveStatus('saving');
     const dateKey = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth()+1).padStart(2,'0')}-${String(selectedDay.getDate()).padStart(2,'0')}`;
     const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
