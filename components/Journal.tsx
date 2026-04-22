@@ -874,6 +874,7 @@ const Journal: React.FC<JournalProps> = ({
                   strategies={strategies}
                   tradingAccounts={tradingAccounts}
                   onSavePlan={onSavePlan}
+                  plans={plans}
               />
           </div>
       );

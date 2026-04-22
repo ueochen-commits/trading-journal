@@ -214,6 +214,7 @@ interface TradeReviewModalProps {
     strategies?: Strategy[];
     tradingAccounts?: TradingAccount[];
     onSavePlan?: (plan: DailyPlan) => void; // New Prop for Notebook Sync
+    plans?: DailyPlan[]; // To find existing note for this trade
 }
 
 // Default Constants
@@ -696,7 +697,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     );
 };
 
-const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, isOpen, onClose, onUpdateTrade, strategies, tradingAccounts, onSavePlan }) => {
+const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, isOpen, onClose, onUpdateTrade, strategies, tradingAccounts, onSavePlan, plans = [] }) => {
     const { t, language } = useLanguage();
     const [currentTrade, setCurrentTrade] = useState<Trade>(trade);
     const [noteContent, setNoteContent] = useState(trade.reviewNotes || trade.notes || '');
@@ -802,13 +803,17 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             autoSaveTimerRef.current = setTimeout(() => {
                 // Perform Save to Notebook
                 if (onSavePlan) {
-                    const planId = `review-${currentTrade.id}`;
                     const tradeDate = new Date(currentTrade.entryDate).toISOString().slice(0, 10);
+                    // Find existing note for this trade (by linkedTradeIds) to reuse its UUID
+                    const existingPlan = plans.find(p =>
+                        !p.isDeleted && p.linkedTradeIds?.includes(currentTrade.id)
+                    );
+                    const planId = existingPlan?.id ?? `review-${currentTrade.id}`;
                     const newPlan: DailyPlan = {
                         id: planId,
                         date: tradeDate,
                         title: `Review: ${currentTrade.symbol} - ${tradeDate}`,
-                        folder: 'daily-journal',
+                        folder: 'trade-notes',
                         content: noteContent,
                         focusTickers: [currentTrade.symbol],
                         linkedTradeIds: [currentTrade.id]
