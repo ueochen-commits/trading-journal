@@ -146,7 +146,7 @@ const AuthPage: React.FC = () => {
 
             <div className="relative z-10 w-full max-w-md">
                 <div className="flex justify-center mb-10">
-                    <Logo className="scale-125" textClassName="text-white" />
+                    <img src="/TRADEGRAIL-lion.png" alt="TradeGrail" className="scale-125" style={{ height: '48px', width: 'auto' }} />
                 </div>
 
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2rem] shadow-2xl overflow-hidden p-8">
