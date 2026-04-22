@@ -45,6 +45,7 @@ interface NotesPanelProps {
   templates?: { id: string; name: string; content: string }[];
   onApplyTemplate?: (content: string) => void;
   onDeleteNote?: () => void;
+  dragHandleWidth?: number;
 }
 
 // ─── Color Presets ───
@@ -181,7 +182,7 @@ const ColorPicker = ({
 const NotesPanel: React.FC<NotesPanelProps> = ({
   symbol, date, tradeNoteContent, dailyJournalContent,
   onContentChange, onSave, tradeMetadata, templates = [],
-  onApplyTemplate, onDeleteNote,
+  onApplyTemplate, onDeleteNote, dragHandleWidth = 30,
 }) => {
   const { language } = useLanguage();
   const [activeTab, setActiveTab] = useState<NoteTab>('trade-note');
@@ -232,7 +233,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       TaskList, TaskItem.configure({ nested: true }),
       HorizontalRule,
       FontSize,
-      GlobalDragHandle.configure({ dragHandleWidth: 30 }),
+      GlobalDragHandle.configure({ dragHandleWidth }),
     ],
     content: currentContent,
     onUpdate: ({ editor: ed }) => {
