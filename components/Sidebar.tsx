@@ -462,7 +462,7 @@ const Sidebar = ({
       {/* Bottom utilities */}
       <div style={{ flexShrink: 0, padding: isCollapsed ? '4px 6px' : '4px 10px' }}>
         {[
-          { label: t.social.friends, icon: Icons.Message, onClick: openFriendDrawer, badge: totalUnreadCount },
+          // { label: t.social.friends, icon: Icons.Message, onClick: openFriendDrawer, badge: totalUnreadCount },
           { label: t.sidebar.guide, icon: Icons.Map, onClick: () => startTourForTab(activeTab) },
           {
             label: language === 'cn' ? 'Language' : '语言',

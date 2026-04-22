@@ -1360,7 +1360,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               riskSettings={riskSettings}
           />
           <ChatWindow />
-          <FriendListDrawer />
+          {/* <FriendListDrawer /> */}
           <SettingsModal onImportTrades={handleImportTrades} />
           <PricingModal />
           <UserProfileModal />
