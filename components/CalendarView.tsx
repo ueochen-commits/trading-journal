@@ -564,14 +564,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(day).padStart(2, '0');
     const dateKey = `${yyyy}-${mm}-${dd}`;
-    const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
-    setCurrentView('transactions');
-    setReviewHtml(existingPlan ? existingPlan.content : '');
-    setSaveStatus('saved');
-    setSelectedDay(date);
-  };
-
-  // 外部注入日期（如从图表点击）→ 打开弹窗
+    const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal' && !p.isDeleted);
+    setCurrentView('transactions');（如从图表点击）→ 打开弹窗
   useEffect(() => {
     if (!externalSelectedDay) return;
     const date = externalSelectedDay;
@@ -579,7 +573,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const mm = String(date.getMonth() + 1).padStart(2, '0');
     const dd = String(date.getDate()).padStart(2, '0');
     const dateKey = `${yyyy}-${mm}-${dd}`;
-    const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
+    const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal' && !p.isDeleted);
     setCurrentView('transactions');
     setReviewHtml(existingPlan ? existingPlan.content : '');
     setSaveStatus('saved');
