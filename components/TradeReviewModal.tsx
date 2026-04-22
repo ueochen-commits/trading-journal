@@ -818,11 +818,11 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                     const newPlan: DailyPlan = {
                         id: planId,
                         date: tradeDate,
-                        title: `Review: ${currentTrade.symbol} - ${tradeDate}`,
-                        folder: 'trade-notes',
+                        title: existingPlan?.title ?? `Review: ${currentTrade.symbol} - ${tradeDate}`,
+                        folder: existingPlan?.folder ?? 'trade-notes',
                         content: noteContent,
-                        focusTickers: [currentTrade.symbol],
-                        linkedTradeIds: [currentTrade.id]
+                        focusTickers: existingPlan?.focusTickers ?? [currentTrade.symbol],
+                        linkedTradeIds: existingPlan?.linkedTradeIds ?? [currentTrade.id]
                     };
                     onSavePlan(newPlan);
                     // We rely on the subsequent onUpdateTrade -> parent update -> prop update -> effect to set status to 'saved'
