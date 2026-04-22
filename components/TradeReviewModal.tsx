@@ -1965,7 +1965,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                     </div>
                     <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3">
                         <NotesPanel
-                          dragHandleWidth={0}
+                          dragHandleWidth={60}
                           symbol={currentTrade.symbol}
                           date={currentTrade.entryDate?.slice(0, 10)}
                           tradeNoteContent={noteContent}
