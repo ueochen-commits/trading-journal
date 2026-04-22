@@ -700,9 +700,13 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, isOpen, onClose, onUpdateTrade, strategies, tradingAccounts, onSavePlan, plans = [] }) => {
     const { t, language } = useLanguage();
     const [currentTrade, setCurrentTrade] = useState<Trade>(trade);
-    // Prefer content from plans (notebook) over trade.reviewNotes, as notebook edits don't sync back to trade
-    const planNote = plans.find(p => !p.isDeleted && p.linkedTradeIds?.includes(trade.id));
-    const [noteContent, setNoteContent] = useState(planNote?.content || trade.reviewNotes || trade.notes || '');
+    // Find the plan note for this trade (including deleted ones)
+    const planNote = plans.find(p => p.linkedTradeIds?.includes(trade.id));
+    // If note exists but is deleted, show empty. If never existed, fall back to trade.reviewNotes.
+    const initialNoteContent = planNote
+        ? (planNote.isDeleted ? '' : planNote.content)
+        : (trade.reviewNotes || trade.notes || '');
+    const [noteContent, setNoteContent] = useState(initialNoteContent);
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const rightPanelRef = useRef<HTMLDivElement>(null); // For sizing calculations
     const [leftTab, setLeftTab] = useState<'stats' | 'playbook' | 'executions' | 'attachments'>('stats');
