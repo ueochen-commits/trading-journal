@@ -546,7 +546,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const dd = String(day).padStart(2, '0');
     const dateKey = `${yyyy}-${mm}-${dd}`;
     const daysTrades = trades.filter(tr => tradeDateKey(tr.entryDate) === dateKey);
-    const dayPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
+    const dayPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal' && !p.isDeleted);
     if (daysTrades.length === 0 && !dayPlan) return null;
     const netPnl = daysTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
     const count = daysTrades.length;
@@ -663,7 +663,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const yyyy = selectedDay.getFullYear();
     const mm = String(selectedDay.getMonth() + 1).padStart(2, '0');
     const dd = String(selectedDay.getDate()).padStart(2, '0');
-    return !!plans?.find(p => p.date === `${yyyy}-${mm}-${dd}` && p.folder === 'daily-journal');
+    return !!plans?.find(p => p.date === `${yyyy}-${mm}-${dd}` && p.folder === 'daily-journal' && !p.isDeleted);
   }, [selectedDay, plans]);
 
   const modalDateLabel = useMemo(() => {
