@@ -37,6 +37,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import TaskList from '@tiptap/extension-task-list';
 import TaskItem from '@tiptap/extension-task-item';
 import HorizontalRule from '@tiptap/extension-horizontal-rule';
+import Image from '@tiptap/extension-image';
 import FontSize from '../lib/tiptapFontSize';
 import GlobalDragHandle from 'tiptap-extension-global-drag-handle';
 import TradeReference from '../lib/tradeReferenceExtension';
@@ -351,9 +352,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const doSaveReview = useCallback((html: string) => {
     if (!selectedDay || !onSavePlan) return;
-    // 不保存空内容（去掉 HTML 标签后没有实际文字）
+    // 不保存空内容（去掉 HTML 标签后没有实际文字，且没有图片）
     const textContent = html.replace(/<[^>]*>/g, '').trim();
-    if (!textContent) return;
+    const hasImage = /<img/i.test(html);
+    if (!textContent && !hasImage) return;
     setSaveStatus('saving');
     const dateKey = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth()+1).padStart(2,'0')}-${String(selectedDay.getDate()).padStart(2,'0')}`;
     const existingPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal');
@@ -377,6 +379,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       FontFamily, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: '今天的交易心得、市场观察、情绪状态...' }),
       TaskList, TaskItem.configure({ nested: true }), HorizontalRule, FontSize,
+      Image.configure({ allowBase64: true }),
       GlobalDragHandle.configure({ dragHandleWidth: 30 }),
       TradeReference,
     ],
@@ -884,7 +887,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       <button
-                        onClick={() => switchView('review')}
+                        onClick={() => {
+                          if (selectedDay) {
+                            const yyyy = selectedDay.getFullYear();
+                            const mm = String(selectedDay.getMonth() + 1).padStart(2, '0');
+                            const dd = String(selectedDay.getDate()).padStart(2, '0');
+                            const dateKey = `${yyyy}-${mm}-${dd}`;
+                            const latestPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal' && !p.isDeleted);
+                            const latestContent = latestPlan ? latestPlan.content : '';
+                            setReviewHtml(latestContent);
+                            if (reviewEditor) reviewEditor.commands.setContent(latestContent || '');
+                          }
+                          switchView('review');
+                        }}
                         style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
                         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
@@ -1311,7 +1326,21 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       </div>
                     </>
                   )}
-                  <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', flex: '1 1 auto', minHeight: 480, minWidth: 0 }}>
+                  <div className="notes-panel-editor" style={{ padding: '32px 64px', overflowY: 'auto', flex: '1 1 auto', minHeight: 480, minWidth: 0 }}
+                    onPaste={(e) => {
+                      const items = Array.from(e.clipboardData?.items || []);
+                      const imageItem = items.find(item => item.type.startsWith('image/'));
+                      if (!imageItem) return;
+                      e.preventDefault();
+                      const file = imageItem.getAsFile();
+                      if (!file || !reviewEditor) return;
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        reviewEditor.chain().focus().setImage({ src: reader.result as string }).run();
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                  >
                     <EditorContent editor={reviewEditor} />
                   </div>
                   </div>{/* end B3+B4 wrapper */}
