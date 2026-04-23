@@ -352,6 +352,21 @@
         opacity: 0.85;
       }
 
+      /* Dashboard stats grid responsive */
+      #dashboard-stats {
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+      }
+      @media (max-width: 1280px) {
+        #dashboard-stats {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+      }
+      @media (max-width: 900px) {
+        #dashboard-stats {
+          grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        }
+      }
+
       @keyframes slideInUp {
         from { opacity: 0; transform: translateY(20px); }
         to   { opacity: 1; transform: translateY(0); }
