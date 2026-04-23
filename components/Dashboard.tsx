@@ -136,16 +136,16 @@ const tzCardShell: React.CSSProperties = {
   background: '#ffffff',
   border: '0.5px solid #e8e8f0',
   borderRadius: 14,
-  padding: '14px 16px 12px',
+  padding: '12px 14px 10px',
   display: 'flex',
   flexDirection: 'column',
-  minHeight: 90,
+  minHeight: 80,
   overflow: 'hidden',
   flex: 1,
   minWidth: 0,
 };
-const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280', fontWeight: 400, marginBottom: 6 };
-const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 26, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: c });
+const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280', fontWeight: 400, marginBottom: 4 };
+const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 'clamp(18px, 1.8vw, 26px)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: c });
 
 // Semi-circle gauge (100×58, path-length 138.16)
 const SemiGauge: React.FC<{ wins: number; bes: number; losses: number }> = ({ wins, bes, losses }) => {
@@ -155,14 +155,14 @@ const SemiGauge: React.FC<{ wins: number; bes: number; losses: number }> = ({ wi
   const bLen = (bes / total) * PL;
   const lLen = (losses / total) * PL;
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-      <svg width="100" height="58" viewBox="0 0 100 58">
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: '100%', maxWidth: 100 }}>
+      <svg viewBox="0 0 100 58" style={{ width: '100%', height: 'auto', display: 'block' }}>
         <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#e5e7eb" strokeWidth="8" strokeLinecap="round" pathLength={PL} />
         {wLen > 0 && <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#1D9E75" strokeWidth="8" strokeLinecap="round" pathLength={PL} strokeDasharray={`${wLen} ${PL}`} strokeDashoffset="0" />}
         {bLen > 0 && <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#7F77DD" strokeWidth="8" strokeLinecap="round" pathLength={PL} strokeDasharray={`${bLen} ${PL}`} strokeDashoffset={-wLen} />}
         {lLen > 0 && <path d="M8,54 A44,44 0 0,1 92,54" fill="none" stroke="#E24B4A" strokeWidth="8" strokeLinecap="round" pathLength={PL} strokeDasharray={`${lLen} ${PL}`} strokeDashoffset={-(wLen + bLen)} />}
       </svg>
-      <div style={{ display: 'flex', justifyContent: 'space-between', width: 100, marginTop: 3 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: 3 }}>
         <span style={{ fontSize: 11, fontWeight: 500, color: '#1D9E75', fontVariantNumeric: 'tabular-nums' }}>{wins}</span>
         <span style={{ fontSize: 11, fontWeight: 500, color: '#7F77DD', fontVariantNumeric: 'tabular-nums', flex: 1, textAlign: 'center' }}>{bes}</span>
         <span style={{ fontSize: 11, fontWeight: 500, color: '#E24B4A', fontVariantNumeric: 'tabular-nums', textAlign: 'right' }}>{losses}</span>
@@ -199,7 +199,7 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
         <div style={tzBigVal('#111827')} className="dark:text-white">
           {total === 0 ? '--' : `${winRate.toFixed(2)}%`}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 'clamp(60px, 8vw, 100px)' }}>
           <SemiGauge wins={wins} bes={breakEven} losses={losses} />
         </div>
       </div>
@@ -221,7 +221,7 @@ const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value,
           </div>
           <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>综合盈亏比</div>
         </div>
-        <svg width="72" height="72" viewBox="0 0 72 72" style={{ flexShrink: 0 }}>
+        <svg viewBox="0 0 72 72" style={{ width: 'clamp(44px, 5vw, 72px)', height: 'clamp(44px, 5vw, 72px)', flexShrink: 0 }}>
           <circle cx="36" cy="36" r="28" fill="none" stroke="#E24B4A" strokeWidth="7" />
           {fill > 0 && (
             <circle cx="36" cy="36" r="28" fill="none" stroke="#1D9E75" strokeWidth="7"
@@ -243,7 +243,7 @@ const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: nu
         <div style={tzBigVal('#111827')} className="dark:text-white">
           {total === 0 ? '--' : `${dayWinRate.toFixed(2)}%`}
         </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 'clamp(60px, 8vw, 100px)' }}>
           <SemiGauge wins={winDays} bes={breakEvenDays} losses={lossDays} />
         </div>
       </div>
