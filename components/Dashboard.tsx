@@ -195,20 +195,18 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="winRate" /></div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
-        <div style={tzBigVal('#111827')} className="dark:text-white">
-          {total === 0 ? '--' : `${winRate.toFixed(2)}%`}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 'clamp(60px, 8vw, 100px)' }}>
-          <SemiGauge wins={wins} bes={breakEven} losses={losses} />
-        </div>
+      <div style={tzBigVal('#111827')} className="dark:text-white">
+        {total === 0 ? '--' : `${winRate.toFixed(2)}%`}
+      </div>
+      <div style={{ marginTop: 6, width: '100%' }}>
+        <SemiGauge wins={wins} bes={breakEven} losses={losses} />
       </div>
     </div>
   );
 };
 
 const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
-  const circ = 2 * Math.PI * 28; // 175.93
+  const circ = 2 * Math.PI * 28;
   const fill = Math.min(value === Infinity ? 1 : value / 3, 1);
   const greenLen = fill * circ;
   return (
@@ -221,7 +219,7 @@ const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value,
           </div>
           <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 4 }}>综合盈亏比</div>
         </div>
-        <svg viewBox="0 0 72 72" style={{ width: 'clamp(44px, 5vw, 72px)', height: 'clamp(44px, 5vw, 72px)', flexShrink: 0 }}>
+        <svg viewBox="0 0 72 72" style={{ width: '30%', maxWidth: 72, height: 'auto', flexShrink: 1 }}>
           <circle cx="36" cy="36" r="28" fill="none" stroke="#E24B4A" strokeWidth="7" />
           {fill > 0 && (
             <circle cx="36" cy="36" r="28" fill="none" stroke="#1D9E75" strokeWidth="7"
@@ -239,13 +237,11 @@ const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: nu
   return (
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="dailyWinRate" /></div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flex: 1 }}>
-        <div style={tzBigVal('#111827')} className="dark:text-white">
-          {total === 0 ? '--' : `${dayWinRate.toFixed(2)}%`}
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 'clamp(60px, 8vw, 100px)' }}>
-          <SemiGauge wins={winDays} bes={breakEvenDays} losses={lossDays} />
-        </div>
+      <div style={tzBigVal('#111827')} className="dark:text-white">
+        {total === 0 ? '--' : `${dayWinRate.toFixed(2)}%`}
+      </div>
+      <div style={{ marginTop: 6, width: '100%' }}>
+        <SemiGauge wins={winDays} bes={breakEvenDays} losses={lossDays} />
       </div>
     </div>
   );
