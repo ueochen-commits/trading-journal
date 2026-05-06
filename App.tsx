@@ -281,8 +281,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         const freshAccounts = await userDataService.loadTradingAccounts();
         setTradingAccounts(freshAccounts);
 
-        // 用 Demo Account id 补全旧交易的 accountId
-        if (demoAccount) {
+        if (demoResult?.isNew) {
+          // 新用户：seed 刚写入，从 DB 重新拉取最新交易列表
+          const freshData = await userDataService.loadUserData();
+          if (freshData?.trades) setTrades(freshData.trades.map(formatTradeFromDB));
+        } else if (demoAccount) {
+          // 老用户：用 Demo Account id 补全旧交易的 accountId
           const refreshedTrades = (result.trades || []).map((t: any) => ({
             ...t,
             account_id: t.account_id || demoAccount.id,
