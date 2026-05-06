@@ -9,151 +9,118 @@ export const MOCK_ACCOUNTS: TradingAccount[] = [
     { id: 'acc_4', name: 'MT4 7473', isReal: true, balance: 8500, currency: 'USD', profitMethod: 'FIFO', type: 'auto_sync' },
 ];
 
-// Helper to generate realistic crypto trades for a specific month
+// Helper to generate realistic US stock & forex trades for a specific month
 const generateCryptoTrades = (count: number, year: number, month: number): Trade[] => {
     const trades: Trade[] = [];
-    const symbols = ['BTCUSDT', 'ETHUSDT', 'SOLUSDT', 'ORDIUSDT', '1000SATS', 'DOGEUSDT', 'XRPUSDT', 'TIAUSDT', 'AVAXUSDT', 'LINKUSDT'];
-    const setups = ['Breakout', 'Trend Pullback', 'Liquidity Sweep', 'Fib Retracement', 'Support Bounce', 'News Event', 'Gap and Go'];
-    const mistakesList = ['FOMO', 'Revenge Trading', 'Too Large Size', 'Hesitation', 'Early Exit', 'No Stop Loss'];
-    
-    // Current real time
-    const now = new Date();
+    const symbols = ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'AMZN', 'META', 'GOOGL', 'SPY', 'QQQ', 'EUR/USD', 'GBP/USD', 'USD/JPY', 'XAU/USD', 'NAS100', 'US30'];
+    const setups = ['突破形态', '趋势回调', '支撑反弹', '均线交叉', '缺口填补', '财报行情', '日内动量'];
+    const mistakesList = ['追涨杀跌', '仓位过重', '止损过宽', '提前离场', '未设止损', '情绪化交易'];
 
-    // Determine the max day allowed (if current month, max day is today, else last day of month)
+    const now = new Date();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     let maxDay = daysInMonth;
-    
-    // If generating for the current real-world month, cap the date at 'yesterday' or 'today' to avoid future trades
     if (year === now.getFullYear() && month === now.getMonth()) {
-        maxDay = now.getDate(); 
+        maxDay = now.getDate();
     }
 
-    // Price Multiplier (Simple random variation)
-    const priceMultiplier = 1.0 + (Math.random() * 0.2 - 0.1);
-
     for (let i = 0; i < count; i++) {
-        // Random Day up to maxDay
         const day = Math.floor(Math.random() * maxDay) + 1;
-        
-        // Don't generate trades literally *right now* to avoid timezone edge cases, stick to hours 0-23
-        const hour = Math.floor(Math.random() * 24);
+        const hour = Math.floor(Math.random() * 8) + 9; // 9am-5pm 交易时段
         const minute = Math.floor(Math.random() * 60);
-        
         const entryDateObj = new Date(year, month, day, hour, minute);
-        
-        // Double check we aren't in the future (e.g. later today)
         if (entryDateObj > now) continue;
 
-        const durationMinutes = Math.floor(Math.random() * 240) + 15; // 15 mins to 4 hours
+        const durationMinutes = Math.floor(Math.random() * 300) + 30;
         const exitDateObj = new Date(entryDateObj.getTime() + durationMinutes * 60000);
-        
-        // If exit is in future, either make it OPEN trade or cap exit at now
         let exitDateString = exitDateObj.toISOString();
-        let status = TradeStatus.WIN; // Placeholder
-        let isWin = Math.random() > 0.52;
+        let status = TradeStatus.WIN;
+        const isWin = Math.random() > 0.45;
 
         if (exitDateObj > now) {
-             // Make it an OPEN trade randomly if it overlaps now, or just shorten duration
-             if (Math.random() > 0.5) {
-                 exitDateString = ''; // Open trade
-                 status = TradeStatus.OPEN;
-             } else {
-                 exitDateString = now.toISOString();
-             }
+            exitDateString = Math.random() > 0.7 ? '' : now.toISOString();
+            status = exitDateString === '' ? TradeStatus.OPEN : (isWin ? TradeStatus.WIN : TradeStatus.LOSS);
         }
 
         const symbol = symbols[Math.floor(Math.random() * symbols.length)];
         const direction = Math.random() > 0.5 ? Direction.LONG : Direction.SHORT;
         const setup = setups[Math.floor(Math.random() * setups.length)];
-        
-        // Base Price Estimation
+
+        // 价格区间
         let basePrice = 0;
-        if (symbol.startsWith('BTC')) basePrice = (60000 + Math.random() * 10000) * priceMultiplier;
-        else if (symbol.startsWith('ETH')) basePrice = (3000 + Math.random() * 500) * priceMultiplier;
-        else if (symbol.startsWith('SOL')) basePrice = (140 + Math.random() * 20) * priceMultiplier;
-        else if (symbol.startsWith('ORDI')) basePrice = (60 + Math.random() * 20) * priceMultiplier;
-        else if (symbol.startsWith('1000SATS')) basePrice = 0.0004 * priceMultiplier;
-        else basePrice = (1 + Math.random() * 100) * priceMultiplier;
+        if (symbol === 'AAPL') basePrice = 170 + Math.random() * 30;
+        else if (symbol === 'TSLA') basePrice = 180 + Math.random() * 60;
+        else if (symbol === 'NVDA') basePrice = 800 + Math.random() * 200;
+        else if (symbol === 'MSFT') basePrice = 380 + Math.random() * 40;
+        else if (symbol === 'AMZN') basePrice = 170 + Math.random() * 30;
+        else if (symbol === 'META') basePrice = 460 + Math.random() * 60;
+        else if (symbol === 'GOOGL') basePrice = 160 + Math.random() * 20;
+        else if (symbol === 'SPY') basePrice = 500 + Math.random() * 30;
+        else if (symbol === 'QQQ') basePrice = 430 + Math.random() * 30;
+        else if (symbol === 'EUR/USD') basePrice = 1.07 + Math.random() * 0.04;
+        else if (symbol === 'GBP/USD') basePrice = 1.26 + Math.random() * 0.04;
+        else if (symbol === 'USD/JPY') basePrice = 148 + Math.random() * 6;
+        else if (symbol === 'XAU/USD') basePrice = 2300 + Math.random() * 200;
+        else if (symbol === 'NAS100') basePrice = 17500 + Math.random() * 1000;
+        else basePrice = 38000 + Math.random() * 2000; // US30
 
-        const entryPrice = parseFloat(basePrice.toFixed(symbol.includes('SATS') ? 7 : 2));
-        
-        // Position Sizing (Assume roughly $5000 - $10000 position size)
-        const positionSize = 5000 + Math.random() * 5000; 
-        const quantity = parseFloat((positionSize / entryPrice).toFixed(symbol.includes('SATS') ? 0 : 2));
+        const isForex = symbol.includes('/');
+        const entryPrice = parseFloat(basePrice.toFixed(isForex ? 4 : 2));
+        const quantity = isForex
+            ? parseFloat((10000 + Math.random() * 90000).toFixed(0)) // 外汇手数
+            : parseFloat((10 + Math.random() * 90).toFixed(0));       // 股票股数
 
-        // PnL Generation
         let pnl = 0;
-
         if (status === TradeStatus.OPEN) {
-            pnl = (Math.random() - 0.5) * 100; // Floating PnL
+            pnl = (Math.random() - 0.5) * 200;
+        } else if (isWin) {
+            pnl = 150 + Math.random() * 500;
+            status = TradeStatus.WIN;
         } else {
-            if (isWin) {
-                pnl = 100 + Math.random() * 400; // Win $100 - $500
-                status = TradeStatus.WIN;
-            } else {
-                pnl = -(50 + Math.random() * 150); // Loss $50 - $200
-                status = TradeStatus.LOSS;
-                if (Math.random() > 0.9) {
-                    pnl = -5 + Math.random() * 10;
-                    status = TradeStatus.BE;
-                }
-            }
+            pnl = -(80 + Math.random() * 200);
+            status = Math.random() > 0.85 ? TradeStatus.BE : TradeStatus.LOSS;
+            if (status === TradeStatus.BE) pnl = (Math.random() - 0.5) * 20;
         }
 
-        // Calculate Exit Price based on PnL
         let exitPrice = 0;
         if (status !== TradeStatus.OPEN) {
-            if (direction === Direction.LONG) {
-                exitPrice = entryPrice + (pnl / quantity);
-            } else {
-                exitPrice = entryPrice - (pnl / quantity);
-            }
+            exitPrice = direction === Direction.LONG
+                ? entryPrice + pnl / quantity
+                : entryPrice - pnl / quantity;
         }
 
-        // Execution Score (1-10)
-        const executionScore = Math.floor(Math.random() * 7) + (status === TradeStatus.WIN ? 4 : 1);
-        
-        // Calculate Unified Grade based on Score
+        const executionScore = Math.min(10, Math.floor(Math.random() * 7) + (status === TradeStatus.WIN ? 4 : 1));
         let executionGrade = '-';
         if (executionScore >= 9) executionGrade = 'A+';
         else if (executionScore >= 8) executionGrade = 'A';
         else if (executionScore >= 6) executionGrade = 'B';
         else if (executionScore >= 4) executionGrade = 'C';
-        else if (executionScore > 0) executionGrade = 'D';
+        else executionGrade = 'D';
 
-        // Mistakes
-        const hasMistake = status === TradeStatus.LOSS && Math.random() > 0.7; 
+        const hasMistake = status === TradeStatus.LOSS && Math.random() > 0.6;
         const tradeMistakes = hasMistake ? [mistakesList[Math.floor(Math.random() * mistakesList.length)]] : [];
-
-        // Randomly assign an account from MOCK_ACCOUNTS
-        const accountRand = Math.random();
-        let assignedAccount = MOCK_ACCOUNTS[0].id;
-        if (accountRand > 0.6) assignedAccount = MOCK_ACCOUNTS[1].id;
-        if (accountRand > 0.85) assignedAccount = MOCK_ACCOUNTS[2].id;
 
         trades.push({
             id: `mock-${year}-${month}-${i}`,
             symbol,
             entryDate: entryDateObj.toISOString(),
             exitDate: exitDateString,
-            entryPrice: parseFloat(entryPrice.toFixed(symbol.includes('SATS') ? 7 : 2)),
-            exitPrice: parseFloat(exitPrice.toFixed(symbol.includes('SATS') ? 7 : 2)),
-            executionScore: Math.min(10, executionScore),
-            executionGrade, // Single source of truth for the grade
+            entryPrice: parseFloat(entryPrice.toFixed(isForex ? 4 : 2)),
+            exitPrice: parseFloat(exitPrice.toFixed(isForex ? 4 : 2)),
+            executionScore,
+            executionGrade,
             quantity,
             direction,
             status,
             pnl: parseFloat(pnl.toFixed(2)),
             setup,
-            notes: `Trade on ${entryDateObj.toLocaleDateString()}. Structure was ${direction === Direction.LONG ? 'bullish' : 'bearish'}.`,
-            reviewNotes: status === TradeStatus.WIN ? 'Good execution.' : 'Review entry criteria.',
-            fees: parseFloat((positionSize * 0.0005).toFixed(2)), // 0.05% fee approx
+            notes: `${symbol} ${direction === Direction.LONG ? '做多' : '做空'}，形态：${setup}`,
+            reviewNotes: status === TradeStatus.WIN ? '执行良好，按计划操作。' : '需复盘入场时机。',
+            fees: parseFloat((Math.abs(pnl) * 0.001 + 1).toFixed(2)),
             mistakes: tradeMistakes,
-            accountId: assignedAccount
+            accountId: 'acc_2'
         });
     }
 
-    // Sort by date desc
     return trades.sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime());
 };
 
@@ -163,15 +130,20 @@ const currentYear = now.getFullYear();
 const currentMonth = now.getMonth();
 
 // 1. Current Month Trades
-const TRADES_CURRENT_MONTH = generateCryptoTrades(40, currentYear, currentMonth);
+const TRADES_CURRENT_MONTH = generateCryptoTrades(50, currentYear, currentMonth);
 
 // 2. Previous Month Trades
 const prevDate = new Date(currentYear, currentMonth - 1, 1);
-const TRADES_LAST_MONTH = generateCryptoTrades(60, prevDate.getFullYear(), prevDate.getMonth());
+const TRADES_LAST_MONTH = generateCryptoTrades(70, prevDate.getFullYear(), prevDate.getMonth());
+
+// 3. Two Months Ago
+const prev2Date = new Date(currentYear, currentMonth - 2, 1);
+const TRADES_2_MONTHS_AGO = generateCryptoTrades(60, prev2Date.getFullYear(), prev2Date.getMonth());
 
 export const MOCK_TRADES: Trade[] = [
   ...TRADES_CURRENT_MONTH,
   ...TRADES_LAST_MONTH,
+  ...TRADES_2_MONTHS_AGO,
 ];
 
 export const MOCK_RULES = [
