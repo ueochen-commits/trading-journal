@@ -1,5 +1,6 @@
 import { supabase } from '../supabaseClient';
 import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, TradingAccount, ExchangeConnection } from '../types';
+import { MOCK_TRADES } from '../constants';
 
 // 获取当前用户ID
 async function getCurrentUserId(): Promise<string | null> {
@@ -112,6 +113,33 @@ function dbToExchangeConnection(row: any): ExchangeConnection {
     lastSync: row.last_sync || undefined,
     isConnected: row.is_active ?? true,
   };
+}
+
+// 将 MOCK_TRADES 写入新建的 Demo Account，让新用户看到演示数据
+async function seedDemoTrades(userId: string, accountId: string): Promise<void> {
+  const data = MOCK_TRADES.map(trade => ({
+    user_id: userId,
+    account_id: accountId,
+    date: trade.entryDate,
+    exit_date: trade.exitDate || null,
+    symbol: trade.symbol,
+    direction: trade.direction === '做多' || trade.direction === 'long' ? 'long' : 'short',
+    entry_price: trade.entryPrice,
+    exit_price: trade.exitPrice || null,
+    quantity: trade.quantity || 1,
+    leverage: 1,
+    risk_amount: 0,
+    fees: trade.fees || 0,
+    pnl: trade.pnl,
+    pnl_percent: null,
+    setup: trade.setup || null,
+    notes: trade.notes || '',
+    review_notes: trade.reviewNotes || '',
+    mistakes: JSON.stringify(trade.mistakes || []),
+  }));
+
+  const { error } = await supabase.from('trading_journals').insert(data);
+  if (error) console.error('[seedDemoTrades] Error seeding demo trades:', error);
 }
 
 // ============ 用户数据服务 ============
@@ -752,7 +780,8 @@ export const userDataService = {
   },
 
   // 确保用户有一个 Demo Account，并将 account_id 为 NULL 的旧交易迁移到 Demo Account
-  async ensureDefaultAccount(): Promise<TradingAccount | null> {
+  // 返回 { account, isNew }，isNew=true 表示本次调用刚创建了账户（用于触发 seed）
+  async ensureDefaultAccount(): Promise<{ account: TradingAccount; isNew: boolean } | null> {
     const userId = await getCurrentUserId();
     if (!userId) return null;
 
@@ -761,6 +790,7 @@ export const userDataService = {
       .select('*').eq('user_id', userId).eq('name', 'Demo Account').limit(1);
 
     let demoAccount = demoAccounts && demoAccounts.length > 0 ? demoAccounts[0] : null;
+    let isNew = false;
 
     if (!demoAccount) {
       // 创建 Demo Account
@@ -777,6 +807,7 @@ export const userDataService = {
         return null;
       }
       demoAccount = newAccount;
+      isNew = true;
     }
 
     // 将所有 account_id 为 NULL 的旧交易迁移到 Demo Account
@@ -785,6 +816,12 @@ export const userDataService = {
       .eq('user_id', userId)
       .is('account_id', null);
 
-    return dbToTradingAccount(demoAccount);
+    const account = dbToTradingAccount(demoAccount);
+
+    if (isNew) {
+      await seedDemoTrades(userId, account.id);
+    }
+
+    return { account, isNew };
   },
 };

@@ -274,7 +274,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.riskSettings) setRiskSettings(result.riskSettings);
 
         // 确保 Demo Account 存在，并将 NULL account_id 的旧交易迁移过去
-        const demoAccount = await userDataService.ensureDefaultAccount();
+        const demoResult = await userDataService.ensureDefaultAccount();
+        const demoAccount = demoResult?.account ?? null;
 
         // 重新加载账户列表（可能新增了 Demo Account）
         const freshAccounts = await userDataService.loadTradingAccounts();
