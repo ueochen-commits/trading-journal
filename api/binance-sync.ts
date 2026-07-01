@@ -104,7 +104,7 @@ export default async function handler(req: any, res: any) {
       try {
         const positions = await futuresExchange.fetchPositions();
         for (const p of positions) {
-          if (parseFloat(p.contracts || '0') !== 0 && p.info?.symbol) {
+          if (parseFloat(String(p.contracts ?? 0)) !== 0 && p.info?.symbol) {
             rawSymbols.add(p.info.symbol);
           }
         }
