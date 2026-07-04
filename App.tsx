@@ -100,6 +100,33 @@ const PageContainer = ({ children }: { children?: React.ReactNode }) => (
     </div>
 );
 
+const TAB_TO_PATH: Record<string, string> = {
+  dashboard: '/dashboard',
+  charts: '/charts',
+  journal: '/journal',
+  playbook: '/playbook',
+  reports: '/reports',
+  plans: '/notebook',
+  psychology: '/psychology',
+  calendar: '/calendar',
+  plaza: '/community/plaza',
+  academy: '/academy',
+  notifications: '/notifications',
+  leaderboard: '/leaderboard',
+  settings: '/settings',
+};
+
+const PATH_TO_TAB: Record<string, string> = Object.entries(TAB_TO_PATH).reduce((acc, [tab, path]) => {
+  acc[path] = tab;
+  return acc;
+}, {} as Record<string, string>);
+
+PATH_TO_TAB['/'] = 'dashboard';
+PATH_TO_TAB['/plans'] = 'plans';
+
+const tabFromPath = (pathname: string) => PATH_TO_TAB[pathname.replace(/\/+$/, '') || '/'] || 'dashboard';
+const pathFromTab = (tab: string) => TAB_TO_PATH[tab] || TAB_TO_PATH.dashboard;
+
 // --- Local Storage Helper ---
 function useStickyState<T>(defaultValue: T, key: string): [T, React.Dispatch<React.SetStateAction<T>>] {
   const [value, setValue] = useState<T>(() => {
@@ -171,7 +198,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const { isAuthenticated, isLoading, openProfile, user, onboardingCompleted, markOnboardingComplete } = useUser();
   const { t, language } = useLanguage();
   const { /* startInitialTour */ } = useTour(); // TEMPORARILY DISABLED
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => {
+    if (typeof window === 'undefined') return 'dashboard';
+    return tabFromPath(window.location.pathname);
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
@@ -194,12 +224,24 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
+    const nextPath = pathFromTab(tab);
+    if (typeof window !== 'undefined' && window.location.pathname !== nextPath) {
+      window.history.pushState({ tab }, '', nextPath + window.location.search);
+    }
     setActiveTab(tab);
   }, []);
 
   React.useEffect(() => {
     onSetActiveTabReady(handleSetActiveTab);
   }, [handleSetActiveTab, onSetActiveTabReady]);
+
+  React.useEffect(() => {
+    const handlePopState = () => {
+      setActiveTab(tabFromPath(window.location.pathname));
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Data State - 从 Supabase 加载，不再使用 localStorage
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -855,7 +897,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       // 9. 延迟一帧跳转，确保 React 已将 tradingAccounts 更新刷入 SettingsPage
       setTimeout(() => {
         setSettingsInitialSection('brokers');
-        setActiveTab('settings');
+        handleSetActiveTab('settings');
         // 跳转后清除 initialSection，避免下次进入设置页时仍跳到 brokers
         setTimeout(() => setSettingsInitialSection(undefined), 200);
       }, 50);
