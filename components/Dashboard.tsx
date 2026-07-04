@@ -143,6 +143,7 @@ const tzCardShell: React.CSSProperties = {
   overflow: 'hidden',
   flex: 1,
   minWidth: 0,
+  width: '100%',
 };
 const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280', fontWeight: 400, marginBottom: 4 };
 const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 'clamp(14px, 1.5vw, 26px)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: c, whiteSpace: 'nowrap' });
@@ -152,7 +153,7 @@ const DashboardLoadingFrame: React.FC<{ isLoading?: boolean; radius?: number; ch
   radius = 12,
   children,
 }) => (
-  <div style={{ position: 'relative', minHeight: '100%', height: '100%' }}>
+  <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
     {children}
     {isLoading && (
       <div
