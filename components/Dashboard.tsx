@@ -147,6 +147,38 @@ const tzCardShell: React.CSSProperties = {
 const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280', fontWeight: 400, marginBottom: 4 };
 const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 'clamp(14px, 1.5vw, 26px)', fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1, color: c, whiteSpace: 'nowrap' });
 
+const DashboardLoadingFrame: React.FC<{ isLoading?: boolean; radius?: number; children: React.ReactNode }> = ({
+  isLoading = false,
+  radius = 12,
+  children,
+}) => (
+  <div style={{ position: 'relative', minHeight: '100%', height: '100%' }}>
+    {children}
+    {isLoading && (
+      <div
+        className="absolute inset-0 z-20 flex items-center justify-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-[1px]"
+        style={{ borderRadius: radius, cursor: 'wait' }}
+        aria-label="Loading card data"
+      >
+        <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin" />
+      </div>
+    )}
+  </div>
+);
+
+const DashboardCardLoadingOverlay: React.FC<{ isLoading?: boolean; radius?: number }> = ({ isLoading = false, radius = 12 }) => {
+  if (!isLoading) return null;
+  return (
+    <div
+      className="absolute inset-0 z-20 flex items-center justify-center bg-white/95 dark:bg-slate-900/95 backdrop-blur-[1px]"
+      style={{ borderRadius: radius, cursor: 'wait' }}
+      aria-label="Loading card data"
+    >
+      <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin" />
+    </div>
+  );
+};
+
 // Semi-circle gauge (100×58, path-length 138.16)
 const SemiGauge: React.FC<{ wins: number; bes: number; losses: number }> = ({ wins, bes, losses }) => {
   const total = wins + bes + losses || 1;
@@ -1326,6 +1358,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
 
 interface DashboardProps {
   trades: Trade[];
+  isDataLoading?: boolean;
   riskSettings: RiskSettings;
   trackerRules: TrackerRule[];
   onUpdateTrackerRules: (rules: TrackerRule[]) => void;
@@ -1374,7 +1407,7 @@ const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
 };
 
 const Dashboard: React.FC<DashboardProps> = ({
-    trades: allTrades, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
+    trades: allTrades, isDataLoading = false, riskSettings, trackerRules, onUpdateTrackerRules, plans = [], onSavePlan, onQuickAddTrade,
     userProfile, disciplineHistory, disciplineRules, onUpdateDisciplineRules, onCheckDisciplineRule, onStartReview,
     weeklyGoal, onSetWeeklyGoal, onViewGoals, onViewLeaderboard, onViewPsychology, onNavigateToJournal, onNavigateToPlans, onResync,
     tradingAccounts, onManageAccounts, selectedAccountId: externalAccountId, onAccountChange, onOpenTradeReview
@@ -1980,7 +2013,7 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-                <div id="dashboard-rank" className="md:col-span-2">
+                <div id="dashboard-rank" className="relative md:col-span-2">
                   <TradeGrailDailyCard
                     trades={allTrades}
                     plans={plans}
@@ -1988,6 +2021,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     onNavigateToJournal={onNavigateToJournal}
                     onNavigateToPlans={onNavigateToPlans}
                   />
+                  <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
                 </div>
                  {(() => {
                     const todayLoss = Math.abs(Math.min(stats.todayPnl, 0));
@@ -2002,6 +2036,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     const cardStyle: React.CSSProperties = {
                       borderRadius: 14,
                       padding: '16px 18px',
+                      position: 'relative',
                       display: 'flex',
                       flexDirection: 'column',
                       gap: 0,
@@ -2013,6 +2048,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     };
                     return (
                       <div id="dashboard-risk" style={cardStyle} className={status === 'danger' ? 'dark:!bg-[rgba(226,75,74,0.08)]' : status === 'warn' ? 'dark:!bg-[rgba(239,159,39,0.08)]' : 'dark:!bg-slate-900 dark:!border-slate-700'}>
+                        <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={14} />
                         {/* Title row */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                           <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }} className="dark:text-white">
@@ -2068,16 +2104,17 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               <div id="dashboard-stats" className="grid gap-2.5" style={{ gridTemplateColumns: 'repeat(5, minmax(0, 1fr))' }}>
-                <TZNetPnlCard value={stats.netPnl} total={stats.totalTrades} wins={stats.winCount} losses={stats.lossCount} label={language === 'cn' ? '净盈亏' : 'Net P&L'} />
-                <TZWinRateCard winRate={stats.winRate} wins={stats.winCount} losses={stats.lossCount} breakEven={stats.breakEvenCount} label={language === 'cn' ? '胜率' : 'Trade win %'} />
-                <TZProfitFactorCard value={stats.profitFactor} label={language === 'cn' ? '盈利因子' : 'Profit factor'} />
-                <TZDayWinCard dayWinRate={stats.dayWinRate} winDays={stats.winDays} lossDays={stats.lossDays} breakEvenDays={stats.breakEvenDays} label={language === 'cn' ? '日胜率' : 'Day win %'} />
-                <TZAvgWinLossCard ratio={stats.avgWinLossRatio} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} />
+                <DashboardLoadingFrame isLoading={isDataLoading} radius={14}><TZNetPnlCard value={stats.netPnl} total={stats.totalTrades} wins={stats.winCount} losses={stats.lossCount} label={language === 'cn' ? '净盈亏' : 'Net P&L'} /></DashboardLoadingFrame>
+                <DashboardLoadingFrame isLoading={isDataLoading} radius={14}><TZWinRateCard winRate={stats.winRate} wins={stats.winCount} losses={stats.lossCount} breakEven={stats.breakEvenCount} label={language === 'cn' ? '胜率' : 'Trade win %'} /></DashboardLoadingFrame>
+                <DashboardLoadingFrame isLoading={isDataLoading} radius={14}><TZProfitFactorCard value={stats.profitFactor} label={language === 'cn' ? '盈利因子' : 'Profit factor'} /></DashboardLoadingFrame>
+                <DashboardLoadingFrame isLoading={isDataLoading} radius={14}><TZDayWinCard dayWinRate={stats.dayWinRate} winDays={stats.winDays} lossDays={stats.lossDays} breakEvenDays={stats.breakEvenDays} label={language === 'cn' ? '日胜率' : 'Day win %'} /></DashboardLoadingFrame>
+                <DashboardLoadingFrame isLoading={isDataLoading} radius={14}><TZAvgWinLossCard ratio={stats.avgWinLossRatio} avgWin={stats.avgWin} avgLoss={stats.avgLoss} label={language === 'cn' ? '盈亏比' : 'Avg win/loss'} /></DashboardLoadingFrame>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, width: '100%', alignItems: 'stretch' }}>
 
               <div id="dashboard-equity" style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
+                <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -2159,7 +2196,9 @@ const Dashboard: React.FC<DashboardProps> = ({
               </div>
 
               {/* Symbol Performance Matrix */}
-              <SymbolMatrixCard trades={trades} language={language} />
+              <DashboardLoadingFrame isLoading={isDataLoading} radius={12}>
+                <SymbolMatrixCard trades={trades} language={language} />
+              </DashboardLoadingFrame>
 
               {/* Win Rate · Avg Win · Avg Loss chart */}
               {(() => {
@@ -2190,9 +2229,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                 const yAmtMax = Math.ceil(amtMax / stepSize) * stepSize + stepSize;
                 const tickCount = Math.round((yAmtMax - yAmtMin) / stepSize) + 1;
                 const legendItems = [{ color: '#4A6CF7', label: 'Win %' }, { color: '#1D9E75', label: 'Avg win' }, { color: '#E24B4A', label: 'Avg loss' }];
-                return (
-                  <div style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', height: 420 }} className="dark:bg-slate-900 dark:border-slate-800">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
+	                return (
+	                  <div style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', height: 420 }} className="dark:bg-slate-900 dark:border-slate-800">
+	                    <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
+	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
                       <TZInfoIcon infoKey="winRateTrend" />
                     </div>
@@ -2248,19 +2288,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                 );
               })()}
 
-              {/* Time × Day Heatmap */}
-              <TimeHeatmapCard
-                trades={trades}
-                language={language}
-                infoIcon={<TZInfoIcon infoKey="timeHeatmap" />}
-              />
+	              {/* Time × Day Heatmap */}
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={10}>
+	                <TimeHeatmapCard
+	                  trades={trades}
+	                  language={language}
+	                  infoIcon={<TZInfoIcon infoKey="timeHeatmap" />}
+	                />
+	              </DashboardLoadingFrame>
 
               </div>
 
               <div id="dashboard-strategy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', alignItems: 'stretch' }}>
-                {/* Left: Daily P&L bar chart */}
-                <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
+	                {/* Left: Daily P&L bar chart */}
+	                <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+	                  <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
+	                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
                     <TZInfoIcon infoKey="dailyPnL" />
                   </div>
@@ -2306,9 +2349,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     .sort((a, b) => new Date(b.exitDate).getTime() - new Date(a.exitDate).getTime())
                     .slice(0, 10);
                   const fmtDate = (d: string) => { const dt = new Date(d); return `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`; };
-                  return (
-                    <div style={{ background: '#fff', border: '1px solid #ededf3', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
-                      {/* Tab header */}
+	                  return (
+	                    <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
+	                      <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
+	                      {/* Tab header */}
                       <div style={{ padding: '14px 20px 0', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
                         <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', paddingBottom: 12, display: 'inline-block', borderBottom: '2px solid #6366f1' }}>
                           {language === 'cn' ? '最近交易' : 'Recent trades'}
@@ -2352,27 +2396,41 @@ const Dashboard: React.FC<DashboardProps> = ({
               <div id="dashboard-calendar" className="pt-2"><CalendarView trades={trades} plans={plans} onSavePlan={onSavePlan} externalSelectedDay={chartClickDay} onExternalClose={() => setChartClickDay(null)} onOpenTradeReview={onOpenTradeReview} /></div>
           </div>
 
-          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
-              <GrailScoreWidget composite={grailScore.composite} radarData={grailScore.radarData} language={language} />
-              <RMultipleCard trades={trades} language={language} infoIcon={<TZInfoIcon infoKey="rMultiple" />} />
+	          <div className="lg:col-span-4 xl:col-span-3 space-y-6">
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={16}>
+	                <GrailScoreWidget composite={grailScore.composite} radarData={grailScore.radarData} language={language} />
+	              </DashboardLoadingFrame>
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={10}>
+	                <RMultipleCard trades={trades} language={language} infoIcon={<TZInfoIcon infoKey="rMultiple" />} />
+	              </DashboardLoadingFrame>
 
-              <TradeDurationChart trades={trades} language={language} />
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={12}>
+	                <TradeDurationChart trades={trades} language={language} />
+	              </DashboardLoadingFrame>
 
-              {/* --- DRAWDOWN CHART --- */}
-              <DrawdownCard trades={trades} accountSize={riskSettings.accountSize} language={language} infoIcon={<TZInfoIcon infoKey="drawdown" />} />
+	              {/* --- DRAWDOWN CHART --- */}
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={10}>
+	                <DrawdownCard trades={trades} accountSize={riskSettings.accountSize} language={language} infoIcon={<TZInfoIcon infoKey="drawdown" />} />
+	              </DashboardLoadingFrame>
 
-              {/* --- TRADE TIME PERFORMANCE --- */}
-              <TradeTimeChart trades={trades} language={language} />
+	              {/* --- TRADE TIME PERFORMANCE --- */}
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={12}>
+	                <TradeTimeChart trades={trades} language={language} />
+	              </DashboardLoadingFrame>
 
-              <DashboardHeatmap
-                language={language}
-                trades={trades}
-                disciplineHistory={disciplineHistory}
-                disciplineRules={disciplineRules}
-              />
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={16}>
+	                <DashboardHeatmap
+	                  language={language}
+	                  trades={trades}
+	                  disciplineHistory={disciplineHistory}
+	                  disciplineRules={disciplineRules}
+	                />
+	              </DashboardLoadingFrame>
 
-              <PositionHeatCard trades={trades} language={language} />
-          </div>
+	              <DashboardLoadingFrame isLoading={isDataLoading} radius={16}>
+	                <PositionHeatCard trades={trades} language={language} />
+	              </DashboardLoadingFrame>
+	          </div>
       </div>
 
       {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); const isDisabled = !isSelected && selectedMarketIds.length >= 4; return (<button key={market.id} onClick={() => toggleMarket(market.id)} disabled={isDisabled} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isDisabled ? 'opacity-40 cursor-not-allowed bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}

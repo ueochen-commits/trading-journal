@@ -181,7 +181,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     return 'light';
   });
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isDataLoading, setIsDataLoading] = useState(false);
+  const [isDataLoading, setIsDataLoading] = useState(true);
   // const [showOnboarding, setShowOnboarding] = useState(false); // TEMPORARILY DISABLED
   // showWelcome: derived from context but controlled by local state so Step2 can stay open
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
@@ -978,6 +978,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   <PageContainer>
                       <Dashboard
                           trades={trades}
+                          isDataLoading={isDataLoading}
                           riskSettings={riskSettings}
                           trackerRules={trackerRules}
                           onUpdateTrackerRules={handleUpdateTrackerRules}
