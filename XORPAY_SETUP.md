@@ -29,12 +29,12 @@
 
 ```bash
 # Supabase Service Key (从 Supabase Dashboard > Settings > API 获取)
-SUPABASE_SERVICE_KEY=your_service_role_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
 
-# XorPay 配置
-VITE_XORPAY_API_URL=https://xorpay.com
-VITE_XORPAY_APP_ID=你的虎皮椒APP_ID
-VITE_XORPAY_APP_SECRET=你的虎皮椒APP_SECRET
+# XorPay 配置（server-only，不能使用 VITE_ 前缀）
+XORPAY_API_URL=https://xorpay.com
+XORPAY_APP_ID=你的虎皮椒APP_ID
+XORPAY_APP_SECRET=你的虎皮椒APP_SECRET
 VITE_XORPAY_TEST_MODE=false  # 测试模式设为 true
 ```
 
@@ -134,5 +134,6 @@ A:
 - [ ] 数据库表已创建
 - [ ] 虎皮椒后台回调地址已配置
 - [ ] 测试模式已关闭 (`VITE_XORPAY_TEST_MODE=false`)
+- [ ] XorPay secret 使用 `XORPAY_APP_SECRET`，没有使用 `VITE_` 前缀
 - [ ] 使用 HTTPS 部署
 - [ ] 回调地址可公网访问

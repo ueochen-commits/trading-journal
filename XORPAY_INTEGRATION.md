@@ -23,9 +23,9 @@
 在 `.env.local` 文件中添加：
 
 ```env
-VITE_XORPAY_API_URL=https://api.xorpay.com
-VITE_XORPAY_APP_ID=your_xorpay_app_id
-VITE_XORPAY_APP_SECRET=your_xorpay_app_secret
+XORPAY_API_URL=https://api.xorpay.com
+XORPAY_APP_ID=your_xorpay_app_id
+XORPAY_APP_SECRET=your_xorpay_app_secret
 ```
 
 ### 4. 执行数据库迁移

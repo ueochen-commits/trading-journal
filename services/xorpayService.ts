@@ -64,15 +64,16 @@ export const createPaymentOrder = async (params: CreateOrderParams): Promise<Pay
     });
 
     // 3. 更新订单的 XorPay ID
+    const providerOrderId = xorpayOrder.xorpay_order_id || xorpayOrder.order_id;
     await supabase
       .from('payment_orders')
-      .update({ xorpay_order_id: xorpayOrder.order_id })
+      .update({ xorpay_order_id: providerOrderId })
       .eq('id', order.id);
 
     // 返回订单信息,包含支付链接
     return {
       ...order,
-      xorpay_order_id: xorpayOrder.order_id,
+      xorpay_order_id: providerOrderId,
       pay_url: xorpayOrder.pay_url,
       qr_code: xorpayOrder.qr_code
     };
@@ -100,6 +101,7 @@ interface XorPayOrderParams {
 
 interface XorPayOrderResponse {
   order_id: string;
+  xorpay_order_id?: string;
   pay_url: string;
   qr_code?: string;
 }
@@ -122,20 +124,17 @@ const createXorPayOrder = async (params: XorPayOrderParams): Promise<XorPayOrder
 
   // 调用后端 API 创建订单（避免 CORS 和密钥泄露问题）
   try {
-    console.log('[XorPay Frontend] Calling backend API with:', {
-      orderId: params.orderId,
-      amount: params.amount,
-      paymentMethod: params.paymentMethod
-    });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) throw new Error('User not authenticated');
 
     const response = await fetch('/api/xorpay-create-order', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
       },
       body: JSON.stringify({
         orderId: params.orderId,
-        amount: params.amount,
         paymentMethod: params.paymentMethod,
         productName: 'TradeGrail会员订阅'
       })
@@ -149,10 +148,10 @@ const createXorPayOrder = async (params: XorPayOrderParams): Promise<XorPayOrder
     }
 
     const result = await response.json();
-    console.log('[XorPay Frontend] Payment order created:', result);
 
     return {
       order_id: result.order_id,
+      xorpay_order_id: result.xorpay_order_id,
       pay_url: result.pay_url,
       qr_code: result.qr_code
     };
