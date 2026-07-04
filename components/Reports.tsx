@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -41,8 +41,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return `${minutes}m`;
   };
 
-  // Default to 'detailed' to show the requested view immediately, or stick to 'overview'
-  const [activeTab, setActiveTab] = useState<string>('detailed');
+  const [activeTab, setActiveTab] = useState<string>('performance');
+  const [summaryTab, setSummaryTab] = useState<'summary' | 'days' | 'trades'>('summary');
   // Sub-filter for Detailed Tab
   const [detailedFilter, setDetailedFilter] = useState<string>('DAYS');
   // State for Time Interval Selection
@@ -515,6 +515,80 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
   }, [trades, dailyData]);
 
+  const performanceDailyData = useMemo(() => {
+      const grouped: Record<string, { pnl: number; count: number; wins: number; losses: number; winPnl: number; lossPnl: number; volume: number }> = {};
+
+      trades.forEach(t => {
+          if (!t.entryDate) return;
+          const date = new Date(t.entryDate).toLocaleDateString('en-CA');
+          if (!grouped[date]) grouped[date] = { pnl: 0, count: 0, wins: 0, losses: 0, winPnl: 0, lossPnl: 0, volume: 0 };
+
+          const net = t.pnl - t.fees;
+          grouped[date].pnl += net;
+          grouped[date].count += 1;
+          grouped[date].volume += Math.abs((t.quantity || 0) * (t.entryPrice || 0));
+
+          if (net > 0) {
+              grouped[date].wins += 1;
+              grouped[date].winPnl += net;
+          } else if (net < 0) {
+              grouped[date].losses += 1;
+              grouped[date].lossPnl += net;
+          }
+      });
+
+      let cumulativePnl = 0;
+      return Object.entries(grouped)
+          .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+          .map(([date, value]) => {
+              cumulativePnl += value.pnl;
+              const avgWin = value.wins > 0 ? value.winPnl / value.wins : 0;
+              const avgLoss = value.losses > 0 ? value.lossPnl / value.losses : 0;
+              const avgDailyWinLoss = avgLoss < 0 ? Math.abs(avgWin / avgLoss) : avgWin > 0 ? avgWin : 0;
+              return {
+                  date,
+                  label: new Date(`${date}T00:00:00`).toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'short', day: '2-digit' }),
+                  pnl: Number(value.pnl.toFixed(2)),
+                  cumulativePnl: Number(cumulativePnl.toFixed(2)),
+                  count: value.count,
+                  wins: value.wins,
+                  losses: value.losses,
+                  winRate: value.count > 0 ? (value.wins / value.count) * 100 : 0,
+                  avgDailyWinLoss: Number(avgDailyWinLoss.toFixed(2)),
+                  volume: value.volume,
+              };
+          });
+  }, [trades, language]);
+
+  const performanceSummary = useMemo(() => {
+      const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
+      const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
+      const totalPlannedR = tradesWithRisk.reduce((acc, t) => {
+          const plannedTarget = typeof t.profitTarget === 'number' && typeof t.entryPrice === 'number' ? Math.abs(t.profitTarget - t.entryPrice) * (t.quantity || 0) : 0;
+          return acc + (plannedTarget > 0 && t.riskAmount ? plannedTarget / t.riskAmount : 0);
+      }, 0);
+      const avgPlannedR = tradesWithRisk.length > 0 ? totalPlannedR / tradesWithRisk.length : null;
+      const losingDays = performanceDailyData.filter(d => d.pnl < 0);
+      const maxDailyNetDrawdown = losingDays.length ? Math.min(...losingDays.map(d => d.pnl)) : 0;
+      const avgDailyNetDrawdown = losingDays.length ? losingDays.reduce((acc, d) => acc + d.pnl, 0) / losingDays.length : 0;
+      const avgDailyWinPct = performanceDailyData.length > 0
+          ? performanceDailyData.reduce((acc, d) => acc + d.winRate, 0) / performanceDailyData.length
+          : 0;
+      const avgTradeWinLoss = stats && stats.avgLoss < 0 ? Math.abs(stats.avgWin / stats.avgLoss) : stats && stats.avgWin > 0 ? stats.avgWin : 0;
+      const avgDailyWinLoss = performanceDailyData.length > 0
+          ? performanceDailyData.reduce((acc, d) => acc + d.avgDailyWinLoss, 0) / performanceDailyData.length
+          : 0;
+
+      return {
+          avgPlannedR,
+          maxDailyNetDrawdown,
+          avgDailyNetDrawdown,
+          avgDailyWinPct,
+          avgTradeWinLoss,
+          avgDailyWinLoss,
+      };
+  }, [trades, performanceDailyData, stats]);
+
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
@@ -716,15 +790,101 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       </div>
   );
 
+  const formatMoney = (value: number, compact = false) => {
+      const abs = Math.abs(value);
+      const formatted = compact && abs >= 1000
+          ? `${(abs / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`
+          : abs.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `${value < 0 ? '-' : ''}$${formatted}`;
+  };
+
+  const formatSignedMoney = (value: number) => `${value >= 0 ? '' : '-'}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const reportPanelClass = "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)]";
+  const reportControlClass = "h-9 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors";
+
+  const ChartCard = ({
+      title,
+      metricLabel,
+      children,
+      accent = 'text-indigo-500',
+      rightControl = 'Day',
+  }: {
+      title: string;
+      metricLabel: string;
+      children: React.ReactNode;
+      accent?: string;
+      rightControl?: string;
+  }) => (
+      <div className={`${reportPanelClass} overflow-hidden`}>
+          <div className="h-14 px-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                      <BarChart2 className={`w-4 h-4 ${accent}`} />
+                  </div>
+                  <button className="h-8 min-w-0 max-w-[220px] inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700">
+                      <span className="truncate">{metricLabel}</span>
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
+                  </button>
+                  <button className="hidden sm:inline-flex text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                      + {language === 'cn' ? '添加指标' : 'Add metric'}
+                  </button>
+              </div>
+              <div className="flex items-center gap-2">
+                  <button className="h-8 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                      {rightControl}
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                      <MoreVertical className="w-4 h-4" />
+                  </button>
+              </div>
+          </div>
+          <div className="px-4 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                  <div>
+                      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
+                      <p className="text-[11px] text-slate-400 dark:text-slate-500">{language === 'cn' ? '当前筛选范围' : 'Current filter range'}</p>
+                  </div>
+              </div>
+              <div className="h-[330px]">
+                  {children}
+              </div>
+          </div>
+      </div>
+  );
+
+  const SummaryMetric = ({ label, value, tone = 'neutral' }: { label: string; value: string | number; tone?: 'neutral' | 'good' | 'bad' | 'accent' }) => {
+      const toneClass = tone === 'good'
+          ? 'text-emerald-600 dark:text-emerald-400'
+          : tone === 'bad'
+          ? 'text-rose-600 dark:text-rose-400'
+          : tone === 'accent'
+          ? 'text-indigo-600 dark:text-indigo-400'
+          : 'text-slate-800 dark:text-slate-100';
+
+      return (
+          <div className="min-h-[72px] px-5 py-3 border-r border-slate-200/80 dark:border-slate-800 last:border-r-0">
+              <div className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+                  {label}
+                  <Info className="w-3.5 h-3.5 text-slate-400" />
+              </div>
+              <div className={`mt-1 text-xl font-semibold tabular-nums ${toneClass}`}>
+                  {value}
+              </div>
+          </div>
+      );
+  };
+
   const REPORT_TABS = [
+      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance' },
       { id: 'overview', label: t.reports.tabs.overview },
-      { id: 'detailed', label: t.reports.tabs.detailed },
-      { id: 'options', label: t.reports.tabs.options },
-      { id: 'risk', label: t.reports.tabs.risk },
-      { id: 'wins_losses', label: t.reports.tabs.winsLosses },
-      { id: 'compare', label: t.reports.tabs.compare },
-      { id: 'calendar', label: t.reports.tabs.calendar },
-      { id: 'ai', label: t.reports.tabs.ai }
+      { id: 'detailed', label: language === 'cn' ? '详细报表' : t.reports.tabs.detailed },
+      { id: 'risk', label: language === 'cn' ? '风控分析' : t.reports.tabs.risk },
+      { id: 'wins_losses', label: language === 'cn' ? '盈亏对比' : t.reports.tabs.winsLosses },
+      { id: 'compare', label: language === 'cn' ? '周期对比' : t.reports.tabs.compare },
+      { id: 'calendar', label: language === 'cn' ? '交易日历' : t.reports.tabs.calendar },
+      { id: 'ai', label: language === 'cn' ? 'AI 智能周报' : t.reports.tabs.ai }
   ];
 
   // Helper to determine active data and configuration for Detailed View
@@ -843,17 +1003,60 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { id: 'OTHER', label: t.reports.filters.other },
   ];
 
+  const summaryMetrics = stats ? [
+      { label: 'Net P&L', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: 'Win %', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { label: 'Avg daily win %', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
+      { label: 'Profit factor', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
+      { label: 'Trade expectancy', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
+      { label: 'Avg daily win/loss', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
+      { label: 'Avg trade win/loss', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
+      { label: 'Avg hold time', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
+      { label: 'Avg net trade P&L', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: 'Avg daily net P&L', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: 'Avg. planned r-multiple', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
+      { label: 'Avg. realized r-multiple', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
+      { label: 'Avg daily volume', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
+      { label: 'Logged days', value: stats.totalDays, tone: 'neutral' as const },
+      { label: 'Max daily net drawdown', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { label: 'Avg daily net drawdown', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
+  ] : [];
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header & Tabs */}
       <div className="flex flex-col gap-4">
-        <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <BarChart2 className="w-6 h-6 text-indigo-500" />
-            {t.reports.title}
-        </h2>
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-indigo-500" />
+                {t.reports.title}
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+                <button className={reportControlClass}>
+                    <Coins className="w-4 h-4 text-indigo-400" />
+                    USD
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+                <button className={reportControlClass}>
+                    <Filter className="w-4 h-4 text-indigo-400" />
+                    {language === 'cn' ? '筛选' : 'Filters'}
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+                <button className={reportControlClass}>
+                    <CalendarIcon className="w-4 h-4 text-indigo-400" />
+                    {language === 'cn' ? '日期范围' : 'Date range'}
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+                <button className={reportControlClass}>
+                    <Hash className="w-4 h-4 text-indigo-400" />
+                    {language === 'cn' ? '所有账户' : 'All accounts'}
+                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                </button>
+            </div>
+        </div>
         
         {/* Navigation Bar */}
-        <div className="flex items-center gap-6 overflow-x-auto border-b border-slate-200 dark:border-slate-800 pb-0 no-scrollbar">
+        <div className="flex items-center gap-7 overflow-x-auto border-b border-slate-200 dark:border-slate-800 pb-0 no-scrollbar">
             {REPORT_TABS.map((tab) => (
                 <button
                     key={tab.id}
@@ -870,6 +1073,165 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
             ))}
         </div>
       </div>
+
+      {/* --- PERFORMANCE TAB --- */}
+      {activeTab === 'performance' && (
+          <div className="space-y-5 animate-fade-in">
+              <div className="flex justify-end gap-2">
+                  <button className={reportControlClass}>
+                      NET P&L
+                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                  </button>
+                  <button className={reportControlClass}>
+                      <Download className="w-4 h-4" />
+                      {language === 'cn' ? '导出 PDF' : 'Export PDF'}
+                  </button>
+              </div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
+                  <ChartCard
+                      title={language === 'cn' ? '累计净盈亏' : 'Net P&L cumulative'}
+                      metricLabel={language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative'}
+                      accent="text-indigo-500"
+                      rightControl={language === 'cn' ? '日' : 'Day'}
+                  >
+                      <ResponsiveContainer width="100%" height="100%">
+                          <AreaChart data={performanceDailyData} margin={{ top: 8, right: 12, left: 8, bottom: 10 }}>
+                              <defs>
+                                  <linearGradient id="performancePnlFill" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="0%" stopColor={stats && stats.netPnl < 0 ? '#fb7185' : '#6366f1'} stopOpacity={0.28} />
+                                      <stop offset="100%" stopColor={stats && stats.netPnl < 0 ? '#fb7185' : '#6366f1'} stopOpacity={0.02} />
+                                  </linearGradient>
+                              </defs>
+                              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#e5e7eb" />
+                              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                              <YAxis tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} width={60} tickFormatter={(value: number) => formatMoney(value, true)} />
+                              <Tooltip
+                                  cursor={{ stroke: '#8b5cf6', strokeWidth: 1, strokeDasharray: '4 4' }}
+                                  contentStyle={{ borderRadius: 8, border: '1px solid #d8dbe3', boxShadow: '0 10px 28px rgba(15, 23, 42, 0.12)', fontSize: 12 }}
+                                  formatter={(value: number) => [formatSignedMoney(value), language === 'cn' ? '累计净盈亏' : 'Net P&L cumulative']}
+                              />
+                              <Area type="monotone" dataKey="cumulativePnl" stroke={stats && stats.netPnl < 0 ? '#fb7185' : '#6366f1'} strokeWidth={2} fill="url(#performancePnlFill)" dot={{ r: 2, strokeWidth: 0 }} activeDot={{ r: 5 }} />
+                          </AreaChart>
+                      </ResponsiveContainer>
+                  </ChartCard>
+
+                  <ChartCard
+                      title={language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}
+                      metricLabel={language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}
+                      accent="text-emerald-500"
+                      rightControl={language === 'cn' ? '日' : 'Day'}
+                  >
+                      <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={performanceDailyData} margin={{ top: 8, right: 12, left: 8, bottom: 10 }}>
+                              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#e5e7eb" />
+                              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
+                              <YAxis tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} width={48} />
+                              <Tooltip
+                                  cursor={{ fill: 'rgba(15, 23, 42, 0.03)' }}
+                                  contentStyle={{ borderRadius: 8, border: '1px solid #d8dbe3', boxShadow: '0 10px 28px rgba(15, 23, 42, 0.12)', fontSize: 12 }}
+                                  formatter={(value: number) => [Number(value).toFixed(2), language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss']}
+                              />
+                              <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} maxBarSize={42} />
+                          </BarChart>
+                      </ResponsiveContainer>
+                  </ChartCard>
+              </div>
+
+              <div className={`${reportPanelClass} overflow-hidden`}>
+                  <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800">
+                      <div className="flex items-center gap-6">
+                          {[
+                              { id: 'summary' as const, label: language === 'cn' ? '汇总' : 'Summary' },
+                              { id: 'days' as const, label: language === 'cn' ? '天' : 'Days' },
+                              { id: 'trades' as const, label: language === 'cn' ? '交易' : 'Trades' },
+                          ].map(tab => (
+                              <button
+                                  key={tab.id}
+                                  onClick={() => setSummaryTab(tab.id)}
+                                  className={`h-14 border-b-2 text-sm font-semibold transition-colors ${summaryTab === tab.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                              >
+                                  {tab.label}
+                              </button>
+                          ))}
+                      </div>
+                      <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600">
+                          <MoreVertical className="w-4 h-4" />
+                      </button>
+                  </div>
+
+                  {summaryTab === 'summary' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-y divide-slate-200/80 dark:divide-slate-800">
+                          {summaryMetrics.map(metric => (
+                              <SummaryMetric key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
+                          ))}
+                      </div>
+                  )}
+
+                  {summaryTab === 'days' && (
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                              <thead className="text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                                  <tr>
+                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '日期' : 'Date'}</th>
+                                      <th className="px-5 py-3 text-right font-semibold">Net P&L</th>
+                                      <th className="px-5 py-3 text-right font-semibold">{language === 'cn' ? '胜率' : 'Win %'}</th>
+                                      <th className="px-5 py-3 text-right font-semibold">{language === 'cn' ? '交易数' : 'Trades'}</th>
+                                      <th className="px-5 py-3 text-right font-semibold">{language === 'cn' ? '交易量' : 'Volume'}</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                  {performanceDailyData.map(row => (
+                                      <tr key={row.date} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                          <td className="px-5 py-3 font-semibold text-slate-700 dark:text-slate-200">{row.date}</td>
+                                          <td className={`px-5 py-3 text-right font-semibold tabular-nums ${row.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{formatSignedMoney(row.pnl)}</td>
+                                          <td className="px-5 py-3 text-right tabular-nums text-slate-700 dark:text-slate-200">{row.winRate.toFixed(1)}%</td>
+                                          <td className="px-5 py-3 text-right tabular-nums text-slate-700 dark:text-slate-200">{row.count}</td>
+                                          <td className="px-5 py-3 text-right tabular-nums text-slate-500 dark:text-slate-400">{row.volume.toFixed(2)}</td>
+                                      </tr>
+                                  ))}
+                              </tbody>
+                          </table>
+                      </div>
+                  )}
+
+                  {summaryTab === 'trades' && (
+                      <div className="overflow-x-auto">
+                          <table className="w-full text-sm">
+                              <thead className="text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                                  <tr>
+                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '品种' : 'Symbol'}</th>
+                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '日期' : 'Date'}</th>
+                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '方向' : 'Direction'}</th>
+                                      <th className="px-5 py-3 text-right font-semibold">Net P&L</th>
+                                      <th className="px-5 py-3 text-right font-semibold">R</th>
+                                  </tr>
+                              </thead>
+                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                  {[...trades]
+                                      .filter(t => t.status !== TradeStatus.OPEN)
+                                      .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime())
+                                      .slice(0, 12)
+                                      .map(trade => {
+                                          const net = trade.pnl - trade.fees;
+                                          const realizedR = trade.riskAmount && trade.riskAmount > 0 ? net / trade.riskAmount : null;
+                                          return (
+                                              <tr key={trade.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                                  <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">{trade.symbol}</td>
+                                                  <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{new Date(trade.entryDate).toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')}</td>
+                                                  <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{trade.direction}</td>
+                                                  <td className={`px-5 py-3 text-right font-semibold tabular-nums ${net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{formatSignedMoney(net)}</td>
+                                                  <td className="px-5 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">{realizedR === null ? '--' : `${realizedR.toFixed(2)}R`}</td>
+                                              </tr>
+                                          );
+                                      })}
+                              </tbody>
+                          </table>
+                      </div>
+                  )}
+              </div>
+          </div>
+      )}
 
       {/* --- OVERVIEW TAB --- */}
       {stats && activeTab === 'overview' && (
