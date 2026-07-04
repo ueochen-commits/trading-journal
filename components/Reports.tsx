@@ -809,50 +809,82 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       children,
       accent = 'text-indigo-500',
       rightControl = 'Day',
+      featured = false,
+      summaryValue,
+      summaryTone = 'neutral',
   }: {
       title: string;
       metricLabel: string;
       children: React.ReactNode;
       accent?: string;
       rightControl?: string;
+      featured?: boolean;
+      summaryValue?: string;
+      summaryTone?: 'neutral' | 'good' | 'bad';
   }) => (
-      <div className={`${reportPanelClass} overflow-hidden`}>
-          <div className="h-14 px-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+      <div className={`${featured ? 'relative overflow-hidden rounded-[10px] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-[0_14px_42px_rgba(15,23,42,0.07)]' : reportPanelClass} overflow-hidden`}>
+          {featured && <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-slate-300/80 to-transparent dark:via-slate-700" />}
+          <div className={`${featured ? 'h-[58px]' : 'h-14'} px-4 flex items-center justify-between border-b border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95`}>
               <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center bg-slate-50 dark:bg-slate-800">
+                  <div className={`${featured ? 'w-8 h-8 rounded-[7px] bg-slate-950 text-white border-slate-950 dark:bg-slate-100 dark:text-slate-950 dark:border-slate-100' : 'w-8 h-8 rounded-md border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center`}>
                       <BarChart2 className={`w-4 h-4 ${accent}`} />
                   </div>
-                  <button className="h-8 min-w-0 max-w-[220px] inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700">
+                  <button className={`${featured ? 'h-8 bg-slate-50/90 dark:bg-slate-950/40 hover:bg-white dark:hover:bg-slate-900' : 'h-8'} min-w-0 max-w-[220px] inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-colors`}>
                       <span className="truncate">{metricLabel}</span>
                       <ChevronDown className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" />
                   </button>
-                  <button className="hidden sm:inline-flex text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                  <button className="hidden sm:inline-flex text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white">
                       + {language === 'cn' ? '添加指标' : 'Add metric'}
                   </button>
               </div>
               <div className="flex items-center gap-2">
-                  <button className="h-8 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                  <button className="h-8 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                       {rightControl}
                       <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
                   </button>
-                  <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                  <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
                       <MoreVertical className="w-4 h-4" />
                   </button>
               </div>
           </div>
-          <div className="px-4 pt-4">
-              <div className="flex items-center justify-between mb-3">
+          <div className={`${featured ? 'px-5 pt-4 pb-3' : 'px-4 pt-4'}`}>
+              <div className="flex items-start justify-between gap-4 mb-3">
                   <div>
-                      <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">{title}</h3>
+                      <h3 className={`${featured ? 'text-[15px]' : 'text-sm'} font-semibold text-slate-850 dark:text-slate-100`}>{title}</h3>
                       <p className="text-[11px] text-slate-400 dark:text-slate-500">{language === 'cn' ? '当前筛选范围' : 'Current filter range'}</p>
                   </div>
+                  {summaryValue && (
+                      <div className="text-right">
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Net</div>
+                          <div className={`text-sm font-semibold tabular-nums ${summaryTone === 'good' ? 'text-emerald-600 dark:text-emerald-400' : summaryTone === 'bad' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-slate-100'}`}>
+                              {summaryValue}
+                          </div>
+                      </div>
+                  )}
               </div>
-              <div className="h-[330px]">
+              <div className={`${featured ? 'h-[348px]' : 'h-[330px]'}`}>
                   {children}
               </div>
           </div>
       </div>
   );
+
+  const PnlTooltip = ({ active, payload, label }: any) => {
+      if (!active || !payload?.length) return null;
+      const value = Number(payload[0]?.value || 0);
+      const tone = value >= 0 ? 'text-emerald-500' : 'text-rose-500';
+
+      return (
+          <div className="rounded-md border border-slate-200 bg-white/95 px-3.5 py-2.5 shadow-[0_16px_36px_rgba(15,23,42,0.16)] backdrop-blur-sm dark:border-slate-700 dark:bg-slate-950/95">
+              <div className="text-[11px] font-semibold text-slate-900 dark:text-white">{label}</div>
+              <div className="mt-1 flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${value >= 0 ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">{language === 'cn' ? '累计净盈亏' : 'Net P&L cumulative'}</span>
+                  <span className={`text-xs font-semibold tabular-nums ${tone}`}>{formatSignedMoney(value)}</span>
+              </div>
+          </div>
+      );
+  };
 
   const SummaryMetric = ({ label, value, tone = 'neutral' }: { label: string; value: string | number; tone?: 'neutral' | 'good' | 'bad' | 'accent' }) => {
       const toneClass = tone === 'good'
@@ -1092,28 +1124,70 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <ChartCard
                       title={language === 'cn' ? '累计净盈亏' : 'Net P&L cumulative'}
                       metricLabel={language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative'}
-                      accent="text-indigo-500"
+                      accent="text-white dark:text-slate-950"
                       rightControl={language === 'cn' ? '日' : 'Day'}
+                      featured
+                      summaryValue={stats ? formatSignedMoney(stats.netPnl) : undefined}
+                      summaryTone={stats && stats.netPnl >= 0 ? 'good' : 'bad'}
                   >
-                      <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={performanceDailyData} margin={{ top: 8, right: 12, left: 8, bottom: 10 }}>
-                              <defs>
-                                  <linearGradient id="performancePnlFill" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="0%" stopColor={stats && stats.netPnl < 0 ? '#fb7185' : '#6366f1'} stopOpacity={0.28} />
-                                      <stop offset="100%" stopColor={stats && stats.netPnl < 0 ? '#fb7185' : '#6366f1'} stopOpacity={0.02} />
-                                  </linearGradient>
-                              </defs>
-                              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#e5e7eb" />
-                              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                              <YAxis tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} width={60} tickFormatter={(value: number) => formatMoney(value, true)} />
-                              <Tooltip
-                                  cursor={{ stroke: '#8b5cf6', strokeWidth: 1, strokeDasharray: '4 4' }}
-                                  contentStyle={{ borderRadius: 8, border: '1px solid #d8dbe3', boxShadow: '0 10px 28px rgba(15, 23, 42, 0.12)', fontSize: 12 }}
-                                  formatter={(value: number) => [formatSignedMoney(value), language === 'cn' ? '累计净盈亏' : 'Net P&L cumulative']}
-                              />
-                              <Area type="monotone" dataKey="cumulativePnl" stroke={stats && stats.netPnl < 0 ? '#fb7185' : '#6366f1'} strokeWidth={2} fill="url(#performancePnlFill)" dot={{ r: 2, strokeWidth: 0 }} activeDot={{ r: 5 }} />
-                          </AreaChart>
-                      </ResponsiveContainer>
+                      {performanceDailyData.length === 0 ? (
+                          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
+                              {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
+                          </div>
+                      ) : (
+                          <div className="relative h-full">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <AreaChart data={performanceDailyData} margin={{ top: 10, right: 18, left: 2, bottom: 18 }}>
+                                      <defs>
+                                          <linearGradient id="performancePnlFillPremium" x1="0" y1="0" x2="0" y2="1">
+                                              <stop offset="0%" stopColor={stats && stats.netPnl < 0 ? '#e45c64' : '#2563eb'} stopOpacity={0.26} />
+                                              <stop offset="62%" stopColor={stats && stats.netPnl < 0 ? '#e45c64' : '#2563eb'} stopOpacity={0.08} />
+                                              <stop offset="100%" stopColor={stats && stats.netPnl < 0 ? '#e45c64' : '#2563eb'} stopOpacity={0.015} />
+                                          </linearGradient>
+                                      </defs>
+                                      <CartesianGrid strokeDasharray="5 7" vertical={false} stroke="#dfe4ec" strokeOpacity={0.9} />
+                                      <XAxis
+                                          dataKey="label"
+                                          tick={{ fontSize: 11, fill: '#7c8796', fontWeight: 500 }}
+                                          axisLine={false}
+                                          tickLine={false}
+                                          interval="preserveStartEnd"
+                                          dy={10}
+                                      />
+                                      <YAxis
+                                          tick={{ fontSize: 11, fill: '#7c8796', fontWeight: 500 }}
+                                          axisLine={false}
+                                          tickLine={false}
+                                          width={66}
+                                          tickFormatter={(value: number) => formatMoney(value, true)}
+                                      />
+                                      <ReferenceLine y={0} stroke="#b8c0cc" strokeDasharray="4 5" strokeOpacity={0.75} />
+                                      <Tooltip
+                                          cursor={{ stroke: stats && stats.netPnl < 0 ? '#e45c64' : '#2563eb', strokeWidth: 1.2, strokeDasharray: '5 5' }}
+                                          content={<PnlTooltip />}
+                                      />
+                                      <Area
+                                          type="monotone"
+                                          dataKey="cumulativePnl"
+                                          stroke={stats && stats.netPnl < 0 ? '#e45c64' : '#2563eb'}
+                                          strokeWidth={2.2}
+                                          fill="url(#performancePnlFillPremium)"
+                                          dot={false}
+                                          activeDot={{
+                                              r: 5,
+                                              fill: stats && stats.netPnl < 0 ? '#e45c64' : '#2563eb',
+                                              stroke: '#ffffff',
+                                              strokeWidth: 2,
+                                          }}
+                                      />
+                                  </AreaChart>
+                              </ResponsiveContainer>
+                              <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full bg-white/85 px-3 py-1 text-xs font-medium text-slate-500 shadow-[0_1px_0_rgba(15,23,42,0.04)] dark:bg-slate-900/85 dark:text-slate-400">
+                                  <span className={`h-2.5 w-2.5 rounded-full ${stats && stats.netPnl < 0 ? 'bg-rose-500' : 'bg-blue-600'}`} />
+                                  Net P&L
+                              </div>
+                          </div>
+                      )}
                   </ChartCard>
 
                   <ChartCard
