@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Calendar as CalendarIcon, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search, Check } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Calculator, Activity, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Hourglass, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search, Check } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -3068,20 +3068,63 @@ const Reports: React.FC<ReportsProps> = ({
       </span>
   );
 
+  const DayTimeInsightIcon = ({ type }: { type: 'best' | 'worst' | 'active' | 'winRate' }) => {
+      if (type === 'best') {
+          return (
+              <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
+                  <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#dff5ee" />
+                  <path d="M4.6 11.6 7.1 9.1l2 1.7 3.8-4" fill="none" stroke="#35b98c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M10.8 6.7h2.2v2.2" fill="none" stroke="#35b98c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="4.6" cy="11.6" r="1" fill="#35b98c" />
+              </svg>
+          );
+      }
+
+      if (type === 'worst') {
+          return (
+              <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
+                  <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#ffe5e8" />
+                  <path d="M4.6 6.4 7.2 9l2-1.6 3.7 4" fill="none" stroke="#f05258" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M10.8 11.3h2.2V9.1" fill="none" stroke="#f05258" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="4.6" cy="6.4" r="1" fill="#f05258" />
+              </svg>
+          );
+      }
+
+      if (type === 'active') {
+          return (
+              <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
+                  <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#fff0cf" />
+                  <path d="M9.9 3.9 5.9 9.7h3l-0.8 4.4 4.1-6h-3l0.7-4.2Z" fill="#f59f00" />
+                  <path d="M13.4 4.7c0.8 0.7 1.2 1.6 1.2 2.8M3.5 10.5c0 1.2 0.5 2.2 1.4 3" fill="none" stroke="#f59f00" strokeWidth="1.2" strokeLinecap="round" opacity="0.72" />
+              </svg>
+          );
+      }
+
+      return (
+          <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
+              <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#eee8ff" />
+              <path d="M4.4 11.3 6.7 6.9l2.1 5.6 1.7-3.7 3.1 0" fill="none" stroke="#6b55cf" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="6.7" cy="6.9" r="1" fill="#6b55cf" />
+              <circle cx="13.6" cy="8.8" r="1" fill="#6b55cf" opacity="0.8" />
+          </svg>
+      );
+  };
+
   const DayTimeInsightCard = ({
       eyebrow,
       title,
       detail,
       value,
       tone = 'neutral',
-      icon,
+      iconType,
   }: {
       eyebrow: string;
       title: string;
       detail: string;
       value?: string;
       tone?: 'good' | 'bad' | 'accent' | 'neutral';
-      icon?: React.ReactNode;
+      iconType?: 'best' | 'worst' | 'active' | 'winRate';
   }) => {
       const toneColor = tone === 'good' ? '#4dbd96' : tone === 'bad' ? '#f05258' : tone === 'accent' ? '#f59f00' : '#6b55cf';
       const valueClass = tone === 'bad'
@@ -3092,8 +3135,8 @@ const Reports: React.FC<ReportsProps> = ({
       return (
           <div className="min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900">
               <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b]">
-                  <span className="inline-flex h-[15px] w-[15px] items-center justify-center" style={{ color: toneColor }}>
-                      {icon || <span className="h-[7px] w-[7px] rounded-full" style={{ backgroundColor: toneColor }} />}
+                  <span className="inline-flex h-[18px] w-[18px] items-center justify-center" style={{ color: toneColor }}>
+                      {iconType ? <DayTimeInsightIcon type={iconType} /> : <span className="h-[7px] w-[7px] rounded-full" style={{ backgroundColor: toneColor }} />}
                   </span>
                   <span>{eyebrow}</span>
               </div>
@@ -5185,7 +5228,7 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={`${dayTimeHighlights.bestPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               value={dayTimeHighlights.bestPerforming ? formatSignedMoney(dayTimeHighlights.bestPerforming.netPnl) : undefined}
                               tone="good"
-                              icon={<TrendingUp className="h-[15px] w-[15px]" strokeWidth={2.4} />}
+                              iconType="best"
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最差表现' : 'Least performing'}
@@ -5193,21 +5236,21 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={`${dayTimeHighlights.leastPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               value={dayTimeHighlights.leastPerforming ? formatSignedMoney(dayTimeHighlights.leastPerforming.netPnl) : undefined}
                               tone="bad"
-                              icon={<TrendingDown className="h-[15px] w-[15px]" strokeWidth={2.4} />}
+                              iconType="worst"
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最活跃' : 'Most active'}
                               title={dayTimeHighlights.mostActive?.label || '--'}
                               detail={`${dayTimeHighlights.mostActive?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               tone="accent"
-                              icon={<Sparkles className="h-[15px] w-[15px]" strokeWidth={2.2} />}
+                              iconType="active"
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最高胜率' : 'Best win rate'}
                               title={dayTimeHighlights.bestWinRate?.label || '--'}
                               detail={dayTimeHighlights.bestWinRate ? `${dayTimeHighlights.bestWinRate.winRate.toFixed(0)}% / ${dayTimeHighlights.bestWinRate.count} ${language === 'cn' ? '笔交易' : 'trades'}` : '--'}
                               tone="neutral"
-                              icon={<Activity className="h-[15px] w-[15px]" strokeWidth={2.2} />}
+                              iconType="winRate"
                           />
                       </div>
 
