@@ -426,6 +426,38 @@
         position: relative;
         z-index: 2;
       }
+      .report-metric-category-panel {
+        display: grid;
+        grid-template-rows: 0fr;
+        margin-top: 0;
+        opacity: 0;
+        transition:
+          grid-template-rows 260ms cubic-bezier(0.22, 1, 0.36, 1),
+          margin-top 260ms cubic-bezier(0.22, 1, 0.36, 1),
+          padding-bottom 260ms cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 180ms ease-out;
+      }
+      .report-metric-category-panel.is-open {
+        grid-template-rows: 1fr;
+        margin-top: 2px;
+        padding-bottom: 6px;
+        opacity: 1;
+      }
+      .report-metric-category-panel-inner {
+        min-height: 0;
+        overflow: hidden;
+      }
+      .report-metric-category-panel-content {
+        transform: translateY(-7px);
+        opacity: 0;
+        transition:
+          transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 180ms ease-out;
+      }
+      .report-metric-category-panel.is-open .report-metric-category-panel-content {
+        transform: translateY(0);
+        opacity: 1;
+      }
 
       /* Remove browser focus outline on Recharts SVG elements */
       .recharts-wrapper,

@@ -2882,31 +2882,25 @@ const Reports: React.FC<ReportsProps> = ({
                                   {category.label}
                                   <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
                               </button>
-                              <div
-                                  className={`overflow-hidden transition-[max-height,padding,margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                                      isExpanded ? 'mt-[2px] max-h-[620px] pb-[6px]' : 'mt-0 max-h-0 pb-0'
-                                  }`}
-                              >
-                                  <div
-                                      className={`space-y-[1px] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
-                                          isExpanded ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
-                                      }`}
-                                  >
-                                      {category.metrics
-                                          .filter(([metricId]) => !excludedMetricIds.includes(metricId))
-                                          .map(([metricId, config]) => {
-                                          const isSelected = metricId === selectedMetricId;
-                                          return (
-                                              <button
-                                                  key={metricId}
-                                                  type="button"
-                                                  onClick={() => handleSelectMetric(metricId)}
-                                                  className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
-                                              >
-                                                  {config.label}
-                                              </button>
-                                          );
-                                      })}
+                              <div className={`report-metric-category-panel ${isExpanded ? 'is-open' : ''}`}>
+                                  <div className="report-metric-category-panel-inner">
+                                      <div className="report-metric-category-panel-content space-y-[1px]">
+                                          {category.metrics
+                                              .filter(([metricId]) => !excludedMetricIds.includes(metricId))
+                                              .map(([metricId, config]) => {
+                                              const isSelected = metricId === selectedMetricId;
+                                              return (
+                                                  <button
+                                                      key={metricId}
+                                                      type="button"
+                                                      onClick={() => handleSelectMetric(metricId)}
+                                                      className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
+                                                  >
+                                                      {config.label}
+                                                  </button>
+                                              );
+                                          })}
+                                      </div>
                                   </div>
                               </div>
                           </div>
