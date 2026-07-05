@@ -1187,6 +1187,59 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return `${minutes}m`;
   };
 
+  const getCompactDurationLabelLines = (ms: number) => {
+      if (isNaN(ms) || ms === 0) return ['N/A'];
+      const minutes = Math.floor(ms / 60000);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+
+      if (language === 'cn') {
+          if (days > 0) return [`${days}天`, `${hours % 24}小时`];
+          if (hours > 0) return [`${hours}小时`, `${minutes % 60}分`];
+          return [`${minutes}分钟`];
+      }
+
+      if (days > 0) return [`${days}d`, `${hours % 24}h`];
+      if (hours > 0) return [`${hours}h`, `${minutes % 60}m`];
+      return [`${minutes}m`];
+  };
+
+  const DurationYAxisTick = ({
+      x = 0,
+      y = 0,
+      payload,
+      fill = '#64748b',
+      orientation = 'left',
+  }: {
+      x?: number;
+      y?: number;
+      payload?: { value?: number };
+      fill?: string;
+      orientation?: 'left' | 'right';
+  }) => {
+      const lines = getCompactDurationLabelLines(Number(payload?.value ?? 0));
+      const textAnchor = orientation === 'right' ? 'start' : 'end';
+      const firstLineOffset = lines.length > 1 ? -3 : 4;
+
+      return (
+          <text
+              x={x}
+              y={y}
+              textAnchor={textAnchor}
+              fill={fill}
+              fontSize={12}
+              fontWeight={400}
+              dominantBaseline="middle"
+          >
+              {lines.map((line, index) => (
+                  <tspan key={`${line}-${index}`} x={x} dy={index === 0 ? firstLineOffset : 13}>
+                      {line}
+                  </tspan>
+              ))}
+          </text>
+      );
+  };
+
   const buildChartMetricData = (metricId: SummaryMetricId) => {
       const config = chartMetricConfigs[metricId] || chartMetricConfigs.netPnl!;
       const source = performanceDailyData.filter(day => config.includeDay ? config.includeDay(day) : true);
@@ -1626,11 +1679,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       }>;
       animate: boolean;
   }) => {
-      const commonMargin = { top: 8, right: 10, left: 5, bottom: 42 };
       const primaryMetric = metrics[0];
       const secondaryMetric = metrics[1];
-      const primaryYAxisWidth = primaryMetric.config.format === 'duration' ? 70 : 58;
-      const secondaryYAxisWidth = secondaryMetric?.config.format === 'duration' ? 62 : 46;
+      const hasDurationAxis = metrics.some(metric => metric.config.format === 'duration');
+      const commonMargin = { top: hasDurationAxis ? 18 : 8, right: secondaryMetric?.config.format === 'duration' ? 18 : 10, left: primaryMetric.config.format === 'duration' ? 12 : 5, bottom: 42 };
+      const primaryYAxisWidth = primaryMetric.config.format === 'duration' ? 82 : 58;
+      const secondaryYAxisWidth = secondaryMetric?.config.format === 'duration' ? 76 : 46;
 
       const xAxis = (
           <XAxis
@@ -1739,21 +1793,29 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           {xAxis}
                           <YAxis
                               yAxisId="left"
-                              tick={{ fontSize: 12, fill: primaryMetric.color, fontWeight: 400 }}
                               axisLine={false}
                               tickLine={false}
                               width={primaryYAxisWidth}
-                              tickFormatter={(value: number) => formatChartMetricValue(value, primaryMetric.config.format, true)}
+                              tickMargin={primaryMetric.config.format === 'duration' ? 10 : 5}
+                              tick={primaryMetric.config.format === 'duration'
+                                  ? <DurationYAxisTick fill={primaryMetric.color} orientation="left" />
+                                  : { fontSize: 12, fill: primaryMetric.color, fontWeight: 400 }
+                              }
+                              tickFormatter={primaryMetric.config.format === 'duration' ? undefined : (value: number) => formatChartMetricValue(value, primaryMetric.config.format, true)}
                           />
                           {secondaryMetric && (
                               <YAxis
                                   yAxisId="right"
                                   orientation="right"
-                                  tick={{ fontSize: 12, fill: secondaryMetric.color, fontWeight: 400 }}
                                   axisLine={false}
                                   tickLine={false}
                                   width={secondaryYAxisWidth}
-                                  tickFormatter={(value: number) => formatChartMetricValue(value, secondaryMetric.config.format, true)}
+                                  tickMargin={secondaryMetric.config.format === 'duration' ? 10 : 5}
+                                  tick={secondaryMetric.config.format === 'duration'
+                                      ? <DurationYAxisTick fill={secondaryMetric.color} orientation="right" />
+                                      : { fontSize: 12, fill: secondaryMetric.color, fontWeight: 400 }
+                                  }
+                                  tickFormatter={secondaryMetric.config.format === 'duration' ? undefined : (value: number) => formatChartMetricValue(value, secondaryMetric.config.format, true)}
                               />
                           )}
                           <Tooltip
