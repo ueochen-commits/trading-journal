@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, Globe2, Repeat2, BookOpen, FileBarChart2 } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -1027,14 +1027,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   };
 
   const REPORT_TABS = [
-      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance' },
-      { id: 'overview', label: t.reports.tabs.overview },
-      { id: 'detailed', label: language === 'cn' ? '详细报表' : t.reports.tabs.detailed },
-      { id: 'risk', label: language === 'cn' ? '风控分析' : t.reports.tabs.risk },
-      { id: 'wins_losses', label: language === 'cn' ? '盈亏对比' : t.reports.tabs.winsLosses },
-      { id: 'compare', label: language === 'cn' ? '周期对比' : t.reports.tabs.compare },
-      { id: 'calendar', label: language === 'cn' ? '交易日历' : t.reports.tabs.calendar },
-      { id: 'ai', label: language === 'cn' ? 'AI 智能周报' : t.reports.tabs.ai }
+      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance', icon: Activity, isNew: true },
+      { id: 'overview', label: language === 'cn' ? '概览' : 'Overview', icon: Globe2 },
+      { id: 'detailed', label: language === 'cn' ? '详细报表' : 'Reports', icon: FileBarChart2, hasMenu: true },
+      { id: 'compare', label: language === 'cn' ? '对比' : 'Compare', icon: Repeat2 },
+      { id: 'calendar', label: language === 'cn' ? '日历' : 'Calendar', icon: CalendarIcon },
+      { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights', icon: FileText },
   ];
 
   // Helper to determine active data and configuration for Detailed View
@@ -1210,21 +1208,39 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
         </div>
         
         {/* Navigation Bar */}
-        <div className="flex items-center gap-7 overflow-x-auto border-b border-slate-200 dark:border-slate-800 pb-0 no-scrollbar">
-            {REPORT_TABS.map((tab) => (
-                <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                        px-1 py-3 text-xs font-bold uppercase tracking-wider transition-all border-b-2 whitespace-nowrap
-                        ${activeTab === tab.id 
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400 dark:border-indigo-400' 
-                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-700'}
-                    `}
-                >
-                    {tab.label}
-                </button>
-            ))}
+        <div className="flex min-h-[52px] items-center justify-between gap-4 overflow-x-auto border-b border-slate-200 dark:border-slate-800 no-scrollbar">
+            <div className="flex items-center gap-[28px]">
+                {REPORT_TABS.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeTab === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => setActiveTab(tab.id)}
+                            className={`group relative inline-flex h-[52px] items-center gap-[9px] whitespace-nowrap border-b-2 text-[14px] font-semibold transition-colors ${
+                                isActive
+                                    ? 'border-[#5b45d6] text-[#5b45d6] dark:text-indigo-400'
+                                    : 'border-transparent text-[#5f6875] hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                            }`}
+                        >
+                            <Icon className={`h-[18px] w-[18px] ${isActive ? 'text-[#5b45d6]' : 'text-[#68717d] group-hover:text-slate-800 dark:text-slate-400'}`} />
+                            <span>{tab.label}</span>
+                            {tab.isNew && (
+                                <span className="rounded-[3px] bg-[#e8ebf1] px-[5px] py-[2px] text-[10px] font-bold leading-none text-[#536070]">
+                                    NEW
+                                </span>
+                            )}
+                            {tab.hasMenu && (
+                                <ChevronDown className="h-[13px] w-[13px] text-[#68717d]" />
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+            <button className="hidden shrink-0 items-center gap-2 text-[14px] font-medium text-[#5f6875] transition-colors hover:text-[#5b45d6] xl:inline-flex">
+                <BookOpen className="h-[17px] w-[17px]" />
+                {language === 'cn' ? '阅读指南' : 'Read guide'}
+            </button>
         </div>
       </div>
 
