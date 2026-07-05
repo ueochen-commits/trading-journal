@@ -1038,7 +1038,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const SummaryMetric = ({ label, value, tooltip, tone = 'neutral', isEditing = false, onRemove, draggableProps }: { label: string; value: string | number; tooltip: string; tone?: 'neutral' | 'good' | 'bad' | 'accent'; isEditing?: boolean; onRemove?: () => void; draggableProps?: React.HTMLAttributes<HTMLDivElement> }) => {
+  const SummaryMetric = ({ label, value, tooltip, tone = 'neutral', isEditing = false, onRemove, draggableProps, tooltipPlacement = 'center' }: { label: string; value: string | number; tooltip: string; tone?: 'neutral' | 'good' | 'bad' | 'accent'; isEditing?: boolean; onRemove?: () => void; draggableProps?: React.HTMLAttributes<HTMLDivElement>; tooltipPlacement?: 'start' | 'center' | 'end' }) => {
       const toneClass = tone === 'good'
           ? 'text-emerald-600 dark:text-emerald-400'
           : tone === 'bad'
@@ -1047,6 +1047,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           ? 'text-indigo-600 dark:text-indigo-400'
           : 'text-slate-800 dark:text-slate-100';
       const { className: draggableClassName = '', ...dragAttributes } = draggableProps || {};
+      const tooltipPositionClass = tooltipPlacement === 'start'
+          ? 'left-0 translate-x-0'
+          : tooltipPlacement === 'end'
+          ? 'right-0 translate-x-0'
+          : 'left-1/2 -translate-x-1/2';
 
       return (
           <div
@@ -1085,7 +1090,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               >
                                   <Info className="h-[14px] w-[14px]" />
                               </button>
-                              <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-[9px] hidden w-[286px] -translate-x-1/2 rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
+                              <span className={`pointer-events-none absolute bottom-full z-50 mb-[9px] hidden w-[min(286px,calc(100vw-32px))] rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block ${tooltipPositionClass}`}>
                                   {tooltip}
                               </span>
                           </span>
@@ -1590,6 +1595,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                               tone={metric.tone}
                                               isEditing={isSummaryEditing}
                                               onRemove={() => removeSummaryMetric(metric.id)}
+                                              tooltipPlacement={columnIndex === 0 ? 'start' : columnIndex === 3 ? 'end' : 'center'}
                                               draggableProps={isSummaryEditing ? {
                                                   draggable: true,
                                                   onDragStart: () => setDraggedSummaryMetricId(metric.id),
