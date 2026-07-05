@@ -14,13 +14,14 @@ interface ReportsProps {
   trades: Trade[];
   accountSize?: number;
   plans?: DailyPlan[];
+  isDataLoading?: boolean;
   onPushNotification?: (notification: Notification) => void;
   onSavePlan?: (plan: DailyPlan) => void;
   disciplineHistory?: any[];
   riskSettings?: any;
 }
 
-const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = [], onPushNotification, onSavePlan, disciplineHistory = [], riskSettings = null }) => {
+const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = [], isDataLoading = false, onPushNotification, onSavePlan, disciplineHistory = [], riskSettings = null }) => {
   const { t, language } = useLanguage();
   
   // Helper: Format duration with localization
@@ -873,6 +874,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const reportPanelClass = "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)]";
   const reportControlClass = "h-9 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors";
 
+  const ReportCardLoadingOverlay = ({ radius = 8 }: { radius?: number }) => {
+      if (!isDataLoading) return null;
+      return (
+          <div
+              className="absolute inset-0 z-20 flex items-center justify-center bg-white/95 backdrop-blur-[1px] dark:bg-slate-900/95"
+              style={{ borderRadius: radius, cursor: 'wait' }}
+              aria-label="Loading report data"
+          >
+              <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin" />
+          </div>
+      );
+  };
+
   const ChartCard = ({
       title,
       metricLabel,
@@ -892,7 +906,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       summaryValue?: string;
       summaryTone?: 'neutral' | 'good' | 'bad';
   }) => (
-      <div className={`${featured ? 'overflow-hidden rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} overflow-hidden`}>
+      <div className={`${featured ? 'overflow-hidden rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-hidden`}>
           <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between bg-white dark:bg-slate-900`}>
               <div className={`${featured ? 'gap-[12px]' : 'gap-3'} flex items-center min-w-0`}>
                   <div className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center`}>
@@ -943,6 +957,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   {children}
               </div>
           </div>
+          <ReportCardLoadingOverlay radius={featured ? 8 : 12} />
       </div>
   );
 
@@ -1223,7 +1238,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       rightControl={language === 'cn' ? '日' : 'Day'}
                       featured
                   >
-                      {performanceDailyData.length === 0 ? (
+                      {!isDataLoading && performanceDailyData.length === 0 ? (
                           <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
                               {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
                           </div>
@@ -1295,7 +1310,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       rightControl={language === 'cn' ? '日' : 'Day'}
                       featured
                   >
-                      {avgDailyWinLossDisplayData.length === 0 ? (
+                      {!isDataLoading && avgDailyWinLossDisplayData.length === 0 ? (
                           <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
                               {language === 'cn' ? '暂无可计算的盈亏比数据' : 'No win/loss ratio data yet'}
                           </div>
@@ -1335,7 +1350,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   </ChartCard>
               </div>
 
-              <div className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+              <div className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                   <div className="h-[52px] px-4 flex items-center justify-between border-b border-[#e2e6ec] dark:border-slate-800">
                       <div className="flex items-center gap-[34px]">
                           {[
@@ -1433,6 +1448,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           </table>
                       </div>
                   )}
+                  <ReportCardLoadingOverlay radius={8} />
               </div>
           </div>
       )}
