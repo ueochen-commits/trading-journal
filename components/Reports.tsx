@@ -107,6 +107,10 @@ type ChartMetricVisual = 'line' | 'area' | 'bar';
 type ChartSide = 'left' | 'right';
 type ChartMetricSlot = 'primary' | 'secondary' | 'tertiary';
 type PnlDisplayMode = 'net' | 'gross';
+type DayTimeReportView = 'DAYS' | 'MONTHS' | 'TIME' | 'TRADE DURATION';
+type DayTimeMetricId = 'netPnl' | 'tradeCount' | 'winRate' | 'avgDailyVolume' | 'avgWin' | 'avgLoss';
+type DayTimeCrossMetric = 'winRate' | 'pnl' | 'trades';
+type DayTimeSymbolLimit = 5 | 10 | 20 | 'all';
 type ChartStyleSettings = Record<ChartSide, {
   primary?: {
     visual?: ChartMetricVisual;
@@ -243,6 +247,16 @@ const Reports: React.FC<ReportsProps> = ({
   const [summaryTab, setSummaryTab] = useState<'summary' | 'days' | 'trades'>('summary');
   // Sub-filter for Detailed Tab
   const [detailedFilter, setDetailedFilter] = useState<string>('DAYS');
+  const [dayTimeReportView, setDayTimeReportView] = useState<DayTimeReportView>('DAYS');
+  const [dayTimeLeftPrimaryMetric, setDayTimeLeftPrimaryMetric] = useState<DayTimeMetricId>('netPnl');
+  const [dayTimeLeftSecondaryMetric, setDayTimeLeftSecondaryMetric] = useState<DayTimeMetricId | null>('tradeCount');
+  const [dayTimeLeftTertiaryMetric, setDayTimeLeftTertiaryMetric] = useState<DayTimeMetricId | null>(null);
+  const [dayTimeRightPrimaryMetric, setDayTimeRightPrimaryMetric] = useState<DayTimeMetricId>('winRate');
+  const [dayTimeRightSecondaryMetric, setDayTimeRightSecondaryMetric] = useState<DayTimeMetricId | null>('tradeCount');
+  const [dayTimeRightTertiaryMetric, setDayTimeRightTertiaryMetric] = useState<DayTimeMetricId | null>(null);
+  const [dayTimeCrossMetric, setDayTimeCrossMetric] = useState<DayTimeCrossMetric>('pnl');
+  const [dayTimeSymbolLimit, setDayTimeSymbolLimit] = useState<DayTimeSymbolLimit>(10);
+  const [isDayTimeSymbolLimitOpen, setIsDayTimeSymbolLimitOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(getRange('last30'));
@@ -287,12 +301,15 @@ const Reports: React.FC<ReportsProps> = ({
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
+  const [openDayTimeMetricPicker, setOpenDayTimeMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
 
   const getDisplayPnl = (trade: Trade) => {
       const grossPnl = Number(trade.pnl) || 0;
       const fees = Number(trade.fees) || 0;
       return pnlDisplayMode === 'net' ? grossPnl - fees : grossPnl;
   };
+
+  const getTradeVolume = (trade: Trade) => Math.abs((Number(trade.quantity) || 0) * (Number(trade.entryPrice) || 0));
   
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -368,6 +385,19 @@ const Reports: React.FC<ReportsProps> = ({
   }, [isPnlDisplayMenuOpen]);
 
   useEffect(() => {
+      if (!isDayTimeSymbolLimitOpen) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest('[data-day-time-symbol-limit-menu]')) return;
+          setIsDayTimeSymbolLimitOpen(false);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [isDayTimeSymbolLimitOpen]);
+
+  useEffect(() => {
       const handlePointerDown = (event: PointerEvent) => {
           const target = event.target as Node;
           if (accountSwitcherRef.current && !accountSwitcherRef.current.contains(target)) {
@@ -408,6 +438,19 @@ const Reports: React.FC<ReportsProps> = ({
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [openChartMetricPicker]);
+
+  useEffect(() => {
+      if (!openDayTimeMetricPicker) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest('[data-day-time-metric-picker-root]')) return;
+          setOpenDayTimeMetricPicker(null);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [openDayTimeMetricPicker]);
 
   useEffect(() => {
       if (!currentUserId) return;
@@ -1133,6 +1176,162 @@ const Reports: React.FC<ReportsProps> = ({
       const indexes = getEvenlySpacedIndexes(performancePnlDisplayData.length, 6);
       return indexes.map(index => performancePnlDisplayData[index]?.label).filter(Boolean);
   }, [performancePnlDisplayData]);
+
+  type DayTimeReportRow = {
+      key: string;
+      label: string;
+      shortLabel: string;
+      count: number;
+      netPnl: number;
+      grossProfit: number;
+      grossLoss: number;
+      wins: number;
+      losses: number;
+      volume: number;
+      activeDays: Set<string>;
+      activeDayCount: number;
+      avgDailyVolume: number;
+      avgWin: number;
+      avgLoss: number;
+      winRate: number;
+  };
+
+  const createDayTimeRow = (key: string, label: string, shortLabel = label): DayTimeReportRow => ({
+      key,
+      label,
+      shortLabel,
+      count: 0,
+      netPnl: 0,
+      grossProfit: 0,
+      grossLoss: 0,
+      wins: 0,
+      losses: 0,
+      volume: 0,
+      activeDays: new Set<string>(),
+      activeDayCount: 0,
+      avgDailyVolume: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      winRate: 0,
+  });
+
+  const addTradeToDayTimeRow = (row: DayTimeReportRow, trade: Trade) => {
+      const displayPnl = getDisplayPnl(trade);
+      row.count += 1;
+      row.netPnl += displayPnl;
+      row.volume += getTradeVolume(trade);
+      const entryDate = new Date(trade.entryDate);
+      if (!Number.isNaN(entryDate.getTime())) {
+          row.activeDays.add(entryDate.toLocaleDateString('en-CA'));
+      }
+      if (displayPnl > 0) {
+          row.wins += 1;
+          row.grossProfit += displayPnl;
+      } else if (displayPnl < 0) {
+          row.losses += 1;
+          row.grossLoss += displayPnl;
+      }
+  };
+
+  const finalizeDayTimeRows = (rows: DayTimeReportRow[]) => rows.map(row => ({
+      ...row,
+      netPnl: Number(row.netPnl.toFixed(2)),
+      grossProfit: Number(row.grossProfit.toFixed(2)),
+      grossLoss: Number(row.grossLoss.toFixed(2)),
+      volume: Number(row.volume.toFixed(2)),
+      activeDayCount: row.activeDays.size,
+      avgDailyVolume: row.activeDays.size > 0 ? Number((row.volume / row.activeDays.size).toFixed(2)) : 0,
+      avgWin: row.wins > 0 ? Number((row.grossProfit / row.wins).toFixed(2)) : 0,
+      avgLoss: row.losses > 0 ? Number((row.grossLoss / row.losses).toFixed(2)) : 0,
+      winRate: row.count > 0 ? (row.wins / row.count) * 100 : 0,
+  }));
+
+  const dayTimeReportRows = useMemo(() => {
+      if (dayTimeReportView === 'DAYS') {
+          const labels = language === 'cn'
+              ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+              : ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          const shortLabels = language === 'cn'
+              ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+              : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const rows = labels.map((label, index) => createDayTimeRow(String(index), label, shortLabels[index]));
+          trades.forEach(trade => {
+              const date = new Date(trade.entryDate);
+              if (Number.isNaN(date.getTime())) return;
+              addTradeToDayTimeRow(rows[date.getDay()], trade);
+          });
+          return finalizeDayTimeRows(rows);
+      }
+
+      if (dayTimeReportView === 'MONTHS') {
+          const monthLabels = language === 'cn'
+              ? ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+              : ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+          const monthShortLabels = language === 'cn'
+              ? ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+              : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const rows = monthLabels.map((label, index) => createDayTimeRow(String(index), label, monthShortLabels[index]));
+          trades.forEach(trade => {
+              const date = new Date(trade.entryDate);
+              if (Number.isNaN(date.getTime())) return;
+              addTradeToDayTimeRow(rows[date.getMonth()], trade);
+          });
+          return finalizeDayTimeRows(rows);
+      }
+
+      if (dayTimeReportView === 'TIME') {
+          const rows = Array.from({ length: 24 }, (_, hour) => {
+              const label = language === 'cn'
+                  ? `${String(hour).padStart(2, '0')}:00`
+                  : `${hour === 0 ? 12 : hour > 12 ? hour - 12 : hour}${hour >= 12 ? ' PM' : ' AM'}`;
+              return createDayTimeRow(String(hour), label, `${String(hour).padStart(2, '0')}:00`);
+          });
+          trades.forEach(trade => {
+              const date = new Date(trade.entryDate);
+              if (Number.isNaN(date.getTime())) return;
+              addTradeToDayTimeRow(rows[date.getHours()], trade);
+          });
+          return finalizeDayTimeRows(rows);
+      }
+
+      const buckets = [
+          { key: 'under-5m', label: language === 'cn' ? '5分钟内' : 'Under 5m', min: 0, max: 5 * 60 * 1000 },
+          { key: '5-30m', label: language === 'cn' ? '5-30分钟' : '5-30m', min: 5 * 60 * 1000, max: 30 * 60 * 1000 },
+          { key: '30-60m', label: language === 'cn' ? '30-60分钟' : '30-60m', min: 30 * 60 * 1000, max: 60 * 60 * 1000 },
+          { key: '1-2h', label: language === 'cn' ? '1-2小时' : '1-2h', min: 60 * 60 * 1000, max: 2 * 60 * 60 * 1000 },
+          { key: '2-4h', label: language === 'cn' ? '2-4小时' : '2-4h', min: 2 * 60 * 60 * 1000, max: 4 * 60 * 60 * 1000 },
+          { key: '4h-plus', label: language === 'cn' ? '4小时以上' : '4h+', min: 4 * 60 * 60 * 1000, max: Infinity },
+      ];
+      const rows = buckets.map(bucket => createDayTimeRow(bucket.key, bucket.label));
+      trades.forEach(trade => {
+          if (!trade.exitDate || trade.status === TradeStatus.OPEN) return;
+          const duration = new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime();
+          if (!Number.isFinite(duration) || duration < 0) return;
+          const index = buckets.findIndex(bucket => duration >= bucket.min && duration < bucket.max);
+          if (index >= 0) addTradeToDayTimeRow(rows[index], trade);
+      });
+      return finalizeDayTimeRows(rows);
+  }, [trades, language, pnlDisplayMode, dayTimeReportView]);
+
+  const getDayTimeMetricValue = (row: DayTimeReportRow, metric: DayTimeMetricId) => {
+      if (metric === 'netPnl') return row.netPnl;
+      if (metric === 'tradeCount') return row.count;
+      if (metric === 'winRate') return row.winRate;
+      if (metric === 'avgDailyVolume') return row.avgDailyVolume;
+      if (metric === 'avgWin') return row.avgWin;
+      return row.avgLoss;
+  };
+
+  const dayTimeMetricOptions: Array<{ id: DayTimeMetricId; label: string; color: string; visual: ChartMetricVisual; format: ChartMetricFormat }> = [
+      { id: 'netPnl', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), color: '#ff6468', visual: 'bar', format: 'money' },
+      { id: 'tradeCount', label: language === 'cn' ? '交易次数' : 'Trade count', color: '#3d63dd', visual: 'line', format: 'number' },
+      { id: 'winRate', label: language === 'cn' ? '胜率' : 'Win %', color: '#3d63dd', visual: 'line', format: 'percent' },
+      { id: 'avgDailyVolume', label: language === 'cn' ? '平均成交额' : 'Avg daily volume', color: '#6b55cf', visual: 'bar', format: 'number' },
+      { id: 'avgWin', label: language === 'cn' ? '平均盈利' : 'Avg win', color: '#55c39e', visual: 'line', format: 'money' },
+      { id: 'avgLoss', label: language === 'cn' ? '平均亏损' : 'Avg loss', color: '#ff6468', visual: 'line', format: 'money' },
+  ];
+
+  const getDayTimeMetricOption = (id: DayTimeMetricId) => dayTimeMetricOptions.find(option => option.id === id) || dayTimeMetricOptions[0];
 
   const isPnlTrendingDown = useMemo(() => {
       if (performancePnlDisplayData.length < 2) return false;
@@ -2554,6 +2753,313 @@ const Reports: React.FC<ReportsProps> = ({
       });
   }, [isDataLoading, language, rightChartData, rightChartTicks, rightChartRenderMetrics, shouldAnimateCharts]);
 
+  const getDayTimeMetricState = (side: ChartSide, slot: ChartMetricSlot): DayTimeMetricId | null => {
+      if (side === 'left') {
+          if (slot === 'primary') return dayTimeLeftPrimaryMetric;
+          if (slot === 'secondary') return dayTimeLeftSecondaryMetric;
+          return dayTimeLeftTertiaryMetric;
+      }
+      if (slot === 'primary') return dayTimeRightPrimaryMetric;
+      if (slot === 'secondary') return dayTimeRightSecondaryMetric;
+      return dayTimeRightTertiaryMetric;
+  };
+
+  const setDayTimeMetricState = (side: ChartSide, slot: ChartMetricSlot, metricId: DayTimeMetricId | null) => {
+      if (side === 'left') {
+          if (slot === 'primary' && metricId) setDayTimeLeftPrimaryMetric(metricId);
+          else if (slot === 'secondary') setDayTimeLeftSecondaryMetric(metricId);
+          else if (slot === 'tertiary') setDayTimeLeftTertiaryMetric(metricId);
+          return;
+      }
+
+      if (slot === 'primary' && metricId) setDayTimeRightPrimaryMetric(metricId);
+      else if (slot === 'secondary') setDayTimeRightSecondaryMetric(metricId);
+      else if (slot === 'tertiary') setDayTimeRightTertiaryMetric(metricId);
+  };
+
+  const getDayTimeMetricIds = (side: ChartSide) => {
+      const ids = side === 'left'
+          ? [dayTimeLeftPrimaryMetric, dayTimeLeftSecondaryMetric, dayTimeLeftTertiaryMetric]
+          : [dayTimeRightPrimaryMetric, dayTimeRightSecondaryMetric, dayTimeRightTertiaryMetric];
+      return ids.filter((metric): metric is DayTimeMetricId => Boolean(metric));
+  };
+
+  const getDayTimeNextSlot = (side: ChartSide): ChartMetricSlot | null => {
+      if (!getDayTimeMetricState(side, 'secondary')) return 'secondary';
+      if (!getDayTimeMetricState(side, 'tertiary')) return 'tertiary';
+      return null;
+  };
+
+  const getDayTimeAvailableMetrics = (selectedMetricId: DayTimeMetricId | null, excludedMetricIds: DayTimeMetricId[]) =>
+      dayTimeMetricOptions.filter(option => option.id === selectedMetricId || !excludedMetricIds.includes(option.id));
+
+  const triggerMetricSweep = (event: React.MouseEvent<HTMLButtonElement>) => {
+      const button = event.currentTarget;
+      button.classList.remove('is-sweeping');
+      void button.offsetWidth;
+      button.classList.add('is-sweeping');
+      window.setTimeout(() => button.classList.remove('is-sweeping'), 540);
+  };
+
+  const DayTimeMetricPicker = ({
+      side,
+      slot,
+      selectedMetricId,
+      excludedMetricIds = [],
+  }: {
+      side: ChartSide;
+      slot: ChartMetricSlot;
+      selectedMetricId: DayTimeMetricId | null;
+      excludedMetricIds?: DayTimeMetricId[];
+  }) => {
+      if (openDayTimeMetricPicker?.side !== side || openDayTimeMetricPicker.slot !== slot) return null;
+
+      const availableMetrics = getDayTimeAvailableMetrics(selectedMetricId, excludedMetricIds);
+      const expandedHeight = availableMetrics.length * 38 + 8;
+
+      return (
+          <div className="absolute left-0 top-full z-50 mt-[8px] w-[min(300px,calc(100vw-48px))] origin-top-left overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white p-[8px] shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+              <div
+                  className="report-metric-category-panel is-open"
+                  style={{ maxHeight: `${expandedHeight}px` }}
+              >
+                  <div className="report-metric-category-panel-content space-y-[1px]">
+                      {availableMetrics.map((option, index) => {
+                          const selected = option.id === selectedMetricId;
+                          return (
+                              <button
+                                  key={option.id}
+                                  type="button"
+                                  onClick={() => {
+                                      setDayTimeMetricState(side, slot, option.id);
+                                      setOpenDayTimeMetricPicker(null);
+                                  }}
+                                  className={`report-metric-option flex w-full items-center gap-[8px] rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
+                                      selected
+                                          ? 'bg-[#ebe7f8] text-[#2f255f]'
+                                          : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                  }`}
+                                  style={{ '--option-index': index } as React.CSSProperties}
+                              >
+                                  <span className="h-[9px] w-[9px] shrink-0 rounded-full" style={{ backgroundColor: option.color }} />
+                                  <span className="truncate">{option.label}</span>
+                              </button>
+                          );
+                      })}
+                  </div>
+              </div>
+          </div>
+      );
+  };
+
+  const DayTimeMetricTrigger = ({
+      side,
+      slot,
+      metricId,
+      removable = false,
+      onRemove,
+  }: {
+      side: ChartSide;
+      slot: ChartMetricSlot;
+      metricId: DayTimeMetricId;
+      removable?: boolean;
+      onRemove?: () => void;
+  }) => {
+      const selected = getDayTimeMetricOption(metricId);
+      const sideMetrics = getDayTimeMetricIds(side);
+      const excludedMetricIds = sideMetrics.filter(id => id !== metricId);
+
+      return (
+          <div className="group/day-time-metric relative flex min-w-[150px] flex-[1_1_172px] max-w-[260px] items-center" data-day-time-metric-picker-root>
+              <button
+                  type="button"
+                  onClick={(event) => {
+                      triggerMetricSweep(event);
+                      setOpenDayTimeMetricPicker(current => current?.side === side && current.slot === slot ? null : { side, slot });
+                  }}
+                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-2 overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+              >
+                  <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
+                      <span className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]" style={{ backgroundColor: selected.color }} />
+                  </span>
+                  <span className="truncate">{selected.label}</span>
+                  <ChevronDown className="h-[15px] w-[15px] shrink-0 text-[#111827] dark:text-slate-300" />
+              </button>
+              {removable && (
+                  <button
+                      type="button"
+                      onClick={(event) => {
+                          event.stopPropagation();
+                          onRemove?.();
+                          setOpenDayTimeMetricPicker(null);
+                      }}
+                      className="pointer-events-none ml-0 inline-flex h-[22px] w-0 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#dfe4ec] bg-white text-[#858d99] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-[width,margin,opacity,background-color,color,border-color] duration-150 ease-out hover:border-[#ccd3de] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/day-time-metric:pointer-events-auto group-hover/day-time-metric:ml-[6px] group-hover/day-time-metric:w-[22px] group-hover/day-time-metric:opacity-100 focus-visible:pointer-events-auto focus-visible:ml-[6px] focus-visible:w-[22px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                      aria-label={language === 'cn' ? '移除指标' : 'Remove metric'}
+                  >
+                      <X className="h-[13px] w-[13px]" />
+                  </button>
+              )}
+              <DayTimeMetricPicker
+                  side={side}
+                  slot={slot}
+                  selectedMetricId={metricId}
+                  excludedMetricIds={excludedMetricIds}
+              />
+          </div>
+      );
+  };
+
+  const DayTimeAddMetricButton = ({ side }: { side: ChartSide }) => {
+      const nextSlot = getDayTimeNextSlot(side);
+      if (!nextSlot) return null;
+      const selectedMetricId = getDayTimeMetricState(side, nextSlot);
+
+      return (
+          <div className="relative inline-flex shrink-0" data-day-time-metric-picker-root>
+              <button
+                  type="button"
+                  onClick={() => setOpenDayTimeMetricPicker(current => current?.side === side && current.slot === nextSlot ? null : { side, slot: nextSlot })}
+                  className="rounded-[7px] px-[12px] py-[7px] text-[14px] font-semibold text-[#5b45b6] transition-colors hover:bg-[#ebe7f8]"
+              >
+                  + {language === 'cn' ? '添加指标' : 'Add metric'}
+              </button>
+              <DayTimeMetricPicker
+                  side={side}
+                  slot={nextSlot}
+                  selectedMetricId={selectedMetricId}
+                  excludedMetricIds={getDayTimeMetricIds(side)}
+              />
+          </div>
+      );
+  };
+
+  const renderDayTimeMetricChart = ({
+      chartId,
+      metrics,
+  }: {
+      chartId: string;
+      metrics: DayTimeMetricId[];
+  }) => {
+      const visibleMetrics = metrics.map(getDayTimeMetricOption);
+      const chartData = dayTimeReportRows.map(row => ({
+          ...row,
+          label: row.shortLabel,
+          ...Object.fromEntries(metrics.map(metric => [metric, getDayTimeMetricValue(row, metric)])),
+      }));
+      const axisGroups = visibleMetrics.map((metric, index) => {
+          const values = chartData.map(row => Number(row[metric.id])).filter(Number.isFinite);
+          return {
+              id: `${chartId}-${metric.id}`,
+              metric,
+              orientation: index === 0 ? 'left' as const : 'right' as const,
+              ticks: getChartAxisTicks(values),
+          };
+      });
+      const gridAxis = axisGroups[0];
+      const xTicks = getEvenlySpacedIndexes(chartData.length, Math.min(chartData.length, 8)).map(index => chartData[index]?.label).filter(Boolean);
+
+      const renderSeries = (metric: typeof visibleMetrics[number], index: number) => {
+          const yAxisId = `${chartId}-${metric.id}`;
+          if (metric.visual === 'bar') {
+              return (
+                  <Bar key={metric.id} yAxisId={yAxisId} dataKey={metric.id} barSize={metrics.length > 1 ? 26 : 34} radius={[3, 3, 0, 0]} fill={metric.color} isAnimationActive={shouldAnimateCharts} animationDuration={520}>
+                      {chartData.map((entry, cellIndex) => (
+                          <Cell key={`${chartId}-${metric.id}-${cellIndex}`} fill={Number(entry[metric.id]) >= 0 ? metric.color : '#ff6468'} />
+                      ))}
+                  </Bar>
+              );
+          }
+
+          if (metric.visual === 'area') {
+              return (
+                  <Area
+                      key={metric.id}
+                      yAxisId={yAxisId}
+                      type="monotone"
+                      dataKey={metric.id}
+                      stroke={metric.color}
+                      strokeWidth={2}
+                      fill={`url(#${chartId}-${metric.id}-fill)`}
+                      dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
+                      activeDot={{ r: 5, fill: '#fff', stroke: metric.color, strokeWidth: 2.4 }}
+                      isAnimationActive={shouldAnimateCharts}
+                      animationDuration={560}
+                      connectNulls
+                  />
+              );
+          }
+
+          return (
+              <Line
+                  key={metric.id}
+                  yAxisId={yAxisId}
+                  type="monotone"
+                  dataKey={metric.id}
+                  stroke={metric.color}
+                  strokeWidth={2}
+                  dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
+                  activeDot={{ r: 5, fill: '#fff', stroke: metric.color, strokeWidth: 2.4 }}
+                  isAnimationActive={shouldAnimateCharts}
+                  animationDuration={560}
+                  connectNulls
+              />
+          );
+      };
+
+      return (
+          <div className="relative h-full">
+              <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={chartData} margin={{ top: 8, right: 26, left: 8, bottom: 44 }} barCategoryGap="48%">
+                      <defs>
+                          {visibleMetrics.map(metric => (
+                              <linearGradient key={metric.id} id={`${chartId}-${metric.id}-fill`} x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor={metric.color} stopOpacity={0.42} />
+                                  <stop offset="58%" stopColor={metric.color} stopOpacity={0.14} />
+                                  <stop offset="100%" stopColor={metric.color} stopOpacity={0.03} />
+                              </linearGradient>
+                          ))}
+                      </defs>
+                      <CartesianGrid vertical={false} horizontal stroke="#dfe5eb" strokeOpacity={0.45} strokeDasharray="4 4" />
+                      <XAxis dataKey="label" ticks={xTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#4a5563', fontWeight: 500 }} dy={15} padding={{ left: 18, right: 28 }} />
+                      {axisGroups.map(axis => (
+                          <YAxis
+                              key={axis.id}
+                              yAxisId={axis.id}
+                              orientation={axis.orientation}
+                              axisLine={false}
+                              tickLine={false}
+                              width={axis.metric.format === 'money' ? 64 : axis.metric.format === 'percent' ? 50 : 42}
+                              ticks={axis.ticks}
+                              domain={[axis.ticks[0], axis.ticks[axis.ticks.length - 1]]}
+                              tick={<ChartYAxisTick format={axis.metric.format} colors={[axis.metric.color]} orientation={axis.orientation} />}
+                          />
+                      ))}
+                      <Tooltip
+                          cursor={{ stroke: visibleMetrics[0]?.color || '#6b55cf', strokeDasharray: '3 3' }}
+                          contentStyle={{ backgroundColor: '#1f2430', border: '0', color: '#fff', borderRadius: 6, fontSize: 12 }}
+                          formatter={(value: number, name: string) => {
+                              const metric = getDayTimeMetricOption(name as DayTimeMetricId);
+                              return [formatChartMetricValue(Number(value), metric.format, false), metric.label];
+                          }}
+                      />
+                      {visibleMetrics.map(renderSeries)}
+                      {gridAxis?.ticks.map(tick => (
+                          <ReferenceLine key={`${chartId}-grid-${tick}`} yAxisId={gridAxis.id} y={tick} stroke="#dfe5eb" strokeOpacity={0.88} strokeDasharray="4 4" strokeWidth={1} ifOverflow="extendDomain" />
+                      ))}
+                  </ComposedChart>
+              </ResponsiveContainer>
+              <div className="absolute bottom-[8px] left-1/2 flex -translate-x-1/2 items-center gap-[22px] text-[14px] font-medium text-[#666b72]">
+                  {visibleMetrics.map(metric => (
+                      <div key={metric.id} className="flex items-center gap-[7px]">
+                          <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: metric.color }} />
+                          <span>{metric.label}</span>
+                      </div>
+                  ))}
+              </div>
+          </div>
+      );
+  };
+
   const FilledChartStyleIcon = ({ className = '' }: { className?: string }) => (
       <span className={`inline-flex h-4 w-4 items-end justify-center gap-[2px] ${className}`} aria-hidden="true">
           <span className="h-[7px] w-[3px] rounded-[1px] bg-current" />
@@ -2561,6 +3067,39 @@ const Reports: React.FC<ReportsProps> = ({
           <span className="h-[9px] w-[3px] rounded-[1px] bg-current" />
       </span>
   );
+
+  const DayTimeInsightCard = ({
+      eyebrow,
+      title,
+      detail,
+      value,
+      tone = 'neutral',
+  }: {
+      eyebrow: string;
+      title: string;
+      detail: string;
+      value?: string;
+      tone?: 'good' | 'bad' | 'accent' | 'neutral';
+  }) => {
+      const toneColor = tone === 'good' ? '#55c39e' : tone === 'bad' ? '#ff6468' : tone === 'accent' ? '#f59f00' : '#6b55cf';
+      return (
+          <div className="min-h-[108px] rounded-[9px] bg-white px-[20px] py-[18px] shadow-none dark:bg-slate-900">
+              <div className="mb-[10px] flex items-center gap-[7px] text-[13px] font-semibold text-[#7b828c]">
+                  <span className="h-[8px] w-[8px] rounded-full" style={{ backgroundColor: toneColor }} />
+                  <span>{eyebrow}</span>
+              </div>
+              <div className="text-[20px] font-bold leading-none text-[#252a32] dark:text-slate-100">{title}</div>
+              <div className="mt-[12px] flex items-center gap-[8px] text-[14px] font-semibold text-[#4d5560]">
+                  <span>{detail}</span>
+                  {value && (
+                      <span className={`rounded-[4px] px-[5px] py-[2px] tabular-nums ${tone === 'bad' ? 'bg-[#ffe8eb] text-[#ff6468]' : tone === 'good' ? 'bg-[#e6f7f0] text-[#3baa86]' : 'bg-[#eeeaf8] text-[#6b55cf]'}`}>
+                          {value}
+                      </span>
+                  )}
+              </div>
+          </div>
+      );
+  };
 
   const renderChartCard = ({
       title,
@@ -3305,6 +3844,98 @@ const Reports: React.FC<ReportsProps> = ({
   };
 
   const { data: detailedChartData, title: distChartTitle, pnlTitle: pnlChartTitle, layout: chartLayout, barSize, xInterval } = getDetailedData();
+
+  const dayTimeHighlights = useMemo(() => {
+      const rowsWithTrades = dayTimeReportRows.filter(row => row.count > 0);
+      const bestPerforming = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((best, row) => row.netPnl > best.netPnl ? row : best, rowsWithTrades[0])
+          : null;
+      const leastPerforming = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((worst, row) => row.netPnl < worst.netPnl ? row : worst, rowsWithTrades[0])
+          : null;
+      const mostActive = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((best, row) => row.count > best.count ? row : best, rowsWithTrades[0])
+          : null;
+      const bestWinRate = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((best, row) => row.winRate > best.winRate || (row.winRate === best.winRate && row.count > best.count) ? row : best, rowsWithTrades[0])
+          : null;
+
+      return { bestPerforming, leastPerforming, mostActive, bestWinRate };
+  }, [dayTimeReportRows]);
+
+  const dayTimeSummaryColumns = [
+      { id: 'label', label: dayTimeReportView === 'DAYS' ? (language === 'cn' ? '日期' : 'Days') : dayTimeReportView === 'MONTHS' ? (language === 'cn' ? '月份' : 'Months') : dayTimeReportView === 'TIME' ? (language === 'cn' ? '交易时间' : 'Trade time') : (language === 'cn' ? '持仓时长' : 'Trade duration') },
+      { id: 'winRate', label: language === 'cn' ? '胜率' : 'Win %' },
+      { id: 'netPnl', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L') },
+      { id: 'count', label: language === 'cn' ? '交易次数' : 'Trade count' },
+      { id: 'avgDailyVolume', label: language === 'cn' ? '平均成交额' : 'Avg daily volume' },
+      { id: 'avgWin', label: language === 'cn' ? '平均盈利' : 'Avg win' },
+      { id: 'avgLoss', label: language === 'cn' ? '平均亏损' : 'Avg loss' },
+  ];
+
+  const topCrossSymbols = useMemo(() => {
+      const totals = new Map<string, { symbol: string; count: number; pnl: number }>();
+      trades.forEach(trade => {
+          const symbol = (trade.symbol || '').trim().toUpperCase() || (language === 'cn' ? '未知' : 'UNKNOWN');
+          const current = totals.get(symbol) || { symbol, count: 0, pnl: 0 };
+          current.count += 1;
+          current.pnl += getDisplayPnl(trade);
+          totals.set(symbol, current);
+      });
+      const sortedSymbols = Array.from(totals.values())
+          .sort((a, b) => b.count - a.count || Math.abs(b.pnl) - Math.abs(a.pnl))
+          .map(item => item.symbol);
+      return dayTimeSymbolLimit === 'all' ? sortedSymbols : sortedSymbols.slice(0, dayTimeSymbolLimit);
+  }, [trades, language, pnlDisplayMode, dayTimeSymbolLimit]);
+
+  const dayTimeSymbolLimitOptions: Array<{ id: DayTimeSymbolLimit; label: string }> = [
+      { id: 5, label: language === 'cn' ? '前 5 个品种' : 'Top 5 symbols' },
+      { id: 10, label: language === 'cn' ? '前 10 个品种' : 'Top 10 symbols' },
+      { id: 20, label: language === 'cn' ? '前 20 个品种' : 'Top 20 symbols' },
+      { id: 'all', label: language === 'cn' ? '全部品种' : 'All symbols' },
+  ];
+  const activeDayTimeSymbolLimitLabel = dayTimeSymbolLimitOptions.find(option => option.id === dayTimeSymbolLimit)?.label || dayTimeSymbolLimitOptions[1].label;
+
+  const dayTimeCrossAnalysisRows = useMemo(() => {
+      const symbolSet = new Set(topCrossSymbols);
+      const rowMap = new Map<string, { row: DayTimeReportRow; cells: Map<string, { count: number; pnl: number; wins: number }> }>();
+      dayTimeReportRows.forEach(row => rowMap.set(row.key, { row, cells: new Map() }));
+
+      trades.forEach(trade => {
+          const symbol = (trade.symbol || '').trim().toUpperCase() || (language === 'cn' ? '未知' : 'UNKNOWN');
+          if (!symbolSet.has(symbol)) return;
+
+          let rowKey = '';
+          const entryDate = new Date(trade.entryDate);
+          if (Number.isNaN(entryDate.getTime())) return;
+
+          if (dayTimeReportView === 'DAYS') rowKey = String(entryDate.getDay());
+          else if (dayTimeReportView === 'MONTHS') rowKey = String(entryDate.getMonth());
+          else if (dayTimeReportView === 'TIME') rowKey = String(entryDate.getHours());
+          else {
+              if (!trade.exitDate || trade.status === TradeStatus.OPEN) return;
+              const duration = new Date(trade.exitDate).getTime() - entryDate.getTime();
+              if (!Number.isFinite(duration) || duration < 0) return;
+              if (duration < 5 * 60 * 1000) rowKey = 'under-5m';
+              else if (duration < 30 * 60 * 1000) rowKey = '5-30m';
+              else if (duration < 60 * 60 * 1000) rowKey = '30-60m';
+              else if (duration < 2 * 60 * 60 * 1000) rowKey = '1-2h';
+              else if (duration < 4 * 60 * 60 * 1000) rowKey = '2-4h';
+              else rowKey = '4h-plus';
+          }
+
+          const row = rowMap.get(rowKey);
+          if (!row) return;
+          const cell = row.cells.get(symbol) || { count: 0, pnl: 0, wins: 0 };
+          const pnl = getDisplayPnl(trade);
+          cell.count += 1;
+          cell.pnl += pnl;
+          if (pnl > 0) cell.wins += 1;
+          row.cells.set(symbol, cell);
+      });
+
+      return Array.from(rowMap.values());
+  }, [dayTimeReportRows, trades, language, pnlDisplayMode, dayTimeReportView, topCrossSymbols]);
 
   // --- CALENDAR RENDER HELPERS ---
   const renderMonthGrid = (monthIndex: number) => {
@@ -4474,6 +5105,314 @@ const Reports: React.FC<ReportsProps> = ({
       {/* --- DETAILED TAB --- */}
       {activeTab === 'detailed' && (
           <div className="space-y-6 animate-fade-in">
+              {detailedFilter === 'DAYS' ? (
+                  <div className="space-y-[14px]">
+                      <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
+                          <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                              {([
+                                  { id: 'DAYS' as const, label: language === 'cn' ? '天' : 'Days' },
+                                  { id: 'MONTHS' as const, label: language === 'cn' ? '月份' : 'Months' },
+                                  { id: 'TIME' as const, label: language === 'cn' ? '交易时间' : 'Trade time' },
+                                  { id: 'TRADE DURATION' as const, label: language === 'cn' ? '持仓时长' : 'Trade duration' },
+                              ]).map(option => (
+                                  <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => setDayTimeReportView(option.id)}
+                                      className={`h-[38px] min-w-[78px] px-[18px] text-[13px] font-semibold transition-colors ${
+                                          dayTimeReportView === option.id
+                                              ? 'bg-[#e8e4f4] text-[#5f47c9]'
+                                              : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-slate-300 dark:hover:bg-slate-800'
+                                      }`}
+                                  >
+                                      {option.label}
+                                  </button>
+                              ))}
+                          </div>
+
+                          <div className="relative" data-pnl-display-menu>
+                              <button
+                                  type="button"
+                                  onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
+                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                              >
+                                  <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
+                                  <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                              </button>
+                              <div
+                                  className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                  }`}
+                              >
+                                  {([
+                                      { id: 'net' as const, label: language === 'cn' ? '净盈亏' : 'NET P&L' },
+                                      { id: 'gross' as const, label: language === 'cn' ? '总盈亏' : 'GROSS P&L' },
+                                  ]).map(option => (
+                                      <button
+                                          key={option.id}
+                                          type="button"
+                                          onClick={() => {
+                                              setPnlDisplayMode(option.id);
+                                              setIsPnlDisplayMenuOpen(false);
+                                          }}
+                                          className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                              pnlDisplayMode === option.id
+                                                  ? 'bg-[#e8e4f4] text-[#303044]'
+                                                  : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                          }`}
+                                      >
+                                          {option.label}
+                                      </button>
+                                  ))}
+                              </div>
+                          </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[10px] md:grid-cols-2 xl:grid-cols-4">
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最佳表现' : 'Best performing'}
+                              title={dayTimeHighlights.bestPerforming?.label || '--'}
+                              detail={`${dayTimeHighlights.bestPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
+                              value={dayTimeHighlights.bestPerforming ? formatSignedMoney(dayTimeHighlights.bestPerforming.netPnl) : undefined}
+                              tone="good"
+                          />
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最差表现' : 'Least performing'}
+                              title={dayTimeHighlights.leastPerforming?.label || '--'}
+                              detail={`${dayTimeHighlights.leastPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
+                              value={dayTimeHighlights.leastPerforming ? formatSignedMoney(dayTimeHighlights.leastPerforming.netPnl) : undefined}
+                              tone="bad"
+                          />
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最活跃' : 'Most active'}
+                              title={dayTimeHighlights.mostActive?.label || '--'}
+                              detail={`${dayTimeHighlights.mostActive?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
+                              tone="accent"
+                          />
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最高胜率' : 'Best win rate'}
+                              title={dayTimeHighlights.bestWinRate?.label || '--'}
+                              detail={dayTimeHighlights.bestWinRate ? `${dayTimeHighlights.bestWinRate.winRate.toFixed(0)}% / ${dayTimeHighlights.bestWinRate.count} ${language === 'cn' ? '笔交易' : 'trades'}` : '--'}
+                              tone="neutral"
+                          />
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
+                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="flex min-h-[58px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[14px] py-[10px]">
+                                  <div className="flex flex-wrap items-center gap-[8px]">
+                                      <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
+                                          <FilledChartStyleIcon />
+                                      </span>
+                                      <DayTimeMetricTrigger side="left" slot="primary" metricId={dayTimeLeftPrimaryMetric} />
+                                      {dayTimeLeftSecondaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="left"
+                                              slot="secondary"
+                                              metricId={dayTimeLeftSecondaryMetric}
+                                              removable
+                                              onRemove={() => {
+                                                  setDayTimeLeftSecondaryMetric(dayTimeLeftTertiaryMetric);
+                                                  setDayTimeLeftTertiaryMetric(null);
+                                              }}
+                                          />
+                                      )}
+                                      {dayTimeLeftTertiaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="left"
+                                              slot="tertiary"
+                                              metricId={dayTimeLeftTertiaryMetric}
+                                              removable
+                                              onRemove={() => setDayTimeLeftTertiaryMetric(null)}
+                                          />
+                                      )}
+                                      <DayTimeAddMetricButton side="left" />
+                                  </div>
+                              </div>
+                              <div className="h-[350px] px-[14px] pb-[10px] pt-[8px]">
+                                  {renderDayTimeMetricChart({ chartId: 'day-time-left', metrics: getDayTimeMetricIds('left') })}
+                              </div>
+                              <ReportCardLoadingOverlay radius={8} />
+                          </section>
+
+                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="flex min-h-[58px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[14px] py-[10px]">
+                                  <div className="flex flex-wrap items-center gap-[8px]">
+                                      <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
+                                          <FilledChartStyleIcon />
+                                      </span>
+                                      <DayTimeMetricTrigger side="right" slot="primary" metricId={dayTimeRightPrimaryMetric} />
+                                      {dayTimeRightSecondaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="right"
+                                              slot="secondary"
+                                              metricId={dayTimeRightSecondaryMetric}
+                                              removable
+                                              onRemove={() => {
+                                                  setDayTimeRightSecondaryMetric(dayTimeRightTertiaryMetric);
+                                                  setDayTimeRightTertiaryMetric(null);
+                                              }}
+                                          />
+                                      )}
+                                      {dayTimeRightTertiaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="right"
+                                              slot="tertiary"
+                                              metricId={dayTimeRightTertiaryMetric}
+                                              removable
+                                              onRemove={() => setDayTimeRightTertiaryMetric(null)}
+                                          />
+                                      )}
+                                      <DayTimeAddMetricButton side="right" />
+                                  </div>
+                              </div>
+                              <div className="h-[350px] px-[14px] pb-[10px] pt-[8px]">
+                                  {renderDayTimeMetricChart({ chartId: 'day-time-right', metrics: getDayTimeMetricIds('right') })}
+                              </div>
+                              <ReportCardLoadingOverlay radius={8} />
+                          </section>
+                      </div>
+
+                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                              <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                                  <Settings className="h-[15px] w-[15px]" />
+                              </button>
+                          </div>
+                          <div className="overflow-x-auto">
+                              <table className="w-full min-w-[980px] text-left text-[13px]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                      <tr>
+                                          {dayTimeSummaryColumns.map(column => (
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                          ))}
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {dayTimeReportRows.map(row => (
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          </tr>
+                                      ))}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </section>
+
+                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                              <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
+                              <div className="flex flex-wrap items-center gap-[8px]">
+                                  <div className="relative" data-day-time-symbol-limit-menu>
+                                      <button
+                                          type="button"
+                                          onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      >
+                                          <span>{activeDayTimeSymbolLimitLabel}</span>
+                                          <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
+                                      </button>
+                                      <div
+                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                              isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                          }`}
+                                      >
+                                          {dayTimeSymbolLimitOptions.map(option => (
+                                              <button
+                                                  key={String(option.id)}
+                                                  type="button"
+                                                  onClick={() => {
+                                                      setDayTimeSymbolLimit(option.id);
+                                                      setIsDayTimeSymbolLimitOpen(false);
+                                                  }}
+                                                  className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                                      dayTimeSymbolLimit === option.id
+                                                          ? 'bg-[#e8e4f4] text-[#303044]'
+                                                          : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                  }`}
+                                              >
+                                                  {option.label}
+                                              </button>
+                                          ))}
+                                      </div>
+                                  </div>
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                      {([
+                                          { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
+                                          { id: 'pnl' as const, label: 'P&L' },
+                                          { id: 'trades' as const, label: language === 'cn' ? '交易' : 'Trades' },
+                                      ]).map(option => (
+                                          <button
+                                              key={option.id}
+                                              type="button"
+                                              onClick={() => setDayTimeCrossMetric(option.id)}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                          >
+                                              {option.label}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="overflow-x-auto">
+                              {topCrossSymbols.length === 0 ? (
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                      {language === 'cn' ? '暂无可用于交叉分析的交易品种' : 'No symbols available for cross analysis'}
+                                  </div>
+                              ) : (
+                                  <table className="w-full min-w-[1120px] text-left text-[13px]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                          <tr>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              {topCrossSymbols.map(symbol => (
+                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{symbol}</th>
+                                              ))}
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {dayTimeCrossAnalysisRows.map(({ row, cells }) => (
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                                  {topCrossSymbols.map(symbol => {
+                                                      const cell = cells.get(symbol);
+                                                      const value = dayTimeCrossMetric === 'pnl'
+                                                          ? (cell?.pnl || 0)
+                                                          : dayTimeCrossMetric === 'trades'
+                                                              ? (cell?.count || 0)
+                                                              : cell && cell.count > 0 ? (cell.wins / cell.count) * 100 : 0;
+                                                      const tone = dayTimeCrossMetric === 'pnl' ? value : 0;
+                                                      return (
+                                                          <td
+                                                              key={`${row.key}-${symbol}`}
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              }`}
+                                                          >
+                                                              {dayTimeCrossMetric === 'pnl'
+                                                                  ? formatSignedMoney(value)
+                                                                  : dayTimeCrossMetric === 'trades'
+                                                                      ? value
+                                                                      : `${value.toFixed(value % 1 === 0 ? 0 : 1)}%`}
+                                                          </td>
+                                                      );
+                                                  })}
+                                              </tr>
+                                          ))}
+                                      </tbody>
+                                  </table>
+                              )}
+                          </div>
+                      </section>
+                  </div>
+              ) : (
+              <>
               {/* Filter Bar */}
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                   <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
@@ -4653,6 +5592,8 @@ const Reports: React.FC<ReportsProps> = ({
                       </table>
                   </div>
               </div>
+              </>
+              )}
           </div>
       )}
 
