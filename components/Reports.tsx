@@ -2257,7 +2257,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               </button>
                           ))}
                       </div>
-                      {summaryTab === 'summary' && isSummaryEditing ? (
+                      {isSummaryEditing ? (
                           <div className="flex items-center gap-[8px]">
                               <button
                                   type="button"
@@ -2284,9 +2284,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       ) : (
                           <button
                               type="button"
-                              onClick={startSummaryEditing}
+                              onClick={() => {
+                                  if (summaryTab !== 'summary') setSummaryTab('summary');
+                                  startSummaryEditing();
+                              }}
                               className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
-                              aria-label={language === 'cn' ? '编辑汇总模块' : 'Edit summary modules'}
+                              aria-label={language === 'cn' ? '编辑摘要模块' : 'Edit summary modules'}
                           >
                               <Settings className="h-[17px] w-[17px]" />
                           </button>
