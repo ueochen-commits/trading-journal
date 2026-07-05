@@ -269,7 +269,7 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; wins: number; losse
         {label}<TZInfoIcon infoKey="netPnL" />
         <span style={tzMetaPill} className="dark:bg-slate-800 dark:text-slate-200">{total}</span>
       </div>
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flex: 1, minHeight: 52, paddingBottom: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flex: 1, minHeight: 52, paddingTop: 2 }}>
         <div style={{ ...tzBigVal(pos ? '#24a67d' : '#ef6464'), maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {pos ? '+' : '-'}{currencySymbol}{formatted}
         </div>
