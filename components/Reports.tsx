@@ -1680,10 +1680,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       animationEasing="ease-out"
                       connectNulls
                       activeDot={{
-                          r: 5,
-                          fill: metric.color,
-                          stroke: '#ffffff',
-                          strokeWidth: 2,
+                          r: 6,
+                          fill: '#ffffff',
+                          stroke: metric.color,
+                          strokeWidth: 3,
                       }}
                   />
               );
@@ -1704,10 +1704,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   animationEasing="ease-out"
                   connectNulls
                   activeDot={{
-                      r: 5,
-                      fill: metric.color,
-                      stroke: '#ffffff',
-                      strokeWidth: 2,
+                      r: 6,
+                      fill: '#ffffff',
+                      stroke: metric.color,
+                      strokeWidth: 3,
                   }}
               />
           );
@@ -2061,23 +2061,39 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           color: overrideColor || config.color || '#55c39e',
           dataKey: 'value',
       }] : []);
+      const rows = tooltipMetrics
+          .map((metric: any) => {
+              const payloadItem = payload.find((item: any) => item.dataKey === metric.dataKey);
+              if (!payloadItem || payloadItem.value === undefined || payloadItem.value === null) return null;
+
+              return {
+                  key: metric.dataKey,
+                  color: metric.color,
+                  label: metric.config.label || metric.config.shortLabel,
+                  value: formatChartMetricValue(Number(payloadItem.value || 0), metric.config.format),
+              };
+          })
+          .filter(Boolean);
+
+      if (rows.length === 0) return null;
+
+      const rawDate = payload[0]?.payload?.date;
+      const title = typeof rawDate === 'string' && rawDate
+          ? rawDate
+          : label;
 
       return (
-          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.22)]">
-              <div className="text-[12px] font-bold text-[#20232a]">{label}</div>
-              <div className="mt-1 space-y-[3px]">
-                  {tooltipMetrics.map((metric: any) => {
-                      const payloadItem = payload.find((item: any) => item.dataKey === metric.dataKey);
-                      if (!payloadItem || payloadItem.value === undefined || payloadItem.value === null) return null;
-                      const value = Number(payloadItem.value || 0);
-
-                      return (
-                          <div key={metric.dataKey} className="flex items-center gap-2">
-                              <span className="h-[6px] w-[6px] rounded-full" style={{ backgroundColor: metric.color }} />
-                              <span className="text-[12px] text-[#3f4650]">{metric.config.shortLabel}: {formatChartMetricValue(value, metric.config.format)}</span>
-                          </div>
-                      );
-                  })}
+          <div className="min-w-[230px] max-w-[380px] rounded-[4px] border border-[#cfd6df] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.24)]">
+              <div className="text-[12px] font-bold leading-[16px] text-[#20232a]">{title}</div>
+              <div className="mt-[5px] space-y-[3px]">
+                  {rows.map((row: any) => (
+                      <div key={row.key} className="flex items-start gap-[6px]">
+                          <span className="mt-[6px] h-[5px] w-[5px] flex-shrink-0 rounded-full" style={{ backgroundColor: row.color }} />
+                          <span className="text-[12px] leading-[16px] text-[#303844]">
+                              {row.label}: {row.value}
+                          </span>
+                      </div>
+                  ))}
               </div>
           </div>
       );
