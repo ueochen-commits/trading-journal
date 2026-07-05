@@ -183,6 +183,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [openChartStyleMenu, setOpenChartStyleMenu] = useState<ChartSide | null>(null);
   const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartColorDropdown, setOpenChartColorDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
+  const [openChartTimeframeMenu, setOpenChartTimeframeMenu] = useState<ChartSide | null>(null);
+  const [chartTimeframes, setChartTimeframes] = useState<Record<ChartSide, ChartTimeframe>>({ left: 'day', right: 'day' });
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
@@ -222,6 +224,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [openChartStyleMenu]);
+
+  useEffect(() => {
+      if (!openChartTimeframeMenu) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest(`[data-chart-timeframe-root="${openChartTimeframeMenu}"]`)) return;
+          setOpenChartTimeframeMenu(null);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [openChartTimeframeMenu]);
 
   useEffect(() => {
       if (!currentUserId) return;
@@ -808,6 +823,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
   type ChartMetricMode = 'cumulative' | 'daily';
   type ChartMetricFormat = 'money' | 'percent' | 'number' | 'duration';
+  type ChartTimeframe = 'day' | 'week' | 'month';
 
   const chartMetricConfigs: Partial<Record<SummaryMetricId, {
       category: 'time' | 'profitability' | 'risk' | 'activity' | 'streaks';
@@ -1548,6 +1564,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { id: 'area', label: language === 'cn' ? '面积图' : 'Area' },
       { id: 'bar', label: language === 'cn' ? '柱状图' : 'Column' },
   ];
+  const chartTimeframeOptions: Array<{ id: ChartTimeframe; label: string }> = [
+      { id: 'day', label: language === 'cn' ? '日' : 'Day' },
+      { id: 'week', label: language === 'cn' ? '周' : 'Week' },
+      { id: 'month', label: language === 'cn' ? '月' : 'Month' },
+  ];
 
   const updateChartStyle = (side: ChartSide, slot: ChartMetricSlot, patch: NonNullable<ChartStyleSettings[ChartSide][ChartMetricSlot]>) => {
       setChartStyleSettings(current => ({
@@ -1937,7 +1958,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       onRemoveSecondaryMetric,
       onRemoveTertiaryMetric,
       accent = 'text-indigo-500',
-      rightControl = 'Day',
+      timeframeSide,
       featured = false,
       summaryValue,
       summaryTone = 'neutral',
@@ -1968,7 +1989,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       onRemoveSecondaryMetric?: () => void;
       onRemoveTertiaryMetric?: () => void;
       accent?: string;
-      rightControl?: string;
+      timeframeSide?: ChartSide;
       featured?: boolean;
       summaryValue?: string;
       summaryTone?: 'neutral' | 'good' | 'bad';
@@ -1992,6 +2013,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           },
       ].filter(metric => Boolean(metric.label));
       const canAddMetric = 1 + additionalMetrics.length < 3;
+      const selectedTimeframe = timeframeSide ? chartTimeframes[timeframeSide] : 'day';
+      const selectedTimeframeLabel = chartTimeframeOptions.find(option => option.id === selectedTimeframe)?.label || chartTimeframeOptions[0].label;
+      const timeframeMenuOpen = timeframeSide ? openChartTimeframeMenu === timeframeSide : false;
 
       return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
@@ -2100,10 +2124,52 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   )}
               </div>
               <div className={`${featured ? 'gap-[8px]' : 'gap-2'} flex flex-shrink-0 items-center`}>
-                  <button className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#4f2db8] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors`}>
-                      {rightControl}
-                      <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-black' : 'w-3.5 h-3.5 text-slate-400'}`} />
-                  </button>
+                  {timeframeSide && (
+                      <div className="relative" data-chart-timeframe-root={timeframeSide}>
+                          <button
+                              type="button"
+                              onClick={() => {
+                                  setOpenChartTimeframeMenu(current => current === timeframeSide ? null : timeframeSide);
+                                  setOpenChartMetricPicker(null);
+                                  setOpenChartStyleMenu(null);
+                                  setOpenChartVisualDropdown(null);
+                                  setOpenChartColorDropdown(null);
+                              }}
+                              className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#4f2db8] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
+                              aria-expanded={timeframeMenuOpen}
+                              aria-label={language === 'cn' ? '选择图表时间粒度' : 'Choose chart timeframe'}
+                          >
+                              {selectedTimeframeLabel}
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-black transition-transform' : 'w-3.5 h-3.5 text-slate-400 transition-transform'} ${timeframeMenuOpen ? 'rotate-180 text-[#5b45d6]' : ''}`} />
+                          </button>
+                          <div
+                              className={`absolute right-0 top-full z-[70] mt-[6px] w-[96px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                  timeframeMenuOpen ? 'max-h-[148px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                              }`}
+                          >
+                              {chartTimeframeOptions.map(option => {
+                                  const selected = option.id === selectedTimeframe;
+                                  return (
+                                      <button
+                                          key={option.id}
+                                          type="button"
+                                          onClick={() => {
+                                              setChartTimeframes(current => ({ ...current, [timeframeSide]: option.id }));
+                                              setOpenChartTimeframeMenu(null);
+                                          }}
+                                          className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium transition-colors ${
+                                              selected
+                                                  ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                  : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                          }`}
+                                      >
+                                          {option.label}
+                                      </button>
+                                  );
+                              })}
+                          </div>
+                      </div>
+                  )}
                   <button className={`${featured ? 'h-[32px] w-[36px] rounded-[7px] border-[#dfe4ec] text-[#5f636b]' : 'h-8 w-8 rounded-md border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-center border bg-white dark:bg-slate-900 transition-colors`}>
                       <MoreVertical className={`${featured ? 'h-[18px] w-[18px]' : 'w-4 h-4'}`} />
                   </button>
@@ -2849,7 +2915,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           setChartStyleSettings(current => ({ ...current, left: { ...current.left, tertiary: undefined } }));
                       },
                       accent: 'text-[#5f636b]',
-                      rightControl: language === 'cn' ? '日' : 'Day',
+                      timeframeSide: 'left',
                       featured: true,
                       children: leftChartContent,
                   })}
@@ -2891,7 +2957,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           setChartStyleSettings(current => ({ ...current, right: { ...current.right, tertiary: undefined } }));
                       },
                       accent: 'text-emerald-500',
-                      rightControl: language === 'cn' ? '日' : 'Day',
+                      timeframeSide: 'right',
                       featured: true,
                       children: rightChartContent,
                   })}
