@@ -2069,7 +2069,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       {metricPicker}
                   </div>
                   {additionalMetrics.map(metric => (
-                      <div key={metric.slot} className="group/metric relative min-w-[150px] flex-shrink basis-[clamp(180px,20vw,270px)]">
+                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-none items-center transition-[width] duration-150 ease-out w-[clamp(180px,20vw,270px)] hover:w-[clamp(208px,calc(20vw+28px),298px)] focus-within:w-[clamp(208px,calc(20vw+28px),298px)]">
                           <button
                               type="button"
                               onClick={() => {
@@ -2078,7 +2078,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[30px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2089,7 +2089,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </span>
                               )}
                               <span className="truncate">{metric.label}</span>
-                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] transition-opacity group-hover/metric:opacity-0' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
                           </button>
                           <button
                               type="button"
@@ -2098,7 +2098,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   metric.onRemove?.();
                                   setOpenChartColorDropdown(null);
                               }}
-                              className="pointer-events-none absolute right-[5px] top-1/2 inline-flex h-[22px] w-[22px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-[#e1e5ec] bg-white text-[#7b8490] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-[opacity,background-color,color,border-color] hover:border-[#cfd5df] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                              className="pointer-events-none ml-0 inline-flex h-[22px] w-0 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#dfe4ec] bg-white text-[#858d99] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-[width,margin,opacity,background-color,color,border-color] duration-150 ease-out hover:border-[#ccd3de] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:ml-[6px] group-hover/metric:w-[22px] group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:ml-[6px] focus-visible:w-[22px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
                               aria-label={language === 'cn' ? '移除指标' : 'Remove metric'}
                           >
                               <X className="h-[13px] w-[13px]" />
