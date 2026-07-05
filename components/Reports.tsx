@@ -2556,7 +2556,7 @@ const Reports: React.FC<ReportsProps> = ({
           button.classList.remove('is-sweeping');
           void button.offsetWidth;
           button.classList.add('is-sweeping');
-          window.setTimeout(() => button.classList.remove('is-sweeping'), 480);
+          window.setTimeout(() => button.classList.remove('is-sweeping'), 540);
       };
 
       return (

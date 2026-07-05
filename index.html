@@ -384,17 +384,15 @@
       @keyframes reportMetricSweep {
         0% {
           opacity: 0;
-          transform: translateX(-118%);
-        }
-        12% {
-          opacity: 1;
+          transform: scaleX(0);
         }
         72% {
-          opacity: 0.9;
+          opacity: 1;
+          transform: scaleX(1);
         }
         100% {
           opacity: 0;
-          transform: translateX(118%);
+          transform: scaleX(1);
         }
       }
       .report-chart-metric-trigger {
@@ -420,8 +418,9 @@
       .report-chart-metric-trigger:active::after,
       .report-chart-metric-trigger.is-sweeping::after {
         z-index: 1;
-        background: linear-gradient(90deg, rgba(214, 218, 225, 0) 0%, rgba(199, 204, 213, 0.78) 42%, rgba(229, 231, 235, 0.72) 66%, rgba(241, 242, 244, 0) 100%);
-        animation: reportMetricSweep 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+        background: linear-gradient(90deg, rgba(203, 208, 216, 0.86) 0%, rgba(220, 223, 229, 0.76) 68%, rgba(241, 242, 244, 0.96) 100%);
+        transform-origin: left center;
+        animation: reportMetricSweep 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
       }
       .report-chart-metric-trigger > * {
         position: relative;
