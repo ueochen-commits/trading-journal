@@ -2102,6 +2102,29 @@ const Reports: React.FC<ReportsProps> = ({
       ? (language === 'cn' ? '所有账户' : 'All Accounts')
       : accounts.find(account => account.id === selectedAccountId)?.name || (language === 'cn' ? '未知账户' : 'Unknown');
 
+  const ReportRangeIcon = () => (
+      <svg width="22" height="22" viewBox="0 0 22 22" className="shrink-0" aria-hidden="true">
+          <rect x="3" y="4.2" width="16" height="15.1" rx="4.2" fill="#d8d0f2" />
+          <path d="M3 8.1h16v-0.2c0-2-1.6-3.7-3.7-3.7H6.7C4.6 4.2 3 5.9 3 7.9v0.2Z" fill="#8674d6" />
+          <rect x="6.1" y="2.8" width="2" height="4.3" rx="1" fill="#6f55d8" />
+          <rect x="13.9" y="2.8" width="2" height="4.3" rx="1" fill="#6f55d8" />
+          <rect x="6.3" y="11.2" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.92" />
+          <rect x="9.9" y="11.2" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.7" />
+          <rect x="13.5" y="11.2" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.7" />
+          <rect x="6.3" y="14.7" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.55" />
+          <rect x="9.9" y="14.7" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.55" />
+      </svg>
+  );
+
+  const ReportAccountIcon = () => (
+      <svg width="22" height="22" viewBox="0 0 22 22" className="shrink-0" aria-hidden="true">
+          <path d="M5.1 8.2c0-1.4 1.1-2.5 2.5-2.5h6.8c1.4 0 2.5 1.1 2.5 2.5v0.4h-2.4c-1.7 0-3.1 1.4-3.1 3.1s1.4 3.1 3.1 3.1h2.4v0.7c0 1.4-1.1 2.5-2.5 2.5H7.6c-1.4 0-2.5-1.1-2.5-2.5V8.2Z" fill="#d8d0f2" />
+          <path d="M7.9 5.8 13 3.6c1-0.4 2 0.3 2 1.4v0.8H7.9Z" fill="#b8ace8" />
+          <path d="M11.8 11.7c0-1.2 1-2.2 2.2-2.2h2.9c0.8 0 1.4 0.6 1.4 1.4v1.7c0 0.8-0.6 1.4-1.4 1.4H14c-1.2 0-2.2-1-2.2-2.3Z" fill="#8674d6" />
+          <circle cx="14.4" cy="11.8" r="0.85" fill="#f8f6ff" />
+      </svg>
+  );
+
   const updateChartStyle = (side: ChartSide, slot: ChartMetricSlot, patch: NonNullable<ChartStyleSettings[ChartSide][ChartMetricSlot]>) => {
       setChartStyleSettings(current => ({
           ...current,
@@ -3448,9 +3471,7 @@ const Reports: React.FC<ReportsProps> = ({
                         className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
                     >
                         <div className="flex min-w-0 items-center gap-3">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                                <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Z" />
-                            </svg>
+                            <ReportRangeIcon />
                             <div className="min-w-0 text-left">
                                 <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
                                     {getActiveDatePresetLabel()}
@@ -3514,9 +3535,7 @@ const Reports: React.FC<ReportsProps> = ({
                         className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
                     >
                         <div className="flex min-w-0 items-center gap-3">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
-                                <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H4V5Zm16 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9h16Zm-4 5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1Z" />
-                            </svg>
+                            <ReportAccountIcon />
                             <div className="min-w-0 flex-1 text-left">
                                 <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">Trading Account</p>
                                 <p className="max-w-[130px] truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
