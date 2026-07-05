@@ -2870,14 +2870,14 @@ const Reports: React.FC<ReportsProps> = ({
       const excludedMetricIds = sideMetrics.filter(id => id !== metricId);
 
       return (
-          <div className="group/day-time-metric relative flex min-w-[150px] flex-[1_1_172px] max-w-[260px] items-center" data-day-time-metric-picker-root>
+          <div className="group/day-time-metric relative flex w-[clamp(118px,11vw,178px)] flex-none items-center" data-day-time-metric-picker-root>
               <button
                   type="button"
                   onClick={(event) => {
                       triggerMetricSweep(event);
                       setOpenDayTimeMetricPicker(current => current?.side === side && current.slot === slot ? null : { side, slot });
                   }}
-                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-2 overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-[8px] overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               >
                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
                       <span className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]" style={{ backgroundColor: selected.color }} />
@@ -2919,7 +2919,7 @@ const Reports: React.FC<ReportsProps> = ({
               <button
                   type="button"
                   onClick={() => setOpenDayTimeMetricPicker(current => current?.side === side && current.slot === nextSlot ? null : { side, slot: nextSlot })}
-                  className="rounded-[7px] px-[12px] py-[7px] text-[14px] font-semibold text-[#5b45b6] transition-colors hover:bg-[#ebe7f8]"
+                  className="h-[32px] whitespace-nowrap rounded-[7px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:bg-[#ebe7f8] hover:text-[#4b35b8]"
               >
                   + {language === 'cn' ? '添加指标' : 'Add metric'}
               </button>
@@ -5200,8 +5200,8 @@ const Reports: React.FC<ReportsProps> = ({
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
                           <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex min-h-[58px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[14px] py-[10px]">
-                                  <div className="flex flex-wrap items-center gap-[8px]">
+                              <div className="flex h-[58px] items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[10px] py-[10px]">
+                                  <div className="flex min-w-0 flex-1 items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
                                       <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
                                           <FilledChartStyleIcon />
                                       </span>
@@ -5229,16 +5229,19 @@ const Reports: React.FC<ReportsProps> = ({
                                       )}
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
+                                  <button className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]" type="button" aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}>
+                                      <MoreVertical className="h-[16px] w-[16px]" />
+                                  </button>
                               </div>
-                              <div className="h-[350px] px-[14px] pb-[10px] pt-[8px]">
+                              <div className="h-[342px] px-[10px] pb-[8px] pt-[6px]">
                                   {renderDayTimeMetricChart({ chartId: 'day-time-left', metrics: getDayTimeMetricIds('left') })}
                               </div>
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
                           <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex min-h-[58px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[14px] py-[10px]">
-                                  <div className="flex flex-wrap items-center gap-[8px]">
+                              <div className="flex h-[58px] items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[10px] py-[10px]">
+                                  <div className="flex min-w-0 flex-1 items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
                                       <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
                                           <FilledChartStyleIcon />
                                       </span>
@@ -5266,8 +5269,11 @@ const Reports: React.FC<ReportsProps> = ({
                                       )}
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
+                                  <button className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]" type="button" aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}>
+                                      <MoreVertical className="h-[16px] w-[16px]" />
+                                  </button>
                               </div>
-                              <div className="h-[350px] px-[14px] pb-[10px] pt-[8px]">
+                              <div className="h-[342px] px-[10px] pb-[8px] pt-[6px]">
                                   {renderDayTimeMetricChart({ chartId: 'day-time-right', metrics: getDayTimeMetricIds('right') })}
                               </div>
                               <ReportCardLoadingOverlay radius={8} />
