@@ -3144,15 +3144,6 @@ const Reports: React.FC<ReportsProps> = ({
       );
   };
 
-  const REPORT_TABS = [
-      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance', isNew: true },
-      { id: 'overview', label: language === 'cn' ? '概览' : 'Overview' },
-      { id: 'detailed', label: language === 'cn' ? '详细报表' : 'Reports', hasMenu: true },
-      { id: 'compare', label: language === 'cn' ? '对比' : 'Compare' },
-      { id: 'calendar', label: language === 'cn' ? '日历' : 'Calendar' },
-      { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights' },
-  ];
-
   const detailedFilterOptions = [
       { id: 'DAYS', label: language === 'cn' ? t.reports.filters.days : 'Day & Time' },
       { id: 'WEEKS', label: t.reports.filters.weeks },
@@ -3174,6 +3165,20 @@ const Reports: React.FC<ReportsProps> = ({
       { id: 'TAGS', label: language === 'cn' ? '标签' : 'Tags' },
       { id: 'TRADE DURATION', label: language === 'cn' ? '期权到期天数' : 'Options: Days till expiration' },
       { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
+  ];
+
+  const activeReportMenuLabel =
+      reportMenuOptions.find(option => option.id === detailedFilter)?.label ||
+      detailedFilterOptions.find(option => option.id === detailedFilter)?.label ||
+      detailedFilter;
+
+  const REPORT_TABS = [
+      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance', isNew: true },
+      { id: 'overview', label: language === 'cn' ? '概览' : 'Overview' },
+      { id: 'detailed', label: language === 'cn' ? `报告：${activeReportMenuLabel}` : `Reports: ${activeReportMenuLabel}`, hasMenu: true },
+      { id: 'compare', label: language === 'cn' ? '对比' : 'Compare' },
+      { id: 'calendar', label: language === 'cn' ? '日历' : 'Calendar' },
+      { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights' },
   ];
 
   const selectDetailedReport = (filterId: string) => {
