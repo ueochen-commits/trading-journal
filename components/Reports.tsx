@@ -2103,25 +2103,25 @@ const Reports: React.FC<ReportsProps> = ({
       : accounts.find(account => account.id === selectedAccountId)?.name || (language === 'cn' ? '未知账户' : 'Unknown');
 
   const ReportRangeIcon = () => (
-      <svg width="22" height="22" viewBox="0 0 22 22" className="shrink-0" aria-hidden="true">
-          <rect x="3" y="4.2" width="16" height="15.1" rx="4.2" fill="#d8d0f2" />
-          <path d="M3 8.1h16v-0.2c0-2-1.6-3.7-3.7-3.7H6.7C4.6 4.2 3 5.9 3 7.9v0.2Z" fill="#8674d6" />
-          <rect x="6.1" y="2.8" width="2" height="4.3" rx="1" fill="#6f55d8" />
-          <rect x="13.9" y="2.8" width="2" height="4.3" rx="1" fill="#6f55d8" />
-          <rect x="6.3" y="11.2" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.92" />
-          <rect x="9.9" y="11.2" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.7" />
-          <rect x="13.5" y="11.2" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.7" />
-          <rect x="6.3" y="14.7" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.55" />
-          <rect x="9.9" y="14.7" width="2.4" height="2.1" rx="0.7" fill="#6f55d8" opacity="0.55" />
+      <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+          <rect x="2.7" y="4" width="14.6" height="13.7" rx="3.8" fill="#d8d0f2" />
+          <path d="M2.7 7.6h14.6v-0.2c0-1.9-1.5-3.4-3.4-3.4H6.1C4.2 4 2.7 5.5 2.7 7.4v0.2Z" fill="#8674d6" />
+          <rect x="5.5" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
+          <rect x="12.6" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
+          <rect x="5.8" y="10.2" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.92" />
+          <rect x="8.9" y="10.2" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.7" />
+          <rect x="12" y="10.2" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.7" />
+          <rect x="5.8" y="13.4" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.55" />
+          <rect x="8.9" y="13.4" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.55" />
       </svg>
   );
 
   const ReportAccountIcon = () => (
-      <svg width="22" height="22" viewBox="0 0 22 22" className="shrink-0" aria-hidden="true">
-          <path d="M5.1 8.2c0-1.4 1.1-2.5 2.5-2.5h6.8c1.4 0 2.5 1.1 2.5 2.5v0.4h-2.4c-1.7 0-3.1 1.4-3.1 3.1s1.4 3.1 3.1 3.1h2.4v0.7c0 1.4-1.1 2.5-2.5 2.5H7.6c-1.4 0-2.5-1.1-2.5-2.5V8.2Z" fill="#d8d0f2" />
-          <path d="M7.9 5.8 13 3.6c1-0.4 2 0.3 2 1.4v0.8H7.9Z" fill="#b8ace8" />
-          <path d="M11.8 11.7c0-1.2 1-2.2 2.2-2.2h2.9c0.8 0 1.4 0.6 1.4 1.4v1.7c0 0.8-0.6 1.4-1.4 1.4H14c-1.2 0-2.2-1-2.2-2.3Z" fill="#8674d6" />
-          <circle cx="14.4" cy="11.8" r="0.85" fill="#f8f6ff" />
+      <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+          <path d="M3.6 7.6c0-1.4 1.1-2.5 2.5-2.5h7.6c1.4 0 2.5 1.1 2.5 2.5v0.5h-2.1c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 3.2 3.2h2.1v0.5c0 1.4-1.1 2.5-2.5 2.5H6.1c-1.4 0-2.5-1.1-2.5-2.5V7.6Z" fill="#d8d0f2" />
+          <path d="M6.5 5.2 12 2.8c1-0.4 2.1 0.3 2.1 1.4v1H6.5Z" fill="#b8ace8" />
+          <path d="M10.9 11.3c0-1.2 1-2.2 2.2-2.2h2.9c0.8 0 1.4 0.6 1.4 1.4v1.7c0 0.8-0.6 1.4-1.4 1.4h-2.9c-1.2 0-2.2-1-2.2-2.3Z" fill="#8674d6" />
+          <circle cx="13.5" cy="11.4" r="0.85" fill="#f8f6ff" />
       </svg>
   );
 
