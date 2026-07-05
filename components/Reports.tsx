@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, Globe2, Repeat2, BookOpen, FileBarChart2, GripVertical, X, Plus } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, Globe2, Repeat2, BookOpen, FileBarChart2, GripVertical, X, Search } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -22,6 +22,63 @@ interface ReportsProps {
 }
 
 const SUMMARY_LAYOUT_STORAGE_KEY = 'tg_reports_summary_metric_layout_v1';
+const ALL_SUMMARY_METRIC_IDS = [
+  'avgTradingDaysDuration',
+  'avgHoldTime',
+  'longestTradeDuration',
+  'maxTradingDaysDuration',
+  'avgDailyNetPnl',
+  'avgDailyWinLoss',
+  'avgLoss',
+  'avgMaxTradeLoss',
+  'avgMaxTradeProfit',
+  'avgNetTradePnl',
+  'avgTradeWinLoss',
+  'avgWin',
+  'dailyNetPnl',
+  'largestLosingTrade',
+  'largestProfitableTrade',
+  'netPnl',
+  'profitFactor',
+  'tradeExpectancy',
+  'avgDailyNetDrawdown',
+  'avgPlannedR',
+  'avgRealizedR',
+  'breakevenDays',
+  'breakevenTrades',
+  'losingDays',
+  'maxDailyNetDrawdown',
+  'avgDailyVolume',
+  'dailyNetDrawdown',
+  'loggedDays',
+  'longBreakevenTrades',
+  'longLosingTrades',
+  'longOpenTrades',
+  'longTrades',
+  'longWinningTrades',
+  'lossTrades',
+  'netAccountBalance',
+  'openTrades',
+  'shortBreakevenTrades',
+  'shortLosingTrades',
+  'shortOpenTrades',
+  'shortTrades',
+  'shortWinningTrades',
+  'tradeCount',
+  'volume',
+  'winTrades',
+  'avgDailyWinPct',
+  'longWinPct',
+  'maxConsecutiveLosingDays',
+  'maxConsecutiveLosses',
+  'maxConsecutiveWinningDays',
+  'maxConsecutiveWins',
+  'sharpeRatio',
+  'shortWinPct',
+  'sortinoRatio',
+  'winPct',
+  'winningDays',
+] as const;
 const DEFAULT_SUMMARY_METRIC_IDS = [
   'netPnl',
   'winPct',
@@ -41,14 +98,14 @@ const DEFAULT_SUMMARY_METRIC_IDS = [
   'avgDailyNetDrawdown',
 ] as const;
 
-type SummaryMetricId = typeof DEFAULT_SUMMARY_METRIC_IDS[number];
+type SummaryMetricId = typeof ALL_SUMMARY_METRIC_IDS[number];
 
 const getDefaultSummaryLayout = () => [...DEFAULT_SUMMARY_METRIC_IDS];
 
 const normalizeSummaryLayout = (ids: unknown): SummaryMetricId[] => {
   if (!Array.isArray(ids)) return getDefaultSummaryLayout();
 
-  const allowedIds = new Set<string>(DEFAULT_SUMMARY_METRIC_IDS);
+  const allowedIds = new Set<string>(ALL_SUMMARY_METRIC_IDS);
   const normalized = ids.filter((id): id is SummaryMetricId => typeof id === 'string' && allowedIds.has(id));
   const deduped = Array.from(new Set(normalized));
 
@@ -96,6 +153,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [draftSummaryMetricIds, setDraftSummaryMetricIds] = useState<SummaryMetricId[]>(summaryMetricIds);
   const [draggedSummaryMetricId, setDraggedSummaryMetricId] = useState<SummaryMetricId | null>(null);
   const [isAddMetricMenuOpen, setIsAddMetricMenuOpen] = useState(false);
+  const [metricPickerSearch, setMetricPickerSearch] = useState('');
+  const [expandedMetricCategory, setExpandedMetricCategory] = useState<string | null>('time');
+  const [showMetricDifference, setShowMetricDifference] = useState(false);
   
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -469,6 +529,20 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
       const totalR = tradesWithRisk.reduce((acc, t) => acc + (t.pnl / (t.riskAmount || 1)), 0);
       const avgRealizedR = tradesWithRisk.length > 0 ? totalR / tradesWithRisk.length : 0;
+      const longTrades = trades.filter(t => t.direction === Direction.LONG);
+      const shortTrades = trades.filter(t => t.direction === Direction.SHORT);
+      const closedLongTrades = closedTrades.filter(t => t.direction === Direction.LONG);
+      const closedShortTrades = closedTrades.filter(t => t.direction === Direction.SHORT);
+      const longWins = closedLongTrades.filter(t => t.pnl > 0);
+      const longLosses = closedLongTrades.filter(t => t.pnl < 0);
+      const longBreakevens = closedLongTrades.filter(t => t.pnl === 0);
+      const shortWins = closedShortTrades.filter(t => t.pnl > 0);
+      const shortLosses = closedShortTrades.filter(t => t.pnl < 0);
+      const shortBreakevens = closedShortTrades.filter(t => t.pnl === 0);
+      const longOpenTrades = openTrades.filter(t => t.direction === Direction.LONG);
+      const shortOpenTrades = openTrades.filter(t => t.direction === Direction.SHORT);
+      const longWinRate = closedLongTrades.length > 0 ? (longWins.length / closedLongTrades.length) * 100 : 0;
+      const shortWinRate = closedShortTrades.length > 0 ? (shortWins.length / closedShortTrades.length) * 100 : 0;
 
       // --- Sequence Calculations (Consecutive) ---
       let maxConWins = 0, curConWins = 0;
@@ -494,6 +568,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const avgHoldWin = wins.length > 0 ? wins.reduce((acc, t) => acc + getDuration(t), 0) / wins.length : 0;
       const avgHoldLoss = losses.length > 0 ? losses.reduce((acc, t) => acc + getDuration(t), 0) / losses.length : 0;
       const avgHoldScratch = breakevens.length > 0 ? breakevens.reduce((acc, t) => acc + getDuration(t), 0) / breakevens.length : 0;
+      const closedDurations = closedTrades.map(getDuration).filter(duration => Number.isFinite(duration) && duration > 0);
+      const longestTradeDuration = closedDurations.length > 0 ? Math.max(...closedDurations) : 0;
 
       // --- Daily Stats ---
       const dailyPnls = dailyData.map(d => d.pnl);
@@ -503,6 +579,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const totalDays = dailyData.length;
       const avgDailyPnl = totalDays > 0 ? netPnl / totalDays : 0;
       const largestLosingDay = dailyPnls.length > 0 ? Math.min(...dailyPnls) : 0; 
+      const maxTradingDaysDuration = totalDays > 0 ? totalDays * 24 * 60 * 60 * 1000 : 0;
 
       // Daily Consecutive
       let maxConWinDays = 0, curConWinDays = 0;
@@ -529,6 +606,15 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const bestMonth = Math.max(...monthlyPnls, 0);
       const lowestMonth = Math.min(...monthlyPnls, 0);
       const avgMonth = monthlyPnls.length > 0 ? monthlyPnls.reduce((a,b) => a+b, 0) / monthlyPnls.length : 0;
+      const meanDailyPnl = dailyPnls.length > 0 ? dailyPnls.reduce((a, b) => a + b, 0) / dailyPnls.length : 0;
+      const variance = dailyPnls.length > 1 ? dailyPnls.reduce((acc, pnl) => acc + Math.pow(pnl - meanDailyPnl, 2), 0) / (dailyPnls.length - 1) : 0;
+      const stdDev = Math.sqrt(variance);
+      const downsidePnls = dailyPnls.filter(pnl => pnl < 0);
+      const downsideDeviation = downsidePnls.length > 1
+          ? Math.sqrt(downsidePnls.reduce((acc, pnl) => acc + Math.pow(pnl, 2), 0) / downsidePnls.length)
+          : 0;
+      const sharpeRatio = stdDev > 0 ? (meanDailyPnl / stdDev) * Math.sqrt(252) : 0;
+      const sortinoRatio = downsideDeviation > 0 ? (meanDailyPnl / downsideDeviation) * Math.sqrt(252) : 0;
 
       return {
           totalTrades: trades.length,
@@ -553,6 +639,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           avgHoldWin,
           avgHoldLoss,
           avgHoldScratch,
+          longestTradeDuration,
           totalDays,
           winningDays,
           losingDays,
@@ -563,11 +650,26 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           largestLosingDay,
           maxConWinDays,
           maxConLossDays,
+          maxTradingDaysDuration,
           avgRealizedR,
           bestMonth,
           lowestMonth,
           avgMonth,
-          totalVolume
+          totalVolume,
+          longTradesCount: longTrades.length,
+          shortTradesCount: shortTrades.length,
+          longWinningTrades: longWins.length,
+          longLosingTrades: longLosses.length,
+          longBreakevenTrades: longBreakevens.length,
+          longOpenTrades: longOpenTrades.length,
+          shortWinningTrades: shortWins.length,
+          shortLosingTrades: shortLosses.length,
+          shortBreakevenTrades: shortBreakevens.length,
+          shortOpenTrades: shortOpenTrades.length,
+          longWinRate,
+          shortWinRate,
+          sharpeRatio,
+          sortinoRatio
       };
   }, [trades, dailyData]);
 
@@ -1230,22 +1332,61 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   ];
 
   const summaryMetricDefinitions = stats ? [
-      { id: 'netPnl' as const, label: language === 'cn' ? '净盈亏' : 'Net P&L', tooltip: language === 'cn' ? '所选日期范围内，所有已平仓交易的已实现净盈亏，已扣除手续费。' : 'The total realized Profit and Loss (P/L) on all closed positions, for the date range selected.', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
-      { id: 'winPct' as const, label: language === 'cn' ? '胜率' : 'Win %', tooltip: language === 'cn' ? '已平仓交易中盈利交易所占比例。' : 'The percentage of closed trades that finished profitable.', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
-      { id: 'avgDailyWinPct' as const, label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均胜率。' : 'The average win percentage across logged trading days in the selected range.', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
-      { id: 'profitFactor' as const, label: language === 'cn' ? '盈利因子' : 'Profit factor', tooltip: language === 'cn' ? '总盈利除以总亏损的绝对值，用来衡量盈利覆盖亏损的能力。' : 'Gross profit divided by absolute gross loss. It shows how much profit is generated for each dollar lost.', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
-      { id: 'tradeExpectancy' as const, label: language === 'cn' ? '交易期望值' : 'Trade expectancy', tooltip: language === 'cn' ? '每笔已平仓交易的平均预期净盈亏。' : 'The average expected net P&L per closed trade.', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
-      { id: 'avgDailyWinLoss' as const, label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', tooltip: language === 'cn' ? '有有效盈利和亏损记录的交易日中，平均盈利日结果与平均亏损日结果的比例。' : 'The average ratio between winning and losing results on days with valid win/loss data.', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
-      { id: 'avgTradeWinLoss' as const, label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', tooltip: language === 'cn' ? '平均盈利交易金额与平均亏损交易金额的比例。' : 'The ratio between the average winning trade and the average losing trade.', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
-      { id: 'avgHoldTime' as const, label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', tooltip: language === 'cn' ? '所有已平仓交易从开仓到平仓的平均持仓时长。' : 'The average time between entry and exit across closed trades.', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
-      { id: 'avgNetTradePnl' as const, label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', tooltip: language === 'cn' ? '每笔已平仓交易的平均净盈亏。' : 'The average net P&L per closed trade.', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
-      { id: 'avgDailyNetPnl' as const, label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', tooltip: language === 'cn' ? '每个有交易日的平均净盈亏。' : 'The average net P&L per logged trading day.', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
-      { id: 'avgPlannedR' as const, label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', tooltip: language === 'cn' ? '交易计划中目标收益相对初始风险的平均 R 倍数。' : 'The average planned reward multiple relative to initial risk.', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
-      { id: 'avgRealizedR' as const, label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', tooltip: language === 'cn' ? '实际净盈亏相对初始风险的平均 R 倍数。' : 'The average realized return multiple relative to initial risk.', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
-      { id: 'avgDailyVolume' as const, label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均成交金额。' : 'The average traded notional volume per logged trading day.', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
-      { id: 'loggedDays' as const, label: language === 'cn' ? '记录天数' : 'Logged days', tooltip: language === 'cn' ? '所选日期范围内有交易记录的天数。' : 'The number of days with logged trades in the selected range.', value: stats.totalDays, tone: 'neutral' as const },
-      { id: 'maxDailyNetDrawdown' as const, label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', tooltip: language === 'cn' ? '所选日期范围内净亏损最大的单个交易日。' : 'The largest single-day net loss in the selected range.', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { id: 'avgTradingDaysDuration' as const, label: language === 'cn' ? '平均交易日跨度' : 'Average trading days duration - cumulative', tooltip: language === 'cn' ? '从第一笔交易日到最后一笔交易日的平均日跨度。' : 'Average elapsed calendar time across logged trading days.', value: stats.totalDays > 0 ? formatDuration(stats.totalDays * 24 * 60 * 60 * 1000) : '--', tone: 'neutral' as const },
+      { id: 'avgHoldTime' as const, label: language === 'cn' ? '平均持仓时间' : 'Avg hold time - cumulative', tooltip: language === 'cn' ? '所有已平仓交易从开仓到平仓的平均持仓时长。' : 'The average time between entry and exit across closed trades.', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
+      { id: 'longestTradeDuration' as const, label: language === 'cn' ? '最长持仓时间' : 'Longest trade duration - cumulative', tooltip: language === 'cn' ? '所选范围内已平仓交易的最长持仓时长。' : 'The longest duration among closed trades in the selected range.', value: formatDuration(stats.longestTradeDuration), tone: 'neutral' as const },
+      { id: 'maxTradingDaysDuration' as const, label: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration - cumulative', tooltip: language === 'cn' ? '有交易记录天数换算的最大交易日跨度。' : 'The maximum logged trading-day duration represented in the selected range.', value: formatDuration(stats.maxTradingDaysDuration), tone: 'neutral' as const },
+      { id: 'avgDailyNetPnl' as const, label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L - cumulative', tooltip: language === 'cn' ? '每个有交易日的平均净盈亏。' : 'The average net P&L per logged trading day.', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'avgDailyWinLoss' as const, label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss - cumulative', tooltip: language === 'cn' ? '有有效盈利和亏损记录的交易日中，平均盈利日结果与平均亏损日结果的比例。' : 'The average ratio between winning and losing results on days with valid win/loss data.', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
+      { id: 'avgLoss' as const, label: language === 'cn' ? '平均亏损' : 'Avg loss - cumulative', tooltip: language === 'cn' ? '所有亏损交易的平均亏损金额。' : 'The average P&L of losing trades.', value: formatSignedMoney(stats.avgLoss), tone: 'bad' as const },
+      { id: 'avgMaxTradeLoss' as const, label: language === 'cn' ? '平均最大单笔亏损' : 'Avg max trade loss - cumulative', tooltip: language === 'cn' ? '当前以最大单笔亏损作为最大亏损指标。' : 'The largest losing trade in the selected range.', value: formatSignedMoney(stats.largestLoss), tone: 'bad' as const },
+      { id: 'avgMaxTradeProfit' as const, label: language === 'cn' ? '平均最大单笔盈利' : 'Avg max trade profit - cumulative', tooltip: language === 'cn' ? '当前以最大单笔盈利作为最大盈利指标。' : 'The largest profitable trade in the selected range.', value: formatSignedMoney(stats.largestProfit), tone: 'good' as const },
+      { id: 'avgNetTradePnl' as const, label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L - cumulative', tooltip: language === 'cn' ? '每笔已平仓交易的平均净盈亏。' : 'The average net P&L per closed trade.', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'avgTradeWinLoss' as const, label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss - cumulative', tooltip: language === 'cn' ? '平均盈利交易金额与平均亏损交易金额的比例。' : 'The ratio between the average winning trade and the average losing trade.', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
+      { id: 'avgWin' as const, label: language === 'cn' ? '平均盈利' : 'Avg win - cumulative', tooltip: language === 'cn' ? '所有盈利交易的平均盈利金额。' : 'The average P&L of winning trades.', value: formatSignedMoney(stats.avgWin), tone: 'good' as const },
+      { id: 'dailyNetPnl' as const, label: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', tooltip: language === 'cn' ? '当前所选范围内所有已平仓交易的净盈亏。' : 'The net P&L for the selected range.', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'largestLosingTrade' as const, label: language === 'cn' ? '最大亏损交易' : 'Largest losing trade - cumulative', tooltip: language === 'cn' ? '所选范围内亏损金额最大的单笔交易。' : 'The largest losing trade in the selected range.', value: formatSignedMoney(stats.largestLoss), tone: 'bad' as const },
+      { id: 'largestProfitableTrade' as const, label: language === 'cn' ? '最大盈利交易' : 'Largest profitable trade - cumulative', tooltip: language === 'cn' ? '所选范围内盈利金额最大的单笔交易。' : 'The largest profitable trade in the selected range.', value: formatSignedMoney(stats.largestProfit), tone: 'good' as const },
+      { id: 'netPnl' as const, label: language === 'cn' ? '净盈亏' : 'Net P&L - cumulative', tooltip: language === 'cn' ? '所选日期范围内，所有已平仓交易的已实现净盈亏，已扣除手续费。' : 'The total realized Profit and Loss (P/L) on all closed positions, for the date range selected.', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'profitFactor' as const, label: language === 'cn' ? '盈利因子' : 'Profit factor - cumulative', tooltip: language === 'cn' ? '总盈利除以总亏损的绝对值，用来衡量盈利覆盖亏损的能力。' : 'Gross profit divided by absolute gross loss. It shows how much profit is generated for each dollar lost.', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
+      { id: 'tradeExpectancy' as const, label: language === 'cn' ? '交易期望值' : 'Trade expectancy - cumulative', tooltip: language === 'cn' ? '每笔已平仓交易的平均预期净盈亏。' : 'The average expected net P&L per closed trade.', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
       { id: 'avgDailyNetDrawdown' as const, label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', tooltip: language === 'cn' ? '所有亏损交易日的平均净亏损金额。' : 'The average net loss across losing trading days.', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
+      { id: 'avgPlannedR' as const, label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple - cumulative', tooltip: language === 'cn' ? '交易计划中目标收益相对初始风险的平均 R 倍数。' : 'The average planned reward multiple relative to initial risk.', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
+      { id: 'avgRealizedR' as const, label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple - cumulative', tooltip: language === 'cn' ? '实际净盈亏相对初始风险的平均 R 倍数。' : 'The average realized return multiple relative to initial risk.', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'breakevenDays' as const, label: language === 'cn' ? '打平天数' : 'Breakeven days - cumulative', tooltip: language === 'cn' ? '净盈亏等于 0 的交易日数量。' : 'The number of logged days with zero net P&L.', value: stats.beDays, tone: 'neutral' as const },
+      { id: 'breakevenTrades' as const, label: language === 'cn' ? '打平交易数' : 'Breakeven trades - cumulative', tooltip: language === 'cn' ? '已平仓交易中盈亏为 0 的交易数量。' : 'The number of closed trades with zero P&L.', value: stats.beCount, tone: 'neutral' as const },
+      { id: 'losingDays' as const, label: language === 'cn' ? '亏损天数' : 'Losing days - cumulative', tooltip: language === 'cn' ? '净盈亏小于 0 的交易日数量。' : 'The number of logged days with negative net P&L.', value: stats.losingDays, tone: 'bad' as const },
+      { id: 'maxDailyNetDrawdown' as const, label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown - cumulative', tooltip: language === 'cn' ? '所选日期范围内净亏损最大的单个交易日。' : 'The largest single-day net loss in the selected range.', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { id: 'avgDailyVolume' as const, label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume - cumulative', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均成交金额。' : 'The average traded notional volume per logged trading day.', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
+      { id: 'dailyNetDrawdown' as const, label: language === 'cn' ? '每日净回撤' : 'Daily net drawdown - cumulative', tooltip: language === 'cn' ? '当前以最大单日净回撤表示每日净回撤风险。' : 'The largest daily net drawdown in the selected range.', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { id: 'loggedDays' as const, label: language === 'cn' ? '记录天数' : 'Logged days - cumulative', tooltip: language === 'cn' ? '所选日期范围内有交易记录的天数。' : 'The number of days with logged trades in the selected range.', value: stats.totalDays, tone: 'neutral' as const },
+      { id: 'longBreakevenTrades' as const, label: language === 'cn' ? '多头打平交易数' : 'Longs # of breakeven trades - cumulative', tooltip: language === 'cn' ? '做多方向中盈亏为 0 的已平仓交易数量。' : 'Closed long trades with zero P&L.', value: stats.longBreakevenTrades, tone: 'neutral' as const },
+      { id: 'longLosingTrades' as const, label: language === 'cn' ? '多头亏损交易数' : 'Longs # of losing trades - cumulative', tooltip: language === 'cn' ? '做多方向中亏损的已平仓交易数量。' : 'Closed long trades with negative P&L.', value: stats.longLosingTrades, tone: 'bad' as const },
+      { id: 'longOpenTrades' as const, label: language === 'cn' ? '多头持仓交易数' : 'Longs # of open trades - cumulative', tooltip: language === 'cn' ? '当前做多方向未平仓交易数量。' : 'Open long trades in the selected range.', value: stats.longOpenTrades, tone: 'neutral' as const },
+      { id: 'longTrades' as const, label: language === 'cn' ? '多头交易数' : 'Longs # of trades - cumulative', tooltip: language === 'cn' ? '做多方向交易总数。' : 'The total number of long trades.', value: stats.longTradesCount, tone: 'neutral' as const },
+      { id: 'longWinningTrades' as const, label: language === 'cn' ? '多头盈利交易数' : 'Longs # of winning trades - cumulative', tooltip: language === 'cn' ? '做多方向中盈利的已平仓交易数量。' : 'Closed long trades with positive P&L.', value: stats.longWinningTrades, tone: 'good' as const },
+      { id: 'lossTrades' as const, label: language === 'cn' ? '亏损交易数' : 'Loss # of trades - cumulative', tooltip: language === 'cn' ? '已平仓交易中亏损交易数量。' : 'The number of losing closed trades.', value: stats.lossCount, tone: 'bad' as const },
+      { id: 'netAccountBalance' as const, label: language === 'cn' ? '账户净值' : 'Net account balance', tooltip: language === 'cn' ? '账户初始规模加当前累计净盈亏。' : 'Account size plus cumulative net P&L.', value: formatSignedMoney(accountSize + stats.netPnl), tone: accountSize + stats.netPnl >= accountSize ? 'good' as const : 'bad' as const },
+      { id: 'openTrades' as const, label: language === 'cn' ? '未平仓交易数' : 'Open trades - cumulative', tooltip: language === 'cn' ? '当前未平仓交易数量。' : 'The number of open trades.', value: stats.openCount, tone: 'neutral' as const },
+      { id: 'shortBreakevenTrades' as const, label: language === 'cn' ? '空头打平交易数' : 'Shorts # of breakeven trades - cumulative', tooltip: language === 'cn' ? '做空方向中盈亏为 0 的已平仓交易数量。' : 'Closed short trades with zero P&L.', value: stats.shortBreakevenTrades, tone: 'neutral' as const },
+      { id: 'shortLosingTrades' as const, label: language === 'cn' ? '空头亏损交易数' : 'Shorts # of losing trades - cumulative', tooltip: language === 'cn' ? '做空方向中亏损的已平仓交易数量。' : 'Closed short trades with negative P&L.', value: stats.shortLosingTrades, tone: 'bad' as const },
+      { id: 'shortOpenTrades' as const, label: language === 'cn' ? '空头持仓交易数' : 'Shorts # of open trades - cumulative', tooltip: language === 'cn' ? '当前做空方向未平仓交易数量。' : 'Open short trades in the selected range.', value: stats.shortOpenTrades, tone: 'neutral' as const },
+      { id: 'shortTrades' as const, label: language === 'cn' ? '空头交易数' : 'Shorts # of trades - cumulative', tooltip: language === 'cn' ? '做空方向交易总数。' : 'The total number of short trades.', value: stats.shortTradesCount, tone: 'neutral' as const },
+      { id: 'shortWinningTrades' as const, label: language === 'cn' ? '空头盈利交易数' : 'Shorts # of winning trades - cumulative', tooltip: language === 'cn' ? '做空方向中盈利的已平仓交易数量。' : 'Closed short trades with positive P&L.', value: stats.shortWinningTrades, tone: 'good' as const },
+      { id: 'tradeCount' as const, label: language === 'cn' ? '交易总数' : 'Trade count - cumulative', tooltip: language === 'cn' ? '所选范围内的交易总数，包括未平仓交易。' : 'The total number of trades in the selected range.', value: stats.totalTrades, tone: 'neutral' as const },
+      { id: 'volume' as const, label: language === 'cn' ? '成交额' : 'Volume - cumulative', tooltip: language === 'cn' ? '所选范围内的累计成交金额。' : 'The cumulative traded notional volume.', value: stats.totalVolume.toFixed(2), tone: 'neutral' as const },
+      { id: 'winTrades' as const, label: language === 'cn' ? '盈利交易数' : 'Win # of trades - cumulative', tooltip: language === 'cn' ? '已平仓交易中盈利交易数量。' : 'The number of winning closed trades.', value: stats.winCount, tone: 'good' as const },
+      { id: 'avgDailyWinPct' as const, label: language === 'cn' ? '平均日胜率' : 'Avg daily win % - cumulative', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均胜率。' : 'The average win percentage across logged trading days in the selected range.', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
+      { id: 'longWinPct' as const, label: language === 'cn' ? '多头胜率' : 'Longs win % - cumulative', tooltip: language === 'cn' ? '做多方向已平仓交易中的盈利比例。' : 'The win percentage for closed long trades.', value: `${stats.longWinRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { id: 'maxConsecutiveLosingDays' as const, label: language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days - cumulative', tooltip: language === 'cn' ? '所选范围内最长连续亏损交易日数量。' : 'The longest streak of losing trading days.', value: stats.maxConLossDays, tone: 'bad' as const },
+      { id: 'maxConsecutiveLosses' as const, label: language === 'cn' ? '最大连续亏损交易' : 'Max consecutive losses - cumulative', tooltip: language === 'cn' ? '所选范围内最长连续亏损交易数量。' : 'The longest streak of losing trades.', value: stats.maxConLoss, tone: 'bad' as const },
+      { id: 'maxConsecutiveWinningDays' as const, label: language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days - cumulative', tooltip: language === 'cn' ? '所选范围内最长连续盈利交易日数量。' : 'The longest streak of winning trading days.', value: stats.maxConWinDays, tone: 'good' as const },
+      { id: 'maxConsecutiveWins' as const, label: language === 'cn' ? '最大连续盈利交易' : 'Max consecutive wins - cumulative', tooltip: language === 'cn' ? '所选范围内最长连续盈利交易数量。' : 'The longest streak of winning trades.', value: stats.maxConWins, tone: 'good' as const },
+      { id: 'sharpeRatio' as const, label: language === 'cn' ? '夏普比率' : 'Sharpe ratio - cumulative', tooltip: language === 'cn' ? '基于日净盈亏均值和波动率估算的年化夏普比率，不代表投资建议。' : 'Annualized Sharpe ratio estimated from daily net P&L mean and volatility.', value: stats.sharpeRatio.toFixed(2), tone: stats.sharpeRatio >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'shortWinPct' as const, label: language === 'cn' ? '空头胜率' : 'Shorts win % - cumulative', tooltip: language === 'cn' ? '做空方向已平仓交易中的盈利比例。' : 'The win percentage for closed short trades.', value: `${stats.shortWinRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { id: 'sortinoRatio' as const, label: language === 'cn' ? '索提诺比率' : 'Sortino ratio - cumulative', tooltip: language === 'cn' ? '基于日净盈亏和下行波动估算的索提诺比率，不代表投资建议。' : 'Sortino ratio estimated from daily net P&L and downside deviation.', value: stats.sortinoRatio.toFixed(2), tone: stats.sortinoRatio >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'winPct' as const, label: language === 'cn' ? '胜率' : 'Win % - cumulative', tooltip: language === 'cn' ? '已平仓交易中盈利交易所占比例。' : 'The percentage of closed trades that finished profitable.', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { id: 'winningDays' as const, label: language === 'cn' ? '盈利天数' : 'Winning days - cumulative', tooltip: language === 'cn' ? '净盈亏大于 0 的交易日数量。' : 'The number of logged days with positive net P&L.', value: stats.winningDays, tone: 'good' as const },
   ] : [];
 
   const summaryMetricById = useMemo(() => {
@@ -1256,10 +1397,47 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const summaryMetrics = visibleSummaryMetricIds
       .map(id => summaryMetricById.get(id))
       .filter(Boolean) as typeof summaryMetricDefinitions;
-  const hiddenSummaryMetrics = DEFAULT_SUMMARY_METRIC_IDS
+  const hiddenSummaryMetrics = ALL_SUMMARY_METRIC_IDS
       .filter(id => !draftSummaryMetricIds.includes(id))
       .map(id => summaryMetricById.get(id))
       .filter(Boolean) as typeof summaryMetricDefinitions;
+  const metricCategories = [
+      {
+          id: 'time',
+          label: language === 'cn' ? '时间分析' : 'Time Analysis',
+          metricIds: ['avgTradingDaysDuration', 'avgHoldTime', 'longestTradeDuration', 'maxTradingDaysDuration'] as SummaryMetricId[],
+      },
+      {
+          id: 'profitability',
+          label: language === 'cn' ? '盈利能力' : 'Profitability',
+          metricIds: ['avgDailyNetPnl', 'avgDailyWinLoss', 'avgLoss', 'avgMaxTradeLoss', 'avgMaxTradeProfit', 'avgNetTradePnl', 'avgTradeWinLoss', 'avgWin', 'dailyNetPnl', 'largestLosingTrade', 'largestProfitableTrade', 'netPnl', 'profitFactor', 'tradeExpectancy'] as SummaryMetricId[],
+      },
+      {
+          id: 'risk',
+          label: language === 'cn' ? '风险与回撤' : 'Risk & Drawdown',
+          metricIds: ['avgDailyNetDrawdown', 'avgPlannedR', 'avgRealizedR', 'breakevenDays', 'breakevenTrades', 'losingDays', 'maxDailyNetDrawdown'] as SummaryMetricId[],
+      },
+      {
+          id: 'activity',
+          label: language === 'cn' ? '交易活动与成交量' : 'Trading Activity & Volume',
+          metricIds: ['avgDailyVolume', 'dailyNetDrawdown', 'loggedDays', 'longBreakevenTrades', 'longLosingTrades', 'longOpenTrades', 'longTrades', 'longWinningTrades', 'lossTrades', 'netAccountBalance', 'openTrades', 'shortBreakevenTrades', 'shortLosingTrades', 'shortOpenTrades', 'shortTrades', 'shortWinningTrades', 'tradeCount', 'volume', 'winTrades'] as SummaryMetricId[],
+      },
+      {
+          id: 'streaks',
+          label: language === 'cn' ? '连续性与稳定性' : 'Streaks & Consistency',
+          metricIds: ['avgDailyWinPct', 'longWinPct', 'maxConsecutiveLosingDays', 'maxConsecutiveLosses', 'maxConsecutiveWinningDays', 'maxConsecutiveWins', 'sharpeRatio', 'shortWinPct', 'sortinoRatio', 'winPct', 'winningDays'] as SummaryMetricId[],
+      },
+  ];
+  const normalizedMetricPickerSearch = metricPickerSearch.trim().toLowerCase();
+  const visibleMetricCategories = metricCategories
+      .map(category => ({
+          ...category,
+          metrics: category.metricIds
+              .map(id => summaryMetricById.get(id))
+              .filter(Boolean)
+              .filter(metric => !normalizedMetricPickerSearch || metric!.label.toLowerCase().includes(normalizedMetricPickerSearch)) as typeof summaryMetricDefinitions,
+      }))
+      .filter(category => category.metrics.length > 0);
 
   const summaryMetricColumns = useMemo(() => {
       return [0, 1, 2, 3].map(columnIndex => summaryMetrics.slice(columnIndex * 4, columnIndex * 4 + 4));
@@ -1624,22 +1802,81 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                               </button>
 
                                               {isAddMetricMenuOpen && (
-                                                  <div className="absolute bottom-full right-0 z-40 mb-[8px] max-h-[260px] w-[260px] overflow-y-auto rounded-[8px] border border-[#e2e6ec] bg-white p-[6px] shadow-[0_14px_36px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900">
-                                                      {hiddenSummaryMetrics.length > 0 ? hiddenSummaryMetrics.map(metric => (
-                                                          <button
-                                                              key={metric.id}
-                                                              type="button"
-                                                              onClick={() => addSummaryMetric(metric.id)}
-                                                              className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[9px] text-left text-[13px] font-semibold text-[#3f4650] transition-colors hover:bg-[#f5f6f8] dark:text-slate-200 dark:hover:bg-slate-800"
-                                                          >
-                                                              {metric.label}
-                                                              <Plus className="h-[14px] w-[14px] text-[#6b55cf]" />
-                                                          </button>
-                                                      )) : (
-                                                          <div className="px-[10px] py-[12px] text-[13px] font-medium text-[#69717b] dark:text-slate-400">
-                                                              {language === 'cn' ? '所有模块都已显示' : 'All modules are already shown'}
+                                                  <div className="absolute bottom-full right-0 z-40 mb-[10px] flex max-h-[390px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+                                                      <div className="p-[12px] pb-[8px]">
+                                                          <div className="relative">
+                                                              <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
+                                                              <input
+                                                                  value={metricPickerSearch}
+                                                                  onChange={(event) => setMetricPickerSearch(event.target.value)}
+                                                                  placeholder={language === 'cn' ? '搜索' : 'Search'}
+                                                                  className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                                              />
                                                           </div>
-                                                      )}
+                                                      </div>
+
+                                                      <div className="min-h-0 flex-1 overflow-y-auto px-[12px] pb-[8px]">
+                                                          {visibleMetricCategories.length > 0 ? visibleMetricCategories.map(category => {
+                                                              const isExpanded = expandedMetricCategory === category.id;
+
+                                                              return (
+                                                                  <div key={category.id}>
+                                                                      <button
+                                                                          type="button"
+                                                                          onClick={() => setExpandedMetricCategory(isExpanded ? null : category.id)}
+                                                                          className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200'}`}
+                                                                      >
+                                                                          {category.label}
+                                                                          <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
+                                                                      </button>
+
+                                                                      {isExpanded && (
+                                                                          <div className="pb-[6px]">
+                                                                              {category.metrics.map(metric => {
+                                                                                  const isSelected = draftSummaryMetricIds.includes(metric.id);
+                                                                                  const isFull = draftSummaryMetricIds.length >= 16;
+                                                                                  const isDisabled = isSelected || isFull;
+
+                                                                                  return (
+                                                                                      <button
+                                                                                          key={metric.id}
+                                                                                          type="button"
+                                                                                          disabled={isDisabled}
+                                                                                          onClick={() => addSummaryMetric(metric.id)}
+                                                                                          className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
+                                                                                              isDisabled
+                                                                                                  ? 'cursor-not-allowed text-[#b4bac2]'
+                                                                                                  : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                                                          }`}
+                                                                                      >
+                                                                                          {metric.label}
+                                                                                      </button>
+                                                                                  );
+                                                                              })}
+                                                                          </div>
+                                                                      )}
+                                                                  </div>
+                                                              );
+                                                          }) : (
+                                                              <div className="px-[4px] py-[18px] text-[13px] font-medium text-[#69717b] dark:text-slate-400">
+                                                                  {language === 'cn' ? '没有匹配的指标' : 'No matching metrics'}
+                                                              </div>
+                                                          )}
+                                                      </div>
+
+                                                      <div className="border-t border-[#e5e7eb] px-[12px] py-[11px]">
+                                                          <label className="flex cursor-pointer items-center gap-[10px] text-[14px] font-semibold text-[#20232a] dark:text-slate-100">
+                                                              <button
+                                                                  type="button"
+                                                                  onClick={() => setShowMetricDifference(value => !value)}
+                                                                  className={`relative h-[26px] w-[46px] rounded-full transition-colors ${showMetricDifference ? 'bg-[#5b45d6]' : 'bg-[#e2e4e8]'}`}
+                                                                  aria-pressed={showMetricDifference}
+                                                              >
+                                                                  <span className={`absolute top-[3px] h-[20px] w-[20px] rounded-full bg-white shadow-sm transition-transform ${showMetricDifference ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
+                                                              </button>
+                                                              {language === 'cn' ? '显示差值' : 'Show difference'}
+                                                          </label>
+                                                      </div>
                                                   </div>
                                               )}
                                           </div>
