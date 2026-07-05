@@ -3473,42 +3473,52 @@ const Reports: React.FC<ReportsProps> = ({
   const DayTimeInsightIcon = ({ type }: { type: 'best' | 'worst' | 'active' | 'winRate' }) => {
       if (type === 'best') {
           return (
-              <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
-                  <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#dff5ee" />
-                  <path d="M4.6 11.6 7.1 9.1l2 1.7 3.8-4" fill="none" stroke="#35b98c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M10.8 6.7h2.2v2.2" fill="none" stroke="#35b98c" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="4.6" cy="11.6" r="1" fill="#35b98c" />
+              <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
+                  <path d="M5.7 7.2c0-1.8 1.2-3.2 3-3.5l7.2-1.1c1.2-.2 2.2.8 2.2 2v1.5h.7c1.9 0 3.2 1.4 3.2 3.3v7.4c0 2-1.4 3.4-3.4 3.4H6.4C4.5 20.2 3 18.7 3 16.8V9.9c0-1.5 1.1-2.7 2.7-2.7Z" fill="#c9f2e4" />
+                  <path d="M5.7 7.2c.3-1.3 1.4-2.2 2.9-2.4l6.9-1.1c.8-.1 1.5.5 1.5 1.3v2.2H5.7Z" fill="#61d4ad" />
+                  <path d="M8.1 15.1h1.8v-2H8.1v2Zm3.2 0h1.8v-3.7h-1.8v3.7Zm3.3 0h1.8V9.8h-1.8v5.3Z" fill="#2faf82" />
+                  <path d="m8.4 10.5 3-1.8 2.4 1.2 3.7-2.7" fill="none" stroke="#1d9f74" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="18" cy="7" r="2.2" fill="#e9fff6" />
+                  <path d="m17 7 0.7.7L19 6.4" fill="none" stroke="#1d9f74" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
           );
       }
 
       if (type === 'worst') {
           return (
-              <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
-                  <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#ffe5e8" />
-                  <path d="M4.6 6.4 7.2 9l2-1.6 3.7 4" fill="none" stroke="#f05258" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M10.8 11.3h2.2V9.1" fill="none" stroke="#f05258" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="4.6" cy="6.4" r="1" fill="#f05258" />
+              <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
+                  <path d="M4.1 6.8c0-1.7 1.3-3 3-3h9.8c1.8 0 3.1 1.3 3.1 3.1v10.2c0 1.8-1.3 3.1-3.1 3.1H7.1c-1.8 0-3-1.3-3-3.1V6.8Z" fill="#ffd9df" />
+                  <path d="M4.1 6.8c0-1.7 1.3-3 3-3h7.7c.8 0 1.3.8.9 1.5L14.5 7H4.1v-.2Z" fill="#ff6d76" />
+                  <path d="M8 9.3h8.2c.8 0 1.4.6 1.4 1.4v3.9c0 .9-.6 1.5-1.5 1.5H8c-.8 0-1.5-.6-1.5-1.5v-3.8c0-.9.7-1.5 1.5-1.5Z" fill="#fff4f5" />
+                  <path d="m8.3 11 2.6 2.6 2-1.5 3 3" fill="none" stroke="#f05258" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M14.2 15.1h1.7v-1.7" fill="none" stroke="#f05258" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="17.3" cy="6.4" r="2.1" fill="#ffedf0" />
+                  <path d="M16.6 6.4h1.4" stroke="#f05258" strokeWidth="1.4" strokeLinecap="round" />
               </svg>
           );
       }
 
       if (type === 'active') {
           return (
-              <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
-                  <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#fff0cf" />
-                  <path d="M9.9 3.9 5.9 9.7h3l-0.8 4.4 4.1-6h-3l0.7-4.2Z" fill="#f59f00" />
-                  <path d="M13.4 4.7c0.8 0.7 1.2 1.6 1.2 2.8M3.5 10.5c0 1.2 0.5 2.2 1.4 3" fill="none" stroke="#f59f00" strokeWidth="1.2" strokeLinecap="round" opacity="0.72" />
+              <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
+                  <path d="M12 3.1c4.7 0 8.4 3.5 8.4 8.2 0 4.9-3.7 8.8-8.4 8.8-4.8 0-8.4-3.9-8.4-8.8 0-4.7 3.6-8.2 8.4-8.2Z" fill="#ffe3a3" />
+                  <path d="M7.8 6.9c1.1-1 2.5-1.5 4.2-1.5 3.3 0 5.9 2.5 5.9 5.9 0 3.6-2.6 6.5-5.9 6.5-1.8 0-3.3-.7-4.4-1.8 1.6.3 3-.2 4.2-1.5 1.9-2.2 1.4-5.4-1.2-7.1-.9-.6-1.8-.7-2.8-.5Z" fill="#ffbf47" />
+                  <path d="m12.8 6.5-5.1 6.6h3.4l-.7 4.4 5.4-6.9h-3.4l.4-4.1Z" fill="#f59f00" />
+                  <path d="M12.2 4.7c.8.2 1.5.6 2.1 1.1M5.7 12.1c.1 1.3.6 2.4 1.5 3.3" fill="none" stroke="#d88400" strokeWidth="1.3" strokeLinecap="round" opacity="0.65" />
+                  <circle cx="17.7" cy="7.3" r="1.4" fill="#fff6de" />
               </svg>
           );
       }
 
       return (
-          <svg viewBox="0 0 18 18" className="h-[18px] w-[18px]" aria-hidden="true">
-              <rect x="1.8" y="2.2" width="14.4" height="13.6" rx="4" fill="#eee8ff" />
-              <path d="M4.4 11.3 6.7 6.9l2.1 5.6 1.7-3.7 3.1 0" fill="none" stroke="#6b55cf" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="6.7" cy="6.9" r="1" fill="#6b55cf" />
-              <circle cx="13.6" cy="8.8" r="1" fill="#6b55cf" opacity="0.8" />
+          <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
+              <path d="M6 5.3c0-1.6 1.2-2.8 2.8-2.8h6.4c1.6 0 2.8 1.2 2.8 2.8v13.4c0 1.6-1.2 2.8-2.8 2.8H8.8c-1.6 0-2.8-1.2-2.8-2.8V5.3Z" fill="#ded4ff" />
+              <path d="M6 5.3c0-1.6 1.2-2.8 2.8-2.8h6.4c1.6 0 2.8 1.2 2.8 2.8v1.4H6V5.3Z" fill="#7a61df" />
+              <path d="M8.9 10.2h6.2c1.2 0 2.1.9 2.1 2.1v3.1c0 1.3-.9 2.2-2.2 2.2H8.9c-1.2 0-2.1-.9-2.1-2.1v-3.2c0-1.2.9-2.1 2.1-2.1Z" fill="#f6f2ff" />
+              <path d="m8.5 14.2 1.5-2.5 1.8 4.2 1.3-2.6h2.4" fill="none" stroke="#6b55cf" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="10" cy="11.7" r="1.1" fill="#7a61df" />
+              <circle cx="15.8" cy="13.3" r="1.1" fill="#8c78e7" />
+              <path d="M9.4 4.9h1.8M12.8 4.9h1.8" stroke="#cfc3ff" strokeWidth="1.1" strokeLinecap="round" />
           </svg>
       );
   };
@@ -3537,7 +3547,7 @@ const Reports: React.FC<ReportsProps> = ({
       return (
           <div className="min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900">
               <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b]">
-                  <span className="inline-flex h-[18px] w-[18px] items-center justify-center" style={{ color: toneColor }}>
+                  <span className="inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center" style={{ color: toneColor }}>
                       {iconType ? <DayTimeInsightIcon type={iconType} /> : <span className="h-[7px] w-[7px] rounded-full" style={{ backgroundColor: toneColor }} />}
                   </span>
                   <span>{eyebrow}</span>
