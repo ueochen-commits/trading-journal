@@ -3041,15 +3041,15 @@ const Reports: React.FC<ReportsProps> = ({
   ];
 
   const detailedFilterOptions = [
-      { id: 'DAYS', label: t.reports.filters.days },
+      { id: 'DAYS', label: language === 'cn' ? t.reports.filters.days : 'Day & Time' },
       { id: 'WEEKS', label: t.reports.filters.weeks },
       { id: 'MONTHS', label: t.reports.filters.months },
       { id: 'TIME', label: t.reports.filters.time },
       { id: 'SYMBOLS', label: language === 'cn' ? '交易品种' : 'Symbols' },
       { id: 'RISK', label: language === 'cn' ? '风险' : 'Risk' },
-      { id: 'SETUPS', label: t.reports.filters.setups },
-      { id: 'TAGS', label: t.reports.filters.tags },
-      { id: 'TRADE DURATION', label: t.reports.filters.duration },
+      { id: 'SETUPS', label: language === 'cn' ? t.reports.filters.setups : 'Strategies' },
+      { id: 'TAGS', label: language === 'cn' ? t.reports.filters.tags : 'Tags' },
+      { id: 'TRADE DURATION', label: language === 'cn' ? t.reports.filters.duration : 'Options: Days till expiration' },
       { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
   ];
 
@@ -3585,7 +3585,7 @@ const Reports: React.FC<ReportsProps> = ({
                             </button>
                             {isReportMenuTab && (
                                 <div
-                                    className={`absolute left-[2px] top-[50px] z-40 w-[188px] origin-top-left overflow-hidden rounded-[9px] border border-[#e2e5eb] bg-white py-[7px] shadow-[0_14px_32px_rgba(20,24,36,0.14)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                    className={`absolute left-[2px] top-[46px] z-40 w-[180px] origin-top-left overflow-hidden rounded-[12px] border border-[#dedfe4] bg-white py-[8px] shadow-[0_2px_5px_rgba(20,24,36,0.08),0_16px_28px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
                                         isReportMenuOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-1 scale-[0.98] opacity-0'
                                     }`}
                                     role="menu"
@@ -3598,14 +3598,14 @@ const Reports: React.FC<ReportsProps> = ({
                                                 type="button"
                                                 role="menuitem"
                                                 onClick={() => selectDetailedReport(option.id)}
-                                                className={`flex w-full items-center justify-between px-[13px] py-[8px] text-left text-[12px] font-medium leading-none transition-colors ${
+                                                className={`flex min-h-[35px] w-full items-center justify-between px-[12px] py-[8px] text-left text-[13px] font-medium leading-[1.25] transition-colors ${
                                                     isSelected
-                                                        ? 'bg-[#f4f1ff] text-[#6f55d8] dark:bg-indigo-500/15 dark:text-indigo-300'
-                                                        : 'text-[#4d5562] hover:bg-[#f6f7f9] hover:text-[#252b36] dark:text-slate-300 dark:hover:bg-slate-800'
+                                                        ? 'bg-[#f3efff] text-[#6f55d8] dark:bg-indigo-500/15 dark:text-indigo-300'
+                                                        : 'text-[#29313d] hover:bg-[#f7f7f9] hover:text-[#1f2630] dark:text-slate-300 dark:hover:bg-slate-800'
                                                 }`}
                                             >
-                                                <span>{option.label}</span>
-                                                {isSelected && <span className="h-[5px] w-[5px] rounded-full bg-[#6f55d8]" />}
+                                                <span className="min-w-0 truncate">{option.label}</span>
+                                                {isSelected && <span className="ml-[10px] h-[5px] w-[5px] flex-shrink-0 rounded-full bg-[#6f55d8]" />}
                                             </button>
                                         );
                                     })}
