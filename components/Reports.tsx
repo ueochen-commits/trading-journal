@@ -2539,6 +2539,8 @@ const Reports: React.FC<ReportsProps> = ({
           dayTimeRightPrimaryMetric,
           dayTimeRightSecondaryMetric || 'none',
           dayTimeRightTertiaryMetric || 'none',
+          JSON.stringify(dayTimeChartStyleSettings.left),
+          JSON.stringify(dayTimeChartStyleSettings.right),
           rowsSignature,
       ].join('||');
   }, [
@@ -2552,6 +2554,7 @@ const Reports: React.FC<ReportsProps> = ({
       dayTimeRightPrimaryMetric,
       dayTimeRightSecondaryMetric,
       dayTimeRightTertiaryMetric,
+      dayTimeChartStyleSettings,
   ]);
   const previousDayTimeChartAnimationSignatureRef = useRef<string | null>(null);
   const [shouldAnimateDayTimeCharts, setShouldAnimateDayTimeCharts] = useState(true);
