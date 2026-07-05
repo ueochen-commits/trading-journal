@@ -1013,9 +1013,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       >
                           <Info className="h-[14px] w-[14px]" />
                       </button>
-                      <span className="pointer-events-none absolute bottom-full left-0 z-50 mb-[10px] hidden w-[270px] rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-[13px] font-semibold leading-[1.55] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
+                      <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-[9px] hidden w-[286px] -translate-x-1/2 rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
                           {tooltip}
-                          <span className="absolute left-[15px] top-full h-0 w-0 border-l-[6px] border-r-[6px] border-t-[7px] border-l-transparent border-r-transparent border-t-[#262626]" />
                       </span>
                   </span>
               </div>
