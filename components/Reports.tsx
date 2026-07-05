@@ -3,7 +3,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report, TradingAccount } from '../types';
 import { useLanguage } from '../LanguageContext';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart, Customized
 } from 'recharts';
 import { Calendar as CalendarIcon, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search, Check } from 'lucide-react';
 import FeatureGate from './FeatureGate';
@@ -1546,6 +1546,36 @@ const Reports: React.FC<ReportsProps> = ({
       );
   };
 
+  const ReportChartHorizontalGrid = (props: any) => {
+      const offset = props?.offset;
+      if (!offset) return null;
+
+      const lineCount = 5;
+      const width = offset.width || 0;
+      const height = offset.height || 0;
+      if (width <= 0 || height <= 0) return null;
+
+      return (
+          <g aria-hidden="true">
+              {Array.from({ length: lineCount }, (_, index) => {
+                  const y = offset.top + (height * index) / (lineCount - 1);
+                  return (
+                      <line
+                          key={`report-grid-${index}`}
+                          x1={offset.left}
+                          x2={offset.left + width}
+                          y1={y}
+                          y2={y}
+                          stroke="#e2e8f0"
+                          strokeOpacity={0.82}
+                          strokeDasharray="5 5"
+                      />
+                  );
+              })}
+          </g>
+      );
+  };
+
   const getChartPeriodStartDate = (date: string, timeframe: ChartTimeframe) => {
       const value = new Date(`${date}T00:00:00`);
       if (timeframe === 'week') {
@@ -2368,7 +2398,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   </linearGradient>
                               ))}
                           </defs>
-                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#e2e8f0" strokeOpacity={0.82} />
+                          <Customized component={ReportChartHorizontalGrid} />
                           {xAxis}
                           {axisGroups.map(axis => (
                               <YAxis
