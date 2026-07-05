@@ -246,7 +246,7 @@ const Reports: React.FC<ReportsProps> = ({
   const [activeTab, setActiveTab] = useState<string>('performance');
   const [summaryTab, setSummaryTab] = useState<'summary' | 'days' | 'trades'>('summary');
   // Sub-filter for Detailed Tab
-  const [detailedFilter, setDetailedFilter] = useState<string>('DAYS');
+  const [detailedFilter, setDetailedFilter] = useState<string | null>(null);
   const [dayTimeReportView, setDayTimeReportView] = useState<DayTimeReportView>('DAYS');
   const [dayTimeLeftPrimaryMetric, setDayTimeLeftPrimaryMetric] = useState<DayTimeMetricId>('netPnl');
   const [dayTimeLeftSecondaryMetric, setDayTimeLeftSecondaryMetric] = useState<DayTimeMetricId | null>('tradeCount');
@@ -3706,15 +3706,16 @@ const Reports: React.FC<ReportsProps> = ({
       { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
   ];
 
-  const activeReportMenuLabel =
-      reportMenuOptions.find(option => option.id === detailedFilter)?.label ||
-      detailedFilterOptions.find(option => option.id === detailedFilter)?.label ||
-      detailedFilter;
+  const activeReportMenuLabel = detailedFilter
+      ? reportMenuOptions.find(option => option.id === detailedFilter)?.label ||
+        detailedFilterOptions.find(option => option.id === detailedFilter)?.label ||
+        detailedFilter
+      : null;
 
   const REPORT_TABS = [
       { id: 'performance', label: language === 'cn' ? '表现' : 'Performance', isNew: true },
       { id: 'overview', label: language === 'cn' ? '概览' : 'Overview' },
-      { id: 'detailed', label: language === 'cn' ? `报告：${activeReportMenuLabel}` : `Reports: ${activeReportMenuLabel}`, hasMenu: true },
+      { id: 'detailed', label: activeReportMenuLabel ? (language === 'cn' ? `报告：${activeReportMenuLabel}` : `Reports: ${activeReportMenuLabel}`) : (language === 'cn' ? '报告' : 'Reports'), hasMenu: true },
       { id: 'compare', label: language === 'cn' ? '对比' : 'Compare' },
       { id: 'calendar', label: language === 'cn' ? '日历' : 'Calendar' },
       { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights' },
