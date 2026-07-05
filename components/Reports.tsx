@@ -2547,6 +2547,7 @@ const Reports: React.FC<ReportsProps> = ({
           },
       ].filter(metric => Boolean(metric.label));
       const canAddMetric = 1 + additionalMetrics.length < 3;
+      const hasMultipleMetrics = additionalMetrics.length > 0;
       const selectedTimeframe = timeframeSide ? chartTimeframes[timeframeSide] : 'day';
       const selectedTimeframeLabel = chartTimeframeOptions.find(option => option.id === selectedTimeframe)?.label || chartTimeframeOptions[0].label;
       const timeframeMenuOpen = timeframeSide ? openChartTimeframeMenu === timeframeSide : false;
@@ -2577,7 +2578,7 @@ const Reports: React.FC<ReportsProps> = ({
                           />
                       )}
                   </div>
-                  <div className="relative min-w-[150px] flex-[1_1_170px] max-w-full" data-chart-metric-picker-root>
+                  <div className={`relative min-w-[150px] max-w-full ${hasMultipleMetrics ? 'flex-[1_1_170px]' : 'w-[min(252px,calc(100vw-132px))] flex-none'}`} data-chart-metric-picker-root>
                       <button
                           type="button"
                           onClick={() => {
