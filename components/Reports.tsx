@@ -1244,6 +1244,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const dotY = y;
       const dotStartX = orientation === 'right' ? x - 10 : x + 8;
       const dotDirection = orientation === 'right' ? -1 : 1;
+      const axisLabelColor = '#7c8490';
 
       return (
           <g>
@@ -1251,9 +1252,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   x={x}
                   y={y}
                   textAnchor={textAnchor}
-                  fill="#68717d"
-                  fontSize={12}
-                  fontWeight={400}
+                  fill={axisLabelColor}
+                  fontSize={11}
+                  fontWeight={500}
                   dominantBaseline="middle"
               >
                   {lines.map((line, index) => (
