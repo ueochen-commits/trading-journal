@@ -3660,9 +3660,8 @@ const Reports: React.FC<ReportsProps> = ({
 
       return (
           <div
-              className={`relative h-full ${animate ? 'animate-fade-in-up' : ''}`}
-              style={animate ? { animationDelay: `${animationDelayMs}ms`, animationDuration: '460ms', animationFillMode: 'both' } : undefined}
-          >
+              className={`relative h-full ${animate ? 'animate-fade-in' : ''}`}
+              >
               <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData} margin={{ top: 8, right: 26, left: 8, bottom: 44 }} barCategoryGap="48%">
                       <defs>
