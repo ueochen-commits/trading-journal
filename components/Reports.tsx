@@ -3399,127 +3399,214 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
       {/* --- OVERVIEW TAB --- */}
       {stats && activeTab === 'overview' && (
-        <div className="space-y-8 animate-fade-in">
-            {/* Top Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t.reports.stats.bestMonth}</p>
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-emerald-500 font-mono">${stats.bestMonth.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2">{t.reports.stats.peakPerformance}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t.reports.stats.lowestMonth}</p>
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-3xl font-black text-rose-500 font-mono">${stats.lowestMonth.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2">{t.reports.stats.maxDrawdown}</p>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t.reports.stats.avgMonth}</p>
-                    <div className="flex items-baseline gap-1">
-                        <span className={`text-3xl font-black font-mono ${stats.avgMonth >= 0 ? 'text-slate-800 dark:text-white' : 'text-rose-500'}`}>${stats.avgMonth.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-2">{t.reports.stats.consistentBaseline}</p>
-                </div>
-            </div>
-
-            {/* Detailed Stats Grid (TradeZella Style) */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
-                    <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                        <Hash className="w-4 h-4 text-indigo-500" /> {t.reports.stats.yourStats}
-                    </h3>
-                </div>
-                <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-slate-200 dark:divide-slate-800">
-                    <div className="flex flex-col">
-                        <DataRow label={t.reports.stats.totalPnl} value={`$${stats.netPnl.toLocaleString(undefined, {minimumFractionDigits: 2})}`} colorClass={stats.netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} />
-                        <DataRow label={t.reports.stats.avgDailyVol} value={`$${(stats.totalVolume / (stats.totalDays || 1)).toLocaleString(undefined, {minimumFractionDigits: 0})}`} />
-                        <DataRow label={t.reports.stats.avgWin} value={`$${stats.avgWin.toFixed(2)}`} colorClass="text-emerald-600 dark:text-emerald-400" />
-                        <DataRow label={t.reports.stats.avgLoss} value={`$${stats.avgLoss.toFixed(2)}`} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.totalTrades} value={stats.totalTrades} />
-                        <DataRow label={t.reports.stats.winCount} value={stats.winCount} colorClass="text-emerald-600 dark:text-emerald-400" />
-                        <DataRow label={t.reports.stats.lossCount} value={stats.lossCount} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.beCount} value={stats.beCount} />
-                        <DataRow label={t.reports.stats.maxConWins} value={stats.maxConWins} colorClass="text-emerald-600 dark:text-emerald-400" />
-                        <DataRow label={t.reports.stats.maxConLoss} value={stats.maxConLoss} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.commissions} value={`$${stats.totalFees.toFixed(2)}`} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.totalSwap} value="$0.00" />
-                        <DataRow label={t.reports.stats.largestProfit} value={`$${stats.largestProfit.toFixed(2)}`} colorClass="text-emerald-600 dark:text-emerald-400" />
-                        <DataRow label={t.reports.stats.largestLoss} value={`$${stats.largestLoss.toFixed(2)}`} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.avgHoldAll} value={formatDuration(stats.avgHoldAll)} />
-                        <DataRow label={t.reports.stats.avgHoldWin} value={formatDuration(stats.avgHoldWin)} />
-                    </div>
-                    <div className="flex flex-col">
-                        <DataRow label={t.reports.stats.avgHoldLoss} value={formatDuration(stats.avgHoldLoss)} />
-                        <DataRow label={t.reports.stats.avgHoldScratch} value={formatDuration(stats.avgHoldScratch)} />
-                        <DataRow label={t.reports.stats.avgTradePnl} value={`$${stats.avgTradePnl.toFixed(2)}`} colorClass={stats.avgTradePnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} />
-                        <DataRow label={t.reports.stats.profitFactor} value={stats.profitFactor.toFixed(2)} colorClass="text-indigo-600 dark:text-indigo-400" />
-                        <DataRow label={t.reports.stats.openTrades} value={stats.openCount} />
-                        <DataRow label={t.reports.stats.totalDays} value={stats.totalDays} />
-                        <DataRow label={t.reports.stats.winningDays} value={stats.winningDays} colorClass="text-emerald-600 dark:text-emerald-400" />
-                        <DataRow label={t.reports.stats.losingDays} value={stats.losingDays} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.beDays} value={stats.beDays} />
-                        <DataRow label={t.reports.stats.loggedDays} value={stats.totalDays} />
-                        <DataRow label={t.reports.stats.maxConWinDays} value={stats.maxConWinDays} colorClass="text-emerald-600 dark:text-emerald-400" />
-                        <DataRow label={t.reports.stats.maxConLossDays} value={stats.maxConLossDays} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.avgDailyPnl} value={`$${stats.avgDailyPnl.toFixed(2)}`} colorClass={stats.avgDailyPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} />
-                        <DataRow label={t.reports.stats.largestLosingDay} value={`$${stats.largestLosingDay.toFixed(2)}`} colorClass="text-rose-600 dark:text-rose-400" />
-                        <DataRow label={t.reports.stats.avgPlannedR} value="--" />
-                        <DataRow label={t.reports.stats.avgRealizedR} value={`${stats.avgRealizedR.toFixed(2)}R`} />
-                        <DataRow label={t.reports.stats.expectancy} value={`$${stats.expectancy.toFixed(2)}`} colorClass={stats.expectancy >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'} />
+        <div className="space-y-[14px] animate-fade-in">
+            <div className="flex items-center gap-[10px]">
+                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#73808e]">
+                    {language === 'cn' ? '盈亏显示' : 'P&L showing'}
+                </span>
+                <div className="relative" data-pnl-display-menu>
+                    <button
+                        type="button"
+                        onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
+                        className="inline-flex h-[36px] min-w-[104px] items-center justify-between gap-[12px] rounded-[6px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-[#cbd3df] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        aria-expanded={isPnlDisplayMenuOpen}
+                        aria-label={language === 'cn' ? '选择盈亏显示口径' : 'Choose P&L display mode'}
+                    >
+                        <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
+                        <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    <div
+                        className={`absolute left-0 top-full z-[80] mt-[6px] w-[128px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                            isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                        }`}
+                    >
+                        {([
+                            { id: 'net' as const, label: language === 'cn' ? '净盈亏' : 'NET P&L' },
+                            { id: 'gross' as const, label: language === 'cn' ? '总盈亏' : 'GROSS P&L' },
+                        ]).map(option => {
+                            const selected = pnlDisplayMode === option.id;
+                            return (
+                                <button
+                                    key={option.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setPnlDisplayMode(option.id);
+                                        setIsPnlDisplayMenuOpen(false);
+                                    }}
+                                    className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                        selected
+                                            ? 'bg-[#e8e4f4] text-[#303044]'
+                                            : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    {option.label}
+                                </button>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
 
-            {/* Visual Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-indigo-500" />
-                        {t.reports.charts.equityTitle}
-                    </h3>
-                    <div className="h-80">
+            <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                <div className="px-[18px] pb-[20px] pt-[18px]">
+                    <div className="flex items-center gap-[6px]">
+                        <h3 className="text-[15px] font-bold uppercase leading-none text-[#20232a] dark:text-slate-100">
+                            {language === 'cn' ? '你的统计' : 'Your stats'}
+                        </h3>
+                        <Info className="h-[13px] w-[13px] fill-[#6b55cf] text-[#6b55cf]" />
+                    </div>
+                    <div className="mt-[7px] text-[13px] font-bold uppercase leading-none text-[#7a818b]">
+                        {language === 'cn' ? '（全部日期）' : '(All dates)'}
+                    </div>
+
+                    <div className="mt-[28px] grid max-w-[640px] grid-cols-1 gap-[26px] sm:grid-cols-3">
+                        {[
+                            {
+                                label: language === 'cn' ? '最佳月份' : 'Best month',
+                                value: formatSignedMoney(stats.bestMonth),
+                                detail: language === 'cn' ? '按月份汇总' : 'per month',
+                            },
+                            {
+                                label: language === 'cn' ? '最差月份' : 'Lowest month',
+                                value: formatSignedMoney(stats.lowestMonth),
+                                detail: language === 'cn' ? '按月份汇总' : 'per month',
+                            },
+                            {
+                                label: language === 'cn' ? '平均值' : 'Average',
+                                value: formatSignedMoney(stats.avgMonth),
+                                detail: language === 'cn' ? '每月' : 'per Month',
+                            },
+                        ].map(item => (
+                            <div key={item.label}>
+                                <div className="text-[13px] font-bold leading-none text-[#3f454d] dark:text-slate-300">{item.label}</div>
+                                <div className="mt-[8px] text-[19px] font-bold leading-none text-[#20232a] tabular-nums dark:text-slate-100">{item.value}</div>
+                                <div className="mt-[5px] text-[13px] font-semibold leading-none text-[#7b828c]">{item.detail}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-x-[44px] border-t border-[#e2e5ea] px-[18px] pb-[20px] lg:grid-cols-2">
+                    {[
+                        [
+                            [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(stats.netPnl)],
+                            [language === 'cn' ? '平均每日成交额' : 'Average daily volume', (stats.totalVolume / (stats.totalDays || 1)).toFixed(2)],
+                            [language === 'cn' ? '平均盈利交易' : 'Average winning trade', formatSignedMoney(stats.avgWin)],
+                            [language === 'cn' ? '平均亏损交易' : 'Average losing trade', formatSignedMoney(stats.avgLoss)],
+                            [language === 'cn' ? '交易总数' : 'Total number of trades', stats.totalTrades],
+                            [language === 'cn' ? '盈利交易数量' : 'Number of winning trades', stats.winCount],
+                            [language === 'cn' ? '亏损交易数量' : 'Number of losing trades', stats.lossCount],
+                            [language === 'cn' ? '打平交易数量' : 'Number of break even trades', stats.beCount],
+                            [language === 'cn' ? '最大连续盈利' : 'Max consecutive wins', stats.maxConWins],
+                            [language === 'cn' ? '最大连续亏损' : 'Max consecutive losses', stats.maxConLoss],
+                            [language === 'cn' ? '总佣金' : 'Total commissions', formatSignedMoney(0)],
+                            [language === 'cn' ? '总费用' : 'Total fees', formatSignedMoney(stats.totalFees)],
+                            [language === 'cn' ? '总隔夜费' : 'Total swap', formatSignedMoney(0)],
+                            [language === 'cn' ? '最大盈利' : 'Largest profit', formatSignedMoney(stats.largestProfit)],
+                            [language === 'cn' ? '最大亏损' : 'Largest loss', formatSignedMoney(stats.largestLoss)],
+                            [language === 'cn' ? '平均持仓时间（全部交易）' : 'Average hold time (All trades)', formatDuration(stats.avgHoldAll)],
+                            [language === 'cn' ? '平均持仓时间（盈利交易）' : 'Average hold time (Winning trades)', formatDuration(stats.avgHoldWin)],
+                            [language === 'cn' ? '平均持仓时间（亏损交易）' : 'Average hold time (Losing trades)', formatDuration(stats.avgHoldLoss)],
+                            [language === 'cn' ? '平均持仓时间（打平交易）' : 'Average hold time (Scratch trades)', formatDuration(stats.avgHoldScratch)],
+                            [language === 'cn' ? '平均单笔盈亏' : 'Average trade P&L', formatSignedMoney(stats.avgTradePnl)],
+                            [language === 'cn' ? '盈利因子' : 'Profit factor', stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2)],
+                        ],
+                        [
+                            [language === 'cn' ? '未平仓交易' : 'Open trades', stats.openCount],
+                            [language === 'cn' ? '总交易日' : 'Total trading days', stats.totalDays],
+                            [language === 'cn' ? '盈利天数' : 'Winning days', stats.winningDays],
+                            [language === 'cn' ? '亏损天数' : 'Losing days', stats.losingDays],
+                            [language === 'cn' ? '打平天数' : 'Breakeven days', stats.beDays],
+                            [language === 'cn' ? '记录天数' : 'Logged days', stats.totalDays],
+                            [language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', stats.maxConWinDays],
+                            [language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', stats.maxConLossDays],
+                            [language === 'cn' ? '平均每日盈亏' : 'Average daily P&L', formatSignedMoney(stats.avgDailyPnl)],
+                            [language === 'cn' ? '平均盈利日盈亏' : 'Average winning day P&L', daysSummary.largestProfitableDay ? formatSignedMoney(daysSummary.largestProfitableDay.pnl) : '--'],
+                            [language === 'cn' ? '平均亏损日盈亏' : 'Average losing day P&L', daysSummary.largestLosingDay ? formatSignedMoney(daysSummary.largestLosingDay.pnl) : '--'],
+                            [language === 'cn' ? '最大盈利日（盈利）' : 'Largest profitable day (Profits)', daysSummary.largestProfitableDay ? formatSignedMoney(daysSummary.largestProfitableDay.pnl) : '--'],
+                            [language === 'cn' ? '最大亏损日（亏损）' : 'Largest losing day (Losses)', formatSignedMoney(stats.largestLosingDay)],
+                            [language === 'cn' ? '平均计划 R 倍数' : 'Average planned R-Multiple', performanceSummary.avgPlannedR === null ? '0R' : `${performanceSummary.avgPlannedR.toFixed(2)}R`],
+                            [language === 'cn' ? '平均实现 R 倍数' : 'Average realized R-Multiple', `${stats.avgRealizedR.toFixed(2)}R`],
+                            [language === 'cn' ? '交易期望值' : 'Trade expectancy', formatSignedMoney(stats.expectancy)],
+                            [language === 'cn' ? '最大回撤' : 'Max drawdown', formatSignedMoney(stats.netPnl)],
+                            [language === 'cn' ? '最大回撤 %' : 'Max drawdown, %', '0'],
+                            [language === 'cn' ? '平均回撤' : 'Average drawdown', formatSignedMoney(performanceSummary.avgDailyNetDrawdown)],
+                            [language === 'cn' ? '平均回撤 %' : 'Average drawdown, %', '0'],
+                        ],
+                    ].map((column, columnIndex) => (
+                        <div key={columnIndex} className="pt-[8px]">
+                            {column.map(([label, value]) => (
+                                <div key={String(label)} className="flex min-h-[30px] items-center justify-between border-b border-[#e6e8ec] px-[4px] text-[13px] font-semibold leading-none last:border-b-0">
+                                    <span className="text-[#737a83]">{label}</span>
+                                    <span className="text-right text-[#737a83] tabular-nums">{value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    ))}
+                </div>
+                <ReportCardLoadingOverlay radius={8} />
+            </section>
+
+            <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
+                <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                    <div className="flex h-[58px] items-center justify-between border-b border-[#e6e8ec] px-[18px]">
+                        <div className="flex items-center gap-[13px]">
+                            <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
+                                {language === 'cn' ? '每日净累计盈亏' : 'Daily net cumulative P&L'}
+                            </h3>
+                            <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
+                        </div>
+                        <Info className="h-[13px] w-[13px] fill-[#6b55cf] text-[#6b55cf]" />
+                    </div>
+                    <div className="h-[330px] px-[18px] pb-[22px] pt-[22px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={dailyData}>
+                            <AreaChart data={performancePnlDisplayData} margin={{ top: 8, right: 18, left: 16, bottom: 24 }}>
                                 <defs>
-                                    <linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.2}/>
-                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                    <linearGradient id="overviewCumulativePnlFill" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={isPnlTrendingDown ? '#ff6468' : '#6b55cf'} stopOpacity={0.36} />
+                                        <stop offset="62%" stopColor={isPnlTrendingDown ? '#ff6468' : '#6b55cf'} stopOpacity={0.14} />
+                                        <stop offset="100%" stopColor={isPnlTrendingDown ? '#ff6468' : '#6b55cf'} stopOpacity={0.02} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.3} />
-                                <XAxis dataKey="date" hide />
-                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
-                                <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', borderRadius: '8px' }} formatter={(value: number) => [`$${value.toFixed(2)}`, 'Equity']} labelStyle={{ color: '#94a3b8' }} />
-                                <Area type="monotone" dataKey="equity" stroke="#6366f1" fillOpacity={1} fill="url(#colorEquity)" strokeWidth={2} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5eb" strokeOpacity={0.82} />
+                                <XAxis dataKey="label" ticks={performancePnlXAxisTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} dy={16} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
+                                <Tooltip content={<PnlTooltip />} cursor={{ stroke: '#9aa3ae', strokeDasharray: '3 3' }} />
+                                <ReferenceLine y={0} stroke="#dfe5eb" strokeDasharray="3 3" />
+                                <Area type="monotone" dataKey="cumulativePnl" stroke="#7b68d9" strokeWidth={1.8} fill="url(#overviewCumulativePnlFill)" dot={false} activeDot={{ r: 4, fill: '#fff', stroke: '#7b68d9', strokeWidth: 2 }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm p-6">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                        <BarChart2 className="w-5 h-5 text-emerald-500" />
-                        {t.reports.charts.dailyPnlTitle}
-                    </h3>
-                    <div className="h-80">
+                    <ReportCardLoadingOverlay radius={8} />
+                </section>
+
+                <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                    <div className="flex h-[58px] items-center border-b border-[#e6e8ec] px-[18px]">
+                        <div className="flex items-center gap-[13px]">
+                            <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
+                                {language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}
+                            </h3>
+                            <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
+                        </div>
+                    </div>
+                    <div className="h-[330px] px-[18px] pb-[22px] pt-[22px]">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={dailyData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.3} />
-                                <XAxis dataKey="date" hide />
-                                <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} />
-                                <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', borderRadius: '8px' }} formatter={(value: number) => [`$${value.toFixed(2)}`, 'P&L']} labelStyle={{ color: '#94a3b8' }} />
-                                <ReferenceLine y={0} stroke="#94a3b8" />
-                                <Bar dataKey="pnl" radius={[2, 2, 0, 0]}>
-                                    {dailyData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#10b981' : '#f43f5e'} />
+                            <BarChart data={performancePnlDisplayData} margin={{ top: 8, right: 18, left: 16, bottom: 24 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5eb" strokeOpacity={0.82} />
+                                <XAxis dataKey="label" ticks={performancePnlXAxisTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} dy={16} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
+                                <Tooltip cursor={{ fill: 'transparent' }} content={<PnlTooltip />} />
+                                <ReferenceLine y={0} stroke="#dfe5eb" strokeDasharray="3 3" />
+                                <Bar dataKey="pnl" barSize={24} radius={[2, 2, 0, 0]}>
+                                    {performancePnlDisplayData.map((entry, index) => (
+                                        <Cell key={`overview-pnl-cell-${index}`} fill={entry.pnl >= 0 ? '#55c39e' : '#f15f63'} />
                                     ))}
                                 </Bar>
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
-                </div>
+                    <ReportCardLoadingOverlay radius={8} />
+                </section>
             </div>
         </div>
       )}
