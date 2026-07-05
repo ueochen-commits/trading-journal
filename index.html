@@ -381,6 +381,53 @@
         transform-origin: top center;
       }
 
+      @keyframes reportMetricSweep {
+        0% {
+          opacity: 0;
+          transform: translateX(-118%);
+        }
+        12% {
+          opacity: 1;
+        }
+        72% {
+          opacity: 0.9;
+        }
+        100% {
+          opacity: 0;
+          transform: translateX(118%);
+        }
+      }
+      .report-chart-metric-trigger {
+        isolation: isolate;
+      }
+      .report-chart-metric-trigger::before,
+      .report-chart-metric-trigger::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        border-radius: inherit;
+      }
+      .report-chart-metric-trigger::before {
+        z-index: 0;
+        background: #f1f2f4;
+        opacity: 0;
+        transition: opacity 130ms ease-out;
+      }
+      .report-chart-metric-trigger:hover::before {
+        opacity: 1;
+      }
+      .report-chart-metric-trigger:active::after,
+      .report-chart-metric-trigger.is-sweeping::after {
+        z-index: 1;
+        background: linear-gradient(90deg, rgba(214, 218, 225, 0) 0%, rgba(199, 204, 213, 0.78) 42%, rgba(229, 231, 235, 0.72) 66%, rgba(241, 242, 244, 0) 100%);
+        animation: reportMetricSweep 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+      }
+      .report-chart-metric-trigger > * {
+        position: relative;
+        z-index: 2;
+      }
+
       /* Remove browser focus outline on Recharts SVG elements */
       .recharts-wrapper,
       .recharts-wrapper svg,

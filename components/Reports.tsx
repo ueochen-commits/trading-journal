@@ -2551,6 +2551,13 @@ const Reports: React.FC<ReportsProps> = ({
       const selectedTimeframe = timeframeSide ? chartTimeframes[timeframeSide] : 'day';
       const selectedTimeframeLabel = chartTimeframeOptions.find(option => option.id === selectedTimeframe)?.label || chartTimeframeOptions[0].label;
       const timeframeMenuOpen = timeframeSide ? openChartTimeframeMenu === timeframeSide : false;
+      const triggerMetricSweep = (event: React.MouseEvent<HTMLButtonElement>) => {
+          const button = event.currentTarget;
+          button.classList.remove('is-sweeping');
+          void button.offsetWidth;
+          button.classList.add('is-sweeping');
+          window.setTimeout(() => button.classList.remove('is-sweeping'), 480);
+      };
 
       return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
@@ -2581,13 +2588,14 @@ const Reports: React.FC<ReportsProps> = ({
                   <div className={`relative min-w-[150px] max-w-full ${hasMultipleMetrics ? 'flex-[1_1_170px]' : 'w-[min(252px,calc(100vw-132px))] flex-none'}`} data-chart-metric-picker-root>
                       <button
                           type="button"
-                          onClick={() => {
+                          onClick={(event) => {
+                              triggerMetricSweep(event);
                               onMetricButtonClick?.();
                               setOpenChartStyleMenu(null);
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          className={`${featured ? 'report-chart-metric-trigger relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2606,13 +2614,14 @@ const Reports: React.FC<ReportsProps> = ({
                       <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-[1_1_170px] max-w-full items-center" data-chart-metric-picker-root>
                           <button
                               type="button"
-                              onClick={() => {
+                              onClick={(event) => {
+                                  triggerMetricSweep(event);
                                   metric.onButtonClick?.();
                                   setOpenChartStyleMenu(null);
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'report-chart-metric-trigger relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
