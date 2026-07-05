@@ -101,13 +101,17 @@ const DEFAULT_SUMMARY_METRIC_IDS = [
 type SummaryMetricId = typeof ALL_SUMMARY_METRIC_IDS[number];
 type ChartMetricVisual = 'line' | 'area' | 'bar';
 type ChartSide = 'left' | 'right';
-type ChartMetricSlot = 'primary' | 'secondary';
+type ChartMetricSlot = 'primary' | 'secondary' | 'tertiary';
 type ChartStyleSettings = Record<ChartSide, {
   primary?: {
     visual?: ChartMetricVisual;
     color?: string;
   };
   secondary?: {
+    visual?: ChartMetricVisual;
+    color?: string;
+  };
+  tertiary?: {
     visual?: ChartMetricVisual;
     color?: string;
   };
@@ -173,6 +177,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [rightChartMetricId, setRightChartMetricId] = useState<SummaryMetricId>('avgDailyWinLoss');
   const [leftSecondaryChartMetricId, setLeftSecondaryChartMetricId] = useState<SummaryMetricId | null>(null);
   const [rightSecondaryChartMetricId, setRightSecondaryChartMetricId] = useState<SummaryMetricId | null>(null);
+  const [leftTertiaryChartMetricId, setLeftTertiaryChartMetricId] = useState<SummaryMetricId | null>(null);
+  const [rightTertiaryChartMetricId, setRightTertiaryChartMetricId] = useState<SummaryMetricId | null>(null);
   const [openChartMetricPicker, setOpenChartMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartStyleMenu, setOpenChartStyleMenu] = useState<ChartSide | null>(null);
   const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
@@ -1234,27 +1240,36 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
   const leftChartConfig = chartMetricConfigs[leftChartMetricId] || chartMetricConfigs.netPnl!;
   const leftSecondaryChartConfig = leftSecondaryChartMetricId ? chartMetricConfigs[leftSecondaryChartMetricId] : null;
+  const leftTertiaryChartConfig = leftTertiaryChartMetricId ? chartMetricConfigs[leftTertiaryChartMetricId] : null;
   const rightChartConfig = chartMetricConfigs[rightChartMetricId] || chartMetricConfigs.avgDailyWinLoss!;
   const rightSecondaryChartConfig = rightSecondaryChartMetricId ? chartMetricConfigs[rightSecondaryChartMetricId] : null;
+  const rightTertiaryChartConfig = rightTertiaryChartMetricId ? chartMetricConfigs[rightTertiaryChartMetricId] : null;
   const getChartVisual = (side: ChartSide, slot: ChartMetricSlot, config: typeof leftChartConfig): ChartMetricVisual => chartStyleSettings[side][slot]?.visual || config.visual;
   const getChartColor = (side: ChartSide, slot: ChartMetricSlot, config: typeof leftChartConfig): string => chartStyleSettings[side][slot]?.color || config.color;
   const leftChartVisual = getChartVisual('left', 'primary', leftChartConfig);
   const leftSecondaryChartVisual = leftSecondaryChartConfig ? getChartVisual('left', 'secondary', leftSecondaryChartConfig) : null;
+  const leftTertiaryChartVisual = leftTertiaryChartConfig ? getChartVisual('left', 'tertiary', leftTertiaryChartConfig) : null;
   const rightChartVisual = getChartVisual('right', 'primary', rightChartConfig);
   const rightSecondaryChartVisual = rightSecondaryChartConfig ? getChartVisual('right', 'secondary', rightSecondaryChartConfig) : null;
+  const rightTertiaryChartVisual = rightTertiaryChartConfig ? getChartVisual('right', 'tertiary', rightTertiaryChartConfig) : null;
   const leftChartColor = getChartColor('left', 'primary', leftChartConfig);
   const leftSecondaryChartColor = leftSecondaryChartConfig ? getChartColor('left', 'secondary', leftSecondaryChartConfig) : '#55c39e';
+  const leftTertiaryChartColor = leftTertiaryChartConfig ? getChartColor('left', 'tertiary', leftTertiaryChartConfig) : '#f59f00';
   const rightChartColor = getChartColor('right', 'primary', rightChartConfig);
   const rightSecondaryChartColor = rightSecondaryChartConfig ? getChartColor('right', 'secondary', rightSecondaryChartConfig) : '#55c39e';
+  const rightTertiaryChartColor = rightTertiaryChartConfig ? getChartColor('right', 'tertiary', rightTertiaryChartConfig) : '#f59f00';
 
   const buildCombinedChartData = (
       primaryMetricId: SummaryMetricId,
       primaryVisual: ChartMetricVisual,
       secondaryMetricId: SummaryMetricId | null,
       secondaryVisual: ChartMetricVisual | null,
+      tertiaryMetricId: SummaryMetricId | null,
+      tertiaryVisual: ChartMetricVisual | null,
   ) => {
       const primaryRows = getChartMetricDisplayData(primaryMetricId, primaryVisual);
       const secondaryRows = secondaryMetricId ? getChartMetricDisplayData(secondaryMetricId, secondaryVisual || undefined) : [];
+      const tertiaryRows = tertiaryMetricId ? getChartMetricDisplayData(tertiaryMetricId, tertiaryVisual || undefined) : [];
       const rowMap = new Map<string, any>();
 
       primaryRows.forEach(row => {
@@ -1271,16 +1286,26 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           });
       });
 
+      tertiaryRows.forEach(row => {
+          const existing = rowMap.get(row.date) || { ...row };
+          rowMap.set(row.date, {
+              ...existing,
+              date: row.date,
+              label: row.label,
+              tertiaryValue: row.value,
+          });
+      });
+
       return Array.from(rowMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
   const leftChartData = useMemo(
-      () => buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual),
-      [leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, performanceDailyData]
+      () => buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, leftTertiaryChartMetricId, leftTertiaryChartVisual),
+      [leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, leftTertiaryChartMetricId, leftTertiaryChartVisual, performanceDailyData]
   );
   const rightChartData = useMemo(
-      () => buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual),
-      [rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, performanceDailyData]
+      () => buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, rightTertiaryChartMetricId, rightTertiaryChartVisual),
+      [rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, rightTertiaryChartMetricId, rightTertiaryChartVisual, performanceDailyData]
   );
   const leftChartTicks = useMemo(
       () => getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean),
@@ -1293,56 +1318,70 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const leftChartStyleMetrics = useMemo(() => [
       { slot: 'primary' as const, config: leftChartConfig, visual: leftChartVisual, color: leftChartColor },
       ...(leftSecondaryChartConfig && leftSecondaryChartVisual ? [{ slot: 'secondary' as const, config: leftSecondaryChartConfig, visual: leftSecondaryChartVisual, color: leftSecondaryChartColor }] : []),
-  ], [leftChartConfig, leftChartVisual, leftChartColor, leftSecondaryChartConfig, leftSecondaryChartVisual, leftSecondaryChartColor]);
+      ...(leftTertiaryChartConfig && leftTertiaryChartVisual ? [{ slot: 'tertiary' as const, config: leftTertiaryChartConfig, visual: leftTertiaryChartVisual, color: leftTertiaryChartColor }] : []),
+  ], [leftChartConfig, leftChartVisual, leftChartColor, leftSecondaryChartConfig, leftSecondaryChartVisual, leftSecondaryChartColor, leftTertiaryChartConfig, leftTertiaryChartVisual, leftTertiaryChartColor]);
   const rightChartStyleMetrics = useMemo(() => [
       { slot: 'primary' as const, config: rightChartConfig, visual: rightChartVisual, color: rightChartColor },
       ...(rightSecondaryChartConfig && rightSecondaryChartVisual ? [{ slot: 'secondary' as const, config: rightSecondaryChartConfig, visual: rightSecondaryChartVisual, color: rightSecondaryChartColor }] : []),
-  ], [rightChartConfig, rightChartVisual, rightChartColor, rightSecondaryChartConfig, rightSecondaryChartVisual, rightSecondaryChartColor]);
+      ...(rightTertiaryChartConfig && rightTertiaryChartVisual ? [{ slot: 'tertiary' as const, config: rightTertiaryChartConfig, visual: rightTertiaryChartVisual, color: rightTertiaryChartColor }] : []),
+  ], [rightChartConfig, rightChartVisual, rightChartColor, rightSecondaryChartConfig, rightSecondaryChartVisual, rightSecondaryChartColor, rightTertiaryChartConfig, rightTertiaryChartVisual, rightTertiaryChartColor]);
   const leftChartRenderMetrics = useMemo(() => leftChartStyleMetrics.map((metric, index) => ({
       ...metric,
-      dataKey: index === 0 ? 'primaryValue' as const : 'secondaryValue' as const,
+      dataKey: index === 0 ? 'primaryValue' as const : index === 1 ? 'secondaryValue' as const : 'tertiaryValue' as const,
       yAxisId: index === 0 ? 'left' as const : 'right' as const,
   })), [leftChartStyleMetrics]);
   const rightChartRenderMetrics = useMemo(() => rightChartStyleMetrics.map((metric, index) => ({
       ...metric,
-      dataKey: index === 0 ? 'primaryValue' as const : 'secondaryValue' as const,
+      dataKey: index === 0 ? 'primaryValue' as const : index === 1 ? 'secondaryValue' as const : 'tertiaryValue' as const,
       yAxisId: index === 0 ? 'left' as const : 'right' as const,
   })), [rightChartStyleMetrics]);
   const chartAnimationSignature = useMemo(() => {
       const getChartDataSignature = (data: typeof leftChartData) => data
-          .map(row => `${row.date}:${row.primaryValue ?? ''}:${row.secondaryValue ?? ''}`)
+          .map(row => `${row.date}:${row.primaryValue ?? ''}:${row.secondaryValue ?? ''}:${row.tertiaryValue ?? ''}`)
           .join('|');
 
       return [
           leftChartMetricId,
           leftSecondaryChartMetricId || 'none',
+          leftTertiaryChartMetricId || 'none',
           leftChartVisual,
           leftSecondaryChartVisual || 'none',
+          leftTertiaryChartVisual || 'none',
           leftChartColor,
           leftSecondaryChartColor,
+          leftTertiaryChartColor,
           getChartDataSignature(leftChartData),
           rightChartMetricId,
           rightSecondaryChartMetricId || 'none',
+          rightTertiaryChartMetricId || 'none',
           rightChartVisual,
           rightSecondaryChartVisual || 'none',
+          rightTertiaryChartVisual || 'none',
           rightChartColor,
           rightSecondaryChartColor,
+          rightTertiaryChartColor,
           getChartDataSignature(rightChartData),
       ].join('||');
   }, [
       leftChartMetricId,
       leftSecondaryChartMetricId,
+      leftTertiaryChartMetricId,
       leftChartVisual,
       leftSecondaryChartVisual,
+      leftTertiaryChartVisual,
       leftChartColor,
       leftSecondaryChartColor,
+      leftTertiaryChartColor,
       leftChartData,
       rightChartMetricId,
       rightSecondaryChartMetricId,
+      rightTertiaryChartMetricId,
       rightChartVisual,
       rightSecondaryChartVisual,
+      rightTertiaryChartVisual,
       rightChartColor,
       rightSecondaryChartColor,
+      rightTertiaryChartColor,
       rightChartData,
   ]);
   const previousChartAnimationSignatureRef = useRef<string | null>(null);
@@ -1575,7 +1614,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           config: typeof leftChartConfig;
           visual: ChartMetricVisual;
           color: string;
-          dataKey: 'primaryValue' | 'secondaryValue';
+          dataKey: 'primaryValue' | 'secondaryValue' | 'tertiaryValue';
           yAxisId: 'left' | 'right';
       }>;
       animate: boolean;
@@ -1770,15 +1809,21 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       metricColor,
       secondaryMetricLabel,
       secondaryMetricColor,
+      tertiaryMetricLabel,
+      tertiaryMetricColor,
       children,
       side,
       styleMetrics,
       metricPicker,
       secondaryMetricPicker,
+      tertiaryMetricPicker,
+      addMetricPicker,
       onMetricButtonClick,
       onSecondaryMetricButtonClick,
+      onTertiaryMetricButtonClick,
       onAddMetricClick,
       onRemoveSecondaryMetric,
+      onRemoveTertiaryMetric,
       accent = 'text-indigo-500',
       rightControl = 'Day',
       featured = false,
@@ -1790,6 +1835,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       metricColor?: string;
       secondaryMetricLabel?: string;
       secondaryMetricColor?: string;
+      tertiaryMetricLabel?: string;
+      tertiaryMetricColor?: string;
       children: React.ReactNode;
       side?: ChartSide;
       styleMetrics?: Array<{
@@ -1800,16 +1847,41 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       }>;
       metricPicker?: React.ReactNode;
       secondaryMetricPicker?: React.ReactNode;
+      tertiaryMetricPicker?: React.ReactNode;
+      addMetricPicker?: React.ReactNode;
       onMetricButtonClick?: () => void;
       onSecondaryMetricButtonClick?: () => void;
+      onTertiaryMetricButtonClick?: () => void;
       onAddMetricClick?: () => void;
       onRemoveSecondaryMetric?: () => void;
+      onRemoveTertiaryMetric?: () => void;
       accent?: string;
       rightControl?: string;
       featured?: boolean;
       summaryValue?: string;
       summaryTone?: 'neutral' | 'good' | 'bad';
-  }) => (
+  }) => {
+      const additionalMetrics = [
+          {
+              slot: 'secondary' as const,
+              label: secondaryMetricLabel,
+              color: secondaryMetricColor,
+              picker: secondaryMetricPicker,
+              onButtonClick: onSecondaryMetricButtonClick,
+              onRemove: onRemoveSecondaryMetric,
+          },
+          {
+              slot: 'tertiary' as const,
+              label: tertiaryMetricLabel,
+              color: tertiaryMetricColor,
+              picker: tertiaryMetricPicker,
+              onButtonClick: onTertiaryMetricButtonClick,
+              onRemove: onRemoveTertiaryMetric,
+          },
+      ].filter(metric => Boolean(metric.label));
+      const canAddMetric = 1 + additionalMetrics.length < 3;
+
+      return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
           <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between bg-white dark:bg-slate-900`}>
               <div className={`${featured ? 'gap-[12px]' : 'gap-3'} flex items-center min-w-0`}>
@@ -1859,43 +1931,44 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       </button>
                       {metricPicker}
                   </div>
-                  {secondaryMetricLabel ? (
-                      <div className="relative flex items-center gap-[6px]">
+                  {additionalMetrics.map(metric => (
+                      <div key={metric.slot} className="group/metric relative flex items-center gap-[6px]">
                           <button
                               type="button"
                               onClick={() => {
-                                  onSecondaryMetricButtonClick?.();
+                                  metric.onButtonClick?.();
                                   setOpenChartStyleMenu(null);
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'relative h-[32px] w-[236px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'relative h-[32px] w-[220px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
                                       <span
                                           className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]"
-                                          style={{ backgroundColor: secondaryMetricColor || metricColor || '#5b45d6' }}
+                                          style={{ backgroundColor: metric.color || metricColor || '#5b45d6' }}
                                       />
                                   </span>
                               )}
-                              <span className="truncate">{secondaryMetricLabel}</span>
+                              <span className="truncate">{metric.label}</span>
                               <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
                           </button>
                           <button
                               type="button"
                               onClick={() => {
-                                  onRemoveSecondaryMetric?.();
+                                  metric.onRemove?.();
                                   setOpenChartColorDropdown(null);
                               }}
-                              className="inline-flex h-[24px] w-[24px] flex-shrink-0 items-center justify-center rounded-[6px] text-[#7b8490] transition-colors hover:bg-[#f1f2f4] hover:text-[#2f3742]"
-                              aria-label={language === 'cn' ? '移除第二指标' : 'Remove second metric'}
+                              className="pointer-events-none inline-flex h-[24px] w-[24px] flex-shrink-0 items-center justify-center rounded-[6px] text-[#7b8490] opacity-0 transition-[opacity,background-color,color] hover:bg-[#f1f2f4] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+                              aria-label={language === 'cn' ? '移除指标' : 'Remove metric'}
                           >
                               <X className="h-[14px] w-[14px]" />
                           </button>
-                          {secondaryMetricPicker}
+                          {metric.picker}
                       </div>
-                  ) : (
+                  ))}
+                  {canAddMetric && (
                       <div className="relative hidden sm:inline-flex">
                           <button
                               type="button"
@@ -1909,7 +1982,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           >
                               + {language === 'cn' ? '添加指标' : 'Add metric'}
                           </button>
-                          {secondaryMetricPicker}
+                          {addMetricPicker}
                       </div>
                   )}
               </div>
@@ -1946,7 +2019,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           </div>
           <ReportCardLoadingOverlay radius={featured ? 8 : 12} />
       </div>
-  );
+      );
+  };
 
   const PnlTooltip = ({ active, payload, label }: any) => {
       if (!active || !payload?.length) return null;
@@ -2013,16 +2087,30 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       if (openChartMetricPicker?.side !== side || openChartMetricPicker.slot !== slot) return null;
 
       const handleSelectMetric = (metricId: SummaryMetricId) => {
-          if (side === 'left' && slot === 'primary') {
-              setLeftChartMetricId(metricId);
-              if (leftSecondaryChartMetricId === metricId) setLeftSecondaryChartMetricId(null);
+          if (side === 'left') {
+              if (slot === 'primary') {
+                  setLeftChartMetricId(metricId);
+                  if (leftSecondaryChartMetricId === metricId) setLeftSecondaryChartMetricId(null);
+                  if (leftTertiaryChartMetricId === metricId) setLeftTertiaryChartMetricId(null);
+              } else if (slot === 'secondary') {
+                  setLeftSecondaryChartMetricId(metricId);
+                  if (leftTertiaryChartMetricId === metricId) setLeftTertiaryChartMetricId(null);
+              } else {
+                  setLeftTertiaryChartMetricId(metricId);
+              }
+          } else {
+              if (slot === 'primary') {
+                  setRightChartMetricId(metricId);
+                  if (rightSecondaryChartMetricId === metricId) setRightSecondaryChartMetricId(null);
+                  if (rightTertiaryChartMetricId === metricId) setRightTertiaryChartMetricId(null);
+              } else if (slot === 'secondary') {
+                  setRightSecondaryChartMetricId(metricId);
+                  if (rightTertiaryChartMetricId === metricId) setRightTertiaryChartMetricId(null);
+              } else {
+                  setRightTertiaryChartMetricId(metricId);
+              }
           }
-          else if (side === 'left') setLeftSecondaryChartMetricId(metricId);
-          else if (slot === 'primary') {
-              setRightChartMetricId(metricId);
-              if (rightSecondaryChartMetricId === metricId) setRightSecondaryChartMetricId(null);
-          }
-          else setRightSecondaryChartMetricId(metricId);
+
           setOpenChartMetricPicker(null);
           setOpenChartVisualDropdown(null);
           setOpenChartColorDropdown(null);
@@ -2533,18 +2621,35 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       metricColor: leftChartColor,
                       secondaryMetricLabel: leftSecondaryChartConfig?.label,
                       secondaryMetricColor: leftSecondaryChartColor,
+                      tertiaryMetricLabel: leftTertiaryChartConfig?.label,
+                      tertiaryMetricColor: leftTertiaryChartColor,
                       side: 'left',
                       styleMetrics: leftChartStyleMetrics,
-                      metricPicker: <ChartMetricPicker side="left" slot="primary" selectedMetricId={leftChartMetricId} excludedMetricIds={leftSecondaryChartMetricId ? [leftSecondaryChartMetricId] : []} />,
-                      secondaryMetricPicker: <ChartMetricPicker side="left" slot="secondary" selectedMetricId={leftSecondaryChartMetricId} excludedMetricIds={[leftChartMetricId]} />,
+                      metricPicker: <ChartMetricPicker side="left" slot="primary" selectedMetricId={leftChartMetricId} excludedMetricIds={[leftSecondaryChartMetricId, leftTertiaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
+                      secondaryMetricPicker: <ChartMetricPicker side="left" slot="secondary" selectedMetricId={leftSecondaryChartMetricId} excludedMetricIds={[leftChartMetricId, leftTertiaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
+                      tertiaryMetricPicker: <ChartMetricPicker side="left" slot="tertiary" selectedMetricId={leftTertiaryChartMetricId} excludedMetricIds={[leftChartMetricId, leftSecondaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
+                      addMetricPicker: <ChartMetricPicker side="left" slot={leftSecondaryChartMetricId ? 'tertiary' : 'secondary'} selectedMetricId={leftSecondaryChartMetricId ? leftTertiaryChartMetricId : leftSecondaryChartMetricId} excludedMetricIds={[leftChartMetricId, leftSecondaryChartMetricId, leftTertiaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
                       onMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'primary' ? null : { side: 'left', slot: 'primary' }),
                       onSecondaryMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' }),
-                      onAddMetricClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' }),
+                      onTertiaryMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'tertiary' ? null : { side: 'left', slot: 'tertiary' }),
+                      onAddMetricClick: () => {
+                          const nextSlot = leftSecondaryChartMetricId ? 'tertiary' : 'secondary';
+                          setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === nextSlot ? null : { side: 'left', slot: nextSlot });
+                      },
                       onRemoveSecondaryMetric: () => {
-                          setLeftSecondaryChartMetricId(null);
+                          setLeftSecondaryChartMetricId(leftTertiaryChartMetricId);
+                          setLeftTertiaryChartMetricId(null);
                           setOpenChartMetricPicker(null);
                           setOpenChartVisualDropdown(null);
-                          setChartStyleSettings(current => ({ ...current, left: { ...current.left, secondary: undefined } }));
+                          setOpenChartColorDropdown(null);
+                          setChartStyleSettings(current => ({ ...current, left: { ...current.left, secondary: current.left.tertiary, tertiary: undefined } }));
+                      },
+                      onRemoveTertiaryMetric: () => {
+                          setLeftTertiaryChartMetricId(null);
+                          setOpenChartMetricPicker(null);
+                          setOpenChartVisualDropdown(null);
+                          setOpenChartColorDropdown(null);
+                          setChartStyleSettings(current => ({ ...current, left: { ...current.left, tertiary: undefined } }));
                       },
                       accent: 'text-[#5f636b]',
                       rightControl: language === 'cn' ? '日' : 'Day',
@@ -2558,18 +2663,35 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       metricColor: rightChartColor,
                       secondaryMetricLabel: rightSecondaryChartConfig?.label,
                       secondaryMetricColor: rightSecondaryChartColor,
+                      tertiaryMetricLabel: rightTertiaryChartConfig?.label,
+                      tertiaryMetricColor: rightTertiaryChartColor,
                       side: 'right',
                       styleMetrics: rightChartStyleMetrics,
-                      metricPicker: <ChartMetricPicker side="right" slot="primary" selectedMetricId={rightChartMetricId} excludedMetricIds={rightSecondaryChartMetricId ? [rightSecondaryChartMetricId] : []} />,
-                      secondaryMetricPicker: <ChartMetricPicker side="right" slot="secondary" selectedMetricId={rightSecondaryChartMetricId} excludedMetricIds={[rightChartMetricId]} />,
+                      metricPicker: <ChartMetricPicker side="right" slot="primary" selectedMetricId={rightChartMetricId} excludedMetricIds={[rightSecondaryChartMetricId, rightTertiaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
+                      secondaryMetricPicker: <ChartMetricPicker side="right" slot="secondary" selectedMetricId={rightSecondaryChartMetricId} excludedMetricIds={[rightChartMetricId, rightTertiaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
+                      tertiaryMetricPicker: <ChartMetricPicker side="right" slot="tertiary" selectedMetricId={rightTertiaryChartMetricId} excludedMetricIds={[rightChartMetricId, rightSecondaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
+                      addMetricPicker: <ChartMetricPicker side="right" slot={rightSecondaryChartMetricId ? 'tertiary' : 'secondary'} selectedMetricId={rightSecondaryChartMetricId ? rightTertiaryChartMetricId : rightSecondaryChartMetricId} excludedMetricIds={[rightChartMetricId, rightSecondaryChartMetricId, rightTertiaryChartMetricId].filter(Boolean) as SummaryMetricId[]} />,
                       onMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'primary' ? null : { side: 'right', slot: 'primary' }),
                       onSecondaryMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' }),
-                      onAddMetricClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' }),
+                      onTertiaryMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'tertiary' ? null : { side: 'right', slot: 'tertiary' }),
+                      onAddMetricClick: () => {
+                          const nextSlot = rightSecondaryChartMetricId ? 'tertiary' : 'secondary';
+                          setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === nextSlot ? null : { side: 'right', slot: nextSlot });
+                      },
                       onRemoveSecondaryMetric: () => {
-                          setRightSecondaryChartMetricId(null);
+                          setRightSecondaryChartMetricId(rightTertiaryChartMetricId);
+                          setRightTertiaryChartMetricId(null);
                           setOpenChartMetricPicker(null);
                           setOpenChartVisualDropdown(null);
-                          setChartStyleSettings(current => ({ ...current, right: { ...current.right, secondary: undefined } }));
+                          setOpenChartColorDropdown(null);
+                          setChartStyleSettings(current => ({ ...current, right: { ...current.right, secondary: current.right.tertiary, tertiary: undefined } }));
+                      },
+                      onRemoveTertiaryMetric: () => {
+                          setRightTertiaryChartMetricId(null);
+                          setOpenChartMetricPicker(null);
+                          setOpenChartVisualDropdown(null);
+                          setOpenChartColorDropdown(null);
+                          setChartStyleSettings(current => ({ ...current, right: { ...current.right, tertiary: undefined } }));
                       },
                       accent: 'text-emerald-500',
                       rightControl: language === 'cn' ? '日' : 'Day',
