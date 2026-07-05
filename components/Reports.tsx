@@ -2505,6 +2505,53 @@ const Reports: React.FC<ReportsProps> = ({
       return () => window.clearTimeout(timer);
   }, [chartAnimationSignature]);
 
+  const dayTimeChartAnimationSignature = useMemo(() => {
+      const rowsSignature = dayTimeReportRows
+          .map(row => `${row.key}:${row.count}:${row.winRate}:${row.netPnl}:${row.avgDailyVolume}`)
+          .join('|');
+
+      return [
+          dayTimeReportView,
+          pnlDisplayMode,
+          language,
+          dayTimeLeftPrimaryMetric,
+          dayTimeLeftSecondaryMetric || 'none',
+          dayTimeLeftTertiaryMetric || 'none',
+          dayTimeRightPrimaryMetric,
+          dayTimeRightSecondaryMetric || 'none',
+          dayTimeRightTertiaryMetric || 'none',
+          rowsSignature,
+      ].join('||');
+  }, [
+      dayTimeReportRows,
+      dayTimeReportView,
+      pnlDisplayMode,
+      language,
+      dayTimeLeftPrimaryMetric,
+      dayTimeLeftSecondaryMetric,
+      dayTimeLeftTertiaryMetric,
+      dayTimeRightPrimaryMetric,
+      dayTimeRightSecondaryMetric,
+      dayTimeRightTertiaryMetric,
+  ]);
+  const previousDayTimeChartAnimationSignatureRef = useRef<string | null>(null);
+  const [shouldAnimateDayTimeCharts, setShouldAnimateDayTimeCharts] = useState(true);
+
+  useEffect(() => {
+      const hasDayTimeChartChanged = previousDayTimeChartAnimationSignatureRef.current !== dayTimeChartAnimationSignature;
+      previousDayTimeChartAnimationSignatureRef.current = dayTimeChartAnimationSignature;
+
+      if (hasDayTimeChartChanged) {
+          setShouldAnimateDayTimeCharts(true);
+      }
+
+      const timer = window.setTimeout(() => {
+          setShouldAnimateDayTimeCharts(false);
+      }, 760);
+
+      return () => window.clearTimeout(timer);
+  }, [dayTimeChartAnimationSignature]);
+
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
       if (language === 'cn') {
@@ -3338,9 +3385,13 @@ const Reports: React.FC<ReportsProps> = ({
   const renderDayTimeMetricChart = ({
       chartId,
       metrics,
+      animate = false,
+      animationDelayMs = 0,
   }: {
       chartId: string;
       metrics: DayTimeMetricId[];
+      animate?: boolean;
+      animationDelayMs?: number;
   }) => {
       const visibleMetrics = metrics.map(getDayTimeMetricOption);
       const chartData = dayTimeReportRows.map(row => ({
@@ -3384,8 +3435,9 @@ const Reports: React.FC<ReportsProps> = ({
                       fill={`url(#${chartId}-${metric.id}-fill)`}
                       dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
                       activeDot={{ r: 5, fill: '#fff', stroke: metric.color, strokeWidth: 2.4 }}
-                      isAnimationActive={shouldAnimateCharts}
+                      isAnimationActive={shouldAnimateDayTimeCharts}
                       animationDuration={560}
+                      animationBegin={animationDelayMs}
                       connectNulls
                   />
               );
@@ -3401,15 +3453,19 @@ const Reports: React.FC<ReportsProps> = ({
                   strokeWidth={2}
                   dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
                   activeDot={{ r: 5, fill: '#fff', stroke: metric.color, strokeWidth: 2.4 }}
-                  isAnimationActive={shouldAnimateCharts}
+                  isAnimationActive={shouldAnimateDayTimeCharts}
                   animationDuration={560}
+                  animationBegin={animationDelayMs}
                   connectNulls
               />
           );
       };
 
       return (
-          <div className="relative h-full">
+          <div
+              className={`relative h-full ${animate ? 'animate-fade-in-up' : ''}`}
+              style={animate ? { animationDelay: `${animationDelayMs}ms`, animationDuration: '460ms', animationFillMode: 'both' } : undefined}
+          >
               <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={chartData} margin={{ top: 8, right: 26, left: 8, bottom: 44 }} barCategoryGap="48%">
                       <defs>
@@ -3529,6 +3585,8 @@ const Reports: React.FC<ReportsProps> = ({
       value,
       tone = 'neutral',
       iconType,
+      animate = false,
+      animationDelayMs = 0,
   }: {
       eyebrow: string;
       title: string;
@@ -3536,6 +3594,8 @@ const Reports: React.FC<ReportsProps> = ({
       value?: string;
       tone?: 'good' | 'bad' | 'accent' | 'neutral';
       iconType?: 'best' | 'worst' | 'active' | 'winRate';
+      animate?: boolean;
+      animationDelayMs?: number;
   }) => {
       const toneColor = tone === 'good' ? '#4dbd96' : tone === 'bad' ? '#f05258' : tone === 'accent' ? '#f59f00' : '#6b55cf';
       const valueClass = tone === 'bad'
@@ -3544,9 +3604,15 @@ const Reports: React.FC<ReportsProps> = ({
               ? 'bg-[#e0f5ee] text-[#31a77e]'
               : 'bg-[#eeeaf8] text-[#6b55cf]';
       return (
-          <div className="min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900">
+          <div
+              className={`min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900 ${animate ? 'animate-fade-in-up' : ''}`}
+              style={animate ? { animationDelay: `${animationDelayMs}ms`, animationDuration: '420ms', animationFillMode: 'both' } : undefined}
+          >
               <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b]">
-                  <span className="inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center" style={{ color: toneColor }}>
+                  <span
+                      className={`inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center ${animate ? 'animate-fade-in' : ''}`}
+                      style={animate ? { color: toneColor, animationDelay: `${animationDelayMs + 70}ms`, animationDuration: '320ms', animationFillMode: 'both' } : { color: toneColor }}
+                  >
                       {iconType ? <DayTimeInsightIcon type={iconType} /> : <span className="h-[7px] w-[7px] rounded-full" style={{ backgroundColor: toneColor }} />}
                   </span>
                   <span>{eyebrow}</span>
@@ -5640,6 +5706,8 @@ const Reports: React.FC<ReportsProps> = ({
                               value={dayTimeHighlights.bestPerforming ? formatSignedMoney(dayTimeHighlights.bestPerforming.netPnl) : undefined}
                               tone="good"
                               iconType="best"
+                              animate={shouldAnimateDayTimeCharts}
+                              animationDelayMs={40}
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最差表现' : 'Least performing'}
@@ -5648,6 +5716,8 @@ const Reports: React.FC<ReportsProps> = ({
                               value={dayTimeHighlights.leastPerforming ? formatSignedMoney(dayTimeHighlights.leastPerforming.netPnl) : undefined}
                               tone="bad"
                               iconType="worst"
+                              animate={shouldAnimateDayTimeCharts}
+                              animationDelayMs={100}
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最活跃' : 'Most active'}
@@ -5655,6 +5725,8 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={`${dayTimeHighlights.mostActive?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               tone="accent"
                               iconType="active"
+                              animate={shouldAnimateDayTimeCharts}
+                              animationDelayMs={160}
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最高胜率' : 'Best win rate'}
@@ -5662,6 +5734,8 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={dayTimeHighlights.bestWinRate ? `${dayTimeHighlights.bestWinRate.winRate.toFixed(0)}% / ${dayTimeHighlights.bestWinRate.count} ${language === 'cn' ? '笔交易' : 'trades'}` : '--'}
                               tone="neutral"
                               iconType="winRate"
+                              animate={shouldAnimateDayTimeCharts}
+                              animationDelayMs={220}
                           />
                       </div>
 
@@ -5701,7 +5775,12 @@ const Reports: React.FC<ReportsProps> = ({
                                   </button>
                               </div>
                               <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
-                                  {renderDayTimeMetricChart({ chartId: 'day-time-left', metrics: getDayTimeMetricIds('left') })}
+                                  {renderDayTimeMetricChart({
+                                      chartId: 'day-time-left',
+                                      metrics: getDayTimeMetricIds('left'),
+                                      animate: shouldAnimateDayTimeCharts,
+                                      animationDelayMs: 140,
+                                  })}
                               </div>
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
@@ -5741,7 +5820,12 @@ const Reports: React.FC<ReportsProps> = ({
                                   </button>
                               </div>
                               <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
-                                  {renderDayTimeMetricChart({ chartId: 'day-time-right', metrics: getDayTimeMetricIds('right') })}
+                                  {renderDayTimeMetricChart({
+                                      chartId: 'day-time-right',
+                                      metrics: getDayTimeMetricIds('right'),
+                                      animate: shouldAnimateDayTimeCharts,
+                                      animationDelayMs: 220,
+                                  })}
                               </div>
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
