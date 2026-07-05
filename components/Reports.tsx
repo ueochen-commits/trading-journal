@@ -2555,6 +2555,7 @@ const Reports: React.FC<ReportsProps> = ({
   ]);
   const previousDayTimeChartAnimationSignatureRef = useRef<string | null>(null);
   const [shouldAnimateDayTimeCharts, setShouldAnimateDayTimeCharts] = useState(true);
+  const [shouldAnimateDayTimeInsights, setShouldAnimateDayTimeInsights] = useState(true);
 
   useEffect(() => {
       const hasDayTimeChartChanged = previousDayTimeChartAnimationSignatureRef.current !== dayTimeChartAnimationSignature;
@@ -2570,6 +2571,14 @@ const Reports: React.FC<ReportsProps> = ({
 
       return () => window.clearTimeout(timer);
   }, [dayTimeChartAnimationSignature]);
+
+  useEffect(() => {
+      const timer = window.setTimeout(() => {
+          setShouldAnimateDayTimeInsights(false);
+      }, 620);
+
+      return () => window.clearTimeout(timer);
+  }, []);
 
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
@@ -5901,7 +5910,7 @@ const Reports: React.FC<ReportsProps> = ({
                               value={dayTimeHighlights.bestPerforming ? formatSignedMoney(dayTimeHighlights.bestPerforming.netPnl) : undefined}
                               tone="good"
                               iconType="best"
-                              animate={shouldAnimateDayTimeCharts}
+                              animate={shouldAnimateDayTimeInsights}
                               animationDelayMs={40}
                           />
                           <DayTimeInsightCard
@@ -5911,7 +5920,7 @@ const Reports: React.FC<ReportsProps> = ({
                               value={dayTimeHighlights.leastPerforming ? formatSignedMoney(dayTimeHighlights.leastPerforming.netPnl) : undefined}
                               tone="bad"
                               iconType="worst"
-                              animate={shouldAnimateDayTimeCharts}
+                              animate={shouldAnimateDayTimeInsights}
                               animationDelayMs={100}
                           />
                           <DayTimeInsightCard
@@ -5920,7 +5929,7 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={`${dayTimeHighlights.mostActive?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               tone="accent"
                               iconType="active"
-                              animate={shouldAnimateDayTimeCharts}
+                              animate={shouldAnimateDayTimeInsights}
                               animationDelayMs={160}
                           />
                           <DayTimeInsightCard
@@ -5929,7 +5938,7 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={dayTimeHighlights.bestWinRate ? `${dayTimeHighlights.bestWinRate.winRate.toFixed(0)}% / ${dayTimeHighlights.bestWinRate.count} ${language === 'cn' ? '笔交易' : 'trades'}` : '--'}
                               tone="neutral"
                               iconType="winRate"
-                              animate={shouldAnimateDayTimeCharts}
+                              animate={shouldAnimateDayTimeInsights}
                               animationDelayMs={220}
                           />
                       </div>
