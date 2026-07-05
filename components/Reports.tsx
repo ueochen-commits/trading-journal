@@ -3563,7 +3563,7 @@ const Reports: React.FC<ReportsProps> = ({
         </div>
         
         {/* Navigation Bar */}
-        <div className="relative z-30 flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60">
+        <div className="relative z-30 -mx-4 flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 dark:border-slate-800 dark:bg-slate-900/60 md:-mx-8 md:px-8">
             <div className="flex min-h-[56px] max-w-full flex-wrap items-center gap-x-[27px] gap-y-0 pr-3">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
