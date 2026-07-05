@@ -576,6 +576,13 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return indexes.map(index => performancePnlDisplayData[index]?.label).filter(Boolean);
   }, [performancePnlDisplayData]);
 
+  const isPnlTrendingDown = useMemo(() => {
+      if (performancePnlDisplayData.length < 2) return false;
+      const first = performancePnlDisplayData[0].cumulativePnl;
+      const last = performancePnlDisplayData[performancePnlDisplayData.length - 1].cumulativePnl;
+      return last < first;
+  }, [performancePnlDisplayData]);
+
   const performanceSummary = useMemo(() => {
       const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
       const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
@@ -1177,9 +1184,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   <AreaChart data={performancePnlDisplayData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
                                       <defs>
                                           <linearGradient id="performancePnlFillPremium" x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="0%" stopColor="#ff6468" stopOpacity={0.04} />
-                                              <stop offset="40%" stopColor="#ff6468" stopOpacity={0.12} />
-                                              <stop offset="100%" stopColor="#ff6468" stopOpacity={0.62} />
+                                              <stop offset="0%" stopColor="#ff6468" stopOpacity={isPnlTrendingDown ? 0.04 : 0.58} />
+                                              <stop offset="42%" stopColor="#ff6468" stopOpacity={isPnlTrendingDown ? 0.12 : 0.18} />
+                                              <stop offset="100%" stopColor="#ff6468" stopOpacity={isPnlTrendingDown ? 0.58 : 0.04} />
                                           </linearGradient>
                                       </defs>
                                       <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
