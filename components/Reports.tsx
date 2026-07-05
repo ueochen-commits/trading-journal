@@ -103,6 +103,7 @@ type SummaryMetricId = typeof ALL_SUMMARY_METRIC_IDS[number];
 type ChartMetricVisual = 'line' | 'area' | 'bar';
 type ChartSide = 'left' | 'right';
 type ChartMetricSlot = 'primary' | 'secondary' | 'tertiary';
+type PnlDisplayMode = 'net' | 'gross';
 type ChartStyleSettings = Record<ChartSide, {
   primary?: {
     visual?: ChartMetricVisual;
@@ -185,6 +186,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartColorDropdown, setOpenChartColorDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartTimeframeMenu, setOpenChartTimeframeMenu] = useState<ChartSide | null>(null);
+  const [isPnlDisplayMenuOpen, setIsPnlDisplayMenuOpen] = useState(false);
+  const [pnlDisplayMode, setPnlDisplayMode] = useState<PnlDisplayMode>('net');
   const [chartTimeframes, setChartTimeframes] = useState<Record<ChartSide, ChartTimeframe>>({ left: 'day', right: 'day' });
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
@@ -238,6 +241,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [openChartTimeframeMenu]);
+
+  useEffect(() => {
+      if (!isPnlDisplayMenuOpen) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest('[data-pnl-display-menu]')) return;
+          setIsPnlDisplayMenuOpen(false);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [isPnlDisplayMenuOpen]);
 
   useEffect(() => {
       if (!currentUserId) return;
@@ -2870,10 +2886,47 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       {activeTab === 'performance' && (
           <div className="space-y-5 animate-fade-in">
               <div className="flex justify-end gap-2">
-                  <button className={reportControlClass}>
-                      NET P&L
-                      <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                  </button>
+                  <div className="relative" data-pnl-display-menu>
+                      <button
+                          type="button"
+                          onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
+                          className={`${reportControlClass} min-w-[106px] justify-between`}
+                          aria-expanded={isPnlDisplayMenuOpen}
+                          aria-label={language === 'cn' ? '选择盈亏显示口径' : 'Choose P&L display mode'}
+                      >
+                          <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
+                          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      <div
+                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                              isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                          }`}
+                      >
+                          {([
+                              { id: 'net' as const, label: language === 'cn' ? '净盈亏' : 'NET P&L' },
+                              { id: 'gross' as const, label: language === 'cn' ? '总盈亏' : 'GROSS P&L' },
+                          ]).map(option => {
+                              const selected = pnlDisplayMode === option.id;
+                              return (
+                                  <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => {
+                                          setPnlDisplayMode(option.id);
+                                          setIsPnlDisplayMenuOpen(false);
+                                      }}
+                                      className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                          selected
+                                              ? 'bg-[#e8e4f4] text-[#303044]'
+                                              : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                      }`}
+                                  >
+                                      {option.label}
+                                  </button>
+                              );
+                          })}
+                      </div>
+                  </div>
                   <button className={reportControlClass}>
                       <Download className="w-4 h-4" />
                       {language === 'cn' ? '导出 PDF' : 'Export PDF'}
