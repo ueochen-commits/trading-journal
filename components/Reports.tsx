@@ -2872,6 +2872,8 @@ const Reports: React.FC<ReportsProps> = ({
               <div className="min-h-0 flex-1 overflow-y-auto px-[12px] pb-[10px]">
                   {visibleChartMetricCategories.map(category => {
                       const isExpanded = expandedChartMetricCategory === category.id;
+                      const categoryMetrics = category.metrics.filter(([metricId]) => !excludedMetricIds.includes(metricId));
+                      const expandedHeight = categoryMetrics.length * 38 + 10;
                       return (
                           <div key={category.id}>
                               <button
@@ -2882,25 +2884,26 @@ const Reports: React.FC<ReportsProps> = ({
                                   {category.label}
                                   <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
                               </button>
-                              <div className={`report-metric-category-panel ${isExpanded ? 'is-open' : ''}`}>
-                                  <div className="report-metric-category-panel-inner">
-                                      <div className="report-metric-category-panel-content space-y-[1px]">
-                                          {category.metrics
-                                              .filter(([metricId]) => !excludedMetricIds.includes(metricId))
-                                              .map(([metricId, config]) => {
+                              <div
+                                  className={`report-metric-category-panel ${isExpanded ? 'is-open' : ''}`}
+                                  style={{ maxHeight: isExpanded ? `${expandedHeight}px` : '0px' }}
+                              >
+                                  <div className="report-metric-category-panel-content space-y-[1px]">
+                                      {categoryMetrics
+                                          .map(([metricId, config], index) => {
                                               const isSelected = metricId === selectedMetricId;
                                               return (
                                                   <button
                                                       key={metricId}
                                                       type="button"
                                                       onClick={() => handleSelectMetric(metricId)}
-                                                      className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
+                                                      className={`report-metric-option block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
+                                                      style={{ '--option-index': index } as React.CSSProperties}
                                                   >
                                                       {config.label}
                                                   </button>
                                               );
                                           })}
-                                      </div>
                                   </div>
                               </div>
                           </div>
