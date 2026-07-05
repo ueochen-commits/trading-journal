@@ -869,6 +869,27 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
   }, [performanceDailyData]);
 
+  const tradesSummary = useMemo(() => {
+      const closedTrades = trades.filter(trade => trade.status !== TradeStatus.OPEN && trade.exitDate);
+      const winningTrades = closedTrades.filter(trade => trade.pnl > 0);
+      const losingTrades = closedTrades.filter(trade => trade.pnl < 0);
+      const breakevenTrades = closedTrades.filter(trade => trade.pnl === 0);
+      const longestTradeDuration = closedTrades.length > 0
+          ? Math.max(...closedTrades.map(trade => new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime()).filter(duration => duration > 0), 0)
+          : 0;
+
+      return {
+          totalClosed: closedTrades.length,
+          winningTrades: winningTrades.length,
+          losingTrades: losingTrades.length,
+          breakevenTrades: breakevenTrades.length,
+          longestTradeDuration,
+          winTradePct: closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0,
+          lossTradePct: closedTrades.length > 0 ? (losingTrades.length / closedTrades.length) * 100 : 0,
+          breakevenTradePct: closedTrades.length > 0 ? (breakevenTrades.length / closedTrades.length) * 100 : 0,
+      };
+  }, [trades]);
+
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
@@ -2257,37 +2278,109 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   )}
 
                   {summaryTab === 'trades' && (
-                      <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                              <thead className="text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                                  <tr>
-                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '品种' : 'Symbol'}</th>
-                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '日期' : 'Date'}</th>
-                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '方向' : 'Direction'}</th>
-                                      <th className="px-5 py-3 text-right font-semibold">Net P&L</th>
-                                      <th className="px-5 py-3 text-right font-semibold">R</th>
-                                  </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                  {[...trades]
-                                      .filter(t => t.status !== TradeStatus.OPEN)
-                                      .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime())
-                                      .slice(0, 12)
-                                      .map(trade => {
-                                          const net = trade.pnl - trade.fees;
-                                          const realizedR = trade.riskAmount && trade.riskAmount > 0 ? net / trade.riskAmount : null;
-                                          return (
-                                              <tr key={trade.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                                  <td className="px-5 py-3 font-semibold text-slate-800 dark:text-slate-100">{trade.symbol}</td>
-                                                  <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{new Date(trade.entryDate).toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')}</td>
-                                                  <td className="px-5 py-3 text-slate-500 dark:text-slate-400">{trade.direction}</td>
-                                                  <td className={`px-5 py-3 text-right font-semibold tabular-nums ${net >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{formatSignedMoney(net)}</td>
-                                                  <td className="px-5 py-3 text-right tabular-nums text-slate-600 dark:text-slate-300">{realizedR === null ? '--' : `${realizedR.toFixed(2)}R`}</td>
-                                              </tr>
-                                          );
-                                      })}
-                              </tbody>
-                          </table>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 px-4 py-[14px]">
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[220px] xl:border-l xl:border-[#e2e6ec] first:xl:border-l-0 first:xl:pl-0 dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '胜率' : 'Win %'}
+                                  value={`${stats.winRate.toFixed(2)}%`}
+                                  tooltip={language === 'cn' ? '已平仓交易中盈利交易的比例。' : 'The percentage of closed trades that finished profitable.'}
+                                  tone="neutral"
+                                  tooltipPlacement="start"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '多头胜率' : 'Longs win %'}
+                                  value={`${stats.longWinRate.toFixed(2)}%`}
+                                  tooltip={language === 'cn' ? '做多方向已平仓交易中的盈利比例。' : 'The win percentage for closed long trades.'}
+                                  tone="neutral"
+                                  tooltipPlacement="start"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L'}
+                                  value={formatSignedMoney(stats.avgTradePnl)}
+                                  tooltip={language === 'cn' ? '每笔已平仓交易的平均净盈亏。' : 'The average net P&L per closed trade.'}
+                                  tone={stats.avgTradePnl >= 0 ? 'good' : 'bad'}
+                                  tooltipPlacement="start"
+                              />
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[220px] xl:border-l xl:border-[#e2e6ec] dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss'}
+                                  value={performanceSummary.avgTradeWinLoss.toFixed(2)}
+                                  tooltip={language === 'cn' ? '平均盈利交易金额与平均亏损交易金额的比例。' : 'The ratio between the average winning trade and the average losing trade.'}
+                                  tone="neutral"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '交易期望值' : 'Trade expectancy'}
+                                  value={formatSignedMoney(stats.expectancy)}
+                                  tooltip={language === 'cn' ? '每笔已平仓交易的平均预期净盈亏。' : 'The average expected net P&L per closed trade.'}
+                                  tone={stats.expectancy >= 0 ? 'good' : 'bad'}
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均交易日跨度' : 'Average trading days duration'}
+                                  value={formatDuration(daysSummary.averageTradingDayDurationMs)}
+                                  tooltip={language === 'cn' ? '按有交易记录的自然日计算。单日维度下，一个交易日按 24 小时计。' : 'Calculated from logged calendar trading days. One logged day is treated as a 24-hour day.'}
+                                  tone="neutral"
+                              />
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[220px] xl:border-l xl:border-[#e2e6ec] dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '最大盈利交易' : 'Largest profitable trade'}
+                                  value={formatSignedMoney(stats.largestProfit)}
+                                  tooltip={language === 'cn' ? '所选范围内盈利金额最大的单笔交易。' : 'The largest profitable trade in the selected range.'}
+                                  tone="good"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '最大亏损交易' : 'Largest losing trade'}
+                                  value={formatSignedMoney(stats.largestLoss)}
+                                  tooltip={language === 'cn' ? '所选范围内亏损金额最大的单笔交易。' : 'The largest losing trade in the selected range.'}
+                                  tone="bad"
+                              />
+                              <div className="min-h-[64px]">
+                                  <div className="flex items-center gap-1 text-[13px] font-medium leading-none text-[#5f6875] dark:text-slate-400">
+                                      {language === 'cn' ? '交易盈亏分布' : 'Trade win/loss mix'}
+                                      <span className="group/metric-info relative inline-flex">
+                                          <button
+                                              type="button"
+                                              className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              aria-label={language === 'cn' ? '盈利、打平、亏损交易占比，用真实交易结果替代专有评分。' : 'Winning, breakeven, and losing trade mix using real trade outcomes.'}
+                                          >
+                                              <Info className="h-[14px] w-[14px]" />
+                                          </button>
+                                          <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-[9px] hidden w-[286px] -translate-x-1/2 rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
+                                              {language === 'cn' ? '盈利、打平、亏损交易占比。这里用真实交易结果替代无法计算的专有评分。' : 'Winning, breakeven, and losing trade distribution, replacing proprietary scores we do not calculate.'}
+                                          </span>
+                                      </span>
+                                  </div>
+                                  <div className="mt-[17px] flex h-[8px] overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                      <div className="bg-[#ff6468]" style={{ width: `${tradesSummary.lossTradePct}%` }} />
+                                      <div className="bg-[#d6dae1]" style={{ width: `${tradesSummary.breakevenTradePct}%` }} />
+                                      <div className="bg-[#55c39e]" style={{ width: `${tradesSummary.winTradePct}%` }} />
+                                  </div>
+                                  <div className="mt-[9px] flex items-center justify-between text-[11px] font-semibold text-[#7b8490]">
+                                      <span>{tradesSummary.lossTradePct.toFixed(0)}%</span>
+                                      <span>{tradesSummary.winTradePct.toFixed(0)}%</span>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[220px] xl:border-l xl:border-[#e2e6ec] last:xl:pr-0 dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '最长持仓时间' : 'Longest trade duration'}
+                                  value={formatDuration(tradesSummary.longestTradeDuration)}
+                                  tooltip={language === 'cn' ? '所选范围内已平仓交易的最长持仓时长。' : 'The longest duration among closed trades in the selected range.'}
+                                  tone="neutral"
+                                  tooltipPlacement="end"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '空头胜率' : 'Shorts win %'}
+                                  value={`${stats.shortWinRate.toFixed(2)}%`}
+                                  tooltip={language === 'cn' ? '做空方向已平仓交易中的盈利比例。' : 'The win percentage for closed short trades.'}
+                                  tone="neutral"
+                                  tooltipPlacement="end"
+                              />
+                          </div>
                       </div>
                   )}
                   <ReportCardLoadingOverlay radius={8} />
