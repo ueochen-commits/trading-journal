@@ -156,6 +156,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [summaryTab, setSummaryTab] = useState<'summary' | 'days' | 'trades'>('summary');
   // Sub-filter for Detailed Tab
   const [detailedFilter, setDetailedFilter] = useState<string>('DAYS');
+  const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
   // State for Time Interval Selection
   const [timeInterval, setTimeInterval] = useState<string>('1 Hour');
   // Risk Tab Sub-filter
@@ -254,6 +255,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isPnlDisplayMenuOpen]);
+
+  useEffect(() => {
+      if (!isReportMenuOpen) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest('[data-report-tab-menu]')) return;
+          setIsReportMenuOpen(false);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [isReportMenuOpen]);
 
   useEffect(() => {
       if (!currentUserId) return;
@@ -497,6 +511,131 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           winRate: b.count > 0 ? (b.wins / b.count) * 100 : 0
       }));
   }, [trades, timeInterval]); // Re-run when timeInterval changes
+
+  type DetailedStatRow = {
+      label: string;
+      count: number;
+      netPnl: number;
+      grossProfit: number;
+      grossLoss: number;
+      wins: number;
+      winRate: number;
+  };
+
+  const createDetailedStatRow = (label: string): DetailedStatRow => ({
+      label,
+      count: 0,
+      netPnl: 0,
+      grossProfit: 0,
+      grossLoss: 0,
+      wins: 0,
+      winRate: 0,
+  });
+
+  const addTradeToDetailedRow = (row: DetailedStatRow, trade: Trade) => {
+      const net = trade.pnl - trade.fees;
+      row.count += 1;
+      row.netPnl += net;
+      if (net > 0) {
+          row.grossProfit += net;
+          row.wins += 1;
+      } else if (net < 0) {
+          row.grossLoss += net;
+      }
+  };
+
+  const finalizeDetailedRows = (rows: DetailedStatRow[]) =>
+      rows.map(row => ({
+          ...row,
+          netPnl: Number(row.netPnl.toFixed(2)),
+          grossProfit: Number(row.grossProfit.toFixed(2)),
+          grossLoss: Number(row.grossLoss.toFixed(2)),
+          winRate: row.count > 0 ? (row.wins / row.count) * 100 : 0,
+      }));
+
+  const weekStats = useMemo(() => {
+      const grouped = new Map<string, DetailedStatRow>();
+      trades.forEach(trade => {
+          if (!trade.entryDate) return;
+          const date = new Date(trade.entryDate);
+          if (Number.isNaN(date.getTime())) return;
+          const weekStart = new Date(date);
+          weekStart.setDate(date.getDate() - date.getDay());
+          const label = weekStart.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', {
+              month: 'short',
+              day: '2-digit',
+          });
+          const key = weekStart.toLocaleDateString('en-CA');
+          if (!grouped.has(key)) grouped.set(key, createDetailedStatRow(label));
+          addTradeToDetailedRow(grouped.get(key)!, trade);
+      });
+      return finalizeDetailedRows(Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, row]) => row));
+  }, [trades, language]);
+
+  const monthStats = useMemo(() => {
+      const grouped = new Map<string, DetailedStatRow>();
+      trades.forEach(trade => {
+          if (!trade.entryDate) return;
+          const date = new Date(trade.entryDate);
+          if (Number.isNaN(date.getTime())) return;
+          const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+          const label = date.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', {
+              year: 'numeric',
+              month: 'short',
+          });
+          if (!grouped.has(key)) grouped.set(key, createDetailedStatRow(label));
+          addTradeToDetailedRow(grouped.get(key)!, trade);
+      });
+      return finalizeDetailedRows(Array.from(grouped.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([, row]) => row));
+  }, [trades, language]);
+
+  const symbolStats = useMemo(() => {
+      const grouped = new Map<string, DetailedStatRow>();
+      trades.forEach(trade => {
+          const label = (trade.symbol || '').trim().toUpperCase() || (language === 'cn' ? '未知品种' : 'Unknown');
+          if (!grouped.has(label)) grouped.set(label, createDetailedStatRow(label));
+          addTradeToDetailedRow(grouped.get(label)!, trade);
+      });
+      return finalizeDetailedRows(Array.from(grouped.values()).sort((a, b) => b.count - a.count || Math.abs(b.netPnl) - Math.abs(a.netPnl)));
+  }, [trades, language]);
+
+  const setupStats = useMemo(() => {
+      const grouped = new Map<string, DetailedStatRow>();
+      trades.forEach(trade => {
+          const label = (trade.setup || '').trim() || (language === 'cn' ? '未填写策略' : 'No setup');
+          if (!grouped.has(label)) grouped.set(label, createDetailedStatRow(label));
+          addTradeToDetailedRow(grouped.get(label)!, trade);
+      });
+      return finalizeDetailedRows(Array.from(grouped.values()).sort((a, b) => b.count - a.count || Math.abs(b.netPnl) - Math.abs(a.netPnl)));
+  }, [trades, language]);
+
+  const tagStats = useMemo(() => {
+      const grouped = new Map<string, DetailedStatRow>();
+      trades.forEach(trade => {
+          const tags = Object.values(trade.customTags || {}).flat().filter(Boolean);
+          const labels = tags.length > 0 ? tags : [language === 'cn' ? '未填写标签' : 'No tag'];
+          labels.forEach(label => {
+              if (!grouped.has(label)) grouped.set(label, createDetailedStatRow(label));
+              addTradeToDetailedRow(grouped.get(label)!, trade);
+          });
+      });
+      return finalizeDetailedRows(Array.from(grouped.values()).sort((a, b) => b.count - a.count || Math.abs(b.netPnl) - Math.abs(a.netPnl)));
+  }, [trades, language]);
+
+  const winLossStats = useMemo(() => {
+      const rows = {
+          wins: createDetailedStatRow(language === 'cn' ? '盈利交易' : 'Winning trades'),
+          losses: createDetailedStatRow(language === 'cn' ? '亏损交易' : 'Losing trades'),
+          breakeven: createDetailedStatRow(language === 'cn' ? '打平交易' : 'Breakeven trades'),
+      };
+      trades.forEach(trade => {
+          const net = trade.pnl - trade.fees;
+          if (net > 0) addTradeToDetailedRow(rows.wins, trade);
+          else if (net < 0) addTradeToDetailedRow(rows.losses, trade);
+          else addTradeToDetailedRow(rows.breakeven, trade);
+      });
+      return finalizeDetailedRows([rows.wins, rows.losses, rows.breakeven]);
+  }, [trades, language]);
 
   // --- 5. R-Multiple Statistics (For Risk View) ---
   const rMultipleStats = useMemo(() => {
@@ -2525,6 +2664,28 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights' },
   ];
 
+  const detailedFilterOptions = [
+      { id: 'DAYS', label: t.reports.filters.days },
+      { id: 'WEEKS', label: t.reports.filters.weeks },
+      { id: 'MONTHS', label: t.reports.filters.months },
+      { id: 'TIME', label: t.reports.filters.time },
+      { id: 'SYMBOLS', label: language === 'cn' ? '交易品种' : 'Symbols' },
+      { id: 'RISK', label: language === 'cn' ? '风险' : 'Risk' },
+      { id: 'SETUPS', label: t.reports.filters.setups },
+      { id: 'TAGS', label: t.reports.filters.tags },
+      { id: 'TRADE DURATION', label: t.reports.filters.duration },
+      { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
+  ];
+
+  const selectDetailedReport = (filterId: string) => {
+      setDetailedFilter(filterId);
+      setActiveTab('detailed');
+      setIsReportMenuOpen(false);
+  };
+
+  const getDetailedFilterLabel = (filterId: string) =>
+      detailedFilterOptions.find(option => option.id === filterId)?.label || filterId;
+
   // Helper to determine active data and configuration for Detailed View
   const getDetailedData = () => {
       if (detailedFilter === 'TIME') {
@@ -2546,6 +2707,76 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               layout: 'horizontal' as const, 
               barSize: size,
               xInterval: xInterval
+          };
+      }
+      if (detailedFilter === 'WEEKS') {
+          return {
+              data: weekStats,
+              title: `${t.reports.charts.distTitle} ${t.reports.filters.weeks}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${t.reports.filters.weeks}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
+          };
+      }
+      if (detailedFilter === 'MONTHS') {
+          return {
+              data: monthStats,
+              title: `${t.reports.charts.distTitle} ${t.reports.filters.months}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${t.reports.filters.months}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
+          };
+      }
+      if (detailedFilter === 'SYMBOLS') {
+          return {
+              data: symbolStats,
+              title: `${t.reports.charts.distTitle} ${language === 'cn' ? '交易品种' : 'Symbols'}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${language === 'cn' ? '交易品种' : 'Symbols'}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
+          };
+      }
+      if (detailedFilter === 'RISK') {
+          return {
+              data: rMultipleStats,
+              title: `${t.reports.charts.distTitle} ${language === 'cn' ? '风险' : 'Risk'}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${language === 'cn' ? '风险' : 'Risk'}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
+          };
+      }
+      if (detailedFilter === 'SETUPS') {
+          return {
+              data: setupStats,
+              title: `${t.reports.charts.distTitle} ${t.reports.filters.setups}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${t.reports.filters.setups}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
+          };
+      }
+      if (detailedFilter === 'TAGS') {
+          return {
+              data: tagStats,
+              title: `${t.reports.charts.distTitle} ${t.reports.filters.tags}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${t.reports.filters.tags}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
+          };
+      }
+      if (detailedFilter === 'WINS_LOSSES') {
+          return {
+              data: winLossStats,
+              title: `${t.reports.charts.distTitle} ${language === 'cn' ? '盈亏结果' : 'Wins vs Losses'}`,
+              pnlTitle: `${t.reports.charts.perfTitle} ${language === 'cn' ? '盈亏结果' : 'Wins vs Losses'}`,
+              layout: 'vertical' as const,
+              barSize: 18,
+              xInterval: 0
           };
       }
       if (detailedFilter === 'TRADE DURATION') {
@@ -2624,22 +2855,6 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       }
       return days;
   };
-
-  const detailedFilterOptions = [
-      { id: 'DAYS', label: t.reports.filters.days },
-      { id: 'WEEKS', label: t.reports.filters.weeks },
-      { id: 'MONTHS', label: t.reports.filters.months },
-      { id: 'TIME', label: t.reports.filters.time },
-      { id: 'TRADE DURATION', label: t.reports.filters.duration },
-      { id: 'PRICE', label: t.reports.filters.price },
-      { id: 'VOLUME', label: t.reports.filters.volume },
-      { id: 'INSTRUMENT', label: t.reports.filters.instrument },
-      { id: 'SECTOR', label: t.reports.filters.sector },
-      { id: 'SETUPS', label: t.reports.filters.setups },
-      { id: 'MISTAKES', label: t.reports.filters.mistakes },
-      { id: 'TAGS', label: t.reports.filters.tags },
-      { id: 'OTHER', label: t.reports.filters.other },
-  ];
 
   const summaryMetricDefinitions = stats ? [
       { id: 'avgTradingDaysDuration' as const, label: language === 'cn' ? '平均交易日跨度' : 'Average trading days duration - cumulative', tooltip: language === 'cn' ? '从第一笔交易日到最后一笔交易日的平均日跨度。' : 'Average elapsed calendar time across logged trading days.', value: stats.totalDays > 0 ? formatDuration(stats.totalDays * 24 * 60 * 60 * 1000) : '--', tone: 'neutral' as const },
@@ -2843,31 +3058,74 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
         </div>
         
         {/* Navigation Bar */}
-        <div className="flex min-h-[56px] items-center justify-between gap-4 overflow-x-auto border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60 no-scrollbar">
+        <div className="relative z-30 flex min-h-[56px] items-center justify-between gap-4 overflow-visible border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60">
             <div className="flex h-[56px] items-center gap-[27px]">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
+                    const isReportMenuTab = tab.id === 'detailed';
+                    const isMenuHighlighted = isReportMenuTab && isReportMenuOpen;
                     return (
-                        <button
-                            key={tab.id}
-                            onClick={() => setActiveTab(tab.id)}
-                            className={`group relative inline-flex h-[56px] items-center gap-[7px] whitespace-nowrap border-b-[2px] px-[2px] text-[14px] font-medium tracking-[-0.01em] transition-colors ${
-                                isActive
-                                    ? 'border-[#6f55d8] text-[#6f55d8] dark:text-indigo-400'
-                                    : 'border-transparent text-[#707783] hover:text-[#3e4652] dark:text-slate-400 dark:hover:text-slate-200'
-                            }`}
-                        >
-                            <ReportTabMark type={tab.id} active={isActive} />
-                            <span className="leading-none">{tab.label}</span>
-                            {tab.isNew && (
-                                <span className="ml-[1px] rounded-[3px] bg-[#e7e9f0] px-[6px] py-[3px] text-[10px] font-bold leading-none text-[#4f5664]">
-                                    NEW
-                                </span>
+                        <div key={tab.id} className="relative" data-report-tab-menu={isReportMenuTab ? true : undefined}>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    if (isReportMenuTab) {
+                                        setIsReportMenuOpen(current => !current);
+                                    } else {
+                                        setActiveTab(tab.id);
+                                        setIsReportMenuOpen(false);
+                                    }
+                                }}
+                                aria-haspopup={isReportMenuTab ? 'menu' : undefined}
+                                aria-expanded={isReportMenuTab ? isReportMenuOpen : undefined}
+                                className={`group relative inline-flex h-[56px] items-center gap-[7px] whitespace-nowrap border-b-[2px] px-[2px] text-[14px] font-medium tracking-[-0.01em] transition-colors ${
+                                    isActive
+                                        ? 'border-[#6f55d8] text-[#6f55d8] dark:text-indigo-400'
+                                        : isMenuHighlighted
+                                            ? 'border-transparent text-[#6f55d8] dark:text-indigo-400'
+                                            : 'border-transparent text-[#707783] hover:text-[#3e4652] dark:text-slate-400 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <ReportTabMark type={tab.id} active={isActive || isMenuHighlighted} />
+                                <span className="leading-none">{tab.label}</span>
+                                {tab.isNew && (
+                                    <span className="ml-[1px] rounded-[3px] bg-[#e7e9f0] px-[6px] py-[3px] text-[10px] font-bold leading-none text-[#4f5664]">
+                                        NEW
+                                    </span>
+                                )}
+                                {tab.hasMenu && (
+                                    <ChevronDown className={`h-[12px] w-[12px] transition-transform duration-200 ${isReportMenuOpen ? 'rotate-180' : ''} ${isActive || isMenuHighlighted ? 'text-[#6f55d8]' : 'text-[#7f8792]'}`} />
+                                )}
+                            </button>
+                            {isReportMenuTab && (
+                                <div
+                                    className={`absolute left-[2px] top-[50px] z-40 w-[188px] origin-top-left overflow-hidden rounded-[9px] border border-[#e2e5eb] bg-white py-[7px] shadow-[0_14px_32px_rgba(20,24,36,0.14)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                        isReportMenuOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-1 scale-[0.98] opacity-0'
+                                    }`}
+                                    role="menu"
+                                >
+                                    {detailedFilterOptions.map(option => {
+                                        const isSelected = detailedFilter === option.id;
+                                        return (
+                                            <button
+                                                key={option.id}
+                                                type="button"
+                                                role="menuitem"
+                                                onClick={() => selectDetailedReport(option.id)}
+                                                className={`flex w-full items-center justify-between px-[13px] py-[8px] text-left text-[12px] font-medium leading-none transition-colors ${
+                                                    isSelected
+                                                        ? 'bg-[#f4f1ff] text-[#6f55d8] dark:bg-indigo-500/15 dark:text-indigo-300'
+                                                        : 'text-[#4d5562] hover:bg-[#f6f7f9] hover:text-[#252b36] dark:text-slate-300 dark:hover:bg-slate-800'
+                                                }`}
+                                            >
+                                                <span>{option.label}</span>
+                                                {isSelected && <span className="h-[5px] w-[5px] rounded-full bg-[#6f55d8]" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
                             )}
-                            {tab.hasMenu && (
-                                <ChevronDown className={`h-[12px] w-[12px] ${isActive ? 'text-[#6f55d8]' : 'text-[#7f8792]'}`} />
-                            )}
-                        </button>
+                        </div>
                     );
                 })}
             </div>
@@ -3760,7 +4018,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       <table className="w-full text-sm text-left">
                           <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
                               <tr>
-                                  <th className="px-6 py-4">{detailedFilter === 'TRADE DURATION' ? t.reports.filters.duration : detailedFilter === 'TIME' ? t.reports.filters.time : detailedFilter === 'DAYS' ? t.reports.filters.days : detailedFilter}</th>
+                                  <th className="px-6 py-4">{getDetailedFilterLabel(detailedFilter)}</th>
                                   <th className="px-6 py-4 text-right">{t.reports.table.netProfits}</th>
                                   <th className="px-6 py-4 w-48 text-center">{t.reports.table.winPct}</th>
                                   <th className="px-6 py-4 text-right text-emerald-500">{t.reports.table.totalProfits}</th>
