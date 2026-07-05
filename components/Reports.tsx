@@ -1709,7 +1709,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const ChartCard = ({
       title,
       metricLabel,
+      metricColor,
       secondaryMetricLabel,
+      secondaryMetricColor,
       children,
       side,
       styleMetrics,
@@ -1727,7 +1729,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   }: {
       title: string;
       metricLabel: string;
+      metricColor?: string;
       secondaryMetricLabel?: string;
+      secondaryMetricColor?: string;
       children: React.ReactNode;
       side?: ChartSide;
       styleMetrics?: Array<{
@@ -1786,8 +1790,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
-                                  <span className="absolute left-0 top-0 h-[15px] w-[4px] rounded-tl-[7px] bg-[#35cfa2]" />
-                                  <span className="absolute left-0 bottom-0 h-[15px] w-[4px] rounded-bl-[7px] bg-[#ff6468]" />
+                                  <span
+                                      className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]"
+                                      style={{ backgroundColor: metricColor || '#5b45d6' }}
+                                  />
                               </span>
                           )}
                           <span className="truncate">{metricLabel}</span>
@@ -1809,8 +1815,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
-                                      <span className="absolute left-0 top-0 h-[15px] w-[4px] rounded-tl-[7px] bg-[#35cfa2]" />
-                                      <span className="absolute left-0 bottom-0 h-[15px] w-[4px] rounded-bl-[7px] bg-[#ff6468]" />
+                                      <span
+                                          className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]"
+                                          style={{ backgroundColor: secondaryMetricColor || metricColor || '#5b45d6' }}
+                                      />
                                   </span>
                               )}
                               <span className="truncate">{secondaryMetricLabel}</span>
@@ -2464,7 +2472,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <ChartCard
                       title={leftChartConfig.label}
                       metricLabel={leftChartConfig.label}
+                      metricColor={leftChartColor}
                       secondaryMetricLabel={leftSecondaryChartConfig?.label}
+                      secondaryMetricColor={leftSecondaryChartColor}
                       side="left"
                       styleMetrics={leftChartStyleMetrics}
                       metricPicker={<ChartMetricPicker side="left" slot="primary" selectedMetricId={leftChartMetricId} excludedMetricIds={leftSecondaryChartMetricId ? [leftSecondaryChartMetricId] : []} />}
@@ -2504,7 +2514,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <ChartCard
                       title={rightChartConfig.label}
                       metricLabel={rightChartConfig.label}
+                      metricColor={rightChartColor}
                       secondaryMetricLabel={rightSecondaryChartConfig?.label}
+                      secondaryMetricColor={rightSecondaryChartColor}
                       side="right"
                       styleMetrics={rightChartStyleMetrics}
                       metricPicker={<ChartMetricPicker side="right" slot="primary" selectedMetricId={rightChartMetricId} excludedMetricIds={rightSecondaryChartMetricId ? [rightSecondaryChartMetricId] : []} />}
