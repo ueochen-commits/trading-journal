@@ -2697,19 +2697,19 @@ const Reports: React.FC<ReportsProps> = ({
                               cursor={{ stroke: primaryMetric.color, strokeWidth: 1, strokeDasharray: '3 3' }}
                               content={<GenericChartTooltip metrics={metrics} />}
                           />
-                          {metrics.map(metric => renderSeries(metric, `${side}-${metric.slot}ChartMetricFill`))}
                           {gridAxis?.ticks.map(tick => (
                               <ReferenceLine
                                   key={`${side}-horizontal-grid-${tick}`}
                                   yAxisId={gridAxis.id}
                                   y={tick}
                                   stroke="#dfe5eb"
-                                  strokeOpacity={0.88}
+                                  strokeOpacity={0.42}
                                   strokeDasharray="4 4"
                                   strokeWidth={1}
                                   ifOverflow="extendDomain"
                               />
                           ))}
+                          {metrics.map(metric => renderSeries(metric, `${side}-${metric.slot}ChartMetricFill`))}
                   </ComposedChart>
               </ResponsiveContainer>
               {legend}
@@ -3042,10 +3042,10 @@ const Reports: React.FC<ReportsProps> = ({
                               return [formatChartMetricValue(Number(value), metric.format, false), metric.label];
                           }}
                       />
-                      {visibleMetrics.map(renderSeries)}
                       {gridAxis?.ticks.map(tick => (
-                          <ReferenceLine key={`${chartId}-grid-${tick}`} yAxisId={gridAxis.id} y={tick} stroke="#dfe5eb" strokeOpacity={0.88} strokeDasharray="4 4" strokeWidth={1} ifOverflow="extendDomain" />
+                          <ReferenceLine key={`${chartId}-grid-${tick}`} yAxisId={gridAxis.id} y={tick} stroke="#dfe5eb" strokeOpacity={0.42} strokeDasharray="4 4" strokeWidth={1} ifOverflow="extendDomain" />
                       ))}
+                      {visibleMetrics.map(renderSeries)}
                   </ComposedChart>
               </ResponsiveContainer>
               <div className="absolute bottom-[8px] left-1/2 flex -translate-x-1/2 items-center gap-[22px] text-[14px] font-medium text-[#666b72]">
