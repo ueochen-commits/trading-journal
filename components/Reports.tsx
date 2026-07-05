@@ -560,6 +560,22 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           });
   }, [trades, language]);
 
+  const performancePnlDisplayData = useMemo(() => {
+      const indexes = getEvenlySpacedIndexes(performanceDailyData.length, 9);
+      return indexes.map(index => {
+          const point = performanceDailyData[index];
+          return {
+              ...point,
+              label: formatChartDateLabel(point.date),
+          };
+      });
+  }, [performanceDailyData]);
+
+  const performancePnlXAxisTicks = useMemo(() => {
+      const indexes = getEvenlySpacedIndexes(performancePnlDisplayData.length, 6);
+      return indexes.map(index => performancePnlDisplayData[index]?.label).filter(Boolean);
+  }, [performancePnlDisplayData]);
+
   const performanceSummary = useMemo(() => {
       const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
       const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
@@ -799,6 +815,23 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   };
 
   const formatSignedMoney = (value: number) => `${value >= 0 ? '' : '-'}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  function formatChartDateLabel(date: string) {
+      const d = new Date(`${date}T00:00:00`);
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]}`;
+  }
+
+  function getEvenlySpacedIndexes(length: number, targetCount: number) {
+      if (length <= 0) return [];
+      if (length <= targetCount) return Array.from({ length }, (_, i) => i);
+
+      const indexes = new Set<number>();
+      for (let i = 0; i < targetCount; i++) {
+          indexes.add(Math.round((i * (length - 1)) / (targetCount - 1)));
+      }
+
+      return Array.from(indexes).sort((a, b) => a - b);
+  }
 
   const reportPanelClass = "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)]";
   const reportControlClass = "h-9 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors";
@@ -837,7 +870,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   </button>
               </div>
               <div className={`${featured ? 'gap-[8px]' : 'gap-2'} flex items-center`}>
-                  <button className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors`}>
+                  <button className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#4f2db8] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors`}>
                       {rightControl}
                       <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-black' : 'w-3.5 h-3.5 text-slate-400'}`} />
                   </button>
@@ -1135,28 +1168,30 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       ) : (
                           <div className="relative h-full">
                               <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={performanceDailyData} margin={{ top: 5, right: 12, left: 7, bottom: 42 }}>
+                                  <AreaChart data={performancePnlDisplayData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
                                       <defs>
                                           <linearGradient id="performancePnlFillPremium" x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="0%" stopColor="#ff5f64" stopOpacity={0.09} />
-                                              <stop offset="42%" stopColor="#ff5f64" stopOpacity={0.17} />
-                                              <stop offset="100%" stopColor="#ff5f64" stopOpacity={0.72} />
+                                              <stop offset="0%" stopColor="#ff6468" stopOpacity={0.04} />
+                                              <stop offset="40%" stopColor="#ff6468" stopOpacity={0.12} />
+                                              <stop offset="100%" stopColor="#ff6468" stopOpacity={0.62} />
                                           </linearGradient>
                                       </defs>
-                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#e0e4ea" strokeOpacity={0.78} />
+                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
                                       <XAxis
                                           dataKey="label"
-                                          tick={{ fontSize: 14, fill: '#26313d', fontWeight: 400 }}
+                                          ticks={performancePnlXAxisTicks}
+                                          tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
                                           axisLine={false}
                                           tickLine={false}
-                                          interval="preserveStartEnd"
-                                          dy={13}
+                                          interval={0}
+                                          minTickGap={22}
+                                          dy={15}
                                       />
                                       <YAxis
                                           tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }}
                                           axisLine={false}
                                           tickLine={false}
-                                          width={61}
+                                          width={58}
                                           tickFormatter={(value: number) => formatMoney(value, true)}
                                       />
                                       <Tooltip
@@ -1169,9 +1204,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                           stroke="#ff6468"
                                           strokeWidth={2}
                                           fill="url(#performancePnlFillPremium)"
-                                          dot={{ r: 3, fill: '#ff6468', stroke: '#ff6468', strokeWidth: 1 }}
+                                          dot={{ r: 2.4, fill: '#ff6468', stroke: '#ff6468', strokeWidth: 1 }}
                                           activeDot={{
-                                              r: 6,
+                                              r: 5,
                                               fill: '#ff6468',
                                               stroke: '#ffffff',
                                               strokeWidth: 2,
