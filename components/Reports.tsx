@@ -2873,8 +2873,16 @@ const Reports: React.FC<ReportsProps> = ({
                                   {category.label}
                                   <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
                               </button>
-                              <div className={`overflow-hidden transition-[max-height,padding] duration-200 ease-out ${isExpanded ? 'max-h-[620px] pb-[6px]' : 'max-h-0 pb-0'}`}>
-                                  <div className="space-y-[1px]">
+                              <div
+                                  className={`overflow-hidden transition-[max-height,padding,margin] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                                      isExpanded ? 'mt-[2px] max-h-[620px] pb-[6px]' : 'mt-0 max-h-0 pb-0'
+                                  }`}
+                              >
+                                  <div
+                                      className={`space-y-[1px] transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                                          isExpanded ? 'translate-y-0 opacity-100' : '-translate-y-2 opacity-0'
+                                      }`}
+                                  >
                                       {category.metrics
                                           .filter(([metricId]) => !excludedMetricIds.includes(metricId))
                                           .map(([metricId, config]) => {
