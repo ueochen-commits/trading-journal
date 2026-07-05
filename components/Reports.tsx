@@ -1307,10 +1307,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                           axisLine={false}
                                           tickLine={false}
                                           width={50}
+                                          domain={[0, (dataMax: number) => Math.max(dataMax * 1.18, 0.2)]}
                                           tickFormatter={(value: number) => Number(value).toFixed(value < 1 ? 2 : 0).replace(/\.?0+$/, '')}
                                       />
                                       <Tooltip cursor={{ fill: 'rgba(85, 195, 158, 0.07)' }} content={<WinLossTooltip />} />
-                                      <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} maxBarSize={42} />
+                                      <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} />
                                   </BarChart>
                               </ResponsiveContainer>
                               <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
