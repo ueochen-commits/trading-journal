@@ -861,7 +861,13 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <div className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center`}>
                       <BarChart2 className={`w-4 h-4 ${accent}`} />
                   </div>
-                  <button className={`${featured ? 'relative h-[32px] w-[154px] rounded-[7px] border-[#dfe4ec] bg-white pl-[16px] pr-[9px] text-[13px] font-medium text-[#20232a] before:absolute before:left-0 before:top-0 before:h-full before:w-[3px] before:rounded-l-[7px] before:bg-gradient-to-b before:from-[#47c49b] before:to-[#ff6468]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}>
+                  <button className={`${featured ? 'relative h-[32px] w-[154px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}>
+                      {featured && (
+                          <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
+                              <span className="absolute left-0 top-0 h-[15px] w-[4px] rounded-tl-[7px] bg-[#35cfa2]" />
+                              <span className="absolute left-0 bottom-0 h-[15px] w-[4px] rounded-bl-[7px] bg-[#ff6468]" />
+                          </span>
+                      )}
                       <span className="truncate">{metricLabel}</span>
                       <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
                   </button>
