@@ -235,6 +235,12 @@ const Reports: React.FC<ReportsProps> = ({
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
+
+  const getDisplayPnl = (trade: Trade) => {
+      const grossPnl = Number(trade.pnl) || 0;
+      const fees = Number(trade.fees) || 0;
+      return pnlDisplayMode === 'net' ? grossPnl - fees : grossPnl;
+  };
   
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -412,7 +418,7 @@ const Reports: React.FC<ReportsProps> = ({
       trades.forEach(t => {
           if (!t.entryDate) return;
           const date = new Date(t.entryDate).toLocaleDateString('en-CA'); 
-          grouped[date] = (grouped[date] || 0) + (t.pnl - t.fees);
+          grouped[date] = (grouped[date] || 0) + getDisplayPnl(t);
       });
       
       const sortedDates = Object.keys(grouped).sort();
@@ -429,7 +435,7 @@ const Reports: React.FC<ReportsProps> = ({
               equity: currentEquity,
           };
       });
-  }, [trades, accountSize]);
+  }, [trades, accountSize, pnlDisplayMode]);
 
   // --- Calendar Data Preparation ---
   const calendarData = useMemo(() => {
@@ -794,13 +800,13 @@ const Reports: React.FC<ReportsProps> = ({
       // Basic Filters
       const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
       const openTrades = trades.filter(t => t.status === TradeStatus.OPEN || !t.exitDate);
-      const wins = closedTrades.filter(t => t.pnl > 0);
-      const losses = closedTrades.filter(t => t.pnl < 0);
-      const breakevens = closedTrades.filter(t => t.pnl === 0);
+      const wins = closedTrades.filter(t => getDisplayPnl(t) > 0);
+      const losses = closedTrades.filter(t => getDisplayPnl(t) < 0);
+      const breakevens = closedTrades.filter(t => getDisplayPnl(t) === 0);
 
       // Financials
-      const grossProfit = wins.reduce((acc, t) => acc + t.pnl, 0);
-      const grossLoss = losses.reduce((acc, t) => acc + t.pnl, 0); // Negative number
+      const grossProfit = wins.reduce((acc, t) => acc + getDisplayPnl(t), 0);
+      const grossLoss = losses.reduce((acc, t) => acc + getDisplayPnl(t), 0); // Negative number
       const totalFees = trades.reduce((acc, t) => acc + t.fees, 0);
       const netPnl = grossProfit + grossLoss;
       const totalVolume = trades.reduce((acc, t) => acc + (t.quantity * t.entryPrice), 0); 
@@ -820,23 +826,23 @@ const Reports: React.FC<ReportsProps> = ({
       const expectancy = (winPctDec * avgWin) + (lossPctDec * avgLoss);
 
       // Extremes
-      const largestProfit = wins.length > 0 ? Math.max(...wins.map(t => t.pnl)) : 0;
-      const largestLoss = losses.length > 0 ? Math.min(...losses.map(t => t.pnl)) : 0;
+      const largestProfit = wins.length > 0 ? Math.max(...wins.map(t => getDisplayPnl(t))) : 0;
+      const largestLoss = losses.length > 0 ? Math.min(...losses.map(t => getDisplayPnl(t))) : 0;
 
       // R-Multiples
       const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
-      const totalR = tradesWithRisk.reduce((acc, t) => acc + (t.pnl / (t.riskAmount || 1)), 0);
+      const totalR = tradesWithRisk.reduce((acc, t) => acc + (getDisplayPnl(t) / (t.riskAmount || 1)), 0);
       const avgRealizedR = tradesWithRisk.length > 0 ? totalR / tradesWithRisk.length : 0;
       const longTrades = trades.filter(t => t.direction === Direction.LONG);
       const shortTrades = trades.filter(t => t.direction === Direction.SHORT);
       const closedLongTrades = closedTrades.filter(t => t.direction === Direction.LONG);
       const closedShortTrades = closedTrades.filter(t => t.direction === Direction.SHORT);
-      const longWins = closedLongTrades.filter(t => t.pnl > 0);
-      const longLosses = closedLongTrades.filter(t => t.pnl < 0);
-      const longBreakevens = closedLongTrades.filter(t => t.pnl === 0);
-      const shortWins = closedShortTrades.filter(t => t.pnl > 0);
-      const shortLosses = closedShortTrades.filter(t => t.pnl < 0);
-      const shortBreakevens = closedShortTrades.filter(t => t.pnl === 0);
+      const longWins = closedLongTrades.filter(t => getDisplayPnl(t) > 0);
+      const longLosses = closedLongTrades.filter(t => getDisplayPnl(t) < 0);
+      const longBreakevens = closedLongTrades.filter(t => getDisplayPnl(t) === 0);
+      const shortWins = closedShortTrades.filter(t => getDisplayPnl(t) > 0);
+      const shortLosses = closedShortTrades.filter(t => getDisplayPnl(t) < 0);
+      const shortBreakevens = closedShortTrades.filter(t => getDisplayPnl(t) === 0);
       const longOpenTrades = openTrades.filter(t => t.direction === Direction.LONG);
       const shortOpenTrades = openTrades.filter(t => t.direction === Direction.SHORT);
       const longWinRate = closedLongTrades.length > 0 ? (longWins.length / closedLongTrades.length) * 100 : 0;
@@ -849,11 +855,12 @@ const Reports: React.FC<ReportsProps> = ({
       const chronologicalTrades = [...closedTrades].sort((a,b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
       
       chronologicalTrades.forEach(t => {
-          if (t.pnl > 0) {
+          const displayPnl = getDisplayPnl(t);
+          if (displayPnl > 0) {
               curConWins++;
               curConLoss = 0;
               if (curConWins > maxConWins) maxConWins = curConWins;
-          } else if (t.pnl < 0) {
+          } else if (displayPnl < 0) {
               curConLoss++;
               curConWins = 0;
               if (curConLoss > maxConLoss) maxConLoss = curConLoss;
@@ -969,7 +976,7 @@ const Reports: React.FC<ReportsProps> = ({
           sharpeRatio,
           sortinoRatio
       };
-  }, [trades, dailyData]);
+  }, [trades, dailyData, pnlDisplayMode]);
 
   const performanceDailyData = useMemo(() => {
       const grouped: Record<string, {
@@ -1003,7 +1010,7 @@ const Reports: React.FC<ReportsProps> = ({
               };
           }
 
-          const net = t.pnl - t.fees;
+          const net = getDisplayPnl(t);
           grouped[date].pnl += net;
           grouped[date].count += 1;
           grouped[date].volume += Math.abs((t.quantity || 0) * (t.entryPrice || 0));
@@ -1057,7 +1064,7 @@ const Reports: React.FC<ReportsProps> = ({
                   periodDurationMs: dayMs,
               };
           });
-  }, [trades, language]);
+  }, [trades, language, pnlDisplayMode]);
 
   const performancePnlDisplayData = useMemo(() => {
       const indexes = getEvenlySpacedIndexes(performanceDailyData.length, 9);
@@ -4319,7 +4326,9 @@ const Reports: React.FC<ReportsProps> = ({
                     <div className="flex h-[58px] items-center justify-between border-b border-[#e6e8ec] px-[18px]">
                         <div className="flex items-center gap-[13px]">
                             <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
-                                {language === 'cn' ? '每日净累计盈亏' : 'Daily net cumulative P&L'}
+                                {pnlDisplayMode === 'net'
+                                    ? (language === 'cn' ? '每日净累计盈亏' : 'Daily net cumulative P&L')
+                                    : (language === 'cn' ? '每日总累计盈亏' : 'Daily gross cumulative P&L')}
                             </h3>
                             <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
                         </div>
@@ -4351,7 +4360,9 @@ const Reports: React.FC<ReportsProps> = ({
                     <div className="flex h-[58px] items-center border-b border-[#e6e8ec] px-[18px]">
                         <div className="flex items-center gap-[13px]">
                             <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
-                                {language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}
+                                {pnlDisplayMode === 'net'
+                                    ? (language === 'cn' ? '每日净盈亏' : 'Net daily P&L')
+                                    : (language === 'cn' ? '每日总盈亏' : 'Gross daily P&L')}
                             </h3>
                             <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
                         </div>
