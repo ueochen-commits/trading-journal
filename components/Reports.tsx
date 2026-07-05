@@ -1954,8 +1954,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
       return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
-          <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between bg-white dark:bg-slate-900`}>
-              <div className={`${featured ? 'gap-[12px]' : 'gap-3'} flex items-center min-w-0`}>
+          <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between gap-[12px] bg-white dark:bg-slate-900`}>
+              <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-0 flex-1 items-center`}>
                   <div className="relative" data-chart-style-root={side}>
                       <button
                           type="button"
@@ -1978,7 +1978,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           />
                       )}
                   </div>
-                  <div className="relative">
+                  <div className="relative min-w-0 flex-shrink-0">
                       <button
                           type="button"
                           onClick={() => {
@@ -1987,7 +1987,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'relative h-[32px] w-[154px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          className={`${featured ? 'relative h-[32px] w-[clamp(164px,18vw,250px)] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2003,7 +2003,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       {metricPicker}
                   </div>
                   {additionalMetrics.map(metric => (
-                      <div key={metric.slot} className="group/metric relative flex items-center gap-[6px]">
+                      <div key={metric.slot} className="group/metric relative min-w-[150px] flex-shrink basis-[clamp(180px,20vw,270px)]">
                           <button
                               type="button"
                               onClick={() => {
@@ -2012,7 +2012,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'relative h-[32px] w-[220px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[30px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2023,18 +2023,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </span>
                               )}
                               <span className="truncate">{metric.label}</span>
-                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] transition-opacity group-hover/metric:opacity-0' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
                           </button>
                           <button
                               type="button"
-                              onClick={() => {
+                              onClick={(event) => {
+                                  event.stopPropagation();
                                   metric.onRemove?.();
                                   setOpenChartColorDropdown(null);
                               }}
-                              className="pointer-events-none inline-flex h-[24px] w-[24px] flex-shrink-0 items-center justify-center rounded-[6px] text-[#7b8490] opacity-0 transition-[opacity,background-color,color] hover:bg-[#f1f2f4] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100"
+                              className="pointer-events-none absolute right-[5px] top-1/2 inline-flex h-[22px] w-[22px] -translate-y-1/2 items-center justify-center rounded-[6px] border border-[#e1e5ec] bg-white text-[#7b8490] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.08)] transition-[opacity,background-color,color,border-color] hover:border-[#cfd5df] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
                               aria-label={language === 'cn' ? '移除指标' : 'Remove metric'}
                           >
-                              <X className="h-[14px] w-[14px]" />
+                              <X className="h-[13px] w-[13px]" />
                           </button>
                           {metric.picker}
                       </div>
@@ -2057,7 +2058,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       </div>
                   )}
               </div>
-              <div className={`${featured ? 'gap-[8px]' : 'gap-2'} flex items-center`}>
+              <div className={`${featured ? 'gap-[8px]' : 'gap-2'} flex flex-shrink-0 items-center`}>
                   <button className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#4f2db8] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors`}>
                       {rightControl}
                       <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-black' : 'w-3.5 h-3.5 text-slate-400'}`} />
