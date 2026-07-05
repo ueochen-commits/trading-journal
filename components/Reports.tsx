@@ -270,6 +270,20 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   }, [isReportMenuOpen]);
 
   useEffect(() => {
+      if (!openChartMetricPicker) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest('[data-chart-metric-picker-root]')) return;
+          setOpenChartMetricPicker(null);
+          setChartMetricPickerSearch('');
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [openChartMetricPicker]);
+
+  useEffect(() => {
       if (!currentUserId) return;
 
       // 初始加载
@@ -2202,7 +2216,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           />
                       )}
                   </div>
-                  <div className="relative min-w-[min(100%,164px)] flex-shrink-0">
+                  <div className="relative min-w-[min(100%,164px)] flex-shrink-0" data-chart-metric-picker-root>
                       <button
                           type="button"
                           onClick={() => {
@@ -2227,7 +2241,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       {metricPicker}
                   </div>
                   {additionalMetrics.map(metric => (
-                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-none items-center transition-[width] duration-150 ease-out w-[clamp(164px,20vw,270px)] max-w-full hover:w-[clamp(188px,calc(20vw+24px),298px)] focus-within:w-[clamp(188px,calc(20vw+24px),298px)]">
+                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-none items-center transition-[width] duration-150 ease-out w-[clamp(164px,20vw,270px)] max-w-full hover:w-[clamp(188px,calc(20vw+24px),298px)] focus-within:w-[clamp(188px,calc(20vw+24px),298px)]" data-chart-metric-picker-root>
                           <button
                               type="button"
                               onClick={() => {
@@ -2265,7 +2279,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       </div>
                   ))}
                   {canAddMetric && (
-                      <div className="relative inline-flex">
+                      <div className="relative inline-flex" data-chart-metric-picker-root>
                           <button
                               type="button"
                               onClick={() => {
