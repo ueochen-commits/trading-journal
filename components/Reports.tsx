@@ -2981,67 +2981,73 @@ const Reports: React.FC<ReportsProps> = ({
   };
 
   const ReportTabMark = ({ type, active }: { type: string; active: boolean }) => {
-      const stroke = active ? 'bg-[#6f55d8]' : 'bg-[#858c98] group-hover:bg-[#636b77]';
-      const border = active ? 'border-[#6f55d8]' : 'border-[#858c98] group-hover:border-[#636b77]';
-      const softFill = active ? 'bg-[#6f55d8]/10' : 'bg-transparent group-hover:bg-[#eef1f5]';
-      const iconBase = `relative inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[7px] transition-colors ${softFill}`;
+      const iconBase = `relative inline-flex h-[20px] w-[20px] flex-shrink-0 items-center justify-center rounded-[8px] transition-[background-color,color,transform] duration-150 ${
+          active ? 'bg-[#6f55d8]/10 text-[#6f55d8]' : 'text-[#7e8793] group-hover:bg-[#eef1f5] group-hover:text-[#4d5663]'
+      }`;
+      const svgBase = "h-[16px] w-[16px]";
+      const strokeProps = {
+          fill: "none",
+          stroke: "currentColor",
+          strokeWidth: 1.8,
+          strokeLinecap: "round" as const,
+          strokeLinejoin: "round" as const,
+      };
 
-      if (type === 'performance') {
-          return (
-              <span className={iconBase} aria-hidden="true">
-                  <span className={`absolute left-[4px] top-[8px] h-[6px] w-[2.2px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[8px] top-[5px] h-[9px] w-[2.2px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[12px] top-[10px] h-[4px] w-[2.2px] rounded-full ${stroke}`} />
-              </span>
-          );
-      }
-
-      if (type === 'overview') {
-          return (
-              <span className={iconBase} aria-hidden="true">
-                  <span className={`absolute h-[12px] w-[12px] rounded-full border-[1.7px] ${border}`} />
-                  <span className={`absolute h-[12px] w-[1.6px] rounded-full ${stroke}`} />
-                  <span className={`absolute h-[1.6px] w-[12px] rounded-full ${stroke}`} />
-              </span>
-          );
-      }
-
-      if (type === 'detailed') {
-          return (
-              <span className={iconBase} aria-hidden="true">
-                  <span className={`absolute left-[4px] top-[3px] h-[12px] w-[10px] rounded-[3px] border-[1.6px] ${border}`} />
-                  <span className={`absolute left-[6px] top-[7px] h-[1.6px] w-[6px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[6px] top-[10.5px] h-[1.6px] w-[5px] rounded-full ${stroke}`} />
-              </span>
-          );
-      }
-
-      if (type === 'compare') {
-          return (
-              <span className={iconBase} aria-hidden="true">
-                  <span className={`absolute left-[4px] top-[5px] h-[2px] w-[9px] rounded-full ${stroke}`} />
-                  <span className={`absolute right-[3px] top-[3px] h-[5px] w-[5px] rotate-45 rounded-[1px] border-r-[1.6px] border-t-[1.6px] ${border}`} />
-                  <span className={`absolute bottom-[5px] right-[4px] h-[2px] w-[9px] rounded-full ${stroke}`} />
-                  <span className={`absolute bottom-[3px] left-[3px] h-[5px] w-[5px] -rotate-[135deg] rounded-[1px] border-r-[1.6px] border-t-[1.6px] ${border}`} />
-              </span>
-          );
-      }
-
-      if (type === 'calendar') {
-          return (
-              <span className={iconBase} aria-hidden="true">
-                  <span className={`absolute h-[13px] w-[13px] rounded-[4px] border-[1.6px] ${border}`} />
-                  <span className={`absolute top-[7px] h-[1.6px] w-[13px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[5px] top-[10px] h-[2.3px] w-[2.3px] rounded-full ${stroke}`} />
-                  <span className={`absolute right-[5px] top-[10px] h-[2.3px] w-[2.3px] rounded-full ${stroke}`} />
-              </span>
-          );
-      }
+      const icons: Record<string, React.ReactNode> = {
+          performance: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <rect x="3.5" y="10.5" width="3.2" height="5" rx="1.2" fill="currentColor" opacity={active ? 0.95 : 0.8} />
+                  <rect x="8.4" y="5" width="3.2" height="10.5" rx="1.2" fill="currentColor" opacity={active ? 0.95 : 0.8} />
+                  <rect x="13.3" y="8" width="3.2" height="7.5" rx="1.2" fill="currentColor" opacity={active ? 0.95 : 0.8} />
+              </svg>
+          ),
+          overview: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <circle cx="10" cy="10" r="7.1" {...strokeProps} />
+                  <path d="M3.4 10h13.2M10 2.9c2 2.1 2.8 4.4 2.8 7.1S12 15 10 17.1C8 15 7.2 12.7 7.2 10S8 5 10 2.9Z" {...strokeProps} />
+              </svg>
+          ),
+          detailed: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <rect x="3.5" y="3.2" width="13" height="13.6" rx="3.2" {...strokeProps} />
+                  <path d="M7.1 12.7V9.9M10 12.7V7.4M12.9 12.7v-4" {...strokeProps} />
+                  <path d="M6.6 14.7h7" {...strokeProps} opacity="0.68" />
+              </svg>
+          ),
+          compare: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <rect x="3.1" y="3.4" width="5.4" height="5.4" rx="1.8" {...strokeProps} />
+                  <rect x="11.5" y="3.4" width="5.4" height="5.4" rx="1.8" {...strokeProps} />
+                  <rect x="3.1" y="11.2" width="5.4" height="5.4" rx="1.8" {...strokeProps} />
+                  <rect x="11.5" y="11.2" width="5.4" height="5.4" rx="1.8" {...strokeProps} />
+                  <path d="M8.5 6.1h3M11.5 13.9h-3" {...strokeProps} />
+              </svg>
+          ),
+          calendar: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <rect x="3.3" y="4.3" width="13.4" height="12.1" rx="3" {...strokeProps} />
+                  <path d="M6.7 2.9v3M13.3 2.9v3M3.8 8h12.4" {...strokeProps} />
+                  <path d="M7 11.3h.1M10 11.3h.1M13 11.3h.1M7 14h.1M10 14h.1" {...strokeProps} />
+              </svg>
+          ),
+          ai: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <rect x="4.2" y="3.2" width="11.6" height="13.6" rx="3" {...strokeProps} />
+                  <path d="M7.2 7.4h5.6M7.2 10h5.6M7.2 12.6h3.6" {...strokeProps} />
+                  <circle cx="13.1" cy="12.7" r="0.8" fill="currentColor" />
+              </svg>
+          ),
+          guide: (
+              <svg viewBox="0 0 20 20" className={svgBase}>
+                  <path d="M4.2 4.6c0-1 0.8-1.8 1.8-1.8h3.1c1 0 1.8 0.8 1.8 1.8v12.6c0-1-0.8-1.8-1.8-1.8H6c-1 0-1.8 0.8-1.8 1.8V4.6Z" {...strokeProps} />
+                  <path d="M10.9 4.6c0-1 0.8-1.8 1.8-1.8h1.3c1 0 1.8 0.8 1.8 1.8v12.6c0-1-0.8-1.8-1.8-1.8h-1.3c-1 0-1.8 0.8-1.8 1.8V4.6Z" {...strokeProps} />
+              </svg>
+          ),
+      };
 
       return (
           <span className={iconBase} aria-hidden="true">
-              <span className={`absolute left-[4px] top-[4px] h-[10px] w-[10px] rounded-[3px] border-[1.6px] ${border}`} />
-              <span className={`absolute left-[7px] top-[7px] h-[4px] w-[4px] rounded-[1.5px] ${stroke}`} />
+              {icons[type] || icons.ai}
           </span>
       );
   };
@@ -3633,11 +3639,7 @@ const Reports: React.FC<ReportsProps> = ({
                 })}
             </div>
             <button className="group hidden shrink-0 items-center gap-[7px] text-[14px] font-medium tracking-[-0.01em] text-[#707783] transition-colors hover:text-[#3e4652] xl:inline-flex">
-                <span className="relative inline-flex h-[18px] w-[18px] items-center justify-center rounded-[7px] transition-colors group-hover:bg-[#eef1f5]" aria-hidden="true">
-                    <span className="absolute left-[4px] top-[4px] h-[10px] w-[4px] rounded-l-[2px] border border-[#858c98] transition-colors group-hover:border-[#636b77]" />
-                    <span className="absolute right-[4px] top-[4px] h-[10px] w-[4px] rounded-r-[2px] border border-[#858c98] transition-colors group-hover:border-[#636b77]" />
-                    <span className="absolute left-[8.5px] top-[5px] h-[8px] w-[1.5px] rounded-full bg-[#858c98] transition-colors group-hover:bg-[#636b77]" />
-                </span>
+                <ReportTabMark type="guide" active={false} />
                 {language === 'cn' ? '阅读指南' : 'Read guide'}
             </button>
         </div>
