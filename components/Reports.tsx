@@ -1568,7 +1568,7 @@ const Reports: React.FC<ReportsProps> = ({
       if (timeframe === 'week') {
           const month = d.getMonth() + 1;
           const day = d.getDate();
-          if (language === 'cn') return `${month}/${day}周`;
+          if (language === 'cn') return `${month}月${day}日周`;
           return `Wk ${formatChartDateLabel(date)}`;
       }
 
@@ -1897,6 +1897,10 @@ const Reports: React.FC<ReportsProps> = ({
 
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
+      if (language === 'cn') {
+          return `${d.getMonth() + 1}月${d.getDate()}日`;
+      }
+
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]}`;
   }
