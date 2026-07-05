@@ -2584,7 +2584,7 @@ const Reports: React.FC<ReportsProps> = ({
 
       return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
-          <div className={`${featured ? 'min-h-[64px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-slate-800'} flex flex-wrap items-start justify-between gap-[10px] bg-white dark:bg-slate-900`}>
+          <div className={`${featured ? 'min-h-[64px] rounded-t-[8px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-slate-800'} flex flex-wrap items-start justify-between gap-[10px] bg-white dark:bg-slate-900`}>
               <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center`}>
                   <div className="relative" data-chart-style-root={side}>
                       <button
@@ -2742,7 +2742,7 @@ const Reports: React.FC<ReportsProps> = ({
                   </button>
               </div>
           </div>
-          <div className={`${featured ? 'px-[2px] pb-[12px]' : 'px-4 pt-4'}`}>
+          <div className={`${featured ? 'rounded-b-[8px] px-[2px] pb-[12px]' : 'px-4 pt-4'}`}>
               {!featured && (
                 <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
