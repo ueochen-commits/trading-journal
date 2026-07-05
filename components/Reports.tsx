@@ -3054,6 +3054,16 @@ const Reports: React.FC<ReportsProps> = ({
       { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
   ];
 
+  const reportMenuOptions = [
+      { id: 'DAYS', label: 'Day & Time' },
+      { id: 'SYMBOLS', label: 'Symbols' },
+      { id: 'RISK', label: 'Risk' },
+      { id: 'SETUPS', label: 'Strategies' },
+      { id: 'TAGS', label: 'Tags' },
+      { id: 'TRADE DURATION', label: 'Options: Days till expiration' },
+      { id: 'WINS_LOSSES', label: 'Wins vs Losses' },
+  ];
+
   const selectDetailedReport = (filterId: string) => {
       setDetailedFilter(filterId);
       setActiveTab('detailed');
@@ -3586,30 +3596,22 @@ const Reports: React.FC<ReportsProps> = ({
                             </button>
                             {isReportMenuTab && (
                                 <div
-                                    className={`absolute left-[2px] top-[46px] z-40 w-[180px] origin-top-left overflow-hidden rounded-[12px] border border-[#dedfe4] bg-white py-[8px] shadow-[0_2px_5px_rgba(20,24,36,0.08),0_16px_28px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                    className={`absolute left-[-2px] top-[40px] z-40 w-[180px] origin-top-left overflow-hidden rounded-[10px] border border-[#dedfe4] bg-white py-[7px] shadow-[0_1px_2px_rgba(20,24,36,0.08),0_8px_18px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
                                         isReportMenuOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-1 scale-[0.98] opacity-0'
                                     }`}
                                     role="menu"
                                 >
-                                    {detailedFilterOptions.map(option => {
-                                        const isSelected = detailedFilter === option.id;
-                                        return (
-                                            <button
-                                                key={option.id}
-                                                type="button"
-                                                role="menuitem"
-                                                onClick={() => selectDetailedReport(option.id)}
-                                                className={`flex min-h-[35px] w-full items-center justify-between px-[12px] py-[8px] text-left text-[13px] font-medium leading-[1.25] transition-colors ${
-                                                    isSelected
-                                                        ? 'bg-[#f3efff] text-[#6f55d8] dark:bg-indigo-500/15 dark:text-indigo-300'
-                                                        : 'text-[#29313d] hover:bg-[#f7f7f9] hover:text-[#1f2630] dark:text-slate-300 dark:hover:bg-slate-800'
-                                                }`}
-                                            >
-                                                <span className="min-w-0 truncate">{option.label}</span>
-                                                {isSelected && <span className="ml-[10px] h-[5px] w-[5px] flex-shrink-0 rounded-full bg-[#6f55d8]" />}
-                                            </button>
-                                        );
-                                    })}
+                                    {reportMenuOptions.map(option => (
+                                        <button
+                                            key={option.id}
+                                            type="button"
+                                            role="menuitem"
+                                            onClick={() => selectDetailedReport(option.id)}
+                                            className="flex min-h-[36px] w-full items-center px-[12px] py-[8px] text-left text-[13px] font-normal leading-[1.25] text-[#202936] transition-colors hover:bg-[#f7f7f8] dark:text-slate-200 dark:hover:bg-slate-800"
+                                        >
+                                            <span className="min-w-0 truncate">{option.label}</span>
+                                        </button>
+                                    ))}
                                 </div>
                             )}
                         </div>
