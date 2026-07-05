@@ -1489,30 +1489,63 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
       return (
           <div
-              className={`absolute left-0 top-full z-50 mt-[8px] w-[318px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+              className={`absolute left-0 top-full z-50 mt-[8px] w-[316px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
                   isOpen
                       ? 'max-h-[420px] scale-100 opacity-100'
                       : 'pointer-events-none max-h-0 scale-[0.96] opacity-0'
               }`}
           >
-              <div className="space-y-[16px] p-[14px]">
+              <div className="space-y-[14px] p-[14px]">
                   {metrics.map((metric, index) => {
                       const visualDropdownOpen = openChartVisualDropdown?.side === side && openChartVisualDropdown.slot === metric.slot;
                       const colorDropdownOpen = openChartColorDropdown?.side === side && openChartColorDropdown.slot === metric.slot;
 
                       return (
-                          <div key={metric.slot} className={index > 0 ? 'border-t border-[#edf0f4] pt-[14px] dark:border-slate-800' : ''}>
-                              <div className="mb-[10px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
+                          <div key={metric.slot} className={index > 0 ? 'pt-[2px] dark:border-slate-800' : ''}>
+                              <div className="mb-[9px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
                                   {metric.config.label}
                               </div>
                               <div className="flex items-center gap-[9px]">
-                                  <button
-                                      type="button"
-                                      className="flex h-[32px] w-[30px] flex-shrink-0 flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-900"
-                                      aria-label={language === 'cn' ? '当前颜色' : 'Current color'}
-                                  >
-                                      <span className="h-full rounded-[3px]" style={{ backgroundColor: metric.color }} />
-                                  </button>
+                                  <div className="relative flex-shrink-0">
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setOpenChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
+                                              setOpenChartVisualDropdown(null);
+                                          }}
+                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900"
+                                          aria-expanded={colorDropdownOpen}
+                                          aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
+                                      >
+                                          <span className="h-full rounded-[3px]" style={{ backgroundColor: metric.color }} />
+                                      </button>
+                                      <div
+                                          className={`absolute left-0 top-full z-[70] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                              colorDropdownOpen ? 'max-h-[58px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                          }`}
+                                      >
+                                          {chartStyleColors.map(optionColor => {
+                                              const selected = optionColor === metric.color;
+                                              return (
+                                                  <button
+                                                      key={optionColor}
+                                                      type="button"
+                                                      onClick={() => {
+                                                          updateChartStyle(side, metric.slot, { color: optionColor });
+                                                          setOpenChartColorDropdown(null);
+                                                      }}
+                                                      className={`relative h-[26px] w-[26px] flex-shrink-0 rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
+                                                          selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
+                                                      }`}
+                                                      style={{ backgroundColor: optionColor }}
+                                                      aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
+                                                  >
+                                                      {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
+                                                  </button>
+                                              );
+                                          })}
+                                      </div>
+                                  </div>
                                   <div className="relative flex-1">
                                       <button
                                           type="button"
@@ -1553,49 +1586,6 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                       </div>
                                   </div>
                               </div>
-
-                              <div className="relative mt-[12px] inline-flex">
-                                  <button
-                                      type="button"
-                                      onClick={() => {
-                                          setOpenChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
-                                          setOpenChartVisualDropdown(null);
-                                      }}
-                                      className="flex h-[32px] items-center gap-[8px] rounded-[6px] border border-[#dfe4ec] bg-white px-[8px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                                      aria-expanded={colorDropdownOpen}
-                                      aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
-                                  >
-                                      <span className="h-[18px] w-[18px] rounded-[5px]" style={{ backgroundColor: metric.color }} />
-                                      <span>{language === 'cn' ? '颜色' : 'Color'}</span>
-                                      <ChevronDown className={`h-[14px] w-[14px] transition-transform ${colorDropdownOpen ? 'rotate-180' : ''}`} />
-                                  </button>
-                                  <div
-                                      className={`absolute left-0 top-full z-[60] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
-                                          colorDropdownOpen ? 'max-h-[58px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
-                                      }`}
-                                  >
-                                      {chartStyleColors.map(optionColor => {
-                                          const selected = optionColor === metric.color;
-                                          return (
-                                              <button
-                                                  key={optionColor}
-                                                  type="button"
-                                                  onClick={() => {
-                                                      updateChartStyle(side, metric.slot, { color: optionColor });
-                                                      setOpenChartColorDropdown(null);
-                                                  }}
-                                                  className={`relative h-[26px] w-[26px] flex-shrink-0 rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
-                                                      selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
-                                                  }`}
-                                                  style={{ backgroundColor: optionColor }}
-                                                  aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
-                                              >
-                                                  {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
-                                              </button>
-                                          );
-                                      })}
-                                  </div>
-                              </div>
                           </div>
                       );
                   })}
@@ -1609,7 +1599,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       }}
                       className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
                   >
-                      {language === 'cn' ? '恢复默认' : 'Reset'}
+                      {language === 'cn' ? '恢复默认' : 'Reset to default'}
                   </button>
               </div>
           </div>
