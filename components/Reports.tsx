@@ -108,7 +108,7 @@ type ChartSide = 'left' | 'right';
 type ChartMetricSlot = 'primary' | 'secondary' | 'tertiary';
 type PnlDisplayMode = 'net' | 'gross';
 type DayTimeReportView = 'DAYS' | 'MONTHS' | 'TIME' | 'TRADE DURATION';
-type DayTimeMetricId = 'netPnl' | 'tradeCount' | 'winRate' | 'avgDailyVolume' | 'avgWin' | 'avgLoss';
+type DayTimeMetricId = SummaryMetricId;
 type DayTimeCrossMetric = 'winRate' | 'pnl' | 'trades';
 type DayTimeSymbolLimit = 5 | 10 | 20 | 'all';
 type ChartStyleSettings = Record<ChartSide, {
@@ -251,7 +251,7 @@ const Reports: React.FC<ReportsProps> = ({
   const [dayTimeLeftPrimaryMetric, setDayTimeLeftPrimaryMetric] = useState<DayTimeMetricId>('netPnl');
   const [dayTimeLeftSecondaryMetric, setDayTimeLeftSecondaryMetric] = useState<DayTimeMetricId | null>('tradeCount');
   const [dayTimeLeftTertiaryMetric, setDayTimeLeftTertiaryMetric] = useState<DayTimeMetricId | null>(null);
-  const [dayTimeRightPrimaryMetric, setDayTimeRightPrimaryMetric] = useState<DayTimeMetricId>('winRate');
+  const [dayTimeRightPrimaryMetric, setDayTimeRightPrimaryMetric] = useState<DayTimeMetricId>('winPct');
   const [dayTimeRightSecondaryMetric, setDayTimeRightSecondaryMetric] = useState<DayTimeMetricId | null>('tradeCount');
   const [dayTimeRightTertiaryMetric, setDayTimeRightTertiaryMetric] = useState<DayTimeMetricId | null>(null);
   const [dayTimeCrossMetric, setDayTimeCrossMetric] = useState<DayTimeCrossMetric>('pnl');
@@ -302,6 +302,8 @@ const Reports: React.FC<ReportsProps> = ({
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
   const [openDayTimeMetricPicker, setOpenDayTimeMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
+  const [dayTimeMetricPickerSearch, setDayTimeMetricPickerSearch] = useState('');
+  const [expandedDayTimeMetricCategory, setExpandedDayTimeMetricCategory] = useState<string | null>('time');
 
   const getDisplayPnl = (trade: Trade) => {
       const grossPnl = Number(trade.pnl) || 0;
@@ -446,6 +448,7 @@ const Reports: React.FC<ReportsProps> = ({
           const target = event.target;
           if (target instanceof Element && target.closest('[data-day-time-metric-picker-root]')) return;
           setOpenDayTimeMetricPicker(null);
+          setDayTimeMetricPickerSearch('');
       };
 
       document.addEventListener('pointerdown', handlePointerDown);
@@ -1181,44 +1184,151 @@ const Reports: React.FC<ReportsProps> = ({
       key: string;
       label: string;
       shortLabel: string;
+      trades: Trade[];
       count: number;
       netPnl: number;
+      avgDailyNetPnl: number;
+      dailyNetPnl: number;
       grossProfit: number;
       grossLoss: number;
+      profitFactor: number;
+      tradeExpectancy: number;
       wins: number;
       losses: number;
+      breakevens: number;
       volume: number;
       activeDays: Set<string>;
       activeDayCount: number;
+      loggedDays: number;
       avgDailyVolume: number;
       avgWin: number;
       avgLoss: number;
+      avgNetTradePnl: number;
+      avgTradeWinLoss: number;
+      avgDailyWinLoss: number;
+      avgMaxTradeLoss: number;
+      avgMaxTradeProfit: number;
+      largestLosingTrade: number;
+      largestProfitableTrade: number;
+      avgDailyNetDrawdown: number;
+      maxDailyNetDrawdown: number;
+      dailyNetDrawdown: number;
+      avgPlannedR: number;
+      avgRealizedR: number;
+      breakevenDays: number;
+      breakevenTrades: number;
+      losingDays: number;
+      winningDays: number;
+      longBreakevenTrades: number;
+      longLosingTrades: number;
+      longOpenTrades: number;
+      longTrades: number;
+      longWinningTrades: number;
+      lossTrades: number;
+      netAccountBalance: number;
+      openTrades: number;
+      shortBreakevenTrades: number;
+      shortLosingTrades: number;
+      shortOpenTrades: number;
+      shortTrades: number;
+      shortWinningTrades: number;
+      tradeCount: number;
+      winTrades: number;
+      avgDailyWinPct: number;
+      longWinPct: number;
+      maxConsecutiveLosingDays: number;
+      maxConsecutiveLosses: number;
+      maxConsecutiveWinningDays: number;
+      maxConsecutiveWins: number;
+      sharpeRatio: number;
+      shortWinPct: number;
+      sortinoRatio: number;
+      winPct: number;
       winRate: number;
+      avgTradingDaysDuration: number;
+      avgHoldTime: number;
+      longestTradeDuration: number;
+      maxTradingDaysDuration: number;
   };
 
   const createDayTimeRow = (key: string, label: string, shortLabel = label): DayTimeReportRow => ({
       key,
       label,
       shortLabel,
+      trades: [],
       count: 0,
       netPnl: 0,
+      avgDailyNetPnl: 0,
+      dailyNetPnl: 0,
       grossProfit: 0,
       grossLoss: 0,
+      profitFactor: 0,
+      tradeExpectancy: 0,
       wins: 0,
       losses: 0,
+      breakevens: 0,
       volume: 0,
       activeDays: new Set<string>(),
       activeDayCount: 0,
+      loggedDays: 0,
       avgDailyVolume: 0,
       avgWin: 0,
       avgLoss: 0,
+      avgNetTradePnl: 0,
+      avgTradeWinLoss: 0,
+      avgDailyWinLoss: 0,
+      avgMaxTradeLoss: 0,
+      avgMaxTradeProfit: 0,
+      largestLosingTrade: 0,
+      largestProfitableTrade: 0,
+      avgDailyNetDrawdown: 0,
+      maxDailyNetDrawdown: 0,
+      dailyNetDrawdown: 0,
+      avgPlannedR: 0,
+      avgRealizedR: 0,
+      breakevenDays: 0,
+      breakevenTrades: 0,
+      losingDays: 0,
+      winningDays: 0,
+      longBreakevenTrades: 0,
+      longLosingTrades: 0,
+      longOpenTrades: 0,
+      longTrades: 0,
+      longWinningTrades: 0,
+      lossTrades: 0,
+      netAccountBalance: accountSize,
+      openTrades: 0,
+      shortBreakevenTrades: 0,
+      shortLosingTrades: 0,
+      shortOpenTrades: 0,
+      shortTrades: 0,
+      shortWinningTrades: 0,
+      tradeCount: 0,
+      winTrades: 0,
+      avgDailyWinPct: 0,
+      longWinPct: 0,
+      maxConsecutiveLosingDays: 0,
+      maxConsecutiveLosses: 0,
+      maxConsecutiveWinningDays: 0,
+      maxConsecutiveWins: 0,
+      sharpeRatio: 0,
+      shortWinPct: 0,
+      sortinoRatio: 0,
+      winPct: 0,
       winRate: 0,
+      avgTradingDaysDuration: 0,
+      avgHoldTime: 0,
+      longestTradeDuration: 0,
+      maxTradingDaysDuration: 0,
   });
 
   const addTradeToDayTimeRow = (row: DayTimeReportRow, trade: Trade) => {
       const displayPnl = getDisplayPnl(trade);
       row.count += 1;
+      row.tradeCount += 1;
+      row.trades.push(trade);
       row.netPnl += displayPnl;
+      row.dailyNetPnl += displayPnl;
       row.volume += getTradeVolume(trade);
       const entryDate = new Date(trade.entryDate);
       if (!Number.isNaN(entryDate.getTime())) {
@@ -1233,18 +1343,199 @@ const Reports: React.FC<ReportsProps> = ({
       }
   };
 
-  const finalizeDayTimeRows = (rows: DayTimeReportRow[]) => rows.map(row => ({
-      ...row,
-      netPnl: Number(row.netPnl.toFixed(2)),
-      grossProfit: Number(row.grossProfit.toFixed(2)),
-      grossLoss: Number(row.grossLoss.toFixed(2)),
-      volume: Number(row.volume.toFixed(2)),
-      activeDayCount: row.activeDays.size,
-      avgDailyVolume: row.activeDays.size > 0 ? Number((row.volume / row.activeDays.size).toFixed(2)) : 0,
-      avgWin: row.wins > 0 ? Number((row.grossProfit / row.wins).toFixed(2)) : 0,
-      avgLoss: row.losses > 0 ? Number((row.grossLoss / row.losses).toFixed(2)) : 0,
-      winRate: row.count > 0 ? (row.wins / row.count) * 100 : 0,
-  }));
+  const getDayTimeDateKey = (trade: Trade) => {
+      const date = new Date(trade.entryDate);
+      return Number.isNaN(date.getTime()) ? null : date.toLocaleDateString('en-CA');
+  };
+
+  const isClosedTrade = (trade: Trade) => trade.status !== TradeStatus.OPEN && Boolean(trade.exitDate);
+
+  const getTradeDurationMs = (trade: Trade) => {
+      if (!trade.exitDate) return 0;
+      const duration = new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime();
+      return Number.isFinite(duration) && duration > 0 ? duration : 0;
+  };
+
+  const getMaxConsecutiveCount = (values: number[], matcher: (value: number) => boolean) => {
+      let max = 0;
+      let current = 0;
+      values.forEach(value => {
+          if (matcher(value)) {
+              current += 1;
+              max = Math.max(max, current);
+          } else {
+              current = 0;
+          }
+      });
+      return max;
+  };
+
+  const getRiskMetrics = (closedTrades: Trade[]) => {
+      let plannedTotal = 0;
+      let realizedTotal = 0;
+      let riskCount = 0;
+
+      closedTrades.forEach(trade => {
+          const riskAmount = Number(trade.riskAmount) || 0;
+          if (riskAmount <= 0) return;
+          const plannedTarget = typeof trade.profitTarget === 'number' && typeof trade.entryPrice === 'number'
+              ? Math.abs(trade.profitTarget - trade.entryPrice) * (Number(trade.quantity) || 0)
+              : 0;
+          if (plannedTarget > 0) plannedTotal += plannedTarget / riskAmount;
+          realizedTotal += getDisplayPnl(trade) / riskAmount;
+          riskCount += 1;
+      });
+
+      return {
+          avgPlannedR: riskCount > 0 ? plannedTotal / riskCount : 0,
+          avgRealizedR: riskCount > 0 ? realizedTotal / riskCount : 0,
+      };
+  };
+
+  const getDailyRiskRatios = (dailyPnls: number[]) => {
+      if (dailyPnls.length === 0) return { sharpeRatio: 0, sortinoRatio: 0 };
+      const meanDailyPnl = dailyPnls.reduce((acc, value) => acc + value, 0) / dailyPnls.length;
+      const variance = dailyPnls.length > 1
+          ? dailyPnls.reduce((acc, pnl) => acc + Math.pow(pnl - meanDailyPnl, 2), 0) / (dailyPnls.length - 1)
+          : 0;
+      const stdDev = Math.sqrt(variance);
+      const downsidePnls = dailyPnls.filter(pnl => pnl < 0);
+      const downsideDeviation = downsidePnls.length > 0
+          ? Math.sqrt(downsidePnls.reduce((acc, pnl) => acc + Math.pow(pnl, 2), 0) / downsidePnls.length)
+          : 0;
+      return {
+          sharpeRatio: stdDev > 0 ? (meanDailyPnl / stdDev) * Math.sqrt(252) : 0,
+          sortinoRatio: downsideDeviation > 0 ? (meanDailyPnl / downsideDeviation) * Math.sqrt(252) : 0,
+      };
+  };
+
+  const finalizeDayTimeRows = (rows: DayTimeReportRow[]) => rows.map(row => {
+      const allTrades = row.trades;
+      const closedTrades = allTrades.filter(isClosedTrade);
+      const openTrades = allTrades.filter(trade => !isClosedTrade(trade));
+      const wins = closedTrades.filter(trade => getDisplayPnl(trade) > 0);
+      const losses = closedTrades.filter(trade => getDisplayPnl(trade) < 0);
+      const breakevens = closedTrades.filter(trade => getDisplayPnl(trade) === 0);
+      const grossProfit = wins.reduce((acc, trade) => acc + getDisplayPnl(trade), 0);
+      const grossLoss = losses.reduce((acc, trade) => acc + getDisplayPnl(trade), 0);
+      const netPnl = grossProfit + grossLoss;
+      const activeDayCount = row.activeDays.size;
+      const dailyGroups = new Map<string, { pnl: number; count: number; wins: number; losses: number }>();
+
+      allTrades.forEach(trade => {
+          const dateKey = getDayTimeDateKey(trade);
+          if (!dateKey) return;
+          const group = dailyGroups.get(dateKey) || { pnl: 0, count: 0, wins: 0, losses: 0 };
+          if (isClosedTrade(trade)) {
+              const displayPnl = getDisplayPnl(trade);
+              group.pnl += displayPnl;
+              group.count += 1;
+              if (displayPnl > 0) group.wins += 1;
+              if (displayPnl < 0) group.losses += 1;
+          }
+          dailyGroups.set(dateKey, group);
+      });
+
+      const dailyRows = Array.from(dailyGroups.entries())
+          .sort(([a], [b]) => a.localeCompare(b))
+          .map(([, value]) => value);
+      const dailyPnls = dailyRows.map(day => day.pnl);
+      const winningDays = dailyRows.filter(day => day.pnl > 0).length;
+      const losingDays = dailyRows.filter(day => day.pnl < 0).length;
+      const breakevenDays = dailyRows.filter(day => day.count > 0 && day.pnl === 0).length;
+      const losingDayPnls = dailyPnls.filter(pnl => pnl < 0);
+      const dailyWinPctValues = dailyRows.filter(day => day.count > 0).map(day => (day.wins / day.count) * 100);
+      const avgDailyWinPct = dailyWinPctValues.length > 0
+          ? dailyWinPctValues.reduce((acc, value) => acc + value, 0) / dailyWinPctValues.length
+          : 0;
+      const avgWinningDay = winningDays > 0 ? dailyPnls.filter(pnl => pnl > 0).reduce((acc, pnl) => acc + pnl, 0) / winningDays : 0;
+      const avgLosingDay = losingDays > 0 ? losingDayPnls.reduce((acc, pnl) => acc + pnl, 0) / losingDays : 0;
+      const durations = closedTrades.map(getTradeDurationMs).filter(duration => duration > 0);
+      const longTrades = allTrades.filter(trade => trade.direction === Direction.LONG);
+      const shortTrades = allTrades.filter(trade => trade.direction === Direction.SHORT);
+      const closedLongTrades = longTrades.filter(isClosedTrade);
+      const closedShortTrades = shortTrades.filter(isClosedTrade);
+      const longWins = closedLongTrades.filter(trade => getDisplayPnl(trade) > 0);
+      const longLosses = closedLongTrades.filter(trade => getDisplayPnl(trade) < 0);
+      const longBreakevens = closedLongTrades.filter(trade => getDisplayPnl(trade) === 0);
+      const shortWins = closedShortTrades.filter(trade => getDisplayPnl(trade) > 0);
+      const shortLosses = closedShortTrades.filter(trade => getDisplayPnl(trade) < 0);
+      const shortBreakevens = closedShortTrades.filter(trade => getDisplayPnl(trade) === 0);
+      const chronologicalTradePnls = [...closedTrades]
+          .sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime())
+          .map(getDisplayPnl);
+      const riskMetrics = getRiskMetrics(closedTrades);
+      const dailyRiskRatios = getDailyRiskRatios(dailyPnls);
+      const avgWin = wins.length > 0 ? grossProfit / wins.length : 0;
+      const avgLoss = losses.length > 0 ? grossLoss / losses.length : 0;
+
+      return {
+          ...row,
+          count: allTrades.length,
+          tradeCount: allTrades.length,
+          netPnl: Number(netPnl.toFixed(2)),
+          dailyNetPnl: Number(netPnl.toFixed(2)),
+          grossProfit: Number(grossProfit.toFixed(2)),
+          grossLoss: Number(grossLoss.toFixed(2)),
+          volume: Number(row.volume.toFixed(2)),
+          wins: wins.length,
+          losses: losses.length,
+          breakevens: breakevens.length,
+          activeDayCount,
+          loggedDays: activeDayCount,
+          avgDailyVolume: activeDayCount > 0 ? Number((row.volume / activeDayCount).toFixed(2)) : 0,
+          avgDailyNetPnl: activeDayCount > 0 ? Number((netPnl / activeDayCount).toFixed(2)) : 0,
+          avgWin: Number(avgWin.toFixed(2)),
+          avgLoss: Number(avgLoss.toFixed(2)),
+          avgNetTradePnl: closedTrades.length > 0 ? Number((netPnl / closedTrades.length).toFixed(2)) : 0,
+          avgTradeWinLoss: avgWin > 0 && avgLoss < 0 ? Math.abs(avgWin / avgLoss) : 0,
+          avgDailyWinLoss: avgWinningDay > 0 && avgLosingDay < 0 ? Math.abs(avgWinningDay / avgLosingDay) : 0,
+          avgMaxTradeLoss: losses.length > 0 ? Math.min(...losses.map(getDisplayPnl)) : 0,
+          avgMaxTradeProfit: wins.length > 0 ? Math.max(...wins.map(getDisplayPnl)) : 0,
+          largestLosingTrade: losses.length > 0 ? Math.min(...losses.map(getDisplayPnl)) : 0,
+          largestProfitableTrade: wins.length > 0 ? Math.max(...wins.map(getDisplayPnl)) : 0,
+          profitFactor: Math.abs(grossLoss) > 0 ? grossProfit / Math.abs(grossLoss) : grossProfit > 0 ? grossProfit : 0,
+          tradeExpectancy: closedTrades.length > 0 ? Number((netPnl / closedTrades.length).toFixed(2)) : 0,
+          avgDailyNetDrawdown: losingDayPnls.length > 0 ? losingDayPnls.reduce((acc, pnl) => acc + pnl, 0) / losingDayPnls.length : 0,
+          maxDailyNetDrawdown: losingDayPnls.length > 0 ? Math.min(...losingDayPnls) : 0,
+          dailyNetDrawdown: losingDayPnls.length > 0 ? Math.min(...losingDayPnls) : 0,
+          avgPlannedR: riskMetrics.avgPlannedR,
+          avgRealizedR: riskMetrics.avgRealizedR,
+          breakevenDays,
+          breakevenTrades: breakevens.length,
+          losingDays,
+          winningDays,
+          longBreakevenTrades: longBreakevens.length,
+          longLosingTrades: longLosses.length,
+          longOpenTrades: longTrades.filter(trade => !isClosedTrade(trade)).length,
+          longTrades: longTrades.length,
+          longWinningTrades: longWins.length,
+          lossTrades: losses.length,
+          netAccountBalance: accountSize + netPnl,
+          openTrades: openTrades.length,
+          shortBreakevenTrades: shortBreakevens.length,
+          shortLosingTrades: shortLosses.length,
+          shortOpenTrades: shortTrades.filter(trade => !isClosedTrade(trade)).length,
+          shortTrades: shortTrades.length,
+          shortWinningTrades: shortWins.length,
+          winTrades: wins.length,
+          avgDailyWinPct,
+          longWinPct: closedLongTrades.length > 0 ? (longWins.length / closedLongTrades.length) * 100 : 0,
+          maxConsecutiveLosingDays: getMaxConsecutiveCount(dailyPnls, pnl => pnl < 0),
+          maxConsecutiveLosses: getMaxConsecutiveCount(chronologicalTradePnls, pnl => pnl < 0),
+          maxConsecutiveWinningDays: getMaxConsecutiveCount(dailyPnls, pnl => pnl > 0),
+          maxConsecutiveWins: getMaxConsecutiveCount(chronologicalTradePnls, pnl => pnl > 0),
+          sharpeRatio: dailyRiskRatios.sharpeRatio,
+          shortWinPct: closedShortTrades.length > 0 ? (shortWins.length / closedShortTrades.length) * 100 : 0,
+          sortinoRatio: dailyRiskRatios.sortinoRatio,
+          winPct: closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0,
+          winRate: closedTrades.length > 0 ? (wins.length / closedTrades.length) * 100 : 0,
+          avgTradingDaysDuration: activeDayCount > 0 ? 24 * 60 * 60 * 1000 : 0,
+          avgHoldTime: durations.length > 0 ? durations.reduce((acc, duration) => acc + duration, 0) / durations.length : 0,
+          longestTradeDuration: durations.length > 0 ? Math.max(...durations) : 0,
+          maxTradingDaysDuration: activeDayCount > 0 ? activeDayCount * 24 * 60 * 60 * 1000 : 0,
+      };
+  });
 
   const dayTimeReportRows = useMemo(() => {
       if (dayTimeReportView === 'DAYS') {
@@ -1314,24 +1605,85 @@ const Reports: React.FC<ReportsProps> = ({
   }, [trades, language, pnlDisplayMode, dayTimeReportView]);
 
   const getDayTimeMetricValue = (row: DayTimeReportRow, metric: DayTimeMetricId) => {
-      if (metric === 'netPnl') return row.netPnl;
-      if (metric === 'tradeCount') return row.count;
-      if (metric === 'winRate') return row.winRate;
-      if (metric === 'avgDailyVolume') return row.avgDailyVolume;
-      if (metric === 'avgWin') return row.avgWin;
-      return row.avgLoss;
+      return Number(row[metric as keyof DayTimeReportRow]) || 0;
   };
 
-  const dayTimeMetricOptions: Array<{ id: DayTimeMetricId; label: string; color: string; visual: ChartMetricVisual; format: ChartMetricFormat }> = [
-      { id: 'netPnl', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), color: '#ff6468', visual: 'bar', format: 'money' },
-      { id: 'tradeCount', label: language === 'cn' ? '交易次数' : 'Trade count', color: '#3d63dd', visual: 'line', format: 'number' },
-      { id: 'winRate', label: language === 'cn' ? '胜率' : 'Win %', color: '#3d63dd', visual: 'line', format: 'percent' },
-      { id: 'avgDailyVolume', label: language === 'cn' ? '平均成交额' : 'Avg daily volume', color: '#6b55cf', visual: 'bar', format: 'number' },
-      { id: 'avgWin', label: language === 'cn' ? '平均盈利' : 'Avg win', color: '#55c39e', visual: 'line', format: 'money' },
-      { id: 'avgLoss', label: language === 'cn' ? '平均亏损' : 'Avg loss', color: '#ff6468', visual: 'line', format: 'money' },
+  const dayTimeMetricOptions: Array<{ id: DayTimeMetricId; category: 'time' | 'profitability' | 'risk' | 'activity' | 'streaks'; label: string; shortLabel: string; color: string; visual: ChartMetricVisual; format: ChartMetricFormat }> = [
+      { id: 'avgTradingDaysDuration', category: 'time', label: language === 'cn' ? '平均交易日跨度' : 'Average trading days duration', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', color: '#6b55cf', visual: 'area', format: 'duration' },
+      { id: 'avgHoldTime', category: 'time', label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', shortLabel: language === 'cn' ? '平均持仓' : 'Avg hold time', color: '#6b55cf', visual: 'area', format: 'duration' },
+      { id: 'longestTradeDuration', category: 'time', label: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', shortLabel: language === 'cn' ? '最长持仓' : 'Longest trade duration', color: '#6b55cf', visual: 'area', format: 'duration' },
+      { id: 'maxTradingDaysDuration', category: 'time', label: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', color: '#6b55cf', visual: 'area', format: 'duration' },
+      { id: 'avgDailyNetDrawdown', category: 'risk', label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', shortLabel: language === 'cn' ? '平均日回撤' : 'Avg daily drawdown', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgPlannedR', category: 'risk', label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', shortLabel: language === 'cn' ? '计划 R' : 'Planned R', color: '#d89d18', visual: 'line', format: 'number' },
+      { id: 'avgRealizedR', category: 'risk', label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', shortLabel: language === 'cn' ? '实现 R' : 'Realized R', color: '#d89d18', visual: 'line', format: 'number' },
+      { id: 'breakevenDays', category: 'risk', label: language === 'cn' ? '打平天数' : 'Breakeven days', shortLabel: language === 'cn' ? '打平天数' : 'Breakeven days', color: '#8f98a6', visual: 'bar', format: 'number' },
+      { id: 'breakevenTrades', category: 'risk', label: language === 'cn' ? '打平交易数' : 'Breakeven trades', shortLabel: language === 'cn' ? '打平交易' : 'Breakeven trades', color: '#8f98a6', visual: 'bar', format: 'number' },
+      { id: 'losingDays', category: 'risk', label: language === 'cn' ? '亏损天数' : 'Losing days', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', color: '#ff6468', visual: 'bar', format: 'number' },
+      { id: 'maxDailyNetDrawdown', category: 'risk', label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', shortLabel: language === 'cn' ? '最大日回撤' : 'Max daily drawdown', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgDailyNetPnl', category: 'profitability', label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', shortLabel: language === 'cn' ? '平均日净盈亏' : 'Avg daily net P&L', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgDailyWinLoss', category: 'profitability', label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', shortLabel: language === 'cn' ? '日盈亏比' : 'Daily win/loss', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'avgLoss', category: 'profitability', label: language === 'cn' ? '平均亏损' : 'Avg loss', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgMaxTradeLoss', category: 'profitability', label: language === 'cn' ? '平均最大单笔亏损' : 'Avg max trade loss', shortLabel: language === 'cn' ? '最大亏损' : 'Max trade loss', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgMaxTradeProfit', category: 'profitability', label: language === 'cn' ? '平均最大单笔盈利' : 'Avg max trade profit', shortLabel: language === 'cn' ? '最大盈利' : 'Max trade profit', color: '#55c39e', visual: 'area', format: 'money' },
+      { id: 'avgNetTradePnl', category: 'profitability', label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', shortLabel: language === 'cn' ? '单笔净盈亏' : 'Avg trade P&L', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgTradeWinLoss', category: 'profitability', label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', shortLabel: language === 'cn' ? '单笔盈亏比' : 'Trade win/loss', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'avgWin', category: 'profitability', label: language === 'cn' ? '平均盈利' : 'Avg win', shortLabel: language === 'cn' ? '平均盈利' : 'Avg win', color: '#55c39e', visual: 'area', format: 'money' },
+      { id: 'largestLosingTrade', category: 'profitability', label: language === 'cn' ? '最大亏损交易' : 'Largest losing trade', shortLabel: language === 'cn' ? '最大亏损' : 'Largest loss', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'largestProfitableTrade', category: 'profitability', label: language === 'cn' ? '最大盈利交易' : 'Largest profitable trade', shortLabel: language === 'cn' ? '最大盈利' : 'Largest win', color: '#55c39e', visual: 'area', format: 'money' },
+      { id: 'netPnl', category: 'profitability', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), shortLabel: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), color: '#ff6468', visual: 'bar', format: 'money' },
+      { id: 'profitFactor', category: 'profitability', label: language === 'cn' ? '盈利因子' : 'Profit factor', shortLabel: language === 'cn' ? '盈利因子' : 'Profit factor', color: '#55c39e', visual: 'area', format: 'number' },
+      { id: 'tradeExpectancy', category: 'profitability', label: language === 'cn' ? '交易期望值' : 'Trade expectancy', shortLabel: language === 'cn' ? '期望值' : 'Expectancy', color: '#ff6468', visual: 'area', format: 'money' },
+      { id: 'avgDailyVolume', category: 'activity', label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', shortLabel: language === 'cn' ? '平均成交额' : 'Avg daily volume', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'dailyNetDrawdown', category: 'activity', label: language === 'cn' ? '每日净回撤' : 'Daily net drawdown', shortLabel: language === 'cn' ? '每日回撤' : 'Daily drawdown', color: '#ff6468', visual: 'bar', format: 'money' },
+      { id: 'loggedDays', category: 'activity', label: language === 'cn' ? '记录天数' : 'Logged days', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', color: '#6b55cf', visual: 'bar', format: 'number' },
+      { id: 'longBreakevenTrades', category: 'activity', label: language === 'cn' ? '多头打平交易数' : 'Longs # of breakeven trades', shortLabel: language === 'cn' ? '多头打平' : 'Long breakevens', color: '#8f98a6', visual: 'bar', format: 'number' },
+      { id: 'longLosingTrades', category: 'activity', label: language === 'cn' ? '多头亏损交易数' : 'Longs # of losing trades', shortLabel: language === 'cn' ? '多头亏损' : 'Long losses', color: '#ff6468', visual: 'bar', format: 'number' },
+      { id: 'longOpenTrades', category: 'activity', label: language === 'cn' ? '多头持仓交易数' : 'Longs # of open trades', shortLabel: language === 'cn' ? '多头持仓' : 'Long open', color: '#d89d18', visual: 'bar', format: 'number' },
+      { id: 'longTrades', category: 'activity', label: language === 'cn' ? '多头交易数' : 'Longs # of trades', shortLabel: language === 'cn' ? '多头交易' : 'Long trades', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'longWinningTrades', category: 'activity', label: language === 'cn' ? '多头盈利交易数' : 'Longs # of winning trades', shortLabel: language === 'cn' ? '多头盈利' : 'Long wins', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'lossTrades', category: 'activity', label: language === 'cn' ? '亏损交易数' : 'Loss # of trades', shortLabel: language === 'cn' ? '亏损交易' : 'Loss trades', color: '#ff6468', visual: 'bar', format: 'number' },
+      { id: 'netAccountBalance', category: 'activity', label: language === 'cn' ? '账户净值' : 'Net account balance', shortLabel: language === 'cn' ? '账户净值' : 'Account balance', color: '#6b55cf', visual: 'area', format: 'money' },
+      { id: 'openTrades', category: 'activity', label: language === 'cn' ? '未平仓交易数' : 'Open trades', shortLabel: language === 'cn' ? '未平仓' : 'Open trades', color: '#d89d18', visual: 'bar', format: 'number' },
+      { id: 'shortBreakevenTrades', category: 'activity', label: language === 'cn' ? '空头打平交易数' : 'Shorts # of breakeven trades', shortLabel: language === 'cn' ? '空头打平' : 'Short breakevens', color: '#8f98a6', visual: 'bar', format: 'number' },
+      { id: 'shortLosingTrades', category: 'activity', label: language === 'cn' ? '空头亏损交易数' : 'Shorts # of losing trades', shortLabel: language === 'cn' ? '空头亏损' : 'Short losses', color: '#ff6468', visual: 'bar', format: 'number' },
+      { id: 'shortOpenTrades', category: 'activity', label: language === 'cn' ? '空头持仓交易数' : 'Shorts # of open trades', shortLabel: language === 'cn' ? '空头持仓' : 'Short open', color: '#d89d18', visual: 'bar', format: 'number' },
+      { id: 'shortTrades', category: 'activity', label: language === 'cn' ? '空头交易数' : 'Shorts # of trades', shortLabel: language === 'cn' ? '空头交易' : 'Short trades', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'shortWinningTrades', category: 'activity', label: language === 'cn' ? '空头盈利交易数' : 'Shorts # of winning trades', shortLabel: language === 'cn' ? '空头盈利' : 'Short wins', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'tradeCount', category: 'activity', label: language === 'cn' ? '交易总数' : 'Trade count', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', color: '#3d63dd', visual: 'line', format: 'number' },
+      { id: 'volume', category: 'activity', label: language === 'cn' ? '成交额' : 'Volume', shortLabel: language === 'cn' ? '成交额' : 'Volume', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'winTrades', category: 'activity', label: language === 'cn' ? '盈利交易数' : 'Win # of trades', shortLabel: language === 'cn' ? '盈利交易' : 'Win trades', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'avgDailyWinPct', category: 'streaks', label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', shortLabel: language === 'cn' ? '平均日胜率' : 'Avg daily win %', color: '#55c39e', visual: 'bar', format: 'percent' },
+      { id: 'longWinPct', category: 'streaks', label: language === 'cn' ? '多头胜率' : 'Longs win %', shortLabel: language === 'cn' ? '多头胜率' : 'Long win %', color: '#55c39e', visual: 'line', format: 'percent' },
+      { id: 'maxConsecutiveLosingDays', category: 'streaks', label: language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', shortLabel: language === 'cn' ? '连续亏损天数' : 'Losing day streak', color: '#ff6468', visual: 'bar', format: 'number' },
+      { id: 'maxConsecutiveLosses', category: 'streaks', label: language === 'cn' ? '最大连续亏损交易' : 'Max consecutive losses', shortLabel: language === 'cn' ? '连续亏损交易' : 'Loss streak', color: '#ff6468', visual: 'bar', format: 'number' },
+      { id: 'maxConsecutiveWinningDays', category: 'streaks', label: language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', shortLabel: language === 'cn' ? '连续盈利天数' : 'Winning day streak', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'maxConsecutiveWins', category: 'streaks', label: language === 'cn' ? '最大连续盈利交易' : 'Max consecutive wins', shortLabel: language === 'cn' ? '连续盈利交易' : 'Win streak', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'sharpeRatio', category: 'streaks', label: language === 'cn' ? '夏普比率' : 'Sharpe ratio', shortLabel: language === 'cn' ? '夏普比率' : 'Sharpe ratio', color: '#6b55cf', visual: 'line', format: 'number' },
+      { id: 'shortWinPct', category: 'streaks', label: language === 'cn' ? '空头胜率' : 'Shorts win %', shortLabel: language === 'cn' ? '空头胜率' : 'Short win %', color: '#55c39e', visual: 'line', format: 'percent' },
+      { id: 'sortinoRatio', category: 'streaks', label: language === 'cn' ? '索提诺比率' : 'Sortino ratio', shortLabel: language === 'cn' ? '索提诺' : 'Sortino ratio', color: '#6b55cf', visual: 'line', format: 'number' },
+      { id: 'winPct', category: 'streaks', label: language === 'cn' ? '胜率' : 'Win %', shortLabel: language === 'cn' ? '胜率' : 'Win %', color: '#3d63dd', visual: 'line', format: 'percent' },
+      { id: 'winningDays', category: 'streaks', label: language === 'cn' ? '盈利天数' : 'Winning days', shortLabel: language === 'cn' ? '盈利天数' : 'Winning days', color: '#55c39e', visual: 'bar', format: 'number' },
   ];
 
   const getDayTimeMetricOption = (id: DayTimeMetricId) => dayTimeMetricOptions.find(option => option.id === id) || dayTimeMetricOptions[0];
+  const dayTimeMetricCategoryOrder: Array<'time' | 'risk' | 'profitability' | 'activity' | 'streaks'> = ['time', 'risk', 'profitability', 'activity', 'streaks'];
+  const dayTimeMetricCategoryLabels: Record<'time' | 'profitability' | 'risk' | 'activity' | 'streaks', string> = {
+      time: language === 'cn' ? '时间分析' : 'Time Analysis',
+      profitability: language === 'cn' ? '盈利能力' : 'Profitability',
+      risk: language === 'cn' ? '风险与回撤' : 'Risk & Drawdown',
+      activity: language === 'cn' ? '交易活动与成交量' : 'Trading Activity & Volume',
+      streaks: language === 'cn' ? '连续性与稳定性' : 'Streaks & Consistency',
+  };
+  const normalizedDayTimeMetricPickerSearch = dayTimeMetricPickerSearch.trim().toLowerCase();
+  const visibleDayTimeMetricCategories = dayTimeMetricCategoryOrder
+      .map(category => ({
+          id: category,
+          label: dayTimeMetricCategoryLabels[category],
+          metrics: dayTimeMetricOptions
+              .filter(option => option.category === category)
+              .filter(option => !normalizedDayTimeMetricPickerSearch || option.label.toLowerCase().includes(normalizedDayTimeMetricPickerSearch)),
+      }))
+      .filter(category => category.metrics.length > 0);
 
   const isPnlTrendingDown = useMemo(() => {
       if (performancePnlDisplayData.length < 2) return false;
@@ -2814,39 +3166,81 @@ const Reports: React.FC<ReportsProps> = ({
   }) => {
       if (openDayTimeMetricPicker?.side !== side || openDayTimeMetricPicker.slot !== slot) return null;
 
-      const availableMetrics = getDayTimeAvailableMetrics(selectedMetricId, excludedMetricIds);
-      const expandedHeight = availableMetrics.length * 38 + 8;
+      const availableMetricIds = new Set(getDayTimeAvailableMetrics(selectedMetricId, excludedMetricIds).map(option => option.id));
+      const visibleCategories = visibleDayTimeMetricCategories
+          .map(category => ({
+              ...category,
+              metrics: category.metrics.filter(option => availableMetricIds.has(option.id)),
+          }))
+          .filter(category => category.metrics.length > 0);
+
+      const handleSelectMetric = (metricId: DayTimeMetricId) => {
+          setDayTimeMetricState(side, slot, metricId);
+          setOpenDayTimeMetricPicker(null);
+          setDayTimeMetricPickerSearch('');
+      };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] w-[min(300px,calc(100vw-48px))] origin-top-left overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white p-[8px] shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
-              <div
-                  className="report-metric-category-panel is-open"
-                  style={{ maxHeight: `${expandedHeight}px` }}
-              >
-                  <div className="report-metric-category-panel-content space-y-[1px]">
-                      {availableMetrics.map((option, index) => {
-                          const selected = option.id === selectedMetricId;
-                          return (
-                              <button
-                                  key={option.id}
-                                  type="button"
-                                  onClick={() => {
-                                      setDayTimeMetricState(side, slot, option.id);
-                                      setOpenDayTimeMetricPicker(null);
-                                  }}
-                                  className={`report-metric-option flex w-full items-center gap-[8px] rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
-                                      selected
-                                          ? 'bg-[#ebe7f8] text-[#2f255f]'
-                                          : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
-                                  }`}
-                                  style={{ '--option-index': index } as React.CSSProperties}
-                              >
-                                  <span className="h-[9px] w-[9px] shrink-0 rounded-full" style={{ backgroundColor: option.color }} />
-                                  <span className="truncate">{option.label}</span>
-                              </button>
-                          );
-                      })}
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(292px,24vw,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+              <div className="p-[12px] pb-[8px]">
+                  <div className="relative">
+                      <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
+                      <input
+                          value={dayTimeMetricPickerSearch}
+                          onChange={(event) => setDayTimeMetricPickerSearch(event.target.value)}
+                          placeholder={language === 'cn' ? '搜索' : 'Search'}
+                          className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      />
                   </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-[12px] pb-[10px]">
+                  {visibleCategories.map(category => {
+                      const isExpanded = Boolean(normalizedDayTimeMetricPickerSearch) || expandedDayTimeMetricCategory === category.id;
+                      const expandedHeight = category.metrics.length * 38 + 10;
+                      return (
+                          <div key={category.id}>
+                              <button
+                                  type="button"
+                                  onClick={() => setExpandedDayTimeMetricCategory(isExpanded && !normalizedDayTimeMetricPickerSearch ? null : category.id)}
+                                  className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200'}`}
+                              >
+                                  {category.label}
+                                  <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
+                              </button>
+                              <div
+                                  className={`report-metric-category-panel ${isExpanded ? 'is-open' : ''}`}
+                                  style={{ maxHeight: isExpanded ? `${expandedHeight}px` : '0px' }}
+                              >
+                                  <div className="report-metric-category-panel-content space-y-[1px]">
+                                      {category.metrics.map((option, index) => {
+                                          const selected = option.id === selectedMetricId;
+                                          return (
+                                              <button
+                                                  key={option.id}
+                                                  type="button"
+                                                  onClick={() => handleSelectMetric(option.id)}
+                                                  className={`report-metric-option flex w-full items-center gap-[8px] rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
+                                                      selected
+                                                          ? 'bg-[#ebe7f8] text-[#2f255f]'
+                                                          : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                  }`}
+                                                  style={{ '--option-index': index } as React.CSSProperties}
+                                              >
+                                                  <span className="h-[9px] w-[9px] shrink-0 rounded-full" style={{ backgroundColor: option.color }} />
+                                                  <span className="truncate">{option.label}</span>
+                                              </button>
+                                          );
+                                      })}
+                                  </div>
+                              </div>
+                          </div>
+                      );
+                  })}
+                  {visibleCategories.length === 0 && (
+                      <div className="px-[4px] py-[18px] text-center text-[13px] font-medium text-[#7b828c]">
+                          {language === 'cn' ? '没有匹配指标' : 'No matching metrics'}
+                      </div>
+                  )}
               </div>
           </div>
       );
@@ -2875,7 +3269,11 @@ const Reports: React.FC<ReportsProps> = ({
                   type="button"
                   onClick={(event) => {
                       triggerMetricSweep(event);
-                      setOpenDayTimeMetricPicker(current => current?.side === side && current.slot === slot ? null : { side, slot });
+                      setOpenDayTimeMetricPicker(current => {
+                          const next = current?.side === side && current.slot === slot ? null : { side, slot };
+                          if (!next) setDayTimeMetricPickerSearch('');
+                          return next;
+                      });
                   }}
                   className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-[8px] overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
               >
@@ -2918,7 +3316,11 @@ const Reports: React.FC<ReportsProps> = ({
           <div className="relative inline-flex shrink-0" data-day-time-metric-picker-root>
               <button
                   type="button"
-                  onClick={() => setOpenDayTimeMetricPicker(current => current?.side === side && current.slot === nextSlot ? null : { side, slot: nextSlot })}
+                  onClick={() => setOpenDayTimeMetricPicker(current => {
+                      const next = current?.side === side && current.slot === nextSlot ? null : { side, slot: nextSlot };
+                      if (!next) setDayTimeMetricPickerSearch('');
+                      return next;
+                  })}
                   className="h-[32px] whitespace-nowrap rounded-[7px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:bg-[#ebe7f8] hover:text-[#4b35b8]"
               >
                   + {language === 'cn' ? '添加指标' : 'Add metric'}
