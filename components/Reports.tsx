@@ -1166,8 +1166,25 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       if (!Number.isFinite(value)) return '--';
       if (format === 'money') return formatMoney(value, compact);
       if (format === 'percent') return `${value.toFixed(value >= 10 ? 1 : 2)}%`;
-      if (format === 'duration') return formatDuration(value);
+      if (format === 'duration') return compact ? formatCompactDuration(value) : formatDuration(value);
       return compact && Math.abs(value) >= 1000 ? `${(value / 1000).toFixed(Math.abs(value) >= 10000 ? 0 : 1)}k` : Number(value.toFixed(value < 10 && value !== 0 ? 2 : 0)).toLocaleString();
+  };
+
+  const formatCompactDuration = (ms: number) => {
+      if (isNaN(ms) || ms === 0) return 'N/A';
+      const minutes = Math.floor(ms / 60000);
+      const hours = Math.floor(minutes / 60);
+      const days = Math.floor(hours / 24);
+
+      if (language === 'cn') {
+          if (days > 0) return `${days}天${hours % 24}时`;
+          if (hours > 0) return `${hours}时${minutes % 60}分`;
+          return `${minutes}分`;
+      }
+
+      if (days > 0) return `${days}d${hours % 24}h`;
+      if (hours > 0) return `${hours}h${minutes % 60}m`;
+      return `${minutes}m`;
   };
 
   const buildChartMetricData = (metricId: SummaryMetricId) => {
@@ -1622,6 +1639,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const commonMargin = { top: 8, right: 10, left: 5, bottom: 42 };
       const primaryMetric = metrics[0];
       const secondaryMetric = metrics[1];
+      const primaryYAxisWidth = primaryMetric.config.format === 'duration' ? 70 : 58;
+      const secondaryYAxisWidth = secondaryMetric?.config.format === 'duration' ? 62 : 46;
 
       const xAxis = (
           <XAxis
@@ -1733,7 +1752,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               tick={{ fontSize: 12, fill: primaryMetric.color, fontWeight: 400 }}
                               axisLine={false}
                               tickLine={false}
-                              width={58}
+                              width={primaryYAxisWidth}
                               tickFormatter={(value: number) => formatChartMetricValue(value, primaryMetric.config.format, true)}
                           />
                           {secondaryMetric && (
@@ -1743,7 +1762,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   tick={{ fontSize: 12, fill: secondaryMetric.color, fontWeight: 400 }}
                                   axisLine={false}
                                   tickLine={false}
-                                  width={46}
+                                  width={secondaryYAxisWidth}
                                   tickFormatter={(value: number) => formatChartMetricValue(value, secondaryMetric.config.format, true)}
                               />
                           )}
@@ -2053,7 +2072,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const GenericChartTooltip = ({ active, payload, label, config, color: overrideColor, metrics }: any) => {
+  function GenericChartTooltip({ active, payload, label, config, color: overrideColor, metrics }: any) {
       if (!active || !payload?.length) return null;
 
       const tooltipMetrics = metrics || (config ? [{
@@ -2097,7 +2116,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               </div>
           </div>
       );
-  };
+  }
 
   const ChartMetricPicker = ({ side, slot, selectedMetricId, excludedMetricIds = [] }: { side: ChartSide; slot: ChartMetricSlot; selectedMetricId: SummaryMetricId | null; excludedMetricIds?: SummaryMetricId[] }) => {
       if (openChartMetricPicker?.side !== side || openChartMetricPicker.slot !== slot) return null;
