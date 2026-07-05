@@ -5337,11 +5337,7 @@ const Reports: React.FC<ReportsProps> = ({
         </div>
         
         {/* Navigation Bar */}
-        <div
-            className={`relative z-30 -mx-4 flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 transition-[padding] duration-200 dark:border-slate-800 dark:bg-slate-900/60 md:-mx-8 md:px-8 ${
-                isReportMenuOpen ? 'pb-[244px]' : 'pb-0'
-            }`}
-        >
+        <div className="relative z-30 -mx-4 flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 dark:border-slate-800 dark:bg-slate-900/60 md:-mx-8 md:px-8">
             <div className="flex min-h-[56px] max-w-full flex-wrap items-center gap-x-[27px] gap-y-0 pr-3">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
@@ -5382,7 +5378,7 @@ const Reports: React.FC<ReportsProps> = ({
                             </button>
                             {isReportMenuTab && (
                                 <div
-                                    className={`absolute left-[-2px] top-[40px] z-40 w-[180px] origin-top-left overflow-hidden rounded-[10px] border border-[#dedfe4] bg-white py-[7px] shadow-[0_1px_2px_rgba(20,24,36,0.08),0_8px_18px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                    className={`absolute left-[-2px] top-[calc(100%-6px)] z-50 w-[180px] origin-top-left overflow-hidden rounded-[10px] border border-[#dedfe4] bg-white py-[7px] shadow-[0_1px_2px_rgba(20,24,36,0.08),0_8px_18px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
                                         isReportMenuOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-1 scale-[0.98] opacity-0'
                                     }`}
                                     role="menu"
