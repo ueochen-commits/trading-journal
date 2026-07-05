@@ -1933,6 +1933,15 @@ const Reports: React.FC<ReportsProps> = ({
       );
   };
 
+  const OverviewInfoBadge = () => (
+      <span
+          className="inline-flex h-[13px] w-[13px] shrink-0 items-center justify-center rounded-full bg-[#6b55cf] text-[9px] font-black leading-none text-white"
+          aria-hidden="true"
+      >
+          !
+      </span>
+  );
+
   const chartStyleColors = ['#3d63dd', '#6b55cf', '#f59f00', '#55c39e', '#ff6468'];
   const chartVisualOptions: Array<{ id: ChartMetricVisual; label: string }> = [
       { id: 'line', label: language === 'cn' ? '线型图' : 'Line' },
@@ -4211,7 +4220,7 @@ const Reports: React.FC<ReportsProps> = ({
                         <h3 className="text-[15px] font-bold uppercase leading-none text-[#20232a] dark:text-slate-100">
                             {language === 'cn' ? '你的统计' : 'Your stats'}
                         </h3>
-                        <Info className="h-[13px] w-[13px] fill-[#6b55cf] text-[#6b55cf]" />
+                        <OverviewInfoBadge />
                     </div>
                     <div className="mt-[7px] text-[13px] font-bold uppercase leading-none text-[#7a818b]">
                         {language === 'cn' ? '（全部日期）' : '(All dates)'}
@@ -4314,7 +4323,7 @@ const Reports: React.FC<ReportsProps> = ({
                             </h3>
                             <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
                         </div>
-                        <Info className="h-[13px] w-[13px] fill-[#6b55cf] text-[#6b55cf]" />
+                        <OverviewInfoBadge />
                     </div>
                     <div className="h-[330px] px-[18px] pb-[22px] pt-[22px]">
                         <ResponsiveContainer width="100%" height="100%">
