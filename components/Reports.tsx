@@ -1204,39 +1204,58 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return [`${minutes}m`];
   };
 
-  const DurationYAxisTick = ({
+  const ChartYAxisTick = ({
       x = 0,
       y = 0,
       payload,
-      fill = '#64748b',
+      format,
+      colors,
       orientation = 'left',
   }: {
       x?: number;
       y?: number;
       payload?: { value?: number };
-      fill?: string;
+      format: ChartMetricFormat;
+      colors: string[];
       orientation?: 'left' | 'right';
   }) => {
-      const lines = getCompactDurationLabelLines(Number(payload?.value ?? 0));
+      const value = Number(payload?.value ?? 0);
+      const lines = format === 'duration'
+          ? getCompactDurationLabelLines(value)
+          : [formatChartMetricValue(value, format, true)];
       const textAnchor = orientation === 'right' ? 'start' : 'end';
       const firstLineOffset = lines.length > 1 ? -3 : 4;
+      const dotY = y;
+      const dotStartX = orientation === 'right' ? x - 10 : x + 8;
+      const dotDirection = orientation === 'right' ? -1 : 1;
 
       return (
-          <text
-              x={x}
-              y={y}
-              textAnchor={textAnchor}
-              fill={fill}
-              fontSize={12}
-              fontWeight={400}
-              dominantBaseline="middle"
-          >
-              {lines.map((line, index) => (
-                  <tspan key={`${line}-${index}`} x={x} dy={index === 0 ? firstLineOffset : 13}>
-                      {line}
-                  </tspan>
+          <g>
+              <text
+                  x={x}
+                  y={y}
+                  textAnchor={textAnchor}
+                  fill="#68717d"
+                  fontSize={12}
+                  fontWeight={400}
+                  dominantBaseline="middle"
+              >
+                  {lines.map((line, index) => (
+                      <tspan key={`${line}-${index}`} x={x} dy={index === 0 ? firstLineOffset : 13}>
+                          {line}
+                      </tspan>
+                  ))}
+              </text>
+              {colors.map((color, index) => (
+                  <circle
+                      key={`${color}-${index}`}
+                      cx={dotStartX + index * 7 * dotDirection}
+                      cy={dotY}
+                      r={2.4}
+                      fill={color}
+                  />
               ))}
-          </text>
+          </g>
       );
   };
 
@@ -1395,16 +1414,33 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       ...(rightSecondaryChartConfig && rightSecondaryChartVisual ? [{ slot: 'secondary' as const, config: rightSecondaryChartConfig, visual: rightSecondaryChartVisual, color: rightSecondaryChartColor }] : []),
       ...(rightTertiaryChartConfig && rightTertiaryChartVisual ? [{ slot: 'tertiary' as const, config: rightTertiaryChartConfig, visual: rightTertiaryChartVisual, color: rightTertiaryChartColor }] : []),
   ], [rightChartConfig, rightChartVisual, rightChartColor, rightSecondaryChartConfig, rightSecondaryChartVisual, rightSecondaryChartColor, rightTertiaryChartConfig, rightTertiaryChartVisual, rightTertiaryChartColor]);
-  const leftChartRenderMetrics = useMemo(() => leftChartStyleMetrics.map((metric, index) => ({
-      ...metric,
-      dataKey: index === 0 ? 'primaryValue' as const : index === 1 ? 'secondaryValue' as const : 'tertiaryValue' as const,
-      yAxisId: index === 0 ? 'left' as const : 'right' as const,
-  })), [leftChartStyleMetrics]);
-  const rightChartRenderMetrics = useMemo(() => rightChartStyleMetrics.map((metric, index) => ({
-      ...metric,
-      dataKey: index === 0 ? 'primaryValue' as const : index === 1 ? 'secondaryValue' as const : 'tertiaryValue' as const,
-      yAxisId: index === 0 ? 'left' as const : 'right' as const,
-  })), [rightChartStyleMetrics]);
+  const assignChartAxes = (metrics: typeof leftChartStyleMetrics) => {
+      const axisByFormat = new Map<ChartMetricFormat, string>();
+      let leftAxisCount = 0;
+      let rightAxisCount = 0;
+
+      return metrics.map((metric, index) => {
+          const format = metric.config.format;
+          const existingAxisId = axisByFormat.get(format);
+          let axisId = existingAxisId;
+
+          if (!axisId) {
+              const orientation = index === 0 || leftAxisCount <= rightAxisCount ? 'left' : 'right';
+              const axisIndex = orientation === 'left' ? leftAxisCount++ : rightAxisCount++;
+              axisId = `${orientation}-${format}-${axisIndex}`;
+              axisByFormat.set(format, axisId);
+          }
+
+          return {
+              ...metric,
+              dataKey: index === 0 ? 'primaryValue' as const : index === 1 ? 'secondaryValue' as const : 'tertiaryValue' as const,
+              yAxisId: axisId,
+          };
+      });
+  };
+
+  const leftChartRenderMetrics = useMemo(() => assignChartAxes(leftChartStyleMetrics), [leftChartStyleMetrics]);
+  const rightChartRenderMetrics = useMemo(() => assignChartAxes(rightChartStyleMetrics), [rightChartStyleMetrics]);
   const chartAnimationSignature = useMemo(() => {
       const getChartDataSignature = (data: typeof leftChartData) => data
           .map(row => `${row.date}:${row.primaryValue ?? ''}:${row.secondaryValue ?? ''}:${row.tertiaryValue ?? ''}`)
@@ -1675,16 +1711,35 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           visual: ChartMetricVisual;
           color: string;
           dataKey: 'primaryValue' | 'secondaryValue' | 'tertiaryValue';
-          yAxisId: 'left' | 'right';
+          yAxisId: string;
       }>;
       animate: boolean;
   }) => {
       const primaryMetric = metrics[0];
-      const secondaryMetric = metrics[1];
       const hasDurationAxis = metrics.some(metric => metric.config.format === 'duration');
-      const commonMargin = { top: hasDurationAxis ? 18 : 8, right: secondaryMetric?.config.format === 'duration' ? 18 : 10, left: primaryMetric.config.format === 'duration' ? 12 : 5, bottom: 42 };
-      const primaryYAxisWidth = primaryMetric.config.format === 'duration' ? 82 : 58;
-      const secondaryYAxisWidth = secondaryMetric?.config.format === 'duration' ? 76 : 46;
+      const axisGroups = Array.from(metrics.reduce((groups, metric) => {
+          const current = groups.get(metric.yAxisId) || {
+              id: metric.yAxisId,
+              format: metric.config.format,
+              orientation: metric.yAxisId.startsWith('right') ? 'right' as const : 'left' as const,
+              colors: [] as string[],
+          };
+          if (!current.colors.includes(metric.color)) {
+              current.colors.push(metric.color);
+          }
+          groups.set(metric.yAxisId, current);
+          return groups;
+      }, new Map<string, { id: string; format: ChartMetricFormat; orientation: 'left' | 'right'; colors: string[] }>()).values());
+      const leftAxisGroups = axisGroups.filter(axis => axis.orientation === 'left');
+      const rightAxisGroups = axisGroups.filter(axis => axis.orientation === 'right');
+      const getAxisWidth = (format: ChartMetricFormat) => format === 'duration' ? 88 : format === 'money' ? 68 : format === 'percent' ? 52 : 48;
+      const getAxisPadding = (axisCount: number) => Math.max(0, axisCount - 1) * 10;
+      const commonMargin = {
+          top: hasDurationAxis ? 18 : 8,
+          right: 10 + getAxisPadding(rightAxisGroups.length),
+          left: 5 + getAxisPadding(leftAxisGroups.length),
+          bottom: 42,
+      };
 
       const xAxis = (
           <XAxis
@@ -1791,33 +1846,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           </defs>
                           <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
                           {xAxis}
-                          <YAxis
-                              yAxisId="left"
-                              axisLine={false}
-                              tickLine={false}
-                              width={primaryYAxisWidth}
-                              tickMargin={primaryMetric.config.format === 'duration' ? 10 : 5}
-                              tick={primaryMetric.config.format === 'duration'
-                                  ? <DurationYAxisTick fill={primaryMetric.color} orientation="left" />
-                                  : { fontSize: 12, fill: primaryMetric.color, fontWeight: 400 }
-                              }
-                              tickFormatter={primaryMetric.config.format === 'duration' ? undefined : (value: number) => formatChartMetricValue(value, primaryMetric.config.format, true)}
-                          />
-                          {secondaryMetric && (
+                          {axisGroups.map(axis => (
                               <YAxis
-                                  yAxisId="right"
-                                  orientation="right"
+                                  key={axis.id}
+                                  yAxisId={axis.id}
+                                  orientation={axis.orientation}
                                   axisLine={false}
                                   tickLine={false}
-                                  width={secondaryYAxisWidth}
-                                  tickMargin={secondaryMetric.config.format === 'duration' ? 10 : 5}
-                                  tick={secondaryMetric.config.format === 'duration'
-                                      ? <DurationYAxisTick fill={secondaryMetric.color} orientation="right" />
-                                      : { fontSize: 12, fill: secondaryMetric.color, fontWeight: 400 }
-                                  }
-                                  tickFormatter={secondaryMetric.config.format === 'duration' ? undefined : (value: number) => formatChartMetricValue(value, secondaryMetric.config.format, true)}
+                                  width={getAxisWidth(axis.format)}
+                                  tickMargin={axis.format === 'duration' ? 10 : 7}
+                                  tick={<ChartYAxisTick format={axis.format} colors={axis.colors} orientation={axis.orientation} />}
+                                  allowDataOverflow={false}
                               />
-                          )}
+                          ))}
                           <Tooltip
                               cursor={{ stroke: primaryMetric.color, strokeWidth: 1, strokeDasharray: '3 3' }}
                               content={<GenericChartTooltip metrics={metrics} />}
