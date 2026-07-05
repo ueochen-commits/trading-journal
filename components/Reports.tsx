@@ -904,12 +904,36 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   }, [trades, dailyData]);
 
   const performanceDailyData = useMemo(() => {
-      const grouped: Record<string, { pnl: number; count: number; wins: number; losses: number; winPnl: number; lossPnl: number; volume: number }> = {};
+      const grouped: Record<string, {
+          pnl: number;
+          count: number;
+          wins: number;
+          losses: number;
+          winPnl: number;
+          lossPnl: number;
+          volume: number;
+          closedTradeCount: number;
+          holdDurationTotal: number;
+          longestTradeDuration: number;
+      }> = {};
 
       trades.forEach(t => {
           if (!t.entryDate) return;
           const date = new Date(t.entryDate).toLocaleDateString('en-CA');
-          if (!grouped[date]) grouped[date] = { pnl: 0, count: 0, wins: 0, losses: 0, winPnl: 0, lossPnl: 0, volume: 0 };
+          if (!grouped[date]) {
+              grouped[date] = {
+                  pnl: 0,
+                  count: 0,
+                  wins: 0,
+                  losses: 0,
+                  winPnl: 0,
+                  lossPnl: 0,
+                  volume: 0,
+                  closedTradeCount: 0,
+                  holdDurationTotal: 0,
+                  longestTradeDuration: 0,
+              };
+          }
 
           const net = t.pnl - t.fees;
           grouped[date].pnl += net;
@@ -923,9 +947,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               grouped[date].losses += 1;
               grouped[date].lossPnl += net;
           }
+
+          if (t.exitDate && t.status !== TradeStatus.OPEN) {
+              const duration = new Date(t.exitDate).getTime() - new Date(t.entryDate).getTime();
+              if (Number.isFinite(duration) && duration > 0) {
+                  grouped[date].closedTradeCount += 1;
+                  grouped[date].holdDurationTotal += duration;
+                  grouped[date].longestTradeDuration = Math.max(grouped[date].longestTradeDuration, duration);
+              }
+          }
       });
 
       let cumulativePnl = 0;
+      const dayMs = 24 * 60 * 60 * 1000;
       return Object.entries(grouped)
           .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
           .map(([date, value]) => {
@@ -942,10 +976,17 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   count: value.count,
                   wins: value.wins,
                   losses: value.losses,
+                  winPnl: value.winPnl,
+                  lossPnl: value.lossPnl,
                   winRate: value.count > 0 ? (value.wins / value.count) * 100 : 0,
                   avgDailyWinLoss: Number(avgDailyWinLoss.toFixed(2)),
                   hasAvgDailyWinLoss,
                   volume: value.volume,
+                  closedTradeCount: value.closedTradeCount,
+                  holdDurationTotal: value.holdDurationTotal,
+                  longestTradeDuration: value.longestTradeDuration,
+                  loggedDayCount: 1,
+                  periodDurationMs: dayMs,
               };
           });
   }, [trades, language]);
@@ -1006,19 +1047,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       getDailyValue: (day: typeof performanceDailyData[number]) => number;
       includeDay?: (day: typeof performanceDailyData[number]) => boolean;
   }>> = {
-      avgTradingDaysDuration: { category: 'time', label: language === 'cn' ? '平均交易日跨度 - 累计' : 'Average trading days duration - cumulative', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: () => 24 * 60 * 60 * 1000 },
-      avgHoldTime: { category: 'time', label: language === 'cn' ? '平均持仓时间 - 累计' : 'Avg hold time - cumulative', shortLabel: language === 'cn' ? '平均持仓时间' : 'Avg hold time', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => {
-          const dayTrades = trades.filter(trade => new Date(trade.entryDate).toLocaleDateString('en-CA') === day.date && trade.exitDate && trade.status !== TradeStatus.OPEN);
-          return dayTrades.length > 0 ? dayTrades.reduce((acc, trade) => acc + (new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime()), 0) / dayTrades.length : 0;
-      }},
-      longestTradeDuration: { category: 'time', label: language === 'cn' ? '最长持仓时间 - 累计' : 'Longest trade duration - cumulative', shortLabel: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => {
-          const durations = trades
-              .filter(trade => new Date(trade.entryDate).toLocaleDateString('en-CA') === day.date && trade.exitDate && trade.status !== TradeStatus.OPEN)
-              .map(trade => new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime())
-              .filter(duration => duration > 0);
-          return durations.length > 0 ? Math.max(...durations) : 0;
-      }},
-      maxTradingDaysDuration: { category: 'time', label: language === 'cn' ? '最大交易日跨度 - 累计' : 'Max trading days duration - cumulative', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: () => 24 * 60 * 60 * 1000 },
+      avgTradingDaysDuration: { category: 'time', label: language === 'cn' ? '平均交易日跨度 - 累计' : 'Average trading days duration - cumulative', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.periodDurationMs },
+      avgHoldTime: { category: 'time', label: language === 'cn' ? '平均持仓时间 - 累计' : 'Avg hold time - cumulative', shortLabel: language === 'cn' ? '平均持仓时间' : 'Avg hold time', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.closedTradeCount > 0 ? day.holdDurationTotal / day.closedTradeCount : 0 },
+      longestTradeDuration: { category: 'time', label: language === 'cn' ? '最长持仓时间 - 累计' : 'Longest trade duration - cumulative', shortLabel: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.longestTradeDuration },
+      maxTradingDaysDuration: { category: 'time', label: language === 'cn' ? '最大交易日跨度 - 累计' : 'Max trading days duration - cumulative', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.periodDurationMs },
       avgDailyNetPnl: { category: 'profitability', label: language === 'cn' ? '平均每日净盈亏 - 累计' : 'Avg daily net P&L - cumulative', shortLabel: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl },
       avgDailyWinLoss: { category: 'profitability', label: language === 'cn' ? '平均每日盈亏比 - 累计' : 'Avg daily win/loss - cumulative', shortLabel: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', mode: 'daily', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
       avgLoss: { category: 'profitability', label: language === 'cn' ? '平均亏损 - 累计' : 'Avg loss - cumulative', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.losses > 0 ? day.lossPnl / day.losses : 0 },
@@ -1034,7 +1066,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       losingDays: { category: 'risk', label: language === 'cn' ? '亏损天数 - 累计' : 'Losing days - cumulative', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? 1 : 0 },
       maxDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '最大单日净回撤 - 累计' : 'Max daily net drawdown - cumulative', shortLabel: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
       avgDailyVolume: { category: 'activity', label: language === 'cn' ? '平均每日成交额 - 累计' : 'Avg daily volume - cumulative', shortLabel: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.volume },
-      loggedDays: { category: 'activity', label: language === 'cn' ? '记录天数 - 累计' : 'Logged days - cumulative', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#6b55cf', getDailyValue: () => 1 },
+      loggedDays: { category: 'activity', label: language === 'cn' ? '记录天数 - 累计' : 'Logged days - cumulative', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#6b55cf', getDailyValue: (day) => day.loggedDayCount },
       tradeCount: { category: 'activity', label: language === 'cn' ? '交易总数 - 累计' : 'Trade count - cumulative', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.count },
       volume: { category: 'activity', label: language === 'cn' ? '成交额 - 累计' : 'Volume - cumulative', shortLabel: language === 'cn' ? '成交额' : 'Volume', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.volume },
       winTrades: { category: 'activity', label: language === 'cn' ? '盈利交易数 - 累计' : 'Win # of trades - cumulative', shortLabel: language === 'cn' ? '盈利交易数' : 'Win trades', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.wins },
@@ -1446,19 +1478,116 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const buildChartMetricData = (metricId: SummaryMetricId) => {
+  const getChartPeriodStartDate = (date: string, timeframe: ChartTimeframe) => {
+      const value = new Date(`${date}T00:00:00`);
+      if (timeframe === 'week') {
+          value.setDate(value.getDate() - value.getDay());
+      } else if (timeframe === 'month') {
+          value.setDate(1);
+      }
+      value.setHours(0, 0, 0, 0);
+      return value.toLocaleDateString('en-CA');
+  };
+
+  const formatChartPeriodLabel = (date: string, timeframe: ChartTimeframe) => {
+      const d = new Date(`${date}T00:00:00`);
+
+      if (timeframe === 'month') {
+          if (language === 'cn') return `${d.getMonth() + 1}月`;
+          return d.toLocaleDateString('en-US', { month: 'short' });
+      }
+
+      if (timeframe === 'week') {
+          const month = d.getMonth() + 1;
+          const day = d.getDate();
+          if (language === 'cn') return `${month}/${day}周`;
+          return `Wk ${formatChartDateLabel(date)}`;
+      }
+
+      if (language === 'cn') {
+          return d.toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' });
+      }
+
+      return formatChartDateLabel(date);
+  };
+
+  const getChartSourceData = (timeframe: ChartTimeframe) => {
+      if (timeframe === 'day') {
+          return performanceDailyData.map(day => ({
+              ...day,
+              label: formatChartPeriodLabel(day.date, timeframe),
+          }));
+      }
+
+      const grouped = new Map<string, typeof performanceDailyData[number]>();
+
+      performanceDailyData.forEach(day => {
+          const periodDate = getChartPeriodStartDate(day.date, timeframe);
+          const current = grouped.get(periodDate);
+
+          if (!current) {
+              grouped.set(periodDate, {
+                  ...day,
+                  date: periodDate,
+                  label: formatChartPeriodLabel(periodDate, timeframe),
+                  cumulativePnl: 0,
+              });
+              return;
+          }
+
+          grouped.set(periodDate, {
+              ...current,
+              pnl: current.pnl + day.pnl,
+              count: current.count + day.count,
+              wins: current.wins + day.wins,
+              losses: current.losses + day.losses,
+              winPnl: current.winPnl + day.winPnl,
+              lossPnl: current.lossPnl + day.lossPnl,
+              volume: current.volume + day.volume,
+              closedTradeCount: current.closedTradeCount + day.closedTradeCount,
+              holdDurationTotal: current.holdDurationTotal + day.holdDurationTotal,
+              longestTradeDuration: Math.max(current.longestTradeDuration, day.longestTradeDuration),
+              loggedDayCount: current.loggedDayCount + day.loggedDayCount,
+              periodDurationMs: current.periodDurationMs + day.periodDurationMs,
+          });
+      });
+
+      let cumulativePnl = 0;
+      return Array.from(grouped.values())
+          .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+          .map(period => {
+              cumulativePnl += period.pnl;
+              const avgWin = period.wins > 0 ? period.winPnl / period.wins : 0;
+              const avgLoss = period.losses > 0 ? period.lossPnl / period.losses : 0;
+              const hasAvgDailyWinLoss = avgWin > 0 && avgLoss < 0;
+              const avgDailyWinLoss = hasAvgDailyWinLoss ? Math.abs(avgWin / avgLoss) : 0;
+
+              return {
+                  ...period,
+                  pnl: Number(period.pnl.toFixed(2)),
+                  cumulativePnl: Number(cumulativePnl.toFixed(2)),
+                  winRate: period.count > 0 ? (period.wins / period.count) * 100 : 0,
+                  avgDailyWinLoss: Number(avgDailyWinLoss.toFixed(2)),
+                  hasAvgDailyWinLoss,
+              };
+          });
+  };
+
+  const buildChartMetricData = (metricId: SummaryMetricId, timeframe: ChartTimeframe) => {
       const config = chartMetricConfigs[metricId] || chartMetricConfigs.netPnl!;
-      const source = performanceDailyData.filter(day => config.includeDay ? config.includeDay(day) : true);
+      const source = getChartSourceData(timeframe).filter(day => config.includeDay ? config.includeDay(day) : true);
       let cumulative = 0;
       let cumulativeCount = 0;
       let cumulativeWins = 0;
       let cumulativeLosses = 0;
       let cumulativeWinPnl = 0;
       let cumulativeLossPnl = 0;
+      let cumulativeClosedTradeCount = 0;
+      let cumulativeHoldDurationTotal = 0;
       let runningMin = 0;
       let runningMax = 0;
 
-      const rows = source.map(day => {
+      const rows = source.map((day, index) => {
           const dailyValue = config.getDailyValue(day);
           cumulative += dailyValue;
           cumulativeCount += day.count;
@@ -1466,17 +1595,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           cumulativeLosses += day.losses;
           cumulativeWinPnl += day.winPnl;
           cumulativeLossPnl += day.lossPnl;
+          cumulativeClosedTradeCount += day.closedTradeCount;
+          cumulativeHoldDurationTotal += day.holdDurationTotal;
           runningMin = Math.min(runningMin, dailyValue);
           runningMax = Math.max(runningMax, dailyValue);
 
           let value = dailyValue;
           if (config.mode === 'cumulative') {
-              if (metricId === 'avgDailyNetPnl') value = cumulative / (source.indexOf(day) + 1);
+              if (metricId === 'avgDailyNetPnl') value = cumulative / (index + 1);
               else if (metricId === 'avgLoss') value = cumulativeLosses > 0 ? cumulativeLossPnl / cumulativeLosses : 0;
               else if (metricId === 'avgWin') value = cumulativeWins > 0 ? cumulativeWinPnl / cumulativeWins : 0;
               else if (metricId === 'avgNetTradePnl' || metricId === 'tradeExpectancy') value = cumulativeCount > 0 ? cumulative / cumulativeCount : 0;
               else if (metricId === 'avgDailyNetDrawdown') {
-                  const losingRows = source.slice(0, source.indexOf(day) + 1).filter(row => row.pnl < 0);
+                  const losingRows = source.slice(0, index + 1).filter(row => row.pnl < 0);
                   value = losingRows.length > 0 ? losingRows.reduce((acc, row) => acc + row.pnl, 0) / losingRows.length : 0;
               }
               else if (metricId === 'maxDailyNetDrawdown') value = runningMin;
@@ -1488,18 +1619,18 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               }
               else if (metricId === 'winPct') value = cumulativeCount > 0 ? (cumulativeWins / cumulativeCount) * 100 : 0;
               else if (metricId === 'avgDailyWinPct') {
-                  const currentRows = source.slice(0, source.indexOf(day) + 1);
+                  const currentRows = source.slice(0, index + 1);
                   value = currentRows.length > 0 ? currentRows.reduce((acc, row) => acc + row.winRate, 0) / currentRows.length : 0;
               }
-              else if (metricId === 'avgTradingDaysDuration' || metricId === 'maxTradingDaysDuration') value = (source.indexOf(day) + 1) * 24 * 60 * 60 * 1000;
-              else if (metricId === 'avgHoldTime') value = source.indexOf(day) + 1 > 0 ? cumulative / (source.indexOf(day) + 1) : 0;
+              else if (metricId === 'avgTradingDaysDuration' || metricId === 'maxTradingDaysDuration') value = cumulative;
+              else if (metricId === 'avgHoldTime') value = cumulativeClosedTradeCount > 0 ? cumulativeHoldDurationTotal / cumulativeClosedTradeCount : 0;
               else if (metricId === 'longestTradeDuration') value = runningMax;
               else value = cumulative;
           }
 
           return {
               ...day,
-              label: formatChartDateLabel(day.date),
+              label: formatChartPeriodLabel(day.date, timeframe),
               value: Number(value.toFixed(4)),
           };
       });
@@ -1507,8 +1638,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return rows;
   };
 
-  const getChartMetricDisplayData = (metricId: SummaryMetricId, visualOverride?: ChartMetricVisual) => {
-      const data = buildChartMetricData(metricId);
+  const getChartMetricDisplayData = (metricId: SummaryMetricId, visualOverride: ChartMetricVisual | undefined, timeframe: ChartTimeframe) => {
+      const data = buildChartMetricData(metricId, timeframe);
       const targetCount = (visualOverride || chartMetricConfigs[metricId]?.visual) === 'bar' ? 7 : 9;
       const indexes = getEvenlySpacedIndexes(data.length, targetCount);
       return indexes.map(index => data[index]).filter(Boolean);
@@ -1542,10 +1673,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       secondaryVisual: ChartMetricVisual | null,
       tertiaryMetricId: SummaryMetricId | null,
       tertiaryVisual: ChartMetricVisual | null,
+      timeframe: ChartTimeframe,
   ) => {
-      const primaryRows = getChartMetricDisplayData(primaryMetricId, primaryVisual);
-      const secondaryRows = secondaryMetricId ? getChartMetricDisplayData(secondaryMetricId, secondaryVisual || undefined) : [];
-      const tertiaryRows = tertiaryMetricId ? getChartMetricDisplayData(tertiaryMetricId, tertiaryVisual || undefined) : [];
+      const primaryRows = getChartMetricDisplayData(primaryMetricId, primaryVisual, timeframe);
+      const secondaryRows = secondaryMetricId ? getChartMetricDisplayData(secondaryMetricId, secondaryVisual || undefined, timeframe) : [];
+      const tertiaryRows = tertiaryMetricId ? getChartMetricDisplayData(tertiaryMetricId, tertiaryVisual || undefined, timeframe) : [];
       const rowMap = new Map<string, any>();
 
       primaryRows.forEach(row => {
@@ -1576,12 +1708,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   };
 
   const leftChartData = useMemo(
-      () => buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, leftTertiaryChartMetricId, leftTertiaryChartVisual),
-      [leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, leftTertiaryChartMetricId, leftTertiaryChartVisual, performanceDailyData]
+      () => buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, leftTertiaryChartMetricId, leftTertiaryChartVisual, chartTimeframes.left),
+      [leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, leftTertiaryChartMetricId, leftTertiaryChartVisual, chartTimeframes.left, performanceDailyData]
   );
   const rightChartData = useMemo(
-      () => buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, rightTertiaryChartMetricId, rightTertiaryChartVisual),
-      [rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, rightTertiaryChartMetricId, rightTertiaryChartVisual, performanceDailyData]
+      () => buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, rightTertiaryChartMetricId, rightTertiaryChartVisual, chartTimeframes.right),
+      [rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, rightTertiaryChartMetricId, rightTertiaryChartVisual, chartTimeframes.right, performanceDailyData]
   );
   const leftChartTicks = useMemo(
       () => getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean),
