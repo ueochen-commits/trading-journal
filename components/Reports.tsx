@@ -2136,12 +2136,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#4f2db8] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
+                              className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
                               aria-expanded={timeframeMenuOpen}
                               aria-label={language === 'cn' ? '选择图表时间粒度' : 'Choose chart timeframe'}
                           >
                               {selectedTimeframeLabel}
-                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-black transition-transform' : 'w-3.5 h-3.5 text-slate-400 transition-transform'} ${timeframeMenuOpen ? 'rotate-180 text-[#5b45d6]' : ''}`} />
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] transition-transform' : 'w-3.5 h-3.5 text-slate-400 transition-transform'} ${timeframeMenuOpen ? 'rotate-180' : ''}`} />
                           </button>
                           <div
                               className={`absolute right-0 top-full z-[70] mt-[6px] w-[96px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
