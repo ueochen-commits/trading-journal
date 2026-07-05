@@ -1264,6 +1264,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const summaryMetricColumns = useMemo(() => {
       return [0, 1, 2, 3].map(columnIndex => summaryMetrics.slice(columnIndex * 4, columnIndex * 4 + 4));
   }, [summaryMetrics]);
+  const addMetricColumnIndex = isSummaryEditing && hiddenSummaryMetrics.length > 0
+      ? summaryMetricColumns.findIndex(column => column.length < 4)
+      : -1;
 
   const startSummaryEditing = () => {
       setDraftSummaryMetricIds(summaryMetricIds);
@@ -1579,7 +1582,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   {summaryTab === 'summary' && (
                       <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 px-4 py-[14px] ${isSummaryEditing ? 'gap-x-[16px]' : ''}`}>
                           {summaryMetricColumns.map((column, columnIndex) => {
-                              const shouldShowAddNew = isSummaryEditing && columnIndex === 3;
+                              const shouldShowAddNew = columnIndex === addMetricColumnIndex;
 
                               return (
                                   <div
