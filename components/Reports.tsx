@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -942,12 +942,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           : 'text-slate-800 dark:text-slate-100';
 
       return (
-          <div className="min-h-[72px] px-5 py-3 border-r border-slate-200/80 dark:border-slate-800 last:border-r-0">
-              <div className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-slate-400">
+          <div className="min-h-[64px]">
+              <div className="flex items-center gap-1 text-[13px] font-medium leading-none text-[#5f6875] dark:text-slate-400">
                   {label}
-                  <Info className="w-3.5 h-3.5 text-slate-400" />
+                  <Info className="h-[14px] w-[14px] text-[#7b8490]" />
               </div>
-              <div className={`mt-1 text-xl font-semibold tabular-nums ${toneClass}`}>
+              <div className={`mt-[7px] text-[22px] font-semibold leading-none tabular-nums ${toneClass}`}>
                   {value}
               </div>
           </div>
@@ -1082,23 +1082,27 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   ];
 
   const summaryMetrics = stats ? [
-      { label: 'Net P&L', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: 'Win %', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
-      { label: 'Avg daily win %', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
-      { label: 'Profit factor', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
-      { label: 'Trade expectancy', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
-      { label: 'Avg daily win/loss', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
-      { label: 'Avg trade win/loss', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
-      { label: 'Avg hold time', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
-      { label: 'Avg net trade P&L', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: 'Avg daily net P&L', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: 'Avg. planned r-multiple', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
-      { label: 'Avg. realized r-multiple', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
-      { label: 'Avg daily volume', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
-      { label: 'Logged days', value: stats.totalDays, tone: 'neutral' as const },
-      { label: 'Max daily net drawdown', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
-      { label: 'Avg daily net drawdown', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
+      { label: language === 'cn' ? '净盈亏' : 'Net P&L', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '胜率' : 'Win %', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
+      { label: language === 'cn' ? '盈利因子' : 'Profit factor', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '交易期望值' : 'Trade expectancy', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
+      { label: language === 'cn' ? '记录天数' : 'Logged days', value: stats.totalDays, tone: 'neutral' as const },
+      { label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
   ] : [];
+
+  const summaryMetricColumns = useMemo(() => {
+      return [0, 1, 2, 3].map(columnIndex => summaryMetrics.slice(columnIndex * 4, columnIndex * 4 + 4));
+  }, [summaryMetrics]);
 
   return (
     <div className="space-y-6 pb-12">
@@ -1258,9 +1262,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   </ChartCard>
               </div>
 
-              <div className={`${reportPanelClass} overflow-hidden`}>
-                  <div className="h-14 px-5 flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800">
-                      <div className="flex items-center gap-6">
+              <div className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                  <div className="h-[52px] px-4 flex items-center justify-between border-b border-[#e2e6ec] dark:border-slate-800">
+                      <div className="flex items-center gap-[34px]">
                           {[
                               { id: 'summary' as const, label: language === 'cn' ? '汇总' : 'Summary' },
                               { id: 'days' as const, label: language === 'cn' ? '天' : 'Days' },
@@ -1269,21 +1273,28 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               <button
                                   key={tab.id}
                                   onClick={() => setSummaryTab(tab.id)}
-                                  className={`h-14 border-b-2 text-sm font-semibold transition-colors ${summaryTab === tab.id ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
+                                  className={`h-[52px] border-b-2 text-[14px] font-semibold transition-colors ${summaryTab === tab.id ? 'border-[#5b45d6] text-[#5b45d6] dark:text-indigo-400' : 'border-transparent text-[#5f6875] hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'}`}
                               >
                                   {tab.label}
                               </button>
                           ))}
                       </div>
-                      <button className="h-8 w-8 inline-flex items-center justify-center rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600">
-                          <MoreVertical className="w-4 h-4" />
+                      <button className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                          <Settings className="h-[17px] w-[17px]" />
                       </button>
                   </div>
 
                   {summaryTab === 'summary' && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 lg:divide-y divide-slate-200/80 dark:divide-slate-800">
-                          {summaryMetrics.map(metric => (
-                              <SummaryMetric key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 px-4 py-[14px]">
+                          {summaryMetricColumns.map((column, columnIndex) => (
+                              <div
+                                  key={columnIndex}
+                                  className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[304px] xl:border-l xl:border-[#e2e6ec] first:xl:border-l-0 first:xl:pl-0 last:xl:pr-0 dark:xl:border-slate-800"
+                              >
+                                  {column.map(metric => (
+                                      <SummaryMetric key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
+                                  ))}
+                              </div>
                           ))}
                       </div>
                   )}
