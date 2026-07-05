@@ -176,6 +176,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [openChartMetricPicker, setOpenChartMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartStyleMenu, setOpenChartStyleMenu] = useState<ChartSide | null>(null);
   const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
+  const [openChartColorDropdown, setOpenChartColorDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
@@ -209,6 +210,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           if (target instanceof Element && target.closest(`[data-chart-style-root="${openChartStyleMenu}"]`)) return;
           setOpenChartStyleMenu(null);
           setOpenChartVisualDropdown(null);
+          setOpenChartColorDropdown(null);
       };
 
       document.addEventListener('pointerdown', handlePointerDown);
@@ -1418,6 +1420,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               <div className="space-y-[16px] p-[14px]">
                   {metrics.map((metric, index) => {
                       const visualDropdownOpen = openChartVisualDropdown?.side === side && openChartVisualDropdown.slot === metric.slot;
+                      const colorDropdownOpen = openChartColorDropdown?.side === side && openChartColorDropdown.slot === metric.slot;
 
                       return (
                           <div key={metric.slot} className={index > 0 ? 'border-t border-[#edf0f4] pt-[14px] dark:border-slate-800' : ''}>
@@ -1435,7 +1438,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   <div className="relative flex-1">
                                       <button
                                           type="button"
-                                          onClick={() => setOpenChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot })}
+                                          onClick={() => {
+                                              setOpenChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
+                                              setOpenChartColorDropdown(null);
+                                          }}
                                           className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
                                       >
                                           {chartVisualOptions.find(option => option.id === metric.visual)?.label}
@@ -1470,24 +1476,47 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </div>
                               </div>
 
-                              <div className="mt-[12px] flex items-center gap-[8px]">
-                                  {chartStyleColors.map(optionColor => {
-                                      const selected = optionColor === metric.color;
-                                      return (
-                                          <button
-                                              key={optionColor}
-                                              type="button"
-                                              onClick={() => updateChartStyle(side, metric.slot, { color: optionColor })}
-                                              className={`relative h-[26px] w-[26px] rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
-                                                  selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
-                                              }`}
-                                              style={{ backgroundColor: optionColor }}
-                                              aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
-                                          >
-                                              {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
-                                          </button>
-                                      );
-                                  })}
+                              <div className="relative mt-[12px] inline-flex">
+                                  <button
+                                      type="button"
+                                      onClick={() => {
+                                          setOpenChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
+                                          setOpenChartVisualDropdown(null);
+                                      }}
+                                      className="flex h-[32px] items-center gap-[8px] rounded-[6px] border border-[#dfe4ec] bg-white px-[8px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      aria-expanded={colorDropdownOpen}
+                                      aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
+                                  >
+                                      <span className="h-[18px] w-[18px] rounded-[5px]" style={{ backgroundColor: metric.color }} />
+                                      <span>{language === 'cn' ? '颜色' : 'Color'}</span>
+                                      <ChevronDown className={`h-[14px] w-[14px] transition-transform ${colorDropdownOpen ? 'rotate-180' : ''}`} />
+                                  </button>
+                                  <div
+                                      className={`absolute left-0 top-full z-[60] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          colorDropdownOpen ? 'max-h-[58px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                      }`}
+                                  >
+                                      {chartStyleColors.map(optionColor => {
+                                          const selected = optionColor === metric.color;
+                                          return (
+                                              <button
+                                                  key={optionColor}
+                                                  type="button"
+                                                  onClick={() => {
+                                                      updateChartStyle(side, metric.slot, { color: optionColor });
+                                                      setOpenChartColorDropdown(null);
+                                                  }}
+                                                  className={`relative h-[26px] w-[26px] flex-shrink-0 rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
+                                                      selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
+                                                  }`}
+                                                  style={{ backgroundColor: optionColor }}
+                                                  aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
+                                              >
+                                                  {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
+                                              </button>
+                                          );
+                                      })}
+                                  </div>
                               </div>
                           </div>
                       );
@@ -1498,6 +1527,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       onClick={() => {
                           setChartStyleSettings(current => ({ ...current, [side]: {} }));
                           setOpenChartVisualDropdown(null);
+                          setOpenChartColorDropdown(null);
                       }}
                       className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
                   >
@@ -1729,6 +1759,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               setOpenChartStyleMenu(current => current === side ? null : side);
                               setOpenChartMetricPicker(null);
                               setOpenChartVisualDropdown(null);
+                              setOpenChartColorDropdown(null);
                           }}
                           className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
                           aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
@@ -1749,6 +1780,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               onMetricButtonClick?.();
                               setOpenChartStyleMenu(null);
                               setOpenChartVisualDropdown(null);
+                              setOpenChartColorDropdown(null);
                           }}
                           className={`${featured ? 'relative h-[32px] w-[154px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
@@ -1771,6 +1803,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   onSecondaryMetricButtonClick?.();
                                   setOpenChartStyleMenu(null);
                                   setOpenChartVisualDropdown(null);
+                                  setOpenChartColorDropdown(null);
                               }}
                               className={`${featured ? 'relative h-[32px] w-[236px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
@@ -1785,7 +1818,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           </button>
                           <button
                               type="button"
-                              onClick={onRemoveSecondaryMetric}
+                              onClick={() => {
+                                  onRemoveSecondaryMetric?.();
+                                  setOpenChartColorDropdown(null);
+                              }}
                               className="inline-flex h-[24px] w-[24px] flex-shrink-0 items-center justify-center rounded-[6px] text-[#7b8490] transition-colors hover:bg-[#f1f2f4] hover:text-[#2f3742]"
                               aria-label={language === 'cn' ? '移除第二指标' : 'Remove second metric'}
                           >
@@ -1797,7 +1833,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       <div className="relative hidden sm:inline-flex">
                           <button
                               type="button"
-                              onClick={onAddMetricClick}
+                              onClick={() => {
+                                  onAddMetricClick?.();
+                                  setOpenChartStyleMenu(null);
+                                  setOpenChartVisualDropdown(null);
+                                  setOpenChartColorDropdown(null);
+                              }}
                               className={`${featured ? 'rounded-[7px] px-[12px] py-[7px] text-[14px] font-semibold text-[#5b45b6] transition-colors hover:bg-[#ebe7f8]' : 'text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'}`}
                           >
                               + {language === 'cn' ? '添加指标' : 'Add metric'}
@@ -1917,6 +1958,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           }
           else setRightSecondaryChartMetricId(metricId);
           setOpenChartMetricPicker(null);
+          setOpenChartVisualDropdown(null);
+          setOpenChartColorDropdown(null);
           setChartMetricPickerSearch('');
       };
 
