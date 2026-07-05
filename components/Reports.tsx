@@ -992,7 +992,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const SummaryMetric = ({ label, value, tone = 'neutral' }: { label: string; value: string | number; tone?: 'neutral' | 'good' | 'bad' | 'accent' }) => {
+  const SummaryMetric = ({ label, value, tooltip, tone = 'neutral' }: { label: string; value: string | number; tooltip: string; tone?: 'neutral' | 'good' | 'bad' | 'accent' }) => {
       const toneClass = tone === 'good'
           ? 'text-emerald-600 dark:text-emerald-400'
           : tone === 'bad'
@@ -1005,7 +1005,19 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           <div className="min-h-[64px]">
               <div className="flex items-center gap-1 text-[13px] font-medium leading-none text-[#5f6875] dark:text-slate-400">
                   {label}
-                  <Info className="h-[14px] w-[14px] text-[#7b8490]" />
+                  <span className="group/metric-info relative inline-flex">
+                      <button
+                          type="button"
+                          className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                          aria-label={tooltip}
+                      >
+                          <Info className="h-[14px] w-[14px]" />
+                      </button>
+                      <span className="pointer-events-none absolute bottom-full left-0 z-50 mb-[10px] hidden w-[270px] rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-[13px] font-semibold leading-[1.55] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
+                          {tooltip}
+                          <span className="absolute left-[15px] top-full h-0 w-0 border-l-[6px] border-r-[6px] border-t-[7px] border-l-transparent border-r-transparent border-t-[#262626]" />
+                      </span>
+                  </span>
               </div>
               <div className={`mt-[7px] text-[22px] font-semibold leading-none tabular-nums ${toneClass}`}>
                   {value}
@@ -1142,22 +1154,22 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   ];
 
   const summaryMetrics = stats ? [
-      { label: language === 'cn' ? '净盈亏' : 'Net P&L', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '胜率' : 'Win %', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
-      { label: language === 'cn' ? '盈利因子' : 'Profit factor', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '交易期望值' : 'Trade expectancy', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
-      { label: language === 'cn' ? '记录天数' : 'Logged days', value: stats.totalDays, tone: 'neutral' as const },
-      { label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
-      { label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
+      { label: language === 'cn' ? '净盈亏' : 'Net P&L', tooltip: language === 'cn' ? '所选日期范围内，所有已平仓交易的已实现净盈亏，已扣除手续费。' : 'The total realized Profit and Loss (P/L) on all closed positions, for the date range selected.', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '胜率' : 'Win %', tooltip: language === 'cn' ? '已平仓交易中盈利交易所占比例。' : 'The percentage of closed trades that finished profitable.', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均胜率。' : 'The average win percentage across logged trading days in the selected range.', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
+      { label: language === 'cn' ? '盈利因子' : 'Profit factor', tooltip: language === 'cn' ? '总盈利除以总亏损的绝对值，用来衡量盈利覆盖亏损的能力。' : 'Gross profit divided by absolute gross loss. It shows how much profit is generated for each dollar lost.', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '交易期望值' : 'Trade expectancy', tooltip: language === 'cn' ? '每笔已平仓交易的平均预期净盈亏。' : 'The average expected net P&L per closed trade.', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', tooltip: language === 'cn' ? '有有效盈利和亏损记录的交易日中，平均盈利日结果与平均亏损日结果的比例。' : 'The average ratio between winning and losing results on days with valid win/loss data.', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', tooltip: language === 'cn' ? '平均盈利交易金额与平均亏损交易金额的比例。' : 'The ratio between the average winning trade and the average losing trade.', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', tooltip: language === 'cn' ? '所有已平仓交易从开仓到平仓的平均持仓时长。' : 'The average time between entry and exit across closed trades.', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', tooltip: language === 'cn' ? '每笔已平仓交易的平均净盈亏。' : 'The average net P&L per closed trade.', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', tooltip: language === 'cn' ? '每个有交易日的平均净盈亏。' : 'The average net P&L per logged trading day.', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', tooltip: language === 'cn' ? '交易计划中目标收益相对初始风险的平均 R 倍数。' : 'The average planned reward multiple relative to initial risk.', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
+      { label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', tooltip: language === 'cn' ? '实际净盈亏相对初始风险的平均 R 倍数。' : 'The average realized return multiple relative to initial risk.', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
+      { label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均成交金额。' : 'The average traded notional volume per logged trading day.', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
+      { label: language === 'cn' ? '记录天数' : 'Logged days', tooltip: language === 'cn' ? '所选日期范围内有交易记录的天数。' : 'The number of days with logged trades in the selected range.', value: stats.totalDays, tone: 'neutral' as const },
+      { label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', tooltip: language === 'cn' ? '所选日期范围内净亏损最大的单个交易日。' : 'The largest single-day net loss in the selected range.', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', tooltip: language === 'cn' ? '所有亏损交易日的平均净亏损金额。' : 'The average net loss across losing trading days.', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
   ] : [];
 
   const summaryMetricColumns = useMemo(() => {
@@ -1350,7 +1362,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   </ChartCard>
               </div>
 
-              <div className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+              <div className="relative rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                   <div className="h-[52px] px-4 flex items-center justify-between border-b border-[#e2e6ec] dark:border-slate-800">
                       <div className="flex items-center gap-[34px]">
                           {[
@@ -1380,7 +1392,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[304px] xl:border-l xl:border-[#e2e6ec] first:xl:border-l-0 first:xl:pl-0 last:xl:pr-0 dark:xl:border-slate-800"
                               >
                                   {column.map(metric => (
-                                      <SummaryMetric key={metric.label} label={metric.label} value={metric.value} tone={metric.tone} />
+                                      <SummaryMetric key={metric.label} label={metric.label} value={metric.value} tooltip={metric.tooltip} tone={metric.tone} />
                                   ))}
                               </div>
                           ))}
