@@ -791,6 +791,26 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
   }, [trades, performanceDailyData, stats]);
 
+  const daysSummary = useMemo(() => {
+      const totalDays = performanceDailyData.length;
+      const winningDays = performanceDailyData.filter(day => day.pnl > 0);
+      const losingDays = performanceDailyData.filter(day => day.pnl < 0);
+      const breakevenDays = performanceDailyData.filter(day => day.pnl === 0);
+      const largestProfitableDay = winningDays.length > 0 ? winningDays.reduce((best, day) => day.pnl > best.pnl ? day : best, winningDays[0]) : null;
+      const largestLosingDay = losingDays.length > 0 ? losingDays.reduce((worst, day) => day.pnl < worst.pnl ? day : worst, losingDays[0]) : null;
+      const averageTradingDayDurationMs = totalDays > 0 ? 24 * 60 * 60 * 1000 : 0;
+
+      return {
+          totalDays,
+          largestProfitableDay,
+          largestLosingDay,
+          averageTradingDayDurationMs,
+          winDayPct: totalDays > 0 ? (winningDays.length / totalDays) * 100 : 0,
+          lossDayPct: totalDays > 0 ? (losingDays.length / totalDays) * 100 : 0,
+          breakevenDayPct: totalDays > 0 ? (breakevenDays.length / totalDays) * 100 : 0,
+      };
+  }, [performanceDailyData]);
+
   const reportRef = useRef<HTMLDivElement>(null);
 
   const handleGenerateReport = async (period: 'weekly' | 'monthly') => {
@@ -1888,29 +1908,83 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   )}
 
                   {summaryTab === 'days' && (
-                      <div className="overflow-x-auto">
-                          <table className="w-full text-sm">
-                              <thead className="text-xs text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
-                                  <tr>
-                                      <th className="px-5 py-3 text-left font-semibold">{language === 'cn' ? '日期' : 'Date'}</th>
-                                      <th className="px-5 py-3 text-right font-semibold">Net P&L</th>
-                                      <th className="px-5 py-3 text-right font-semibold">{language === 'cn' ? '胜率' : 'Win %'}</th>
-                                      <th className="px-5 py-3 text-right font-semibold">{language === 'cn' ? '交易数' : 'Trades'}</th>
-                                      <th className="px-5 py-3 text-right font-semibold">{language === 'cn' ? '交易量' : 'Volume'}</th>
-                                  </tr>
-                              </thead>
-                              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                  {performanceDailyData.map(row => (
-                                      <tr key={row.date} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                          <td className="px-5 py-3 font-semibold text-slate-700 dark:text-slate-200">{row.date}</td>
-                                          <td className={`px-5 py-3 text-right font-semibold tabular-nums ${row.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{formatSignedMoney(row.pnl)}</td>
-                                          <td className="px-5 py-3 text-right tabular-nums text-slate-700 dark:text-slate-200">{row.winRate.toFixed(1)}%</td>
-                                          <td className="px-5 py-3 text-right tabular-nums text-slate-700 dark:text-slate-200">{row.count}</td>
-                                          <td className="px-5 py-3 text-right tabular-nums text-slate-500 dark:text-slate-400">{row.volume.toFixed(2)}</td>
-                                      </tr>
-                                  ))}
-                              </tbody>
-                          </table>
+                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 px-4 py-[14px]">
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[132px] xl:border-l xl:border-[#e2e6ec] first:xl:border-l-0 first:xl:pl-0 dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均日胜率' : 'Avg daily win %'}
+                                  value={`${performanceSummary.avgDailyWinPct.toFixed(2)}% (${stats.winningDays}/${stats.totalDays || 0})`}
+                                  tooltip={language === 'cn' ? '盈利交易日数量占所有有交易记录日期的比例，括号内为盈利日/总交易日。' : 'Winning logged days as a percentage of all logged days. The count shows winning days over total days.'}
+                                  tone="neutral"
+                                  tooltipPlacement="start"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '最大亏损日' : 'Largest losing day'}
+                                  value={daysSummary.largestLosingDay ? formatSignedMoney(daysSummary.largestLosingDay.pnl) : '--'}
+                                  tooltip={language === 'cn' ? '所选范围内净亏损最大的交易日。' : 'The logged day with the largest net loss in the selected range.'}
+                                  tone="bad"
+                                  tooltipPlacement="start"
+                              />
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[132px] xl:border-l xl:border-[#e2e6ec] dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}
+                                  value={performanceSummary.avgDailyWinLoss.toFixed(2)}
+                                  tooltip={language === 'cn' ? '盈利日平均收益与亏损日平均亏损的比例。' : 'The ratio between average winning-day result and average losing-day result.'}
+                                  tone="neutral"
+                              />
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均交易日跨度' : 'Average trading days duration'}
+                                  value={formatDuration(daysSummary.averageTradingDayDurationMs)}
+                                  tooltip={language === 'cn' ? '按有交易记录的自然日计算。单日维度下，一个交易日按 24 小时计。' : 'Calculated from logged calendar trading days. One logged day is treated as a 24-hour day.'}
+                                  tone="neutral"
+                              />
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[132px] xl:border-l xl:border-[#e2e6ec] dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '最大盈利日' : 'Largest profitable day'}
+                                  value={daysSummary.largestProfitableDay ? formatSignedMoney(daysSummary.largestProfitableDay.pnl) : '--'}
+                                  tooltip={language === 'cn' ? '所选范围内净盈利最大的交易日。' : 'The logged day with the largest net profit in the selected range.'}
+                                  tone="good"
+                              />
+                              <div className="min-h-[64px]">
+                                  <div className="flex items-center gap-1 text-[13px] font-medium leading-none text-[#5f6875] dark:text-slate-400">
+                                      {language === 'cn' ? '盈亏日分布' : 'Win/loss day mix'}
+                                      <span className="group/metric-info relative inline-flex">
+                                          <button
+                                              type="button"
+                                              className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              aria-label={language === 'cn' ? '盈利日、打平日与亏损日的真实占比，用来替代专有评分。' : 'The real distribution of winning, breakeven, and losing days. Used instead of a proprietary score.'}
+                                          >
+                                              <Info className="h-[14px] w-[14px]" />
+                                          </button>
+                                          <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-[9px] hidden w-[286px] -translate-x-1/2 rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
+                                              {language === 'cn' ? '盈利日、打平日与亏损日的真实占比，用来替代无法计算的专有评分。' : 'The real distribution of winning, breakeven, and losing days, replacing proprietary scores we do not calculate.'}
+                                          </span>
+                                      </span>
+                                  </div>
+                                  <div className="mt-[17px] flex h-[8px] overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
+                                      <div className="bg-[#ff6468]" style={{ width: `${daysSummary.lossDayPct}%` }} />
+                                      <div className="bg-[#d6dae1]" style={{ width: `${daysSummary.breakevenDayPct}%` }} />
+                                      <div className="bg-[#55c39e]" style={{ width: `${daysSummary.winDayPct}%` }} />
+                                  </div>
+                                  <div className="mt-[9px] flex items-center justify-between text-[11px] font-semibold text-[#7b8490]">
+                                      <span>{daysSummary.lossDayPct.toFixed(0)}%</span>
+                                      <span>{daysSummary.winDayPct.toFixed(0)}%</span>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[132px] xl:border-l xl:border-[#e2e6ec] last:xl:pr-0 dark:xl:border-slate-800">
+                              <SummaryMetric
+                                  label={language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L'}
+                                  value={formatSignedMoney(stats.avgDailyPnl)}
+                                  tooltip={language === 'cn' ? '每个有交易日的平均净盈亏。' : 'The average net P&L per logged trading day.'}
+                                  tone={stats.avgDailyPnl >= 0 ? 'good' : 'bad'}
+                                  tooltipPlacement="end"
+                              />
+                          </div>
                       </div>
                   )}
 
