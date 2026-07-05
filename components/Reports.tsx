@@ -1914,8 +1914,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       const getAxisPadding = (axisCount: number) => Math.max(0, axisCount - 1) * 3;
       const commonMargin = {
           top: hasDurationAxis ? 18 : 8,
-          right: getAxisPadding(rightAxisGroups.length),
-          left: getAxisPadding(leftAxisGroups.length),
+          right: 18 + getAxisPadding(rightAxisGroups.length),
+          left: 12 + getAxisPadding(leftAxisGroups.length),
           bottom: 42,
       };
 
@@ -1929,6 +1929,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               interval={0}
               minTickGap={22}
               dy={15}
+              padding={{ left: 18, right: 36 }}
           />
       );
 
