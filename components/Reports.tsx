@@ -5666,8 +5666,8 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
+                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="relative z-[90] flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-0 flex-1 items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
                                       <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
                                           <FilledChartStyleIcon />
@@ -5700,14 +5700,14 @@ const Reports: React.FC<ReportsProps> = ({
                                       <MoreVertical className="h-[16px] w-[16px]" />
                                   </button>
                               </div>
-                              <div className="h-[342px] px-[10px] pb-[8px] pt-[6px]">
+                              <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
                                   {renderDayTimeMetricChart({ chartId: 'day-time-left', metrics: getDayTimeMetricIds('left') })}
                               </div>
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
+                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="relative z-[90] flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-0 flex-1 items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
                                       <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
                                           <FilledChartStyleIcon />
@@ -5740,7 +5740,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <MoreVertical className="h-[16px] w-[16px]" />
                                   </button>
                               </div>
-                              <div className="h-[342px] px-[10px] pb-[8px] pt-[6px]">
+                              <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
                                   {renderDayTimeMetricChart({ chartId: 'day-time-right', metrics: getDayTimeMetricIds('right') })}
                               </div>
                               <ReportCardLoadingOverlay radius={8} />
