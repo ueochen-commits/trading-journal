@@ -101,9 +101,16 @@ const DEFAULT_SUMMARY_METRIC_IDS = [
 type SummaryMetricId = typeof ALL_SUMMARY_METRIC_IDS[number];
 type ChartMetricVisual = 'line' | 'area' | 'bar';
 type ChartSide = 'left' | 'right';
+type ChartMetricSlot = 'primary' | 'secondary';
 type ChartStyleSettings = Record<ChartSide, {
-  visual?: ChartMetricVisual;
-  color?: string;
+  primary?: {
+    visual?: ChartMetricVisual;
+    color?: string;
+  };
+  secondary?: {
+    visual?: ChartMetricVisual;
+    color?: string;
+  };
 }>;
 
 const getDefaultSummaryLayout = () => [...DEFAULT_SUMMARY_METRIC_IDS];
@@ -164,9 +171,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [showMetricDifference, setShowMetricDifference] = useState(false);
   const [leftChartMetricId, setLeftChartMetricId] = useState<SummaryMetricId>('netPnl');
   const [rightChartMetricId, setRightChartMetricId] = useState<SummaryMetricId>('avgDailyWinLoss');
-  const [openChartMetricPicker, setOpenChartMetricPicker] = useState<ChartSide | null>(null);
+  const [leftSecondaryChartMetricId, setLeftSecondaryChartMetricId] = useState<SummaryMetricId | null>(null);
+  const [rightSecondaryChartMetricId, setRightSecondaryChartMetricId] = useState<SummaryMetricId | null>(null);
+  const [openChartMetricPicker, setOpenChartMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartStyleMenu, setOpenChartStyleMenu] = useState<ChartSide | null>(null);
-  const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<ChartSide | null>(null);
+  const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
@@ -1222,17 +1231,59 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   };
 
   const leftChartConfig = chartMetricConfigs[leftChartMetricId] || chartMetricConfigs.netPnl!;
+  const leftSecondaryChartConfig = leftSecondaryChartMetricId ? chartMetricConfigs[leftSecondaryChartMetricId] : null;
   const rightChartConfig = chartMetricConfigs[rightChartMetricId] || chartMetricConfigs.avgDailyWinLoss!;
-  const getChartVisual = (side: ChartSide, config: typeof leftChartConfig): ChartMetricVisual => chartStyleSettings[side].visual || config.visual;
-  const getChartColor = (side: ChartSide, config: typeof leftChartConfig) => chartStyleSettings[side].color || config.color;
-  const leftChartVisual = getChartVisual('left', leftChartConfig);
-  const rightChartVisual = getChartVisual('right', rightChartConfig);
-  const leftChartColor = getChartColor('left', leftChartConfig);
-  const rightChartColor = getChartColor('right', rightChartConfig);
-  const leftChartData = getChartMetricDisplayData(leftChartMetricId, leftChartVisual);
-  const rightChartData = getChartMetricDisplayData(rightChartMetricId, rightChartVisual);
+  const rightSecondaryChartConfig = rightSecondaryChartMetricId ? chartMetricConfigs[rightSecondaryChartMetricId] : null;
+  const getChartVisual = (side: ChartSide, slot: ChartMetricSlot, config: typeof leftChartConfig): ChartMetricVisual => chartStyleSettings[side][slot]?.visual || config.visual;
+  const getChartColor = (side: ChartSide, slot: ChartMetricSlot, config: typeof leftChartConfig): string => chartStyleSettings[side][slot]?.color || config.color;
+  const leftChartVisual = getChartVisual('left', 'primary', leftChartConfig);
+  const leftSecondaryChartVisual = leftSecondaryChartConfig ? getChartVisual('left', 'secondary', leftSecondaryChartConfig) : null;
+  const rightChartVisual = getChartVisual('right', 'primary', rightChartConfig);
+  const rightSecondaryChartVisual = rightSecondaryChartConfig ? getChartVisual('right', 'secondary', rightSecondaryChartConfig) : null;
+  const leftChartColor = getChartColor('left', 'primary', leftChartConfig);
+  const leftSecondaryChartColor = leftSecondaryChartConfig ? getChartColor('left', 'secondary', leftSecondaryChartConfig) : '#55c39e';
+  const rightChartColor = getChartColor('right', 'primary', rightChartConfig);
+  const rightSecondaryChartColor = rightSecondaryChartConfig ? getChartColor('right', 'secondary', rightSecondaryChartConfig) : '#55c39e';
+
+  const buildCombinedChartData = (
+      primaryMetricId: SummaryMetricId,
+      primaryVisual: ChartMetricVisual,
+      secondaryMetricId: SummaryMetricId | null,
+      secondaryVisual: ChartMetricVisual | null,
+  ) => {
+      const primaryRows = getChartMetricDisplayData(primaryMetricId, primaryVisual);
+      const secondaryRows = secondaryMetricId ? getChartMetricDisplayData(secondaryMetricId, secondaryVisual || undefined) : [];
+      const rowMap = new Map<string, any>();
+
+      primaryRows.forEach(row => {
+          rowMap.set(row.date, { ...row, primaryValue: row.value });
+      });
+
+      secondaryRows.forEach(row => {
+          const existing = rowMap.get(row.date) || { ...row };
+          rowMap.set(row.date, {
+              ...existing,
+              date: row.date,
+              label: row.label,
+              secondaryValue: row.value,
+          });
+      });
+
+      return Array.from(rowMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  };
+
+  const leftChartData = buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual);
+  const rightChartData = buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual);
   const leftChartTicks = getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean);
   const rightChartTicks = getEvenlySpacedIndexes(rightChartData.length, 6).map(index => rightChartData[index]?.label).filter(Boolean);
+  const leftChartStyleMetrics = [
+      { slot: 'primary' as const, config: leftChartConfig, visual: leftChartVisual, color: leftChartColor },
+      ...(leftSecondaryChartConfig && leftSecondaryChartVisual ? [{ slot: 'secondary' as const, config: leftSecondaryChartConfig, visual: leftSecondaryChartVisual, color: leftSecondaryChartColor }] : []),
+  ];
+  const rightChartStyleMetrics = [
+      { slot: 'primary' as const, config: rightChartConfig, visual: rightChartVisual, color: rightChartColor },
+      ...(rightSecondaryChartConfig && rightSecondaryChartVisual ? [{ slot: 'secondary' as const, config: rightSecondaryChartConfig, visual: rightSecondaryChartVisual, color: rightSecondaryChartColor }] : []),
+  ];
 
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
@@ -1275,108 +1326,118 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { id: 'bar', label: language === 'cn' ? '柱状图' : 'Column' },
   ];
 
-  const updateChartStyle = (side: ChartSide, patch: Partial<ChartStyleSettings[ChartSide]>) => {
+  const updateChartStyle = (side: ChartSide, slot: ChartMetricSlot, patch: NonNullable<ChartStyleSettings[ChartSide][ChartMetricSlot]>) => {
       setChartStyleSettings(current => ({
           ...current,
           [side]: {
               ...current[side],
-              ...patch,
+              [slot]: {
+                  ...current[side][slot],
+                  ...patch,
+              },
           },
       }));
   };
 
   const ChartStyleMenu = ({
       side,
-      config,
-      visual,
-      color,
+      metrics,
   }: {
       side: ChartSide;
-      config: typeof leftChartConfig;
-      visual: ChartMetricVisual;
-      color: string;
+      metrics: Array<{
+          slot: ChartMetricSlot;
+          config: typeof leftChartConfig;
+          visual: ChartMetricVisual;
+          color: string;
+      }>;
   }) => {
       const isOpen = openChartStyleMenu === side;
-      const visualDropdownOpen = openChartVisualDropdown === side;
 
       return (
           <div
-              className={`absolute left-0 top-full z-50 mt-[8px] w-[236px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+              className={`absolute left-0 top-full z-50 mt-[8px] w-[318px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
                   isOpen
-                      ? 'max-h-[260px] scale-100 opacity-100'
+                      ? 'max-h-[420px] scale-100 opacity-100'
                       : 'pointer-events-none max-h-0 scale-[0.96] opacity-0'
               }`}
           >
-              <div className="p-[14px]">
-                  <div className="mb-[10px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
-                      {config.label}
-                  </div>
-                  <div className="flex items-center gap-[9px]">
-                      <button
-                          type="button"
-                          className="flex h-[32px] w-[30px] flex-shrink-0 flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-900"
-                          aria-label={language === 'cn' ? '当前颜色' : 'Current color'}
-                      >
-                          <span className="h-1/2 rounded-t-[3px]" style={{ backgroundColor: color }} />
-                          <span className="h-1/2 rounded-b-[3px] bg-[#ff6468]" />
-                      </button>
-                      <div className="relative flex-1">
-                          <button
-                              type="button"
-                              onClick={() => setOpenChartVisualDropdown(current => current === side ? null : side)}
-                              className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
-                          >
-                              {chartVisualOptions.find(option => option.id === visual)?.label}
-                              <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
-                          </button>
-                          <div
-                              className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
-                                  visualDropdownOpen ? 'max-h-[160px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
-                              }`}
-                          >
-                              {chartVisualOptions.map(option => {
-                                  const selected = option.id === visual;
-                                  return (
+              <div className="space-y-[16px] p-[14px]">
+                  {metrics.map((metric, index) => {
+                      const visualDropdownOpen = openChartVisualDropdown?.side === side && openChartVisualDropdown.slot === metric.slot;
+
+                      return (
+                          <div key={metric.slot} className={index > 0 ? 'border-t border-[#edf0f4] pt-[14px] dark:border-slate-800' : ''}>
+                              <div className="mb-[10px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
+                                  {metric.config.label}
+                              </div>
+                              <div className="flex items-center gap-[9px]">
+                                  <button
+                                      type="button"
+                                      className="flex h-[32px] w-[30px] flex-shrink-0 flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-900"
+                                      aria-label={language === 'cn' ? '当前颜色' : 'Current color'}
+                                  >
+                                      <span className="h-full rounded-[3px]" style={{ backgroundColor: metric.color }} />
+                                  </button>
+                                  <div className="relative flex-1">
                                       <button
-                                          key={option.id}
                                           type="button"
-                                          onClick={() => {
-                                              updateChartStyle(side, { visual: option.id });
-                                              setOpenChartVisualDropdown(null);
-                                          }}
-                                          className={`block w-full px-[12px] py-[8px] text-left text-[14px] font-medium transition-colors ${
-                                              selected
-                                                  ? 'bg-[#e8e4f4] text-[#2f255f]'
-                                                  : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                          onClick={() => setOpenChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot })}
+                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                      >
+                                          {chartVisualOptions.find(option => option.id === metric.visual)?.label}
+                                          <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
+                                      </button>
+                                      <div
+                                          className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                              visualDropdownOpen ? 'max-h-[160px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
-                                          {option.label}
-                                      </button>
-                                  );
-                              })}
-                          </div>
-                      </div>
-                  </div>
+                                          {chartVisualOptions.map(option => {
+                                              const selected = option.id === metric.visual;
+                                              return (
+                                                  <button
+                                                      key={option.id}
+                                                      type="button"
+                                                      onClick={() => {
+                                                          updateChartStyle(side, metric.slot, { visual: option.id });
+                                                          setOpenChartVisualDropdown(null);
+                                                      }}
+                                                      className={`block w-full px-[12px] py-[8px] text-left text-[14px] font-medium transition-colors ${
+                                                          selected
+                                                              ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                              : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                      }`}
+                                                  >
+                                                      {option.label}
+                                                  </button>
+                                              );
+                                          })}
+                                      </div>
+                                  </div>
+                              </div>
 
-                  <div className="mt-[12px] flex items-center gap-[8px]">
-                      {chartStyleColors.map(optionColor => {
-                          const selected = optionColor === color;
-                          return (
-                              <button
-                                  key={optionColor}
-                                  type="button"
-                                  onClick={() => updateChartStyle(side, { color: optionColor })}
-                                  className={`relative h-[26px] w-[26px] rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
-                                      selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
-                                  }`}
-                                  style={{ backgroundColor: optionColor }}
-                                  aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
-                              >
-                                  {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
-                              </button>
-                          );
-                      })}
-                  </div>
+                              <div className="mt-[12px] flex items-center gap-[8px]">
+                                  {chartStyleColors.map(optionColor => {
+                                      const selected = optionColor === metric.color;
+                                      return (
+                                          <button
+                                              key={optionColor}
+                                              type="button"
+                                              onClick={() => updateChartStyle(side, metric.slot, { color: optionColor })}
+                                              className={`relative h-[26px] w-[26px] rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
+                                                  selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
+                                              }`}
+                                              style={{ backgroundColor: optionColor }}
+                                              aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
+                                          >
+                                              {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
+                                          </button>
+                                      );
+                                  })}
+                              </div>
+                          </div>
+                      );
+                  })}
 
                   <button
                       type="button"
@@ -1397,26 +1458,24 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       side,
       data,
       ticks,
-      config,
-      visual,
-      color,
+      metrics,
   }: {
       side: ChartSide;
-      data: ReturnType<typeof getChartMetricDisplayData>;
+      data: any[];
       ticks: string[];
-      config: typeof leftChartConfig;
-      visual: ChartMetricVisual;
-      color: string;
+      metrics: Array<{
+          slot: ChartMetricSlot;
+          config: typeof leftChartConfig;
+          visual: ChartMetricVisual;
+          color: string;
+          dataKey: 'primaryValue' | 'secondaryValue';
+          yAxisId: 'left' | 'right';
+      }>;
   }) => {
-      const chartKey = `${side}-${config.label}-${visual}-${color}`;
+      const chartKey = `${side}-${metrics.map(metric => `${metric.config.label}-${metric.visual}-${metric.color}`).join('|')}`;
       const commonMargin = { top: 8, right: 10, left: 5, bottom: 42 };
-      const yAxisProps = {
-          tick: { fontSize: 12, fill: '#69717b', fontWeight: 400 },
-          axisLine: false,
-          tickLine: false,
-          width: side === 'right' && visual === 'bar' ? 50 : 58,
-          tickFormatter: (value: number) => formatChartMetricValue(value, config.format, true),
-      };
+      const primaryMetric = metrics[0];
+      const secondaryMetric = metrics[1];
 
       const xAxis = (
           <XAxis
@@ -1432,93 +1491,122 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
 
       const legend = (
-          <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
-              <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: color }} />
-              <span>{config.shortLabel}</span>
+          <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[20px] text-[14px] font-medium text-[#666b72]">
+              {metrics.map(metric => (
+                  <div key={metric.slot} className="flex items-center gap-[7px]">
+                      <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: metric.color }} />
+                      <span>{metric.config.shortLabel}</span>
+                  </div>
+              ))}
           </div>
       );
+
+      const renderSeries = (metric: typeof metrics[number], gradientId: string) => {
+          if (metric.visual === 'bar') {
+              return (
+                  <Bar
+                      key={metric.slot}
+                      yAxisId={metric.yAxisId}
+                      dataKey={metric.dataKey}
+                      fill={metric.color}
+                      radius={[4, 4, 0, 0]}
+                      barSize={metric.slot === 'primary' ? 30 : 22}
+                      maxBarSize={36}
+                      isAnimationActive
+                      animationDuration={520}
+                      animationEasing="ease-out"
+                  />
+              );
+          }
+
+          if (metric.visual === 'line') {
+              return (
+                  <Line
+                      key={metric.slot}
+                      yAxisId={metric.yAxisId}
+                      type="monotone"
+                      dataKey={metric.dataKey}
+                      stroke={metric.color}
+                      strokeWidth={2}
+                      dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
+                      isAnimationActive
+                      animationDuration={560}
+                      animationEasing="ease-out"
+                      connectNulls
+                      activeDot={{
+                          r: 5,
+                          fill: metric.color,
+                          stroke: '#ffffff',
+                          strokeWidth: 2,
+                      }}
+                  />
+              );
+          }
+
+          return (
+              <Area
+                  key={metric.slot}
+                  yAxisId={metric.yAxisId}
+                  type="monotone"
+                  dataKey={metric.dataKey}
+                  stroke={metric.color}
+                  strokeWidth={2}
+                  fill={`url(#${gradientId})`}
+                  dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
+                  isAnimationActive
+                  animationDuration={560}
+                  animationEasing="ease-out"
+                  connectNulls
+                  activeDot={{
+                      r: 5,
+                      fill: metric.color,
+                      stroke: '#ffffff',
+                      strokeWidth: 2,
+                  }}
+              />
+          );
+      };
 
       return (
           <div key={chartKey} className="relative h-full animate-fade-in">
               <ResponsiveContainer width="100%" height="100%">
-                  {visual === 'bar' ? (
-                      <BarChart data={data} margin={commonMargin} barCategoryGap="48%">
-                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
-                          {xAxis}
-                          <YAxis {...yAxisProps} />
-                          <Tooltip cursor={{ fill: `${color}12` }} content={<GenericChartTooltip config={config} color={color} />} />
-                          <Bar
-                              dataKey="value"
-                              fill={color}
-                              radius={[4, 4, 0, 0]}
-                              barSize={36}
-                              maxBarSize={42}
-                              isAnimationActive
-                              animationDuration={520}
-                              animationEasing="ease-out"
-                          />
-                      </BarChart>
-                  ) : visual === 'line' ? (
-                      <LineChart data={data} margin={commonMargin}>
-                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
-                          {xAxis}
-                          <YAxis {...yAxisProps} />
-                          <Tooltip
-                              cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
-                              content={<GenericChartTooltip config={config} color={color} />}
-                          />
-                          <Line
-                              type="monotone"
-                              dataKey="value"
-                              stroke={color}
-                              strokeWidth={2}
-                              dot={{ r: 2.4, fill: color, stroke: color, strokeWidth: 1 }}
-                              isAnimationActive
-                              animationDuration={560}
-                              animationEasing="ease-out"
-                              activeDot={{
-                                  r: 5,
-                                  fill: color,
-                                  stroke: '#ffffff',
-                                  strokeWidth: 2,
-                              }}
-                          />
-                      </LineChart>
-                  ) : (
-                      <AreaChart data={data} margin={commonMargin}>
+                  <ComposedChart data={data} margin={commonMargin} barCategoryGap="48%">
                           <defs>
-                              <linearGradient id={`${side}ChartMetricFill`} x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="0%" stopColor={color} stopOpacity={visual === 'area' ? 0.5 : 0} />
-                                  <stop offset="45%" stopColor={color} stopOpacity={visual === 'area' ? 0.16 : 0} />
-                                  <stop offset="100%" stopColor={color} stopOpacity={visual === 'area' ? 0.04 : 0} />
-                              </linearGradient>
+                              {metrics.map(metric => (
+                                  <linearGradient key={metric.slot} id={`${side}-${metric.slot}ChartMetricFill`} x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="0%" stopColor={metric.color} stopOpacity={0.5} />
+                                      <stop offset="45%" stopColor={metric.color} stopOpacity={0.16} />
+                                      <stop offset="100%" stopColor={metric.color} stopOpacity={0.04} />
+                                  </linearGradient>
+                              ))}
                           </defs>
                           <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
                           {xAxis}
-                          <YAxis {...yAxisProps} />
+                          <YAxis
+                              yAxisId="left"
+                              tick={{ fontSize: 12, fill: primaryMetric.color, fontWeight: 400 }}
+                              axisLine={false}
+                              tickLine={false}
+                              width={58}
+                              tickFormatter={(value: number) => formatChartMetricValue(value, primaryMetric.config.format, true)}
+                          />
+                          {secondaryMetric && (
+                              <YAxis
+                                  yAxisId="right"
+                                  orientation="right"
+                                  tick={{ fontSize: 12, fill: secondaryMetric.color, fontWeight: 400 }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                  width={46}
+                                  tickFormatter={(value: number) => formatChartMetricValue(value, secondaryMetric.config.format, true)}
+                              />
+                          )}
                           <Tooltip
-                              cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
-                              content={<GenericChartTooltip config={config} color={color} />}
+                              cursor={{ stroke: primaryMetric.color, strokeWidth: 1, strokeDasharray: '3 3' }}
+                              content={<GenericChartTooltip metrics={metrics} />}
                           />
-                          <Area
-                              type="monotone"
-                              dataKey="value"
-                              stroke={color}
-                              strokeWidth={2}
-                              fill={`url(#${side}ChartMetricFill)`}
-                              dot={{ r: 2.4, fill: color, stroke: color, strokeWidth: 1 }}
-                              isAnimationActive
-                              animationDuration={560}
-                              animationEasing="ease-out"
-                              activeDot={{
-                                  r: 5,
-                                  fill: color,
-                                  stroke: '#ffffff',
-                                  strokeWidth: 2,
-                              }}
-                          />
-                      </AreaChart>
-                  )}
+                          {metrics.map(metric => renderSeries(metric, `${side}-${metric.slot}ChartMetricFill`))}
+                  </ComposedChart>
               </ResponsiveContainer>
               {legend}
           </div>
@@ -1536,13 +1624,16 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const ChartCard = ({
       title,
       metricLabel,
+      secondaryMetricLabel,
       children,
       side,
-      chartConfig,
-      chartVisual,
-      chartColor,
+      styleMetrics,
       metricPicker,
+      secondaryMetricPicker,
       onMetricButtonClick,
+      onSecondaryMetricButtonClick,
+      onAddMetricClick,
+      onRemoveSecondaryMetric,
       accent = 'text-indigo-500',
       rightControl = 'Day',
       featured = false,
@@ -1551,13 +1642,21 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   }: {
       title: string;
       metricLabel: string;
+      secondaryMetricLabel?: string;
       children: React.ReactNode;
       side?: ChartSide;
-      chartConfig?: typeof leftChartConfig;
-      chartVisual?: ChartMetricVisual;
-      chartColor?: string;
+      styleMetrics?: Array<{
+          slot: ChartMetricSlot;
+          config: typeof leftChartConfig;
+          visual: ChartMetricVisual;
+          color: string;
+      }>;
       metricPicker?: React.ReactNode;
+      secondaryMetricPicker?: React.ReactNode;
       onMetricButtonClick?: () => void;
+      onSecondaryMetricButtonClick?: () => void;
+      onAddMetricClick?: () => void;
+      onRemoveSecondaryMetric?: () => void;
       accent?: string;
       rightControl?: string;
       featured?: boolean;
@@ -1581,12 +1680,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       >
                           <FilledChartStyleIcon className={accent} />
                       </button>
-                      {side && chartConfig && chartVisual && chartColor && (
+                      {side && styleMetrics?.length && (
                           <ChartStyleMenu
                               side={side}
-                              config={chartConfig}
-                              visual={chartVisual}
-                              color={chartColor}
+                              metrics={styleMetrics}
                           />
                       )}
                   </div>
@@ -1611,9 +1708,48 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       </button>
                       {metricPicker}
                   </div>
-                  <button className={`${featured ? 'text-[14px] font-semibold text-[#5b45b6]' : 'text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'} hidden sm:inline-flex`}>
-                      + {language === 'cn' ? '添加指标' : 'Add metric'}
-                  </button>
+                  {secondaryMetricLabel ? (
+                      <div className="relative flex items-center gap-[6px]">
+                          <button
+                              type="button"
+                              onClick={() => {
+                                  onSecondaryMetricButtonClick?.();
+                                  setOpenChartStyleMenu(null);
+                                  setOpenChartVisualDropdown(null);
+                              }}
+                              className={`${featured ? 'relative h-[32px] w-[236px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          >
+                              {featured && (
+                                  <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
+                                      <span className="absolute left-0 top-0 h-[15px] w-[4px] rounded-tl-[7px] bg-[#35cfa2]" />
+                                      <span className="absolute left-0 bottom-0 h-[15px] w-[4px] rounded-bl-[7px] bg-[#ff6468]" />
+                                  </span>
+                              )}
+                              <span className="truncate">{secondaryMetricLabel}</span>
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
+                          </button>
+                          <button
+                              type="button"
+                              onClick={onRemoveSecondaryMetric}
+                              className="inline-flex h-[24px] w-[24px] flex-shrink-0 items-center justify-center rounded-[6px] text-[#7b8490] transition-colors hover:bg-[#f1f2f4] hover:text-[#2f3742]"
+                              aria-label={language === 'cn' ? '移除第二指标' : 'Remove second metric'}
+                          >
+                              <X className="h-[14px] w-[14px]" />
+                          </button>
+                          {secondaryMetricPicker}
+                      </div>
+                  ) : (
+                      <div className="relative hidden sm:inline-flex">
+                          <button
+                              type="button"
+                              onClick={onAddMetricClick}
+                              className={`${featured ? 'rounded-[7px] px-[12px] py-[7px] text-[14px] font-semibold text-[#5b45b6] transition-colors hover:bg-[#ebe7f8]' : 'text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'}`}
+                          >
+                              + {language === 'cn' ? '添加指标' : 'Add metric'}
+                          </button>
+                          {secondaryMetricPicker}
+                      </div>
+                  )}
               </div>
               <div className={`${featured ? 'gap-[8px]' : 'gap-2'} flex items-center`}>
                   <button className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#4f2db8] px-[12px] text-[14px] font-medium text-[#1f2933]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors`}>
@@ -1681,28 +1817,50 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const GenericChartTooltip = ({ active, payload, label, config, color: overrideColor }: any) => {
-      if (!active || !payload?.length || !config) return null;
-      const value = Number(payload[0]?.value || 0);
-      const color = overrideColor || config.color || '#55c39e';
+  const GenericChartTooltip = ({ active, payload, label, config, color: overrideColor, metrics }: any) => {
+      if (!active || !payload?.length) return null;
+
+      const tooltipMetrics = metrics || (config ? [{
+          config,
+          color: overrideColor || config.color || '#55c39e',
+          dataKey: 'value',
+      }] : []);
 
       return (
           <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.22)]">
               <div className="text-[12px] font-bold text-[#20232a]">{label}</div>
-              <div className="mt-1 flex items-center gap-2">
-                  <span className="h-[6px] w-[6px] rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-[12px] text-[#3f4650]">{config.shortLabel}: {formatChartMetricValue(value, config.format)}</span>
+              <div className="mt-1 space-y-[3px]">
+                  {tooltipMetrics.map((metric: any) => {
+                      const payloadItem = payload.find((item: any) => item.dataKey === metric.dataKey);
+                      if (!payloadItem || payloadItem.value === undefined || payloadItem.value === null) return null;
+                      const value = Number(payloadItem.value || 0);
+
+                      return (
+                          <div key={metric.dataKey} className="flex items-center gap-2">
+                              <span className="h-[6px] w-[6px] rounded-full" style={{ backgroundColor: metric.color }} />
+                              <span className="text-[12px] text-[#3f4650]">{metric.config.shortLabel}: {formatChartMetricValue(value, metric.config.format)}</span>
+                          </div>
+                      );
+                  })}
               </div>
           </div>
       );
   };
 
-  const ChartMetricPicker = ({ side, selectedMetricId }: { side: 'left' | 'right'; selectedMetricId: SummaryMetricId }) => {
-      if (openChartMetricPicker !== side) return null;
+  const ChartMetricPicker = ({ side, slot, selectedMetricId, excludedMetricIds = [] }: { side: ChartSide; slot: ChartMetricSlot; selectedMetricId: SummaryMetricId | null; excludedMetricIds?: SummaryMetricId[] }) => {
+      if (openChartMetricPicker?.side !== side || openChartMetricPicker.slot !== slot) return null;
 
       const handleSelectMetric = (metricId: SummaryMetricId) => {
-          if (side === 'left') setLeftChartMetricId(metricId);
-          else setRightChartMetricId(metricId);
+          if (side === 'left' && slot === 'primary') {
+              setLeftChartMetricId(metricId);
+              if (leftSecondaryChartMetricId === metricId) setLeftSecondaryChartMetricId(null);
+          }
+          else if (side === 'left') setLeftSecondaryChartMetricId(metricId);
+          else if (slot === 'primary') {
+              setRightChartMetricId(metricId);
+              if (rightSecondaryChartMetricId === metricId) setRightSecondaryChartMetricId(null);
+          }
+          else setRightSecondaryChartMetricId(metricId);
           setOpenChartMetricPicker(null);
           setChartMetricPickerSearch('');
       };
@@ -1735,7 +1893,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               </button>
                               <div className={`overflow-hidden transition-[max-height,padding] duration-200 ease-out ${isExpanded ? 'max-h-[620px] pb-[6px]' : 'max-h-0 pb-0'}`}>
                                   <div className="space-y-[1px]">
-                                      {category.metrics.map(([metricId, config]) => {
+                                      {category.metrics
+                                          .filter(([metricId]) => !excludedMetricIds.includes(metricId))
+                                          .map(([metricId, config]) => {
                                           const isSelected = metricId === selectedMetricId;
                                           return (
                                               <button
@@ -2206,12 +2366,20 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <ChartCard
                       title={leftChartConfig.label}
                       metricLabel={leftChartConfig.label}
+                      secondaryMetricLabel={leftSecondaryChartConfig?.label}
                       side="left"
-                      chartConfig={leftChartConfig}
-                      chartVisual={leftChartVisual}
-                      chartColor={leftChartColor}
-                      metricPicker={<ChartMetricPicker side="left" selectedMetricId={leftChartMetricId} />}
-                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current === 'left' ? null : 'left')}
+                      styleMetrics={leftChartStyleMetrics}
+                      metricPicker={<ChartMetricPicker side="left" slot="primary" selectedMetricId={leftChartMetricId} excludedMetricIds={leftSecondaryChartMetricId ? [leftSecondaryChartMetricId] : []} />}
+                      secondaryMetricPicker={<ChartMetricPicker side="left" slot="secondary" selectedMetricId={leftSecondaryChartMetricId} excludedMetricIds={[leftChartMetricId]} />}
+                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'primary' ? null : { side: 'left', slot: 'primary' })}
+                      onSecondaryMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' })}
+                      onAddMetricClick={() => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' })}
+                      onRemoveSecondaryMetric={() => {
+                          setLeftSecondaryChartMetricId(null);
+                          setOpenChartMetricPicker(null);
+                          setOpenChartVisualDropdown(null);
+                          setChartStyleSettings(current => ({ ...current, left: { ...current.left, secondary: undefined } }));
+                      }}
                       accent="text-[#5f636b]"
                       rightControl={language === 'cn' ? '日' : 'Day'}
                       featured
@@ -2225,9 +2393,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               side="left"
                               data={leftChartData}
                               ticks={leftChartTicks}
-                              config={leftChartConfig}
-                              visual={leftChartVisual}
-                              color={leftChartColor}
+                              metrics={leftChartStyleMetrics.map((metric, index) => ({
+                                  ...metric,
+                                  dataKey: index === 0 ? 'primaryValue' : 'secondaryValue',
+                                  yAxisId: index === 0 ? 'left' : 'right',
+                              }))}
                           />
                       )}
                   </ChartCard>
@@ -2235,12 +2405,20 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <ChartCard
                       title={rightChartConfig.label}
                       metricLabel={rightChartConfig.label}
+                      secondaryMetricLabel={rightSecondaryChartConfig?.label}
                       side="right"
-                      chartConfig={rightChartConfig}
-                      chartVisual={rightChartVisual}
-                      chartColor={rightChartColor}
-                      metricPicker={<ChartMetricPicker side="right" selectedMetricId={rightChartMetricId} />}
-                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current === 'right' ? null : 'right')}
+                      styleMetrics={rightChartStyleMetrics}
+                      metricPicker={<ChartMetricPicker side="right" slot="primary" selectedMetricId={rightChartMetricId} excludedMetricIds={rightSecondaryChartMetricId ? [rightSecondaryChartMetricId] : []} />}
+                      secondaryMetricPicker={<ChartMetricPicker side="right" slot="secondary" selectedMetricId={rightSecondaryChartMetricId} excludedMetricIds={[rightChartMetricId]} />}
+                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'primary' ? null : { side: 'right', slot: 'primary' })}
+                      onSecondaryMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' })}
+                      onAddMetricClick={() => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' })}
+                      onRemoveSecondaryMetric={() => {
+                          setRightSecondaryChartMetricId(null);
+                          setOpenChartMetricPicker(null);
+                          setOpenChartVisualDropdown(null);
+                          setChartStyleSettings(current => ({ ...current, right: { ...current.right, secondary: undefined } }));
+                      }}
                       accent="text-emerald-500"
                       rightControl={language === 'cn' ? '日' : 'Day'}
                       featured
@@ -2254,9 +2432,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               side="right"
                               data={rightChartData}
                               ticks={rightChartTicks}
-                              config={rightChartConfig}
-                              visual={rightChartVisual}
-                              color={rightChartColor}
+                              metrics={rightChartStyleMetrics.map((metric, index) => ({
+                                  ...metric,
+                                  dataKey: index === 0 ? 'primaryValue' : 'secondaryValue',
+                                  yAxisId: index === 0 ? 'left' : 'right',
+                              }))}
                           />
                       )}
                   </ChartCard>
