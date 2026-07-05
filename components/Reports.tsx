@@ -1686,7 +1686,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[320px] origin-top-left animate-fade-in-up flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[320px] origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
                       <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
@@ -1711,7 +1711,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   {category.label}
                                   <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
                               </button>
-                              <div className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ease-out ${isExpanded ? 'max-h-[620px] translate-y-0 pb-[6px] opacity-100' : 'max-h-0 -translate-y-1 pb-0 opacity-0'}`}>
+                              <div className={`overflow-hidden transition-[max-height,padding] duration-200 ease-out ${isExpanded ? 'max-h-[620px] pb-[6px]' : 'max-h-0 pb-0'}`}>
                                   <div className="space-y-[1px]">
                                       {category.metrics.map(([metricId, config]) => {
                                           const isSelected = metricId === selectedMetricId;
@@ -2366,7 +2366,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                                                           <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
                                                                       </button>
 
-                                                                      <div className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ease-out ${isExpanded ? 'max-h-[520px] translate-y-0 pb-[6px] opacity-100' : 'max-h-0 -translate-y-1 pb-0 opacity-0'}`}>
+                                                                      <div className={`overflow-hidden transition-[max-height,padding] duration-200 ease-out ${isExpanded ? 'max-h-[520px] pb-[6px]' : 'max-h-0 pb-0'}`}>
                                                                           <div className="space-y-[1px]">
                                                                           {category.metrics.map(metric => {
                                                                               const isSelected = draftSummaryMetricIds.includes(metric.id);
