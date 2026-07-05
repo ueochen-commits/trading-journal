@@ -1525,6 +1525,14 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
+  const FilledChartStyleIcon = ({ className = '' }: { className?: string }) => (
+      <span className={`inline-flex h-4 w-4 items-end justify-center gap-[2px] ${className}`} aria-hidden="true">
+          <span className="h-[7px] w-[3px] rounded-[1px] bg-current" />
+          <span className="h-[12px] w-[3px] rounded-[1px] bg-current" />
+          <span className="h-[9px] w-[3px] rounded-[1px] bg-current" />
+      </span>
+  );
+
   const ChartCard = ({
       title,
       metricLabel,
@@ -1571,7 +1579,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
                           aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                       >
-                          <BarChart2 className={`w-4 h-4 ${accent}`} />
+                          <FilledChartStyleIcon className={accent} />
                       </button>
                       {side && chartConfig && chartVisual && chartColor && (
                           <ChartStyleMenu
