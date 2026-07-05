@@ -2519,8 +2519,8 @@ const Reports: React.FC<ReportsProps> = ({
 
       return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
-          <div className={`${featured ? 'min-h-[64px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-slate-800'} flex flex-wrap items-center justify-between gap-[10px] bg-white dark:bg-slate-900`}>
-              <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-0 flex-1 flex-wrap items-center`}>
+          <div className={`${featured ? 'min-h-[64px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-slate-800'} flex flex-wrap items-start justify-between gap-[10px] bg-white dark:bg-slate-900`}>
+              <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center`}>
                   <div className="relative" data-chart-style-root={side}>
                       <button
                           type="button"
@@ -2543,7 +2543,7 @@ const Reports: React.FC<ReportsProps> = ({
                           />
                       )}
                   </div>
-                  <div className="relative min-w-[min(100%,164px)] flex-shrink-0" data-chart-metric-picker-root>
+                  <div className="relative min-w-[150px] flex-[1_1_170px] max-w-full" data-chart-metric-picker-root>
                       <button
                           type="button"
                           onClick={() => {
@@ -2552,7 +2552,7 @@ const Reports: React.FC<ReportsProps> = ({
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'relative h-[32px] w-[clamp(164px,18vw,250px)] max-w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          className={`${featured ? 'relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2568,7 +2568,7 @@ const Reports: React.FC<ReportsProps> = ({
                       {metricPicker}
                   </div>
                   {additionalMetrics.map(metric => (
-                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-none items-center transition-[width] duration-150 ease-out w-[clamp(164px,20vw,270px)] max-w-full hover:w-[clamp(188px,calc(20vw+24px),298px)] focus-within:w-[clamp(188px,calc(20vw+24px),298px)]" data-chart-metric-picker-root>
+                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-[1_1_170px] max-w-full items-center" data-chart-metric-picker-root>
                           <button
                               type="button"
                               onClick={() => {
@@ -2577,7 +2577,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2813,7 +2813,7 @@ const Reports: React.FC<ReportsProps> = ({
       };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[320px] origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
                       <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
