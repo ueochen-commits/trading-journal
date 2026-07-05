@@ -3397,6 +3397,7 @@ const Reports: React.FC<ReportsProps> = ({
       const chartData = dayTimeReportRows.map(row => ({
           ...row,
           label: row.shortLabel,
+          tooltipLabel: row.label,
           ...Object.fromEntries(metrics.map(metric => [metric, getDayTimeMetricValue(row, metric)])),
       }));
       const axisGroups = visibleMetrics.map((metric, index) => {
@@ -3494,11 +3495,15 @@ const Reports: React.FC<ReportsProps> = ({
                       ))}
                       <Tooltip
                           cursor={{ stroke: visibleMetrics[0]?.color || '#6b55cf', strokeDasharray: '3 3' }}
-                          contentStyle={{ backgroundColor: '#1f2430', border: '0', color: '#fff', borderRadius: 6, fontSize: 12 }}
-                          formatter={(value: number, name: string) => {
-                              const metric = getDayTimeMetricOption(name as DayTimeMetricId);
-                              return [formatChartMetricValue(Number(value), metric.format, false), metric.label];
-                          }}
+                          content={<GenericChartTooltip metrics={visibleMetrics.map(metric => ({
+                              config: {
+                                  label: metric.label,
+                                  shortLabel: metric.shortLabel,
+                                  format: metric.format,
+                              },
+                              color: metric.color,
+                              dataKey: metric.id,
+                          }))} />}
                       />
                       {gridAxis?.ticks.map(tick => (
                           <ReferenceLine key={`${chartId}-grid-${tick}`} yAxisId={gridAxis.id} y={tick} stroke="#dfe5eb" strokeOpacity={0.42} strokeDasharray="4 4" strokeWidth={1} ifOverflow="extendDomain" />
@@ -3963,19 +3968,19 @@ const Reports: React.FC<ReportsProps> = ({
 
       if (rows.length === 0) return null;
 
-      const rawDate = payload[0]?.payload?.date;
+      const rawDate = payload[0]?.payload?.tooltipLabel || payload[0]?.payload?.date;
       const title = typeof rawDate === 'string' && rawDate
           ? rawDate
           : label;
 
       return (
-          <div className="min-w-[230px] max-w-[380px] rounded-[4px] border border-[#cfd6df] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.24)]">
-              <div className="text-[12px] font-bold leading-[16px] text-[#20232a]">{title}</div>
+          <div className="min-w-[236px] max-w-[360px] rounded-[4px] border border-[#d7dce4] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.18)]">
+              <div className="text-[12px] font-semibold leading-[16px] text-[#20232a]">{title}</div>
               <div className="mt-[5px] space-y-[3px]">
                   {rows.map((row: any) => (
                       <div key={row.key} className="flex items-start gap-[6px]">
-                          <span className="mt-[6px] h-[5px] w-[5px] flex-shrink-0 rounded-full" style={{ backgroundColor: row.color }} />
-                          <span className="text-[12px] leading-[16px] text-[#303844]">
+                          <span className="mt-[5px] h-[6px] w-[6px] flex-shrink-0 rounded-full" style={{ backgroundColor: row.color }} />
+                          <span className="text-[12px] font-medium leading-[16px] text-[#303844]">
                               {row.label}: {row.value}
                           </span>
                       </div>
