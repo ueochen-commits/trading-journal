@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, Globe2, Repeat2, BookOpen, FileBarChart2 } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, Globe2, Repeat2, BookOpen, FileBarChart2, GripVertical, X, Plus } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -20,6 +20,40 @@ interface ReportsProps {
   disciplineHistory?: any[];
   riskSettings?: any;
 }
+
+const SUMMARY_LAYOUT_STORAGE_KEY = 'tg_reports_summary_metric_layout_v1';
+const DEFAULT_SUMMARY_METRIC_IDS = [
+  'netPnl',
+  'winPct',
+  'avgDailyWinPct',
+  'profitFactor',
+  'tradeExpectancy',
+  'avgDailyWinLoss',
+  'avgTradeWinLoss',
+  'avgHoldTime',
+  'avgNetTradePnl',
+  'avgDailyNetPnl',
+  'avgPlannedR',
+  'avgRealizedR',
+  'avgDailyVolume',
+  'loggedDays',
+  'maxDailyNetDrawdown',
+  'avgDailyNetDrawdown',
+] as const;
+
+type SummaryMetricId = typeof DEFAULT_SUMMARY_METRIC_IDS[number];
+
+const getDefaultSummaryLayout = () => [...DEFAULT_SUMMARY_METRIC_IDS];
+
+const normalizeSummaryLayout = (ids: unknown): SummaryMetricId[] => {
+  if (!Array.isArray(ids)) return getDefaultSummaryLayout();
+
+  const allowedIds = new Set<string>(DEFAULT_SUMMARY_METRIC_IDS);
+  const normalized = ids.filter((id): id is SummaryMetricId => typeof id === 'string' && allowedIds.has(id));
+  const deduped = Array.from(new Set(normalized));
+
+  return deduped.length > 0 ? deduped : getDefaultSummaryLayout();
+};
 
 const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = [], isDataLoading = false, onPushNotification, onSavePlan, disciplineHistory = [], riskSettings = null }) => {
   const { t, language } = useLanguage();
@@ -50,6 +84,18 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [timeInterval, setTimeInterval] = useState<string>('1 Hour');
   // Risk Tab Sub-filter
   const [riskFilter, setRiskFilter] = useState<'R-MULTIPLE' | 'POSITION SIZE'>('R-MULTIPLE');
+  const [isSummaryEditing, setIsSummaryEditing] = useState(false);
+  const [summaryMetricIds, setSummaryMetricIds] = useState<SummaryMetricId[]>(() => {
+      try {
+          const saved = localStorage.getItem(SUMMARY_LAYOUT_STORAGE_KEY);
+          return saved ? normalizeSummaryLayout(JSON.parse(saved)) : getDefaultSummaryLayout();
+      } catch {
+          return getDefaultSummaryLayout();
+      }
+  });
+  const [draftSummaryMetricIds, setDraftSummaryMetricIds] = useState<SummaryMetricId[]>(summaryMetricIds);
+  const [draggedSummaryMetricId, setDraggedSummaryMetricId] = useState<SummaryMetricId | null>(null);
+  const [isAddMetricMenuOpen, setIsAddMetricMenuOpen] = useState(false);
   
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -992,7 +1038,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const SummaryMetric = ({ label, value, tooltip, tone = 'neutral' }: { label: string; value: string | number; tooltip: string; tone?: 'neutral' | 'good' | 'bad' | 'accent' }) => {
+  const SummaryMetric = ({ label, value, tooltip, tone = 'neutral', isEditing = false, onRemove, draggableProps }: { label: string; value: string | number; tooltip: string; tone?: 'neutral' | 'good' | 'bad' | 'accent'; isEditing?: boolean; onRemove?: () => void; draggableProps?: React.HTMLAttributes<HTMLDivElement> }) => {
       const toneClass = tone === 'good'
           ? 'text-emerald-600 dark:text-emerald-400'
           : tone === 'bad'
@@ -1000,26 +1046,54 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           : tone === 'accent'
           ? 'text-indigo-600 dark:text-indigo-400'
           : 'text-slate-800 dark:text-slate-100';
+      const { className: draggableClassName = '', ...dragAttributes } = draggableProps || {};
 
       return (
-          <div className="min-h-[64px]">
-              <div className="flex items-center gap-1 text-[13px] font-medium leading-none text-[#5f6875] dark:text-slate-400">
-                  {label}
-                  <span className="group/metric-info relative inline-flex">
+          <div
+              className={`group/summary-metric relative min-h-[64px] transition-all ${
+                  isEditing
+                      ? 'rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] shadow-[0_1px_0_rgba(15,23,42,0.03)] hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900/80'
+                      : ''
+              } ${draggableClassName}`}
+              {...dragAttributes}
+          >
+              {isEditing && (
+                  <>
+                      <div className="absolute left-[9px] top-[12px] text-[#9aa3ae]">
+                          <GripVertical className="h-[15px] w-[15px]" />
+                      </div>
                       <button
                           type="button"
-                          className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
-                          aria-label={tooltip}
+                          onClick={onRemove}
+                          className="absolute -right-[8px] -top-[8px] inline-flex h-[18px] w-[18px] items-center justify-center rounded-full bg-[#111317] text-white shadow-[0_2px_6px_rgba(15,23,42,0.22)] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                          aria-label={language === 'cn' ? `移除${label}` : `Remove ${label}`}
                       >
-                          <Info className="h-[14px] w-[14px]" />
+                          <X className="h-[12px] w-[12px]" />
                       </button>
-                      <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-[9px] hidden w-[286px] -translate-x-1/2 rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
-                          {tooltip}
-                      </span>
-                  </span>
-              </div>
-              <div className={`mt-[7px] text-[22px] font-semibold leading-none tabular-nums ${toneClass}`}>
-                  {value}
+                  </>
+              )}
+
+              <div className={isEditing ? 'pl-[22px]' : ''}>
+                  <div className="flex items-center gap-1 text-[13px] font-medium leading-none text-[#5f6875] dark:text-slate-400">
+                      {label}
+                      {!isEditing && (
+                          <span className="group/metric-info relative inline-flex">
+                              <button
+                                  type="button"
+                                  className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                  aria-label={tooltip}
+                              >
+                                  <Info className="h-[14px] w-[14px]" />
+                              </button>
+                              <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-[9px] hidden w-[286px] -translate-x-1/2 rounded-[3px] bg-[#262626] px-[12px] py-[10px] text-left text-[13px] font-semibold leading-[1.5] text-white shadow-[0_8px_22px_rgba(15,23,42,0.24)] group-hover/metric-info:block group-focus-within/metric-info:block">
+                                  {tooltip}
+                              </span>
+                          </span>
+                      )}
+                  </div>
+                  <div className={`mt-[7px] text-[22px] font-semibold leading-none tabular-nums ${toneClass}`}>
+                      {value}
+                  </div>
               </div>
           </div>
       );
@@ -1150,28 +1224,95 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { id: 'OTHER', label: t.reports.filters.other },
   ];
 
-  const summaryMetrics = stats ? [
-      { label: language === 'cn' ? '净盈亏' : 'Net P&L', tooltip: language === 'cn' ? '所选日期范围内，所有已平仓交易的已实现净盈亏，已扣除手续费。' : 'The total realized Profit and Loss (P/L) on all closed positions, for the date range selected.', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '胜率' : 'Win %', tooltip: language === 'cn' ? '已平仓交易中盈利交易所占比例。' : 'The percentage of closed trades that finished profitable.', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均胜率。' : 'The average win percentage across logged trading days in the selected range.', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
-      { label: language === 'cn' ? '盈利因子' : 'Profit factor', tooltip: language === 'cn' ? '总盈利除以总亏损的绝对值，用来衡量盈利覆盖亏损的能力。' : 'Gross profit divided by absolute gross loss. It shows how much profit is generated for each dollar lost.', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '交易期望值' : 'Trade expectancy', tooltip: language === 'cn' ? '每笔已平仓交易的平均预期净盈亏。' : 'The average expected net P&L per closed trade.', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', tooltip: language === 'cn' ? '有有效盈利和亏损记录的交易日中，平均盈利日结果与平均亏损日结果的比例。' : 'The average ratio between winning and losing results on days with valid win/loss data.', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', tooltip: language === 'cn' ? '平均盈利交易金额与平均亏损交易金额的比例。' : 'The ratio between the average winning trade and the average losing trade.', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', tooltip: language === 'cn' ? '所有已平仓交易从开仓到平仓的平均持仓时长。' : 'The average time between entry and exit across closed trades.', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', tooltip: language === 'cn' ? '每笔已平仓交易的平均净盈亏。' : 'The average net P&L per closed trade.', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', tooltip: language === 'cn' ? '每个有交易日的平均净盈亏。' : 'The average net P&L per logged trading day.', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', tooltip: language === 'cn' ? '交易计划中目标收益相对初始风险的平均 R 倍数。' : 'The average planned reward multiple relative to initial risk.', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
-      { label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', tooltip: language === 'cn' ? '实际净盈亏相对初始风险的平均 R 倍数。' : 'The average realized return multiple relative to initial risk.', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
-      { label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均成交金额。' : 'The average traded notional volume per logged trading day.', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
-      { label: language === 'cn' ? '记录天数' : 'Logged days', tooltip: language === 'cn' ? '所选日期范围内有交易记录的天数。' : 'The number of days with logged trades in the selected range.', value: stats.totalDays, tone: 'neutral' as const },
-      { label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', tooltip: language === 'cn' ? '所选日期范围内净亏损最大的单个交易日。' : 'The largest single-day net loss in the selected range.', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
-      { label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', tooltip: language === 'cn' ? '所有亏损交易日的平均净亏损金额。' : 'The average net loss across losing trading days.', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
+  const summaryMetricDefinitions = stats ? [
+      { id: 'netPnl' as const, label: language === 'cn' ? '净盈亏' : 'Net P&L', tooltip: language === 'cn' ? '所选日期范围内，所有已平仓交易的已实现净盈亏，已扣除手续费。' : 'The total realized Profit and Loss (P/L) on all closed positions, for the date range selected.', value: formatSignedMoney(stats.netPnl), tone: stats.netPnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'winPct' as const, label: language === 'cn' ? '胜率' : 'Win %', tooltip: language === 'cn' ? '已平仓交易中盈利交易所占比例。' : 'The percentage of closed trades that finished profitable.', value: `${stats.winRate.toFixed(2)}%`, tone: 'neutral' as const },
+      { id: 'avgDailyWinPct' as const, label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均胜率。' : 'The average win percentage across logged trading days in the selected range.', value: `${performanceSummary.avgDailyWinPct.toFixed(2)}%`, tone: 'neutral' as const },
+      { id: 'profitFactor' as const, label: language === 'cn' ? '盈利因子' : 'Profit factor', tooltip: language === 'cn' ? '总盈利除以总亏损的绝对值，用来衡量盈利覆盖亏损的能力。' : 'Gross profit divided by absolute gross loss. It shows how much profit is generated for each dollar lost.', value: stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2), tone: stats.profitFactor >= 1 ? 'good' as const : 'bad' as const },
+      { id: 'tradeExpectancy' as const, label: language === 'cn' ? '交易期望值' : 'Trade expectancy', tooltip: language === 'cn' ? '每笔已平仓交易的平均预期净盈亏。' : 'The average expected net P&L per closed trade.', value: formatSignedMoney(stats.expectancy), tone: stats.expectancy >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'avgDailyWinLoss' as const, label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', tooltip: language === 'cn' ? '有有效盈利和亏损记录的交易日中，平均盈利日结果与平均亏损日结果的比例。' : 'The average ratio between winning and losing results on days with valid win/loss data.', value: performanceSummary.avgDailyWinLoss.toFixed(2), tone: 'neutral' as const },
+      { id: 'avgTradeWinLoss' as const, label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', tooltip: language === 'cn' ? '平均盈利交易金额与平均亏损交易金额的比例。' : 'The ratio between the average winning trade and the average losing trade.', value: performanceSummary.avgTradeWinLoss.toFixed(2), tone: 'neutral' as const },
+      { id: 'avgHoldTime' as const, label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', tooltip: language === 'cn' ? '所有已平仓交易从开仓到平仓的平均持仓时长。' : 'The average time between entry and exit across closed trades.', value: formatDuration(stats.avgHoldAll), tone: 'neutral' as const },
+      { id: 'avgNetTradePnl' as const, label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', tooltip: language === 'cn' ? '每笔已平仓交易的平均净盈亏。' : 'The average net P&L per closed trade.', value: formatSignedMoney(stats.avgTradePnl), tone: stats.avgTradePnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'avgDailyNetPnl' as const, label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', tooltip: language === 'cn' ? '每个有交易日的平均净盈亏。' : 'The average net P&L per logged trading day.', value: formatSignedMoney(stats.avgDailyPnl), tone: stats.avgDailyPnl >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'avgPlannedR' as const, label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', tooltip: language === 'cn' ? '交易计划中目标收益相对初始风险的平均 R 倍数。' : 'The average planned reward multiple relative to initial risk.', value: performanceSummary.avgPlannedR === null ? '--' : `${performanceSummary.avgPlannedR.toFixed(2)}R`, tone: 'neutral' as const },
+      { id: 'avgRealizedR' as const, label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', tooltip: language === 'cn' ? '实际净盈亏相对初始风险的平均 R 倍数。' : 'The average realized return multiple relative to initial risk.', value: `${stats.avgRealizedR.toFixed(2)}R`, tone: stats.avgRealizedR >= 0 ? 'good' as const : 'bad' as const },
+      { id: 'avgDailyVolume' as const, label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', tooltip: language === 'cn' ? '所选日期范围内，每个有交易日的平均成交金额。' : 'The average traded notional volume per logged trading day.', value: (stats.totalVolume / (stats.totalDays || 1)).toFixed(2), tone: 'neutral' as const },
+      { id: 'loggedDays' as const, label: language === 'cn' ? '记录天数' : 'Logged days', tooltip: language === 'cn' ? '所选日期范围内有交易记录的天数。' : 'The number of days with logged trades in the selected range.', value: stats.totalDays, tone: 'neutral' as const },
+      { id: 'maxDailyNetDrawdown' as const, label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', tooltip: language === 'cn' ? '所选日期范围内净亏损最大的单个交易日。' : 'The largest single-day net loss in the selected range.', value: formatSignedMoney(performanceSummary.maxDailyNetDrawdown), tone: 'bad' as const },
+      { id: 'avgDailyNetDrawdown' as const, label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', tooltip: language === 'cn' ? '所有亏损交易日的平均净亏损金额。' : 'The average net loss across losing trading days.', value: formatSignedMoney(performanceSummary.avgDailyNetDrawdown), tone: performanceSummary.avgDailyNetDrawdown < 0 ? 'bad' as const : 'neutral' as const },
   ] : [];
+
+  const summaryMetricById = useMemo(() => {
+      return new Map(summaryMetricDefinitions.map(metric => [metric.id, metric]));
+  }, [summaryMetricDefinitions]);
+
+  const visibleSummaryMetricIds = isSummaryEditing ? draftSummaryMetricIds : summaryMetricIds;
+  const summaryMetrics = visibleSummaryMetricIds
+      .map(id => summaryMetricById.get(id))
+      .filter(Boolean) as typeof summaryMetricDefinitions;
+  const hiddenSummaryMetrics = DEFAULT_SUMMARY_METRIC_IDS
+      .filter(id => !draftSummaryMetricIds.includes(id))
+      .map(id => summaryMetricById.get(id))
+      .filter(Boolean) as typeof summaryMetricDefinitions;
 
   const summaryMetricColumns = useMemo(() => {
       return [0, 1, 2, 3].map(columnIndex => summaryMetrics.slice(columnIndex * 4, columnIndex * 4 + 4));
   }, [summaryMetrics]);
+
+  const startSummaryEditing = () => {
+      setDraftSummaryMetricIds(summaryMetricIds);
+      setIsAddMetricMenuOpen(false);
+      setIsSummaryEditing(true);
+  };
+
+  const cancelSummaryEditing = () => {
+      setDraftSummaryMetricIds(summaryMetricIds);
+      setIsAddMetricMenuOpen(false);
+      setDraggedSummaryMetricId(null);
+      setIsSummaryEditing(false);
+  };
+
+  const saveSummaryLayout = () => {
+      const normalized = normalizeSummaryLayout(draftSummaryMetricIds);
+      setSummaryMetricIds(normalized);
+      localStorage.setItem(SUMMARY_LAYOUT_STORAGE_KEY, JSON.stringify(normalized));
+      setIsAddMetricMenuOpen(false);
+      setIsSummaryEditing(false);
+  };
+
+  const resetSummaryLayout = () => {
+      const defaultLayout = getDefaultSummaryLayout();
+      setDraftSummaryMetricIds(defaultLayout);
+      setSummaryMetricIds(defaultLayout);
+      localStorage.removeItem(SUMMARY_LAYOUT_STORAGE_KEY);
+      setIsAddMetricMenuOpen(false);
+      setIsSummaryEditing(false);
+  };
+
+  const removeSummaryMetric = (id: SummaryMetricId) => {
+      setDraftSummaryMetricIds(current => current.length <= 1 ? current : current.filter(metricId => metricId !== id));
+  };
+
+  const addSummaryMetric = (id: SummaryMetricId) => {
+      setDraftSummaryMetricIds(current => current.includes(id) ? current : [...current, id]);
+      setIsAddMetricMenuOpen(false);
+  };
+
+  const moveSummaryMetric = (targetId: SummaryMetricId) => {
+      if (!draggedSummaryMetricId || draggedSummaryMetricId === targetId) return;
+
+      setDraftSummaryMetricIds(current => {
+          const fromIndex = current.indexOf(draggedSummaryMetricId);
+          const toIndex = current.indexOf(targetId);
+          if (fromIndex === -1 || toIndex === -1) return current;
+
+          const next = [...current];
+          const [moved] = next.splice(fromIndex, 1);
+          next.splice(toIndex, 0, moved);
+          return next;
+      });
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -1394,23 +1535,109 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               </button>
                           ))}
                       </div>
-                      <button className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                          <Settings className="h-[17px] w-[17px]" />
-                      </button>
+                      {summaryTab === 'summary' && isSummaryEditing ? (
+                          <div className="flex items-center gap-[8px]">
+                              <button
+                                  type="button"
+                                  onClick={resetSummaryLayout}
+                                  className="h-[32px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
+                              >
+                                  {language === 'cn' ? '恢复默认' : 'Reset to default'}
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={cancelSummaryEditing}
+                                  className="h-[32px] rounded-[7px] border border-[#dfe4ec] bg-white px-[13px] text-[13px] font-semibold text-[#1f2933] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                              >
+                                  {language === 'cn' ? '取消' : 'Cancel'}
+                              </button>
+                              <button
+                                  type="button"
+                                  onClick={saveSummaryLayout}
+                                  className="h-[32px] rounded-[7px] bg-[#5b45d6] px-[14px] text-[13px] font-semibold text-white shadow-[0_8px_18px_rgba(91,69,214,0.22)] transition-colors hover:bg-[#4e3ac4]"
+                              >
+                                  {language === 'cn' ? '保存' : 'Save'}
+                              </button>
+                          </div>
+                      ) : (
+                          <button
+                              type="button"
+                              onClick={startSummaryEditing}
+                              className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                              aria-label={language === 'cn' ? '编辑汇总模块' : 'Edit summary modules'}
+                          >
+                              <Settings className="h-[17px] w-[17px]" />
+                          </button>
+                      )}
                   </div>
 
                   {summaryTab === 'summary' && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 px-4 py-[14px]">
-                          {summaryMetricColumns.map((column, columnIndex) => (
-                              <div
-                                  key={columnIndex}
-                                  className="grid grid-cols-1 gap-[30px] py-0 md:px-4 xl:min-h-[304px] xl:border-l xl:border-[#e2e6ec] first:xl:border-l-0 first:xl:pl-0 last:xl:pr-0 dark:xl:border-slate-800"
-                              >
-                                  {column.map(metric => (
-                                      <SummaryMetric key={metric.label} label={metric.label} value={metric.value} tooltip={metric.tooltip} tone={metric.tone} />
-                                  ))}
-                              </div>
-                          ))}
+                      <div className={`grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 px-4 py-[14px] ${isSummaryEditing ? 'gap-x-[16px]' : ''}`}>
+                          {summaryMetricColumns.map((column, columnIndex) => {
+                              const shouldShowAddNew = isSummaryEditing && columnIndex === 3;
+
+                              return (
+                                  <div
+                                      key={columnIndex}
+                                      className={`grid grid-cols-1 py-0 md:px-4 xl:min-h-[304px] xl:border-l xl:border-[#e2e6ec] first:xl:border-l-0 first:xl:pl-0 last:xl:pr-0 dark:xl:border-slate-800 ${isSummaryEditing ? 'gap-[14px] md:px-0 xl:border-l-0' : 'gap-[30px]'}`}
+                                  >
+                                      {column.map(metric => (
+                                          <SummaryMetric
+                                              key={metric.id}
+                                              label={metric.label}
+                                              value={metric.value}
+                                              tooltip={metric.tooltip}
+                                              tone={metric.tone}
+                                              isEditing={isSummaryEditing}
+                                              onRemove={() => removeSummaryMetric(metric.id)}
+                                              draggableProps={isSummaryEditing ? {
+                                                  draggable: true,
+                                                  onDragStart: () => setDraggedSummaryMetricId(metric.id),
+                                                  onDragOver: (event) => {
+                                                      event.preventDefault();
+                                                      moveSummaryMetric(metric.id);
+                                                  },
+                                                  onDragEnd: () => setDraggedSummaryMetricId(null),
+                                                  className: draggedSummaryMetricId === metric.id ? 'opacity-55 cursor-grabbing' : 'cursor-grab active:cursor-grabbing',
+                                              } : undefined}
+                                          />
+                                      ))}
+
+                                      {shouldShowAddNew && (
+                                          <div className="relative">
+                                              <button
+                                                  type="button"
+                                                  onClick={() => setIsAddMetricMenuOpen(open => !open)}
+                                                  className="flex min-h-[64px] w-full items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] text-[15px] font-semibold text-[#20232a] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-800"
+                                              >
+                                                  {language === 'cn' ? '新增模块' : 'Add new'}
+                                                  <ChevronDown className="h-[15px] w-[15px] text-[#6b55cf]" />
+                                              </button>
+
+                                              {isAddMetricMenuOpen && (
+                                                  <div className="absolute bottom-full right-0 z-40 mb-[8px] max-h-[260px] w-[260px] overflow-y-auto rounded-[8px] border border-[#e2e6ec] bg-white p-[6px] shadow-[0_14px_36px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900">
+                                                      {hiddenSummaryMetrics.length > 0 ? hiddenSummaryMetrics.map(metric => (
+                                                          <button
+                                                              key={metric.id}
+                                                              type="button"
+                                                              onClick={() => addSummaryMetric(metric.id)}
+                                                              className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[9px] text-left text-[13px] font-semibold text-[#3f4650] transition-colors hover:bg-[#f5f6f8] dark:text-slate-200 dark:hover:bg-slate-800"
+                                                          >
+                                                              {metric.label}
+                                                              <Plus className="h-[14px] w-[14px] text-[#6b55cf]" />
+                                                          </button>
+                                                      )) : (
+                                                          <div className="px-[10px] py-[12px] text-[13px] font-medium text-[#69717b] dark:text-slate-400">
+                                                              {language === 'cn' ? '所有模块都已显示' : 'All modules are already shown'}
+                                                          </div>
+                                                      )}
+                                                  </div>
+                                              )}
+                                          </div>
+                                      )}
+                                  </div>
+                              );
+                          })}
                       </div>
                   )}
 
