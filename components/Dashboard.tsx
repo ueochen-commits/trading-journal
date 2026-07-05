@@ -7,7 +7,7 @@ import {
   RadialBarChart, RadialBar,
   ScatterChart, Scatter, ReferenceLine
 } from 'recharts';
-import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, Check, Briefcase, Trash2, Circle, RefreshCw, BarChart2 } from 'lucide-react';
+import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, ChevronLeft, ChevronRight, Check, Briefcase, Trash2, Circle, RefreshCw, BarChart2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
 import CalendarView from './CalendarView';
@@ -353,6 +353,29 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
     </div>
   );
 };
+
+const ReportRangeIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+    <rect x="2.7" y="4" width="14.6" height="13.7" rx="3.8" fill="#d8d0f2" />
+    <path d="M2.7 7.6h14.6v-0.2c0-1.9-1.5-3.4-3.4-3.4H6.1C4.2 4 2.7 5.5 2.7 7.4v0.2Z" fill="#8674d6" />
+    <rect x="5.5" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
+    <rect x="12.6" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
+    <rect x="5.8" y="10.2" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.92" />
+    <rect x="8.9" y="10.2" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.7" />
+    <rect x="12" y="10.2" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.7" />
+    <rect x="5.8" y="13.4" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.55" />
+    <rect x="8.9" y="13.4" width="2.2" height="1.9" rx="0.65" fill="#6f55d8" opacity="0.55" />
+  </svg>
+);
+
+const ReportAccountIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
+    <path d="M3.6 7.6c0-1.4 1.1-2.5 2.5-2.5h7.6c1.4 0 2.5 1.1 2.5 2.5v0.5h-2.1c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 3.2 3.2h2.1v0.5c0 1.4-1.1 2.5-2.5 2.5H6.1c-1.4 0-2.5-1.1-2.5-2.5V7.6Z" fill="#d8d0f2" />
+    <path d="M6.5 5.2 12 2.8c1-0.4 2.1 0.3 2.1 1.4v1H6.5Z" fill="#b8ace8" />
+    <path d="M10.9 11.3c0-1.2 1-2.2 2.2-2.2h2.9c0.8 0 1.4 0.6 1.4 1.4v1.7c0 0.8-0.6 1.4-1.4 1.4h-2.9c-1.2 0-2.2-1-2.2-2.3Z" fill="#8674d6" />
+    <circle cx="13.5" cy="11.4" r="0.85" fill="#f8f6ff" />
+  </svg>
+);
 
 
 
@@ -1943,6 +1966,10 @@ const Dashboard: React.FC<DashboardProps> = ({
       { id: 'YTD', label: language === 'cn' ? '今年以来' : 'YTD' }
   ];
 
+  const currentAccountName = selectedAccountId === 'all'
+      ? (language === 'cn' ? '所有账户' : 'All Accounts')
+      : accounts.find(account => account.id === selectedAccountId)?.name || (language === 'cn' ? '未知账户' : 'Unknown');
+
   return (
     <div className="space-y-8 animate-fade-in pb-12">
       <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-hidden py-2 relative group mb-6 -mt-2 rounded-xl shadow-sm">
@@ -2013,21 +2040,142 @@ const Dashboard: React.FC<DashboardProps> = ({
                 GRAIL 计划
               </span>
             </button>
-            <div className="relative z-30" ref={datePickerRef}>
-                <button onClick={() => setIsDatePickerOpen(!isDatePickerOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group min-w-[220px]"><div className="flex items-center gap-2.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}><path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Z"/></svg><div className="text-left"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">{(datePresets.find(p => p.id === activeDatePreset)?.label || (activeDatePreset === 'Custom' ? 'Custom Range' : activeDatePreset)).toUpperCase()}</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none">
-                    {activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : (
-                        <>{dateRange.start.toLocaleDateString()} <span className="text-slate-400 mx-1">→</span> {dateRange.end.toLocaleDateString()}</>
-                    )}
-                </p></div></div><svg width="12" height="12" viewBox="0 0 24 24" fill="#94A3B8" xmlns="http://www.w3.org/2000/svg" className={`transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`}><path d="M12 15.5a1 1 0 0 1-.7-.3l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 4.3-4.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-.7.3Z"/></svg></button>
-                {isDatePickerOpen && <div className="absolute top-full right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex w-[640px] animate-fade-in-up z-50 origin-top-right"><div className="flex-1 p-6 border-r border-slate-100"><div className="flex items-center justify-between mb-4"><button onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() - 1)))} className="p-1 hover:bg-slate-100 rounded"><ChevronDown className="w-4 h-4 rotate-90 text-slate-400" /></button><div className="flex gap-8">{renderMiniCalendar(viewDate)}{renderMiniCalendar(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}</div><button onClick={() => setViewDate(new Date(viewDate.setMonth(viewDate.getMonth() + 1)))} className="p-1 hover:bg-slate-100 rounded"><ChevronDown className="w-4 h-4 -rotate-90 text-slate-400" /></button></div></div><div className="w-48 bg-slate-50 p-2 flex flex-col gap-1">
-                    {datePresets.map(preset => (
-                        <button key={preset.id} onClick={() => handlePresetSelect(preset.id)} className={`text-left px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${activeDatePreset === preset.id ? 'bg-indigo-100 text-indigo-700' : 'text-slate-600 hover:bg-white hover:shadow-sm'}`}>{preset.label}</button>
-                    ))}
-                </div></div>}
+            <div className="relative z-40" ref={datePickerRef}>
+                <button
+                    type="button"
+                    onClick={() => setIsDatePickerOpen(current => !current)}
+                    className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                >
+                    <div className="flex min-w-0 items-center gap-3">
+                        <ReportRangeIcon />
+                        <div className="min-w-0 flex-1 text-left">
+                            <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                                {(datePresets.find(p => p.id === activeDatePreset)?.label || (activeDatePreset === 'Custom' ? 'Custom Range' : activeDatePreset)).toUpperCase()}
+                            </p>
+                            <p className="truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
+                                {activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : (
+                                    <>{dateRange.start.toLocaleDateString()} <span className="mx-1 text-slate-400">→</span> {dateRange.end.toLocaleDateString()}</>
+                                )}
+                            </p>
+                        </div>
+                    </div>
+                    <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                    isDatePickerOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
+                }`}>
+                    <div className="flex-1 border-r border-slate-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                        <div className="mb-4 flex items-center justify-between">
+                            <button
+                                type="button"
+                                onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
+                                className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                                <ChevronLeft className="h-4 w-4" />
+                            </button>
+                            <div className="flex gap-8">
+                                {renderMiniCalendar(viewDate)}
+                                {renderMiniCalendar(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
+                                className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                            >
+                                <ChevronRight className="h-4 w-4" />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="flex w-48 flex-col gap-1 bg-slate-50 p-2 dark:bg-slate-950">
+                        {datePresets.map(preset => (
+                            <button
+                                key={preset.id}
+                                type="button"
+                                onClick={() => handlePresetSelect(preset.id)}
+                                className={`rounded-lg px-4 py-2.5 text-left text-xs font-bold transition-colors ${
+                                    activeDatePreset === preset.id
+                                        ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+                                        : 'text-slate-600 hover:bg-white hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-800'
+                                }`}
+                            >
+                                {preset.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </div>
-            <div className="relative z-30" ref={accountSwitcherRef}>
-                <button onClick={() => setIsAccountSwitcherOpen(!isAccountSwitcherOpen)} className="flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg px-3.5 py-2 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all min-w-[200px]"><div className="flex items-center gap-2.5"><svg width="14" height="14" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}><path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H4V5Zm16 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9h16Zm-4 5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1Z"/></svg><div className="text-left flex-1"><p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest mb-0.5">Trading Account</p><p className="text-[13px] font-semibold text-slate-800 dark:text-white leading-none truncate max-w-[120px]">{selectedAccountId === 'all' ? (language === 'cn' ? '所有账户' : 'All Accounts') : accounts.find(a => a.id === selectedAccountId)?.name || 'Unknown'}</p></div></div><svg width="12" height="12" viewBox="0 0 24 24" fill="#94A3B8" xmlns="http://www.w3.org/2000/svg" className={`transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`}><path d="M12 15.5a1 1 0 0 1-.7-.3l-5-5a1 1 0 1 1 1.4-1.4l4.3 4.3 4.3-4.3a1 1 0 1 1 1.4 1.4l-5 5a1 1 0 0 1-.7.3Z"/></svg></button>
-                {isAccountSwitcherOpen && <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fade-in-up z-50 origin-top-right"><div className="p-2 space-y-1"><button onClick={() => { setSelectedAccountId('all'); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === 'all' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>All Accounts{selectedAccountId === 'all' && <Check className="w-4 h-4" />}</button><div className="h-px bg-slate-100 dark:bg-slate-800 my-1"></div>{accounts.map(acc => (<button key={acc.id} onClick={() => { setSelectedAccountId(acc.id); setIsAccountSwitcherOpen(false); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm transition-colors ${selectedAccountId === acc.id ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}><div className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${acc.isReal ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>{acc.name}</div>{selectedAccountId === acc.id && <Check className="w-4 h-4" />}</button>))}</div><div className="border-t border-slate-100 dark:border-slate-800 p-2 bg-slate-50 dark:bg-slate-950/50"><button onClick={() => onManageAccounts?.()} className="w-full text-center text-xs font-bold text-slate-500 hover:text-indigo-600 py-1.5 flex items-center justify-center gap-2"><Settings className="w-3 h-3" /> Manage Accounts</button></div></div>}
+            <div className="relative z-40" ref={accountSwitcherRef}>
+                <button
+                    type="button"
+                    onClick={() => setIsAccountSwitcherOpen(current => !current)}
+                    className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                >
+                    <div className="flex min-w-0 items-center gap-3">
+                        <ReportAccountIcon />
+                        <div className="min-w-0 flex-1 text-left">
+                            <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">Trading Account</p>
+                            <p className="max-w-[130px] truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
+                                {currentAccountName}
+                            </p>
+                        </div>
+                    </div>
+                    <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                    isAccountSwitcherOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
+                }`}>
+                    <div className="space-y-1 p-2">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSelectedAccountId('all');
+                                setIsAccountSwitcherOpen(false);
+                            }}
+                            className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                                selectedAccountId === 'all'
+                                    ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+                                    : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            {language === 'cn' ? '所有账户' : 'All Accounts'}
+                            {selectedAccountId === 'all' && <Check className="h-4 w-4" />}
+                        </button>
+                        <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+                        {accounts.map(acc => (
+                            <button
+                                key={acc.id}
+                                type="button"
+                                onClick={() => {
+                                    setSelectedAccountId(acc.id);
+                                    setIsAccountSwitcherOpen(false);
+                                }}
+                                className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                                    selectedAccountId === acc.id
+                                        ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+                                        : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
+                                }`}
+                            >
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <span className={`h-2 w-2 shrink-0 rounded-full ${acc.isReal ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                    <span className="truncate">{acc.name}</span>
+                                </span>
+                                {selectedAccountId === acc.id && <Check className="h-4 w-4 shrink-0" />}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="border-t border-slate-100 bg-slate-50 p-2 dark:border-slate-800 dark:bg-slate-950/50">
+                        <button
+                            type="button"
+                            onClick={() => onManageAccounts?.()}
+                            className="flex w-full items-center justify-center gap-2 py-1.5 text-center text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600"
+                        >
+                            <Settings className="h-3 w-3" />
+                            Manage Accounts
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
       </div>
