@@ -93,8 +93,8 @@ import {
 } from './types';
 
 const PageContainer = ({ children }: { children?: React.ReactNode }) => (
-    <div className="py-6 px-4 md:py-8 md:px-8 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors">
-        <div className="w-full h-full">
+    <div className="min-w-0 py-6 px-4 md:py-8 md:px-8 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors">
+        <div className="min-w-0 w-full h-full">
             {children}
         </div>
     </div>
@@ -203,6 +203,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     return tabFromPath(window.location.pathname);
   });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(() => typeof window === 'undefined' ? 1440 : window.innerWidth);
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     try {
       const saved = localStorage.getItem('tg_theme');
@@ -221,6 +222,23 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [showBrokerSync, setShowBrokerSync] = useState(false);
   const [showCsvImport, setShowCsvImport] = useState(false);
   const [connectingExchange, setConnectingExchange] = useState<{ id: string; name: string; logoUrl?: string; brandColor?: string } | null>(null);
+  const isAutoCompactSidebar = viewportWidth < 1280;
+  const isRailOnlySidebar = viewportWidth < 768;
+  const effectiveSidebarCollapsed = isSidebarCollapsed || isAutoCompactSidebar;
+  const mainOffsetClass = isRailOnlySidebar
+    ? 'ml-[60px]'
+    : effectiveSidebarCollapsed
+      ? 'ml-[116px]'
+      : 'ml-[284px]';
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const handleResize = () => setViewportWidth(window.innerWidth);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Register setActiveTab with TourProvider so Tour can switch tabs
   const handleSetActiveTab = React.useCallback((tab: string) => {
@@ -1327,11 +1345,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               theme={theme}
               toggleTheme={toggleTheme}
               unreadNotificationsCount={notifications.filter(n => !n.isRead).length}
-              isCollapsed={isSidebarCollapsed}
+              isCollapsed={effectiveSidebarCollapsed}
+              isRailOnly={isRailOnlySidebar}
               toggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
               onAddTrade={() => { handleSetActiveTab('journal'); setJournalAutoOpen(true); }}
           />
-          <main className={`flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-200 ${isSidebarCollapsed ? 'ml-[116px]' : 'ml-[116px] md:ml-[284px]'}`}>
+          <main className={`min-w-0 flex-1 flex flex-col h-full overflow-hidden relative transition-all duration-200 ${mainOffsetClass}`}>
               {renderContent()}
               <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3 pointer-events-none">
                   <div className={`flex flex-col items-end gap-3 transition-all duration-300 ease-out mb-2 ${isFabOpen ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 translate-y-10 pointer-events-none scale-90'}`}>

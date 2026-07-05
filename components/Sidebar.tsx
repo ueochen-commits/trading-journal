@@ -13,6 +13,7 @@ interface SidebarProps {
   toggleTheme: () => void;
   unreadNotificationsCount?: number;
   isCollapsed: boolean;
+  isRailOnly?: boolean;
   toggleCollapse: () => void;
   onAddTrade: () => void;
 }
@@ -151,7 +152,7 @@ const COLLAPSED_W = 56;
 
 const Sidebar = ({
   activeTab, setActiveTab, theme, toggleTheme,
-  unreadNotificationsCount = 0, isCollapsed, toggleCollapse, onAddTrade
+  unreadNotificationsCount = 0, isCollapsed, isRailOnly = false, toggleCollapse, onAddTrade
 }: SidebarProps) => {
   const { t, language, setLanguage } = useLanguage();
   const { startTourForTab, onUserNavigateToTab } = useTour();
@@ -265,11 +266,19 @@ const Sidebar = ({
 
   const sidebarWidth = isCollapsed ? COLLAPSED_W : SIDEBAR_W;
 
-  const iconBarItems = [
-    { id: 'plaza',         label: t.sidebar.plaza,         icon: Icons.Plaza },
-    { id: 'academy',       label: t.sidebar.academy,       icon: Icons.Academy },
-    { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell,  badge: unreadNotificationsCount },
-  ];
+  const iconBarItems = isRailOnly
+    ? [
+        ...mainMenuItems,
+        ...communityItems.map(item => ({
+          ...item,
+          badge: item.id === 'notifications' ? unreadNotificationsCount : undefined,
+        })),
+      ]
+    : [
+        { id: 'plaza',         label: t.sidebar.plaza,         icon: Icons.Plaza },
+        { id: 'academy',       label: t.sidebar.academy,       icon: Icons.Academy },
+        { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell,  badge: unreadNotificationsCount },
+      ];
 
   return (
     <>
@@ -294,7 +303,7 @@ const Sidebar = ({
         />
 
         {/* Nav items */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 4 }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, paddingTop: 4, overflowY: 'auto', overflowX: 'hidden' }} className="no-scrollbar">
           {iconBarItems.map(({ id, label, icon: Icon, badge }) => {
             const isActive = activeTab === id;
             return (
@@ -330,6 +339,7 @@ const Sidebar = ({
       </div>
 
       {/* ── Main sidebar ── */}
+    {!isRailOnly && (
     <div
       id="sidebar-nav"
       style={{
@@ -616,6 +626,7 @@ const Sidebar = ({
         </button>
       </div>
     </div>
+    )}
     </>
   );
 };

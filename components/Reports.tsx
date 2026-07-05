@@ -2177,8 +2177,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
       return (
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
-          <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between gap-[12px] bg-white dark:bg-slate-900`}>
-              <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-0 flex-1 items-center`}>
+          <div className={`${featured ? 'min-h-[64px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-slate-800'} flex flex-wrap items-center justify-between gap-[10px] bg-white dark:bg-slate-900`}>
+              <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-0 flex-1 flex-wrap items-center`}>
                   <div className="relative" data-chart-style-root={side}>
                       <button
                           type="button"
@@ -2201,7 +2201,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                           />
                       )}
                   </div>
-                  <div className="relative min-w-0 flex-shrink-0">
+                  <div className="relative min-w-[min(100%,164px)] flex-shrink-0">
                       <button
                           type="button"
                           onClick={() => {
@@ -2210,7 +2210,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'relative h-[32px] w-[clamp(164px,18vw,250px)] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          className={`${featured ? 'relative h-[32px] w-[clamp(164px,18vw,250px)] max-w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -2226,7 +2226,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       {metricPicker}
                   </div>
                   {additionalMetrics.map(metric => (
-                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-none items-center transition-[width] duration-150 ease-out w-[clamp(180px,20vw,270px)] hover:w-[clamp(208px,calc(20vw+28px),298px)] focus-within:w-[clamp(208px,calc(20vw+28px),298px)]">
+                      <div key={metric.slot} className="group/metric relative flex min-w-[150px] flex-none items-center transition-[width] duration-150 ease-out w-[clamp(164px,20vw,270px)] max-w-full hover:w-[clamp(188px,calc(20vw+24px),298px)] focus-within:w-[clamp(188px,calc(20vw+24px),298px)]">
                           <button
                               type="button"
                               onClick={() => {
@@ -2264,7 +2264,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       </div>
                   ))}
                   {canAddMetric && (
-                      <div className="relative hidden sm:inline-flex">
+                      <div className="relative inline-flex">
                           <button
                               type="button"
                               onClick={() => {
@@ -2293,7 +2293,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'h-[32px] w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
+                              className={`${featured ? 'h-[32px] w-[84px] sm:w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
                               aria-expanded={timeframeMenuOpen}
                               aria-label={language === 'cn' ? '选择图表时间粒度' : 'Choose chart timeframe'}
                           >
@@ -3058,8 +3058,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
         </div>
         
         {/* Navigation Bar */}
-        <div className="relative z-30 flex min-h-[56px] items-center justify-between gap-4 overflow-visible border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60">
-            <div className="flex h-[56px] items-center gap-[27px]">
+        <div className="relative z-30 flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60">
+            <div className="flex min-h-[56px] max-w-full flex-wrap items-center gap-x-[27px] gap-y-0 pr-3">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
                     const isReportMenuTab = tab.id === 'detailed';
@@ -3191,7 +3191,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   </button>
               </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-[10px]">
+              <div className="grid grid-cols-1 2xl:grid-cols-2 gap-[10px]">
                   {renderChartCard({
                       title: leftChartConfig.label,
                       metricLabel: leftChartConfig.label,
