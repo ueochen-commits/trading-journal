@@ -99,6 +99,12 @@ const DEFAULT_SUMMARY_METRIC_IDS = [
 ] as const;
 
 type SummaryMetricId = typeof ALL_SUMMARY_METRIC_IDS[number];
+type ChartMetricVisual = 'line' | 'area' | 'bar';
+type ChartSide = 'left' | 'right';
+type ChartStyleSettings = Record<ChartSide, {
+  visual?: ChartMetricVisual;
+  color?: string;
+}>;
 
 const getDefaultSummaryLayout = () => [...DEFAULT_SUMMARY_METRIC_IDS];
 
@@ -158,7 +164,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [showMetricDifference, setShowMetricDifference] = useState(false);
   const [leftChartMetricId, setLeftChartMetricId] = useState<SummaryMetricId>('netPnl');
   const [rightChartMetricId, setRightChartMetricId] = useState<SummaryMetricId>('avgDailyWinLoss');
-  const [openChartMetricPicker, setOpenChartMetricPicker] = useState<'left' | 'right' | null>(null);
+  const [openChartMetricPicker, setOpenChartMetricPicker] = useState<ChartSide | null>(null);
+  const [openChartStyleMenu, setOpenChartStyleMenu] = useState<ChartSide | null>(null);
+  const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<ChartSide | null>(null);
+  const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
   
@@ -768,7 +777,6 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
   type ChartMetricMode = 'cumulative' | 'daily';
   type ChartMetricFormat = 'money' | 'percent' | 'number' | 'duration';
-  type ChartMetricVisual = 'area' | 'bar';
 
   const chartMetricConfigs: Partial<Record<SummaryMetricId, {
       category: 'time' | 'profitability' | 'risk' | 'activity' | 'streaks';
@@ -1192,17 +1200,23 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return rows;
   };
 
-  const getChartMetricDisplayData = (metricId: SummaryMetricId) => {
+  const getChartMetricDisplayData = (metricId: SummaryMetricId, visualOverride?: ChartMetricVisual) => {
       const data = buildChartMetricData(metricId);
-      const targetCount = chartMetricConfigs[metricId]?.visual === 'bar' ? 7 : 9;
+      const targetCount = (visualOverride || chartMetricConfigs[metricId]?.visual) === 'bar' ? 7 : 9;
       const indexes = getEvenlySpacedIndexes(data.length, targetCount);
       return indexes.map(index => data[index]).filter(Boolean);
   };
 
   const leftChartConfig = chartMetricConfigs[leftChartMetricId] || chartMetricConfigs.netPnl!;
   const rightChartConfig = chartMetricConfigs[rightChartMetricId] || chartMetricConfigs.avgDailyWinLoss!;
-  const leftChartData = getChartMetricDisplayData(leftChartMetricId);
-  const rightChartData = getChartMetricDisplayData(rightChartMetricId);
+  const getChartVisual = (side: ChartSide, config: typeof leftChartConfig): ChartMetricVisual => chartStyleSettings[side].visual || config.visual;
+  const getChartColor = (side: ChartSide, config: typeof leftChartConfig) => chartStyleSettings[side].color || config.color;
+  const leftChartVisual = getChartVisual('left', leftChartConfig);
+  const rightChartVisual = getChartVisual('right', rightChartConfig);
+  const leftChartColor = getChartColor('left', leftChartConfig);
+  const rightChartColor = getChartColor('right', rightChartConfig);
+  const leftChartData = getChartMetricDisplayData(leftChartMetricId, leftChartVisual);
+  const rightChartData = getChartMetricDisplayData(rightChartMetricId, rightChartVisual);
   const leftChartTicks = getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean);
   const rightChartTicks = getEvenlySpacedIndexes(rightChartData.length, 6).map(index => rightChartData[index]?.label).filter(Boolean);
 
@@ -1240,10 +1254,271 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
+  const chartStyleColors = ['#3d63dd', '#6b55cf', '#f59f00', '#55c39e', '#ff6468'];
+  const chartVisualOptions: Array<{ id: ChartMetricVisual; label: string }> = [
+      { id: 'line', label: language === 'cn' ? '线型图' : 'Line' },
+      { id: 'area', label: language === 'cn' ? '面积图' : 'Area' },
+      { id: 'bar', label: language === 'cn' ? '柱状图' : 'Column' },
+  ];
+
+  const updateChartStyle = (side: ChartSide, patch: Partial<ChartStyleSettings[ChartSide]>) => {
+      setChartStyleSettings(current => ({
+          ...current,
+          [side]: {
+              ...current[side],
+              ...patch,
+          },
+      }));
+  };
+
+  const ChartStyleMenu = ({
+      side,
+      config,
+      visual,
+      color,
+  }: {
+      side: ChartSide;
+      config: typeof leftChartConfig;
+      visual: ChartMetricVisual;
+      color: string;
+  }) => {
+      const isOpen = openChartStyleMenu === side;
+      const visualDropdownOpen = openChartVisualDropdown === side;
+
+      return (
+          <div
+              className={`absolute left-0 top-full z-50 mt-[8px] w-[236px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                  isOpen
+                      ? 'max-h-[260px] scale-100 opacity-100'
+                      : 'pointer-events-none max-h-0 scale-[0.96] opacity-0'
+              }`}
+          >
+              <div className="p-[14px]">
+                  <div className="mb-[10px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
+                      {config.label}
+                  </div>
+                  <div className="flex items-center gap-[9px]">
+                      <button
+                          type="button"
+                          className="flex h-[32px] w-[30px] flex-shrink-0 flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] dark:border-slate-700 dark:bg-slate-900"
+                          aria-label={language === 'cn' ? '当前颜色' : 'Current color'}
+                      >
+                          <span className="h-1/2 rounded-t-[3px]" style={{ backgroundColor: color }} />
+                          <span className="h-1/2 rounded-b-[3px] bg-[#ff6468]" />
+                      </button>
+                      <div className="relative flex-1">
+                          <button
+                              type="button"
+                              onClick={() => setOpenChartVisualDropdown(current => current === side ? null : side)}
+                              className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                          >
+                              {chartVisualOptions.find(option => option.id === visual)?.label}
+                              <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
+                          </button>
+                          <div
+                              className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                  visualDropdownOpen ? 'max-h-[160px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                              }`}
+                          >
+                              {chartVisualOptions.map(option => {
+                                  const selected = option.id === visual;
+                                  return (
+                                      <button
+                                          key={option.id}
+                                          type="button"
+                                          onClick={() => {
+                                              updateChartStyle(side, { visual: option.id });
+                                              setOpenChartVisualDropdown(null);
+                                          }}
+                                          className={`block w-full px-[12px] py-[8px] text-left text-[14px] font-medium transition-colors ${
+                                              selected
+                                                  ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                  : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                          }`}
+                                      >
+                                          {option.label}
+                                      </button>
+                                  );
+                              })}
+                          </div>
+                      </div>
+                  </div>
+
+                  <div className="mt-[12px] flex items-center gap-[8px]">
+                      {chartStyleColors.map(optionColor => {
+                          const selected = optionColor === color;
+                          return (
+                              <button
+                                  key={optionColor}
+                                  type="button"
+                                  onClick={() => updateChartStyle(side, { color: optionColor })}
+                                  className={`relative h-[26px] w-[26px] rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
+                                      selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
+                                  }`}
+                                  style={{ backgroundColor: optionColor }}
+                                  aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
+                              >
+                                  {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
+                              </button>
+                          );
+                      })}
+                  </div>
+
+                  <button
+                      type="button"
+                      onClick={() => {
+                          setChartStyleSettings(current => ({ ...current, [side]: {} }));
+                          setOpenChartVisualDropdown(null);
+                      }}
+                      className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
+                  >
+                      {language === 'cn' ? '恢复默认' : 'Reset'}
+                  </button>
+              </div>
+          </div>
+      );
+  };
+
+  const MetricChart = ({
+      side,
+      data,
+      ticks,
+      config,
+      visual,
+      color,
+  }: {
+      side: ChartSide;
+      data: ReturnType<typeof getChartMetricDisplayData>;
+      ticks: string[];
+      config: typeof leftChartConfig;
+      visual: ChartMetricVisual;
+      color: string;
+  }) => {
+      const chartKey = `${side}-${config.label}-${visual}-${color}`;
+      const commonMargin = { top: 8, right: 10, left: 5, bottom: 42 };
+      const yAxisProps = {
+          tick: { fontSize: 12, fill: '#69717b', fontWeight: 400 },
+          axisLine: false,
+          tickLine: false,
+          width: side === 'right' && visual === 'bar' ? 50 : 58,
+          tickFormatter: (value: number) => formatChartMetricValue(value, config.format, true),
+      };
+
+      const xAxis = (
+          <XAxis
+              dataKey="label"
+              ticks={ticks}
+              tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+              minTickGap={22}
+              dy={15}
+          />
+      );
+
+      const legend = (
+          <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
+              <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: color }} />
+              <span>{config.shortLabel}</span>
+          </div>
+      );
+
+      return (
+          <div key={chartKey} className="relative h-full animate-fade-in">
+              <ResponsiveContainer width="100%" height="100%">
+                  {visual === 'bar' ? (
+                      <BarChart data={data} margin={commonMargin} barCategoryGap="48%">
+                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                          {xAxis}
+                          <YAxis {...yAxisProps} />
+                          <Tooltip cursor={{ fill: `${color}12` }} content={<GenericChartTooltip config={config} color={color} />} />
+                          <Bar
+                              dataKey="value"
+                              fill={color}
+                              radius={[4, 4, 0, 0]}
+                              barSize={36}
+                              maxBarSize={42}
+                              isAnimationActive
+                              animationDuration={520}
+                              animationEasing="ease-out"
+                          />
+                      </BarChart>
+                  ) : visual === 'line' ? (
+                      <LineChart data={data} margin={commonMargin}>
+                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                          {xAxis}
+                          <YAxis {...yAxisProps} />
+                          <Tooltip
+                              cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
+                              content={<GenericChartTooltip config={config} color={color} />}
+                          />
+                          <Line
+                              type="monotone"
+                              dataKey="value"
+                              stroke={color}
+                              strokeWidth={2}
+                              dot={{ r: 2.4, fill: color, stroke: color, strokeWidth: 1 }}
+                              isAnimationActive
+                              animationDuration={560}
+                              animationEasing="ease-out"
+                              activeDot={{
+                                  r: 5,
+                                  fill: color,
+                                  stroke: '#ffffff',
+                                  strokeWidth: 2,
+                              }}
+                          />
+                      </LineChart>
+                  ) : (
+                      <AreaChart data={data} margin={commonMargin}>
+                          <defs>
+                              <linearGradient id={`${side}ChartMetricFill`} x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="0%" stopColor={color} stopOpacity={visual === 'area' ? 0.5 : 0} />
+                                  <stop offset="45%" stopColor={color} stopOpacity={visual === 'area' ? 0.16 : 0} />
+                                  <stop offset="100%" stopColor={color} stopOpacity={visual === 'area' ? 0.04 : 0} />
+                              </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                          {xAxis}
+                          <YAxis {...yAxisProps} />
+                          <Tooltip
+                              cursor={{ stroke: color, strokeWidth: 1, strokeDasharray: '3 3' }}
+                              content={<GenericChartTooltip config={config} color={color} />}
+                          />
+                          <Area
+                              type="monotone"
+                              dataKey="value"
+                              stroke={color}
+                              strokeWidth={2}
+                              fill={`url(#${side}ChartMetricFill)`}
+                              dot={{ r: 2.4, fill: color, stroke: color, strokeWidth: 1 }}
+                              isAnimationActive
+                              animationDuration={560}
+                              animationEasing="ease-out"
+                              activeDot={{
+                                  r: 5,
+                                  fill: color,
+                                  stroke: '#ffffff',
+                                  strokeWidth: 2,
+                              }}
+                          />
+                      </AreaChart>
+                  )}
+              </ResponsiveContainer>
+              {legend}
+          </div>
+      );
+  };
+
   const ChartCard = ({
       title,
       metricLabel,
       children,
+      side,
+      chartConfig,
+      chartVisual,
+      chartColor,
       metricPicker,
       onMetricButtonClick,
       accent = 'text-indigo-500',
@@ -1255,6 +1530,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       title: string;
       metricLabel: string;
       children: React.ReactNode;
+      side?: ChartSide;
+      chartConfig?: typeof leftChartConfig;
+      chartVisual?: ChartMetricVisual;
+      chartColor?: string;
       metricPicker?: React.ReactNode;
       onMetricButtonClick?: () => void;
       accent?: string;
@@ -1263,16 +1542,40 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       summaryValue?: string;
       summaryTone?: 'neutral' | 'good' | 'bad';
   }) => (
-      <div className={`${featured ? 'overflow-hidden rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-hidden`}>
+      <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
           <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between bg-white dark:bg-slate-900`}>
               <div className={`${featured ? 'gap-[12px]' : 'gap-3'} flex items-center min-w-0`}>
-                  <div className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center`}>
-                      <BarChart2 className={`w-4 h-4 ${accent}`} />
+                  <div className="relative">
+                      <button
+                          type="button"
+                          onClick={() => {
+                              if (!side) return;
+                              setOpenChartStyleMenu(current => current === side ? null : side);
+                              setOpenChartMetricPicker(null);
+                              setOpenChartVisualDropdown(null);
+                          }}
+                          className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
+                          aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
+                      >
+                          <BarChart2 className={`w-4 h-4 ${accent}`} />
+                      </button>
+                      {side && chartConfig && chartVisual && chartColor && (
+                          <ChartStyleMenu
+                              side={side}
+                              config={chartConfig}
+                              visual={chartVisual}
+                              color={chartColor}
+                          />
+                      )}
                   </div>
                   <div className="relative">
                       <button
                           type="button"
-                          onClick={onMetricButtonClick}
+                          onClick={() => {
+                              onMetricButtonClick?.();
+                              setOpenChartStyleMenu(null);
+                              setOpenChartVisualDropdown(null);
+                          }}
                           className={`${featured ? 'relative h-[32px] w-[154px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
@@ -1356,10 +1659,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const GenericChartTooltip = ({ active, payload, label, config }: any) => {
+  const GenericChartTooltip = ({ active, payload, label, config, color: overrideColor }: any) => {
       if (!active || !payload?.length || !config) return null;
       const value = Number(payload[0]?.value || 0);
-      const color = config.color || '#55c39e';
+      const color = overrideColor || config.color || '#55c39e';
 
       return (
           <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.22)]">
@@ -1383,7 +1686,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[320px] origin-top-left animate-fade-in-up flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
                       <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
@@ -1881,6 +2184,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <ChartCard
                       title={leftChartConfig.label}
                       metricLabel={leftChartConfig.label}
+                      side="left"
+                      chartConfig={leftChartConfig}
+                      chartVisual={leftChartVisual}
+                      chartColor={leftChartColor}
                       metricPicker={<ChartMetricPicker side="left" selectedMetricId={leftChartMetricId} />}
                       onMetricButtonClick={() => setOpenChartMetricPicker(current => current === 'left' ? null : 'left')}
                       accent="text-[#5f636b]"
@@ -1892,70 +2199,24 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
                           </div>
                       ) : (
-                          <div className="relative h-full">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  {leftChartConfig.visual === 'area' ? (
-                                  <AreaChart data={leftChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
-                                      <defs><linearGradient id="leftChartMetricFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={leftChartConfig.color} stopOpacity={0.5} /><stop offset="45%" stopColor={leftChartConfig.color} stopOpacity={0.16} /><stop offset="100%" stopColor={leftChartConfig.color} stopOpacity={0.04} /></linearGradient></defs>
-                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
-                                      <XAxis
-                                          dataKey="label"
-                                          ticks={leftChartTicks}
-                                          tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
-                                          axisLine={false}
-                                          tickLine={false}
-                                          interval={0}
-                                          minTickGap={22}
-                                          dy={15}
-                                      />
-                                      <YAxis
-                                          tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }}
-                                          axisLine={false}
-                                          tickLine={false}
-                                          width={58}
-                                          tickFormatter={(value: number) => formatChartMetricValue(value, leftChartConfig.format, true)}
-                                      />
-                                      <Tooltip
-                                          cursor={{ stroke: leftChartConfig.color, strokeWidth: 1, strokeDasharray: '3 3' }}
-                                          content={<GenericChartTooltip config={leftChartConfig} />}
-                                      />
-                                      <Area
-                                          type="monotone"
-                                          dataKey="value"
-                                          stroke={leftChartConfig.color}
-                                          strokeWidth={2}
-                                          fill="url(#leftChartMetricFill)"
-                                          dot={{ r: 2.4, fill: leftChartConfig.color, stroke: leftChartConfig.color, strokeWidth: 1 }}
-                                          isAnimationActive={false}
-                                          activeDot={{
-                                              r: 5,
-                                              fill: leftChartConfig.color,
-                                              stroke: '#ffffff',
-                                              strokeWidth: 2,
-                                          }}
-                                      />
-                                  </AreaChart>
-                                  ) : (
-                                  <BarChart data={leftChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }} barCategoryGap="48%">
-                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
-                                      <XAxis dataKey="label" ticks={leftChartTicks} tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }} axisLine={false} tickLine={false} interval={0} minTickGap={22} dy={15} />
-                                      <YAxis tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }} axisLine={false} tickLine={false} width={58} tickFormatter={(value: number) => formatChartMetricValue(value, leftChartConfig.format, true)} />
-                                      <Tooltip cursor={{ fill: `${leftChartConfig.color}12` }} content={<GenericChartTooltip config={leftChartConfig} />} />
-                                      <Bar dataKey="value" fill={leftChartConfig.color} radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} isAnimationActive={false} />
-                                  </BarChart>
-                                  )}
-                              </ResponsiveContainer>
-                              <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
-                                  <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: leftChartConfig.color }} />
-                                  <span>{leftChartConfig.shortLabel}</span>
-                              </div>
-                          </div>
+                          <MetricChart
+                              side="left"
+                              data={leftChartData}
+                              ticks={leftChartTicks}
+                              config={leftChartConfig}
+                              visual={leftChartVisual}
+                              color={leftChartColor}
+                          />
                       )}
                   </ChartCard>
 
                   <ChartCard
                       title={rightChartConfig.label}
                       metricLabel={rightChartConfig.label}
+                      side="right"
+                      chartConfig={rightChartConfig}
+                      chartVisual={rightChartVisual}
+                      chartColor={rightChartColor}
                       metricPicker={<ChartMetricPicker side="right" selectedMetricId={rightChartMetricId} />}
                       onMetricButtonClick={() => setOpenChartMetricPicker(current => current === 'right' ? null : 'right')}
                       accent="text-emerald-500"
@@ -1967,48 +2228,14 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               {language === 'cn' ? '暂无可计算的数据' : 'No chartable data yet'}
                           </div>
                       ) : (
-                          <div className="relative h-full">
-                              <ResponsiveContainer width="100%" height="100%">
-                                  {rightChartConfig.visual === 'bar' ? (
-                                  <BarChart data={rightChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }} barCategoryGap="48%">
-                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
-                                      <XAxis
-                                          dataKey="label"
-                                          ticks={rightChartTicks}
-                                          tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
-                                          axisLine={false}
-                                          tickLine={false}
-                                          interval={0}
-                                          minTickGap={22}
-                                          dy={15}
-                                      />
-                                      <YAxis
-                                          tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }}
-                                          axisLine={false}
-                                          tickLine={false}
-                                          width={50}
-                                          domain={[0, (dataMax: number) => Math.max(dataMax * 1.18, 0.2)]}
-                                          tickFormatter={(value: number) => formatChartMetricValue(value, rightChartConfig.format, true)}
-                                      />
-                                      <Tooltip cursor={{ fill: `${rightChartConfig.color}12` }} content={<GenericChartTooltip config={rightChartConfig} />} />
-                                      <Bar dataKey="value" fill={rightChartConfig.color} radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} isAnimationActive={false} />
-                                  </BarChart>
-                                  ) : (
-                                  <AreaChart data={rightChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
-                                      <defs><linearGradient id="rightChartMetricFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={rightChartConfig.color} stopOpacity={0.5} /><stop offset="45%" stopColor={rightChartConfig.color} stopOpacity={0.16} /><stop offset="100%" stopColor={rightChartConfig.color} stopOpacity={0.04} /></linearGradient></defs>
-                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
-                                      <XAxis dataKey="label" ticks={rightChartTicks} tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }} axisLine={false} tickLine={false} interval={0} minTickGap={22} dy={15} />
-                                      <YAxis tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }} axisLine={false} tickLine={false} width={58} tickFormatter={(value: number) => formatChartMetricValue(value, rightChartConfig.format, true)} />
-                                      <Tooltip cursor={{ stroke: rightChartConfig.color, strokeWidth: 1, strokeDasharray: '3 3' }} content={<GenericChartTooltip config={rightChartConfig} />} />
-                                      <Area type="monotone" dataKey="value" stroke={rightChartConfig.color} strokeWidth={2} fill="url(#rightChartMetricFill)" dot={{ r: 2.4, fill: rightChartConfig.color, stroke: rightChartConfig.color, strokeWidth: 1 }} isAnimationActive={false} activeDot={{ r: 5, fill: rightChartConfig.color, stroke: '#ffffff', strokeWidth: 2 }} />
-                                  </AreaChart>
-                                  )}
-                              </ResponsiveContainer>
-                              <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
-                                  <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: rightChartConfig.color }} />
-                                  <span>{rightChartConfig.shortLabel}</span>
-                              </div>
-                          </div>
+                          <MetricChart
+                              side="right"
+                              data={rightChartData}
+                              ticks={rightChartTicks}
+                              config={rightChartConfig}
+                              visual={rightChartVisual}
+                              color={rightChartColor}
+                          />
                       )}
                   </ChartCard>
               </div>
