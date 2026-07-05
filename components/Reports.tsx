@@ -156,6 +156,11 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [metricPickerSearch, setMetricPickerSearch] = useState('');
   const [expandedMetricCategory, setExpandedMetricCategory] = useState<string | null>('time');
   const [showMetricDifference, setShowMetricDifference] = useState(false);
+  const [leftChartMetricId, setLeftChartMetricId] = useState<SummaryMetricId>('netPnl');
+  const [rightChartMetricId, setRightChartMetricId] = useState<SummaryMetricId>('avgDailyWinLoss');
+  const [openChartMetricPicker, setOpenChartMetricPicker] = useState<'left' | 'right' | null>(null);
+  const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
+  const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
   
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
@@ -761,6 +766,59 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return indexes.map(index => indexSource[index]?.label).filter(Boolean);
   }, [avgDailyWinLossDisplayData, performancePnlDisplayData]);
 
+  type ChartMetricMode = 'cumulative' | 'daily';
+  type ChartMetricFormat = 'money' | 'percent' | 'number' | 'duration';
+  type ChartMetricVisual = 'area' | 'bar';
+
+  const chartMetricConfigs: Partial<Record<SummaryMetricId, {
+      category: 'time' | 'profitability' | 'risk' | 'activity' | 'streaks';
+      label: string;
+      shortLabel: string;
+      mode: ChartMetricMode;
+      format: ChartMetricFormat;
+      visual: ChartMetricVisual;
+      color: string;
+      getDailyValue: (day: typeof performanceDailyData[number]) => number;
+      includeDay?: (day: typeof performanceDailyData[number]) => boolean;
+  }>> = {
+      avgTradingDaysDuration: { category: 'time', label: language === 'cn' ? '平均交易日跨度 - 累计' : 'Average trading days duration - cumulative', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: () => 24 * 60 * 60 * 1000 },
+      avgHoldTime: { category: 'time', label: language === 'cn' ? '平均持仓时间 - 累计' : 'Avg hold time - cumulative', shortLabel: language === 'cn' ? '平均持仓时间' : 'Avg hold time', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => {
+          const dayTrades = trades.filter(trade => new Date(trade.entryDate).toLocaleDateString('en-CA') === day.date && trade.exitDate && trade.status !== TradeStatus.OPEN);
+          return dayTrades.length > 0 ? dayTrades.reduce((acc, trade) => acc + (new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime()), 0) / dayTrades.length : 0;
+      }},
+      longestTradeDuration: { category: 'time', label: language === 'cn' ? '最长持仓时间 - 累计' : 'Longest trade duration - cumulative', shortLabel: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => {
+          const durations = trades
+              .filter(trade => new Date(trade.entryDate).toLocaleDateString('en-CA') === day.date && trade.exitDate && trade.status !== TradeStatus.OPEN)
+              .map(trade => new Date(trade.exitDate).getTime() - new Date(trade.entryDate).getTime())
+              .filter(duration => duration > 0);
+          return durations.length > 0 ? Math.max(...durations) : 0;
+      }},
+      maxTradingDaysDuration: { category: 'time', label: language === 'cn' ? '最大交易日跨度 - 累计' : 'Max trading days duration - cumulative', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: () => 24 * 60 * 60 * 1000 },
+      avgDailyNetPnl: { category: 'profitability', label: language === 'cn' ? '平均每日净盈亏 - 累计' : 'Avg daily net P&L - cumulative', shortLabel: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl },
+      avgDailyWinLoss: { category: 'profitability', label: language === 'cn' ? '平均每日盈亏比 - 累计' : 'Avg daily win/loss - cumulative', shortLabel: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', mode: 'daily', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
+      avgLoss: { category: 'profitability', label: language === 'cn' ? '平均亏损 - 累计' : 'Avg loss - cumulative', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.losses > 0 ? day.lossPnl / day.losses : 0 },
+      avgNetTradePnl: { category: 'profitability', label: language === 'cn' ? '平均单笔净盈亏 - 累计' : 'Avg net trade P&L - cumulative', shortLabel: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.count > 0 ? day.pnl / day.count : 0 },
+      avgTradeWinLoss: { category: 'profitability', label: language === 'cn' ? '平均单笔盈亏比 - 累计' : 'Avg trade win/loss - cumulative', shortLabel: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', mode: 'daily', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
+      avgWin: { category: 'profitability', label: language === 'cn' ? '平均盈利 - 累计' : 'Avg win - cumulative', shortLabel: language === 'cn' ? '平均盈利' : 'Avg win', mode: 'cumulative', format: 'money', visual: 'area', color: '#55c39e', getDailyValue: (day) => day.wins > 0 ? day.winPnl / day.wins : 0 },
+      dailyNetPnl: { category: 'profitability', label: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', shortLabel: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', mode: 'daily', format: 'money', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.pnl },
+      netPnl: { category: 'profitability', label: language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative', shortLabel: language === 'cn' ? '净盈亏' : 'Net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl },
+      profitFactor: { category: 'profitability', label: language === 'cn' ? '盈利因子 - 累计' : 'Profit factor - cumulative', shortLabel: language === 'cn' ? '盈利因子' : 'Profit factor', mode: 'cumulative', format: 'number', visual: 'area', color: '#55c39e', getDailyValue: (day) => Math.abs(day.lossPnl) > 0 ? day.winPnl / Math.abs(day.lossPnl) : day.winPnl > 0 ? day.winPnl : 0 },
+      tradeExpectancy: { category: 'profitability', label: language === 'cn' ? '交易期望值 - 累计' : 'Trade expectancy - cumulative', shortLabel: language === 'cn' ? '交易期望值' : 'Trade expectancy', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.count > 0 ? day.pnl / day.count : 0 },
+      avgDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', shortLabel: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
+      breakevenDays: { category: 'risk', label: language === 'cn' ? '打平天数 - 累计' : 'Breakeven days - cumulative', shortLabel: language === 'cn' ? '打平天数' : 'Breakeven days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#9aa3ae', getDailyValue: (day) => day.pnl === 0 ? 1 : 0 },
+      losingDays: { category: 'risk', label: language === 'cn' ? '亏损天数 - 累计' : 'Losing days - cumulative', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? 1 : 0 },
+      maxDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '最大单日净回撤 - 累计' : 'Max daily net drawdown - cumulative', shortLabel: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
+      avgDailyVolume: { category: 'activity', label: language === 'cn' ? '平均每日成交额 - 累计' : 'Avg daily volume - cumulative', shortLabel: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.volume },
+      loggedDays: { category: 'activity', label: language === 'cn' ? '记录天数 - 累计' : 'Logged days - cumulative', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#6b55cf', getDailyValue: () => 1 },
+      tradeCount: { category: 'activity', label: language === 'cn' ? '交易总数 - 累计' : 'Trade count - cumulative', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.count },
+      volume: { category: 'activity', label: language === 'cn' ? '成交额 - 累计' : 'Volume - cumulative', shortLabel: language === 'cn' ? '成交额' : 'Volume', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.volume },
+      winTrades: { category: 'activity', label: language === 'cn' ? '盈利交易数 - 累计' : 'Win # of trades - cumulative', shortLabel: language === 'cn' ? '盈利交易数' : 'Win trades', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.wins },
+      lossTrades: { category: 'activity', label: language === 'cn' ? '亏损交易数 - 累计' : 'Loss # of trades - cumulative', shortLabel: language === 'cn' ? '亏损交易数' : 'Loss trades', mode: 'cumulative', format: 'number', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.losses },
+      avgDailyWinPct: { category: 'streaks', label: language === 'cn' ? '平均日胜率 - 累计' : 'Avg daily win % - cumulative', shortLabel: language === 'cn' ? '平均日胜率' : 'Avg daily win %', mode: 'daily', format: 'percent', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.winRate },
+      winPct: { category: 'streaks', label: language === 'cn' ? '胜率 - 累计' : 'Win % - cumulative', shortLabel: language === 'cn' ? '胜率' : 'Win %', mode: 'cumulative', format: 'percent', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.winRate },
+      winningDays: { category: 'streaks', label: language === 'cn' ? '盈利天数 - 累计' : 'Winning days - cumulative', shortLabel: language === 'cn' ? '盈利天数' : 'Winning days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.pnl > 0 ? 1 : 0 },
+  };
+
   const performanceSummary = useMemo(() => {
       const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
       const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
@@ -1021,6 +1079,112 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   };
 
   const formatSignedMoney = (value: number) => `${value >= 0 ? '' : '-'}$${Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const chartCategoryLabels: Record<'time' | 'profitability' | 'risk' | 'activity' | 'streaks', string> = {
+      time: language === 'cn' ? '时间分析' : 'Time Analysis',
+      profitability: language === 'cn' ? '盈利能力' : 'Profitability',
+      risk: language === 'cn' ? '风险与回撤' : 'Risk & Drawdown',
+      activity: language === 'cn' ? '交易活动与成交量' : 'Trading Activity & Volume',
+      streaks: language === 'cn' ? '连续性与稳定性' : 'Streaks & Consistency',
+  };
+
+  const chartMetricCategoryOrder: Array<'time' | 'profitability' | 'risk' | 'activity' | 'streaks'> = ['time', 'profitability', 'risk', 'activity', 'streaks'];
+  const chartMetricOptions = (Object.entries(chartMetricConfigs) as Array<[SummaryMetricId, NonNullable<typeof chartMetricConfigs[SummaryMetricId]>]>)
+      .filter(([, config]) => Boolean(config));
+  const normalizedChartMetricPickerSearch = chartMetricPickerSearch.trim().toLowerCase();
+  const visibleChartMetricCategories = chartMetricCategoryOrder
+      .map(category => ({
+          id: category,
+          label: chartCategoryLabels[category],
+          metrics: chartMetricOptions
+              .filter(([, config]) => config.category === category)
+              .filter(([, config]) => !normalizedChartMetricPickerSearch || config.label.toLowerCase().includes(normalizedChartMetricPickerSearch)),
+      }))
+      .filter(category => category.metrics.length > 0);
+
+  const formatChartMetricValue = (value: number, format: ChartMetricFormat, compact = false) => {
+      if (!Number.isFinite(value)) return '--';
+      if (format === 'money') return formatMoney(value, compact);
+      if (format === 'percent') return `${value.toFixed(value >= 10 ? 1 : 2)}%`;
+      if (format === 'duration') return formatDuration(value);
+      return compact && Math.abs(value) >= 1000 ? `${(value / 1000).toFixed(Math.abs(value) >= 10000 ? 0 : 1)}k` : Number(value.toFixed(value < 10 && value !== 0 ? 2 : 0)).toLocaleString();
+  };
+
+  const buildChartMetricData = (metricId: SummaryMetricId) => {
+      const config = chartMetricConfigs[metricId] || chartMetricConfigs.netPnl!;
+      const source = performanceDailyData.filter(day => config.includeDay ? config.includeDay(day) : true);
+      let cumulative = 0;
+      let cumulativeCount = 0;
+      let cumulativeWins = 0;
+      let cumulativeLosses = 0;
+      let cumulativeWinPnl = 0;
+      let cumulativeLossPnl = 0;
+      let runningMin = 0;
+      let runningMax = 0;
+
+      const rows = source.map(day => {
+          const dailyValue = config.getDailyValue(day);
+          cumulative += dailyValue;
+          cumulativeCount += day.count;
+          cumulativeWins += day.wins;
+          cumulativeLosses += day.losses;
+          cumulativeWinPnl += day.winPnl;
+          cumulativeLossPnl += day.lossPnl;
+          runningMin = Math.min(runningMin, dailyValue);
+          runningMax = Math.max(runningMax, dailyValue);
+
+          let value = dailyValue;
+          if (config.mode === 'cumulative') {
+              if (metricId === 'avgDailyNetPnl') value = cumulative / (source.indexOf(day) + 1);
+              else if (metricId === 'avgLoss') value = cumulativeLosses > 0 ? cumulativeLossPnl / cumulativeLosses : 0;
+              else if (metricId === 'avgWin') value = cumulativeWins > 0 ? cumulativeWinPnl / cumulativeWins : 0;
+              else if (metricId === 'avgNetTradePnl' || metricId === 'tradeExpectancy') value = cumulativeCount > 0 ? cumulative / cumulativeCount : 0;
+              else if (metricId === 'avgDailyNetDrawdown') {
+                  const losingRows = source.slice(0, source.indexOf(day) + 1).filter(row => row.pnl < 0);
+                  value = losingRows.length > 0 ? losingRows.reduce((acc, row) => acc + row.pnl, 0) / losingRows.length : 0;
+              }
+              else if (metricId === 'maxDailyNetDrawdown') value = runningMin;
+              else if (metricId === 'profitFactor') value = Math.abs(cumulativeLossPnl) > 0 ? cumulativeWinPnl / Math.abs(cumulativeLossPnl) : cumulativeWinPnl > 0 ? cumulativeWinPnl : 0;
+              else if (metricId === 'avgTradeWinLoss') {
+                  const avgWin = cumulativeWins > 0 ? cumulativeWinPnl / cumulativeWins : 0;
+                  const avgLoss = cumulativeLosses > 0 ? cumulativeLossPnl / cumulativeLosses : 0;
+                  value = avgWin > 0 && avgLoss < 0 ? Math.abs(avgWin / avgLoss) : 0;
+              }
+              else if (metricId === 'winPct') value = cumulativeCount > 0 ? (cumulativeWins / cumulativeCount) * 100 : 0;
+              else if (metricId === 'avgDailyWinPct') {
+                  const currentRows = source.slice(0, source.indexOf(day) + 1);
+                  value = currentRows.length > 0 ? currentRows.reduce((acc, row) => acc + row.winRate, 0) / currentRows.length : 0;
+              }
+              else if (metricId === 'avgTradingDaysDuration' || metricId === 'maxTradingDaysDuration') value = (source.indexOf(day) + 1) * 24 * 60 * 60 * 1000;
+              else if (metricId === 'avgHoldTime') value = source.indexOf(day) + 1 > 0 ? cumulative / (source.indexOf(day) + 1) : 0;
+              else if (metricId === 'longestTradeDuration') value = runningMax;
+              else value = cumulative;
+          }
+
+          return {
+              ...day,
+              label: formatChartDateLabel(day.date),
+              value: Number(value.toFixed(4)),
+          };
+      });
+
+      return rows;
+  };
+
+  const getChartMetricDisplayData = (metricId: SummaryMetricId) => {
+      const data = buildChartMetricData(metricId);
+      const targetCount = chartMetricConfigs[metricId]?.visual === 'bar' ? 7 : 9;
+      const indexes = getEvenlySpacedIndexes(data.length, targetCount);
+      return indexes.map(index => data[index]).filter(Boolean);
+  };
+
+  const leftChartConfig = chartMetricConfigs[leftChartMetricId] || chartMetricConfigs.netPnl!;
+  const rightChartConfig = chartMetricConfigs[rightChartMetricId] || chartMetricConfigs.avgDailyWinLoss!;
+  const leftChartData = getChartMetricDisplayData(leftChartMetricId);
+  const rightChartData = getChartMetricDisplayData(rightChartMetricId);
+  const leftChartTicks = getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean);
+  const rightChartTicks = getEvenlySpacedIndexes(rightChartData.length, 6).map(index => rightChartData[index]?.label).filter(Boolean);
+
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -1059,6 +1223,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       title,
       metricLabel,
       children,
+      metricPicker,
+      onMetricButtonClick,
       accent = 'text-indigo-500',
       rightControl = 'Day',
       featured = false,
@@ -1068,6 +1234,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       title: string;
       metricLabel: string;
       children: React.ReactNode;
+      metricPicker?: React.ReactNode;
+      onMetricButtonClick?: () => void;
       accent?: string;
       rightControl?: string;
       featured?: boolean;
@@ -1080,16 +1248,23 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   <div className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center`}>
                       <BarChart2 className={`w-4 h-4 ${accent}`} />
                   </div>
-                  <button className={`${featured ? 'relative h-[32px] w-[154px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}>
-                      {featured && (
-                          <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
-                              <span className="absolute left-0 top-0 h-[15px] w-[4px] rounded-tl-[7px] bg-[#35cfa2]" />
-                              <span className="absolute left-0 bottom-0 h-[15px] w-[4px] rounded-bl-[7px] bg-[#ff6468]" />
-                          </span>
-                      )}
-                      <span className="truncate">{metricLabel}</span>
-                      <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
-                  </button>
+                  <div className="relative">
+                      <button
+                          type="button"
+                          onClick={onMetricButtonClick}
+                          className={`${featured ? 'relative h-[32px] w-[154px] overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a]' : 'h-8 min-w-0 max-w-[220px] border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                      >
+                          {featured && (
+                              <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
+                                  <span className="absolute left-0 top-0 h-[15px] w-[4px] rounded-tl-[7px] bg-[#35cfa2]" />
+                                  <span className="absolute left-0 bottom-0 h-[15px] w-[4px] rounded-bl-[7px] bg-[#ff6468]" />
+                              </span>
+                          )}
+                          <span className="truncate">{metricLabel}</span>
+                          <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
+                      </button>
+                      {metricPicker}
+                  </div>
                   <button className={`${featured ? 'text-[14px] font-semibold text-[#5b45b6]' : 'text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'} hidden sm:inline-flex`}>
                       + {language === 'cn' ? '添加指标' : 'Add metric'}
                   </button>
@@ -1155,6 +1330,83 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               <div className="mt-1 flex items-center gap-2">
                   <span className="h-[6px] w-[6px] rounded-full bg-[#55c39e]" />
                   <span className="text-[12px] text-[#3f4650]">{language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}: {value.toFixed(2)}</span>
+              </div>
+          </div>
+      );
+  };
+
+  const GenericChartTooltip = ({ active, payload, label, config }: any) => {
+      if (!active || !payload?.length || !config) return null;
+      const value = Number(payload[0]?.value || 0);
+      const color = config.color || '#55c39e';
+
+      return (
+          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.22)]">
+              <div className="text-[12px] font-bold text-[#20232a]">{label}</div>
+              <div className="mt-1 flex items-center gap-2">
+                  <span className="h-[6px] w-[6px] rounded-full" style={{ backgroundColor: color }} />
+                  <span className="text-[12px] text-[#3f4650]">{config.shortLabel}: {formatChartMetricValue(value, config.format)}</span>
+              </div>
+          </div>
+      );
+  };
+
+  const ChartMetricPicker = ({ side, selectedMetricId }: { side: 'left' | 'right'; selectedMetricId: SummaryMetricId }) => {
+      if (openChartMetricPicker !== side) return null;
+
+      const handleSelectMetric = (metricId: SummaryMetricId) => {
+          if (side === 'left') setLeftChartMetricId(metricId);
+          else setRightChartMetricId(metricId);
+          setOpenChartMetricPicker(null);
+          setChartMetricPickerSearch('');
+      };
+
+      return (
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+              <div className="p-[12px] pb-[8px]">
+                  <div className="relative">
+                      <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
+                      <input
+                          value={chartMetricPickerSearch}
+                          onChange={(event) => setChartMetricPickerSearch(event.target.value)}
+                          placeholder={language === 'cn' ? '搜索' : 'Search'}
+                          className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                      />
+                  </div>
+              </div>
+              <div className="min-h-0 flex-1 overflow-y-auto px-[12px] pb-[10px]">
+                  {visibleChartMetricCategories.map(category => {
+                      const isExpanded = expandedChartMetricCategory === category.id;
+                      return (
+                          <div key={category.id}>
+                              <button
+                                  type="button"
+                                  onClick={() => setExpandedChartMetricCategory(isExpanded ? null : category.id)}
+                                  className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200'}`}
+                              >
+                                  {category.label}
+                                  <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
+                              </button>
+                              <div className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ease-out ${isExpanded ? 'max-h-[620px] translate-y-0 pb-[6px] opacity-100' : 'max-h-0 -translate-y-1 pb-0 opacity-0'}`}>
+                                  <div className="space-y-[1px]">
+                                      {category.metrics.map(([metricId, config]) => {
+                                          const isSelected = metricId === selectedMetricId;
+                                          return (
+                                              <button
+                                                  key={metricId}
+                                                  type="button"
+                                                  onClick={() => handleSelectMetric(metricId)}
+                                                  className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
+                                              >
+                                                  {config.label}
+                                              </button>
+                                          );
+                                      })}
+                                  </div>
+                              </div>
+                          </div>
+                      );
+                  })}
               </div>
           </div>
       );
@@ -1606,31 +1858,28 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-[10px]">
                   <ChartCard
-                      title={language === 'cn' ? '累计净盈亏' : 'Net P&L cumulative'}
-                      metricLabel={language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative'}
+                      title={leftChartConfig.label}
+                      metricLabel={leftChartConfig.label}
+                      metricPicker={<ChartMetricPicker side="left" selectedMetricId={leftChartMetricId} />}
+                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current === 'left' ? null : 'left')}
                       accent="text-[#5f636b]"
                       rightControl={language === 'cn' ? '日' : 'Day'}
                       featured
                   >
-                      {!isDataLoading && performanceDailyData.length === 0 ? (
+                      {!isDataLoading && leftChartData.length === 0 ? (
                           <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
                               {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
                           </div>
                       ) : (
                           <div className="relative h-full">
                               <ResponsiveContainer width="100%" height="100%">
-                                  <AreaChart data={performancePnlDisplayData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
-                                      <defs>
-                                          <linearGradient id="performancePnlFillPremium" x1="0" y1="0" x2="0" y2="1">
-                                              <stop offset="0%" stopColor="#ff6468" stopOpacity={isPnlTrendingDown ? 0.04 : 0.58} />
-                                              <stop offset="42%" stopColor="#ff6468" stopOpacity={isPnlTrendingDown ? 0.12 : 0.18} />
-                                              <stop offset="100%" stopColor="#ff6468" stopOpacity={isPnlTrendingDown ? 0.58 : 0.04} />
-                                          </linearGradient>
-                                      </defs>
+                                  {leftChartConfig.visual === 'area' ? (
+                                  <AreaChart data={leftChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
+                                      <defs><linearGradient id="leftChartMetricFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={leftChartConfig.color} stopOpacity={0.5} /><stop offset="45%" stopColor={leftChartConfig.color} stopOpacity={0.16} /><stop offset="100%" stopColor={leftChartConfig.color} stopOpacity={0.04} /></linearGradient></defs>
                                       <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
                                       <XAxis
                                           dataKey="label"
-                                          ticks={performancePnlXAxisTicks}
+                                          ticks={leftChartTicks}
                                           tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
                                           axisLine={false}
                                           tickLine={false}
@@ -1643,59 +1892,68 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                           axisLine={false}
                                           tickLine={false}
                                           width={58}
-                                          tickFormatter={(value: number) => formatMoney(value, true)}
+                                          tickFormatter={(value: number) => formatChartMetricValue(value, leftChartConfig.format, true)}
                                       />
                                       <Tooltip
-                                          cursor={{ stroke: '#ff6468', strokeWidth: 1, strokeDasharray: '3 3' }}
-                                          content={<PnlTooltip />}
+                                          cursor={{ stroke: leftChartConfig.color, strokeWidth: 1, strokeDasharray: '3 3' }}
+                                          content={<GenericChartTooltip config={leftChartConfig} />}
                                       />
                                       <Area
                                           type="monotone"
-                                          dataKey="cumulativePnl"
-                                          stroke="#ff6468"
+                                          dataKey="value"
+                                          stroke={leftChartConfig.color}
                                           strokeWidth={2}
-                                          fill="url(#performancePnlFillPremium)"
-                                          dot={{ r: 2.4, fill: '#ff6468', stroke: '#ff6468', strokeWidth: 1 }}
+                                          fill="url(#leftChartMetricFill)"
+                                          dot={{ r: 2.4, fill: leftChartConfig.color, stroke: leftChartConfig.color, strokeWidth: 1 }}
                                           isAnimationActive={false}
                                           activeDot={{
                                               r: 5,
-                                              fill: '#ff6468',
+                                              fill: leftChartConfig.color,
                                               stroke: '#ffffff',
                                               strokeWidth: 2,
                                           }}
                                       />
                                   </AreaChart>
+                                  ) : (
+                                  <BarChart data={leftChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }} barCategoryGap="48%">
+                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                                      <XAxis dataKey="label" ticks={leftChartTicks} tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }} axisLine={false} tickLine={false} interval={0} minTickGap={22} dy={15} />
+                                      <YAxis tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }} axisLine={false} tickLine={false} width={58} tickFormatter={(value: number) => formatChartMetricValue(value, leftChartConfig.format, true)} />
+                                      <Tooltip cursor={{ fill: `${leftChartConfig.color}12` }} content={<GenericChartTooltip config={leftChartConfig} />} />
+                                      <Bar dataKey="value" fill={leftChartConfig.color} radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} isAnimationActive={false} />
+                                  </BarChart>
+                                  )}
                               </ResponsiveContainer>
                               <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
-                                  <span className="h-[14px] w-[14px] overflow-hidden rounded-full">
-                                      <span className="block h-1/2 bg-[#39c29a]" />
-                                      <span className="block h-1/2 bg-[#ff6468]" />
-                                  </span>
-                                  <span>Net P&L</span>
+                                  <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: leftChartConfig.color }} />
+                                  <span>{leftChartConfig.shortLabel}</span>
                               </div>
                           </div>
                       )}
                   </ChartCard>
 
                   <ChartCard
-                      title={language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}
-                      metricLabel={language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}
+                      title={rightChartConfig.label}
+                      metricLabel={rightChartConfig.label}
+                      metricPicker={<ChartMetricPicker side="right" selectedMetricId={rightChartMetricId} />}
+                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current === 'right' ? null : 'right')}
                       accent="text-emerald-500"
                       rightControl={language === 'cn' ? '日' : 'Day'}
                       featured
                   >
-                      {!isDataLoading && avgDailyWinLossDisplayData.length === 0 ? (
+                      {!isDataLoading && rightChartData.length === 0 ? (
                           <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
-                              {language === 'cn' ? '暂无可计算的盈亏比数据' : 'No win/loss ratio data yet'}
+                              {language === 'cn' ? '暂无可计算的数据' : 'No chartable data yet'}
                           </div>
                       ) : (
                           <div className="relative h-full">
                               <ResponsiveContainer width="100%" height="100%">
-                                  <BarChart data={avgDailyWinLossDisplayData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }} barCategoryGap="48%">
+                                  {rightChartConfig.visual === 'bar' ? (
+                                  <BarChart data={rightChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }} barCategoryGap="48%">
                                       <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
                                       <XAxis
                                           dataKey="label"
-                                          ticks={avgDailyWinLossTicks}
+                                          ticks={rightChartTicks}
                                           tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
                                           axisLine={false}
                                           tickLine={false}
@@ -1709,15 +1967,25 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                           tickLine={false}
                                           width={50}
                                           domain={[0, (dataMax: number) => Math.max(dataMax * 1.18, 0.2)]}
-                                          tickFormatter={(value: number) => Number(value).toFixed(value < 1 ? 2 : 0).replace(/\.?0+$/, '')}
+                                          tickFormatter={(value: number) => formatChartMetricValue(value, rightChartConfig.format, true)}
                                       />
-                                      <Tooltip cursor={{ fill: 'rgba(85, 195, 158, 0.07)' }} content={<WinLossTooltip />} />
-                                      <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} isAnimationActive={false} />
+                                      <Tooltip cursor={{ fill: `${rightChartConfig.color}12` }} content={<GenericChartTooltip config={rightChartConfig} />} />
+                                      <Bar dataKey="value" fill={rightChartConfig.color} radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} isAnimationActive={false} />
                                   </BarChart>
+                                  ) : (
+                                  <AreaChart data={rightChartData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }}>
+                                      <defs><linearGradient id="rightChartMetricFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={rightChartConfig.color} stopOpacity={0.5} /><stop offset="45%" stopColor={rightChartConfig.color} stopOpacity={0.16} /><stop offset="100%" stopColor={rightChartConfig.color} stopOpacity={0.04} /></linearGradient></defs>
+                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                                      <XAxis dataKey="label" ticks={rightChartTicks} tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }} axisLine={false} tickLine={false} interval={0} minTickGap={22} dy={15} />
+                                      <YAxis tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }} axisLine={false} tickLine={false} width={58} tickFormatter={(value: number) => formatChartMetricValue(value, rightChartConfig.format, true)} />
+                                      <Tooltip cursor={{ stroke: rightChartConfig.color, strokeWidth: 1, strokeDasharray: '3 3' }} content={<GenericChartTooltip config={rightChartConfig} />} />
+                                      <Area type="monotone" dataKey="value" stroke={rightChartConfig.color} strokeWidth={2} fill="url(#rightChartMetricFill)" dot={{ r: 2.4, fill: rightChartConfig.color, stroke: rightChartConfig.color, strokeWidth: 1 }} isAnimationActive={false} activeDot={{ r: 5, fill: rightChartConfig.color, stroke: '#ffffff', strokeWidth: 2 }} />
+                                  </AreaChart>
+                                  )}
                               </ResponsiveContainer>
                               <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
-                                  <span className="h-[14px] w-[14px] rounded-full bg-[#55c39e]" />
-                                  <span>{language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}</span>
+                                  <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: rightChartConfig.color }} />
+                                  <span>{rightChartConfig.shortLabel}</span>
                               </div>
                           </div>
                       )}
