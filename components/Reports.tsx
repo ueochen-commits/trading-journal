@@ -134,6 +134,58 @@ const normalizeSummaryLayout = (ids: unknown): SummaryMetricId[] => {
   return deduped.length > 0 ? deduped : getDefaultSummaryLayout();
 };
 
+const getNiceNumber = (range: number, round: boolean) => {
+  const exponent = Math.floor(Math.log10(range));
+  const fraction = range / Math.pow(10, exponent);
+  let niceFraction = 1;
+
+  if (round) {
+      if (fraction < 1.5) niceFraction = 1;
+      else if (fraction < 3) niceFraction = 2;
+      else if (fraction < 7) niceFraction = 5;
+      else niceFraction = 10;
+  } else if (fraction <= 1) niceFraction = 1;
+  else if (fraction <= 2) niceFraction = 2;
+  else if (fraction <= 5) niceFraction = 5;
+  else niceFraction = 10;
+
+  return niceFraction * Math.pow(10, exponent);
+};
+
+const getChartAxisTicks = (values: number[], tickCount = REPORT_CHART_Y_TICK_COUNT) => {
+  const finiteValues = values.filter(value => Number.isFinite(value));
+  if (finiteValues.length === 0) {
+      return Array.from({ length: tickCount }, (_, index) => index);
+  }
+
+  let min = Math.min(...finiteValues);
+  let max = Math.max(...finiteValues);
+  if (min === max) {
+      const padding = Math.abs(max) > 0 ? Math.abs(max) * 0.25 : 1;
+      min -= padding;
+      max += padding;
+  }
+
+  if (min >= 0) min = 0;
+  if (max <= 0) max = 0;
+
+  const niceRange = getNiceNumber(max - min, false);
+  const step = getNiceNumber(niceRange / Math.max(1, tickCount - 1), true);
+  const niceMin = Math.floor(min / step) * step;
+  const niceMax = Math.ceil(max / step) * step;
+  const ticks = [];
+
+  for (let value = niceMin; value <= niceMax + step / 2; value += step) {
+      ticks.push(Number(value.toFixed(8)));
+  }
+
+  if (ticks.length <= tickCount) return ticks;
+  return Array.from({ length: tickCount }, (_, index) => {
+      const value = niceMin + ((niceMax - niceMin) / (tickCount - 1)) * index;
+      return Number(value.toFixed(8));
+  });
+};
+
 const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
     const end = new Date();
     const start = new Date();
@@ -2285,15 +2337,27 @@ const Reports: React.FC<ReportsProps> = ({
               format: metric.config.format,
               orientation: metric.yAxisId.startsWith('right') ? 'right' as const : 'left' as const,
               colors: [] as string[],
+              dataKeys: [] as Array<'primaryValue' | 'secondaryValue' | 'tertiaryValue'>,
           };
           if (!current.colors.includes(metric.color)) {
               current.colors.push(metric.color);
           }
+          if (!current.dataKeys.includes(metric.dataKey)) {
+              current.dataKeys.push(metric.dataKey);
+          }
           groups.set(metric.yAxisId, current);
           return groups;
-      }, new Map<string, { id: string; format: ChartMetricFormat; orientation: 'left' | 'right'; colors: string[] }>()).values());
+      }, new Map<string, { id: string; format: ChartMetricFormat; orientation: 'left' | 'right'; colors: string[]; dataKeys: Array<'primaryValue' | 'secondaryValue' | 'tertiaryValue'> }>()).values())
+          .map(axis => {
+              const axisValues = data.flatMap(row => axis.dataKeys.map(key => Number(row[key])).filter(Number.isFinite));
+              return {
+                  ...axis,
+                  ticks: getChartAxisTicks(axisValues),
+              };
+          });
       const leftAxisGroups = axisGroups.filter(axis => axis.orientation === 'left');
       const rightAxisGroups = axisGroups.filter(axis => axis.orientation === 'right');
+      const gridAxis = axisGroups[0];
       const getAxisWidth = (format: ChartMetricFormat) => format === 'duration' ? 74 : format === 'money' ? 56 : format === 'percent' ? 44 : 38;
       const getAxisPadding = (axisCount: number) => Math.max(0, axisCount - 1) * 3;
       const commonMargin = {
@@ -2411,7 +2475,7 @@ const Reports: React.FC<ReportsProps> = ({
                               vertical={false}
                               horizontal
                               stroke="#dfe5eb"
-                              strokeOpacity={0.88}
+                              strokeOpacity={0.45}
                               strokeDasharray="4 4"
                           />
                           {xAxis}
@@ -2425,7 +2489,8 @@ const Reports: React.FC<ReportsProps> = ({
                                   width={getAxisWidth(axis.format)}
                                   tickMargin={axis.format === 'duration' ? 6 : 4}
                                   tick={<ChartYAxisTick format={axis.format} colors={axis.colors} orientation={axis.orientation} />}
-                                  tickCount={REPORT_CHART_Y_TICK_COUNT}
+                                  ticks={axis.ticks}
+                                  domain={[axis.ticks[0], axis.ticks[axis.ticks.length - 1]]}
                                   allowDataOverflow={false}
                               />
                           ))}
@@ -2434,6 +2499,18 @@ const Reports: React.FC<ReportsProps> = ({
                               content={<GenericChartTooltip metrics={metrics} />}
                           />
                           {metrics.map(metric => renderSeries(metric, `${side}-${metric.slot}ChartMetricFill`))}
+                          {gridAxis?.ticks.map(tick => (
+                              <ReferenceLine
+                                  key={`${side}-horizontal-grid-${tick}`}
+                                  yAxisId={gridAxis.id}
+                                  y={tick}
+                                  stroke="#dfe5eb"
+                                  strokeOpacity={0.88}
+                                  strokeDasharray="4 4"
+                                  strokeWidth={1}
+                                  ifOverflow="extendDomain"
+                              />
+                          ))}
                   </ComposedChart>
               </ResponsiveContainer>
               {legend}
