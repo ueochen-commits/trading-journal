@@ -79,16 +79,21 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
 
       // 每 5 秒自动刷新报告列表（检查 pending 状态）
       const interval = setInterval(() => {
-          loadReports(currentUserId);
+          loadReports(currentUserId, true);
       }, 5000);
 
       return () => clearInterval(interval);
   }, [currentUserId]);
 
-  const loadReports = async (userId: string) => {
-      setIsLoadingReports(true);
+  const getReportsSnapshot = (reports: Report[]) => reports
+      .map(report => `${report.id}:${report.status}:${(report as any).updated_at || (report as any).created_at || ''}`)
+      .join('|');
+
+  const loadReports = async (userId: string, background = false) => {
+      if (!background) setIsLoadingReports(true);
       try {
           const reports = await fetchReports(userId);
+          const nextReportsSnapshot = getReportsSnapshot(reports);
 
           // 检测是否有报告从 pending 变为 completed（不再发送通知）
           if (previousReports.length > 0) {
@@ -99,11 +104,15 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               // 通知已移除，仅用于检测状态变化
           }
 
-          setPreviousReports(reports);
-          setSavedReports(reports);
+          setPreviousReports(current =>
+              getReportsSnapshot(current) === nextReportsSnapshot ? current : reports
+          );
+          setSavedReports(current =>
+              getReportsSnapshot(current) === nextReportsSnapshot ? current : reports
+          );
 
           // 自动显示最新的已完成报告
-          if (!reportResult && reports.length > 0) {
+          if (!background && !reportResult && reports.length > 0) {
               const latestCompleted = reports.find(r => r.status === 'completed');
               if (latestCompleted) {
                   setReportResult(latestCompleted.content.html);
@@ -113,7 +122,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       } catch (e) {
           console.error(e);
       } finally {
-          setIsLoadingReports(false);
+          if (!background) setIsLoadingReports(false);
       }
   };
 
@@ -1258,6 +1267,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                           strokeWidth={2}
                                           fill="url(#performancePnlFillPremium)"
                                           dot={{ r: 2.4, fill: '#ff6468', stroke: '#ff6468', strokeWidth: 1 }}
+                                          isAnimationActive={false}
                                           activeDot={{
                                               r: 5,
                                               fill: '#ff6468',
@@ -1311,7 +1321,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                           tickFormatter={(value: number) => Number(value).toFixed(value < 1 ? 2 : 0).replace(/\.?0+$/, '')}
                                       />
                                       <Tooltip cursor={{ fill: 'rgba(85, 195, 158, 0.07)' }} content={<WinLossTooltip />} />
-                                      <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} />
+                                      <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} barSize={36} maxBarSize={42} isAnimationActive={false} />
                                   </BarChart>
                               </ResponsiveContainer>
                               <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
