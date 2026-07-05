@@ -294,11 +294,15 @@ const Reports: React.FC<ReportsProps> = ({
   const [openChartStyleMenu, setOpenChartStyleMenu] = useState<ChartSide | null>(null);
   const [openChartVisualDropdown, setOpenChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartColorDropdown, setOpenChartColorDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
+  const [openDayTimeChartStyleMenu, setOpenDayTimeChartStyleMenu] = useState<ChartSide | null>(null);
+  const [openDayTimeChartVisualDropdown, setOpenDayTimeChartVisualDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
+  const [openDayTimeChartColorDropdown, setOpenDayTimeChartColorDropdown] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
   const [openChartTimeframeMenu, setOpenChartTimeframeMenu] = useState<ChartSide | null>(null);
   const [isPnlDisplayMenuOpen, setIsPnlDisplayMenuOpen] = useState(false);
   const [pnlDisplayMode, setPnlDisplayMode] = useState<PnlDisplayMode>('net');
   const [chartTimeframes, setChartTimeframes] = useState<Record<ChartSide, ChartTimeframe>>({ left: 'day', right: 'day' });
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
+  const [dayTimeChartStyleSettings, setDayTimeChartStyleSettings] = useState<ChartStyleSettings>({ left: {}, right: {} });
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
   const [openDayTimeMetricPicker, setOpenDayTimeMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
@@ -359,6 +363,21 @@ const Reports: React.FC<ReportsProps> = ({
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [openChartStyleMenu]);
+
+  useEffect(() => {
+      if (!openDayTimeChartStyleMenu) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest(`[data-day-time-chart-style-root="${openDayTimeChartStyleMenu}"]`)) return;
+          setOpenDayTimeChartStyleMenu(null);
+          setOpenDayTimeChartVisualDropdown(null);
+          setOpenDayTimeChartColorDropdown(null);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [openDayTimeChartStyleMenu]);
 
   useEffect(() => {
       if (!openChartTimeframeMenu) return;
@@ -2774,6 +2793,19 @@ const Reports: React.FC<ReportsProps> = ({
       }));
   };
 
+  const updateDayTimeChartStyle = (side: ChartSide, slot: ChartMetricSlot, patch: NonNullable<ChartStyleSettings[ChartSide][ChartMetricSlot]>) => {
+      setDayTimeChartStyleSettings(current => ({
+          ...current,
+          [side]: {
+              ...current[side],
+              [slot]: {
+                  ...current[side][slot],
+                  ...patch,
+              },
+          },
+      }));
+  };
+
   const ChartStyleMenu = ({
       side,
       metrics,
@@ -2897,6 +2929,141 @@ const Reports: React.FC<ReportsProps> = ({
                           setChartStyleSettings(current => ({ ...current, [side]: {} }));
                           setOpenChartVisualDropdown(null);
                           setOpenChartColorDropdown(null);
+                      }}
+                      className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
+                  >
+                      {language === 'cn' ? '恢复默认' : 'Reset to default'}
+                  </button>
+              </div>
+          </div>
+      );
+  };
+
+  const DayTimeChartStyleMenu = ({
+      side,
+      metrics,
+  }: {
+      side: ChartSide;
+      metrics: Array<{
+          slot: ChartMetricSlot;
+          config: {
+              label: string;
+          };
+          visual: ChartMetricVisual;
+          color: string;
+      }>;
+  }) => {
+      const isOpen = openDayTimeChartStyleMenu === side;
+
+      return (
+          <div
+              className={`absolute left-0 top-full z-50 mt-[8px] w-[316px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                  isOpen
+                      ? 'max-h-[420px] scale-100 opacity-100'
+                      : 'pointer-events-none max-h-0 scale-[0.96] opacity-0'
+              }`}
+          >
+              <div className="space-y-[14px] p-[14px]">
+                  {metrics.map((metric, index) => {
+                      const visualDropdownOpen = openDayTimeChartVisualDropdown?.side === side && openDayTimeChartVisualDropdown.slot === metric.slot;
+                      const colorDropdownOpen = openDayTimeChartColorDropdown?.side === side && openDayTimeChartColorDropdown.slot === metric.slot;
+
+                      return (
+                          <div key={metric.slot} className={index > 0 ? 'pt-[2px] dark:border-slate-800' : ''}>
+                              <div className="mb-[9px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
+                                  {metric.config.label}
+                              </div>
+                              <div className="flex items-center gap-[9px]">
+                                  <div className="relative flex-shrink-0">
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setOpenDayTimeChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
+                                              setOpenDayTimeChartVisualDropdown(null);
+                                          }}
+                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900"
+                                          aria-expanded={colorDropdownOpen}
+                                          aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
+                                      >
+                                          <span className="h-full rounded-[3px]" style={{ backgroundColor: metric.color }} />
+                                      </button>
+                                      <div
+                                          className={`absolute left-0 top-full z-[70] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                              colorDropdownOpen ? 'max-h-[58px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                          }`}
+                                      >
+                                          {chartStyleColors.map(optionColor => {
+                                              const selected = optionColor === metric.color;
+                                              return (
+                                                  <button
+                                                      key={optionColor}
+                                                      type="button"
+                                                      onClick={() => {
+                                                          updateDayTimeChartStyle(side, metric.slot, { color: optionColor });
+                                                          setOpenDayTimeChartColorDropdown(null);
+                                                      }}
+                                                      className={`relative h-[26px] w-[26px] flex-shrink-0 rounded-[5px] transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 ${
+                                                          selected ? 'shadow-[0_0_0_2px_rgba(255,255,255,1),0_0_0_4px_rgba(91,69,214,0.35)]' : ''
+                                                      }`}
+                                                      style={{ backgroundColor: optionColor }}
+                                                      aria-label={language === 'cn' ? `切换颜色 ${optionColor}` : `Set chart color ${optionColor}`}
+                                                  >
+                                                      {selected && <CheckCircle2 className="absolute right-[2px] top-[2px] h-[12px] w-[12px] text-white drop-shadow" />}
+                                                  </button>
+                                              );
+                                          })}
+                                      </div>
+                                  </div>
+                                  <div className="relative flex-1">
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setOpenDayTimeChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
+                                              setOpenDayTimeChartColorDropdown(null);
+                                          }}
+                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                      >
+                                          {chartVisualOptions.find(option => option.id === metric.visual)?.label}
+                                          <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
+                                      </button>
+                                      <div
+                                          className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                              visualDropdownOpen ? 'max-h-[160px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                          }`}
+                                      >
+                                          {chartVisualOptions.map(option => {
+                                              const selected = option.id === metric.visual;
+                                              return (
+                                                  <button
+                                                      key={option.id}
+                                                      type="button"
+                                                      onClick={() => {
+                                                          updateDayTimeChartStyle(side, metric.slot, { visual: option.id });
+                                                          setOpenDayTimeChartVisualDropdown(null);
+                                                      }}
+                                                      className={`block w-full px-[12px] py-[8px] text-left text-[14px] font-medium transition-colors ${
+                                                          selected
+                                                              ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                              : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                      }`}
+                                                  >
+                                                      {option.label}
+                                                  </button>
+                                              );
+                                          })}
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      );
+                  })}
+
+                  <button
+                      type="button"
+                      onClick={() => {
+                          setDayTimeChartStyleSettings(current => ({ ...current, [side]: {} }));
+                          setOpenDayTimeChartVisualDropdown(null);
+                          setOpenDayTimeChartColorDropdown(null);
                       }}
                       className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
                   >
@@ -3192,6 +3359,26 @@ const Reports: React.FC<ReportsProps> = ({
   const getDayTimeAvailableMetrics = (selectedMetricId: DayTimeMetricId | null, excludedMetricIds: DayTimeMetricId[]) =>
       dayTimeMetricOptions.filter(option => option.id === selectedMetricId || !excludedMetricIds.includes(option.id));
 
+  const getDayTimeChartVisual = (side: ChartSide, slot: ChartMetricSlot, metric: ReturnType<typeof getDayTimeMetricOption>): ChartMetricVisual =>
+      dayTimeChartStyleSettings[side][slot]?.visual || metric.visual;
+
+  const getDayTimeChartColor = (side: ChartSide, slot: ChartMetricSlot, metric: ReturnType<typeof getDayTimeMetricOption>): string =>
+      dayTimeChartStyleSettings[side][slot]?.color || metric.color;
+
+  const getDayTimeRenderMetrics = (side: ChartSide) => {
+      const metricIds = getDayTimeMetricIds(side);
+      return metricIds.map((metricId, index) => {
+          const slot = index === 0 ? 'primary' : index === 1 ? 'secondary' : 'tertiary';
+          const metric = getDayTimeMetricOption(metricId);
+          return {
+              ...metric,
+              slot,
+              visual: getDayTimeChartVisual(side, slot, metric),
+              color: getDayTimeChartColor(side, slot, metric),
+          };
+      });
+  };
+
   const triggerMetricSweep = (event: React.MouseEvent<HTMLButtonElement>) => {
       const button = event.currentTarget;
       button.classList.remove('is-sweeping');
@@ -3389,16 +3576,16 @@ const Reports: React.FC<ReportsProps> = ({
       animationDelayMs = 0,
   }: {
       chartId: string;
-      metrics: DayTimeMetricId[];
+      metrics: Array<ReturnType<typeof getDayTimeMetricOption> & { slot: ChartMetricSlot }>;
       animate?: boolean;
       animationDelayMs?: number;
   }) => {
-      const visibleMetrics = metrics.map(getDayTimeMetricOption);
+      const visibleMetrics = metrics;
       const chartData = dayTimeReportRows.map(row => ({
           ...row,
           label: row.shortLabel,
           tooltipLabel: row.label,
-          ...Object.fromEntries(metrics.map(metric => [metric, getDayTimeMetricValue(row, metric)])),
+          ...Object.fromEntries(metrics.map(metric => [metric.id, getDayTimeMetricValue(row, metric.id)])),
       }));
       const axisGroups = visibleMetrics.map((metric, index) => {
           const values = chartData.map(row => Number(row[metric.id])).filter(Number.isFinite);
@@ -3416,7 +3603,7 @@ const Reports: React.FC<ReportsProps> = ({
           const yAxisId = `${chartId}-${metric.id}`;
           if (metric.visual === 'bar') {
               return (
-                  <Bar key={metric.id} yAxisId={yAxisId} dataKey={metric.id} barSize={metrics.length > 1 ? 26 : 34} radius={[3, 3, 0, 0]} fill={metric.color} isAnimationActive={shouldAnimateCharts} animationDuration={520}>
+                  <Bar key={metric.id} yAxisId={yAxisId} dataKey={metric.id} barSize={metrics.length > 1 ? 26 : 34} radius={[3, 3, 0, 0]} fill={metric.color} isAnimationActive={shouldAnimateDayTimeCharts} animationDuration={520} animationBegin={animationDelayMs}>
                       {chartData.map((entry, cellIndex) => (
                           <Cell key={`${chartId}-${metric.id}-${cellIndex}`} fill={Number(entry[metric.id]) >= 0 ? metric.color : '#ff6468'} />
                       ))}
@@ -5751,9 +5938,30 @@ const Reports: React.FC<ReportsProps> = ({
                           <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
-                                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
-                                          <FilledChartStyleIcon />
-                                      </span>
+                                      <div className="relative" data-day-time-chart-style-root="left">
+                                          <button
+                                              type="button"
+                                              onClick={() => {
+                                                  setOpenDayTimeChartStyleMenu(current => current === 'left' ? null : 'left');
+                                                  setOpenDayTimeChartVisualDropdown(null);
+                                                  setOpenDayTimeChartColorDropdown(null);
+                                                  setOpenDayTimeMetricPicker(null);
+                                              }}
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
+                                          >
+                                              <FilledChartStyleIcon />
+                                          </button>
+                                          <DayTimeChartStyleMenu
+                                              side="left"
+                                              metrics={getDayTimeRenderMetrics('left').map(metric => ({
+                                                  slot: metric.slot,
+                                                  config: { label: metric.label },
+                                                  visual: metric.visual,
+                                                  color: metric.color,
+                                              }))}
+                                          />
+                                      </div>
                                       <DayTimeMetricTrigger side="left" slot="primary" metricId={dayTimeLeftPrimaryMetric} />
                                       {dayTimeLeftSecondaryMetric && (
                                           <DayTimeMetricTrigger
@@ -5778,14 +5986,24 @@ const Reports: React.FC<ReportsProps> = ({
                                       )}
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
-                                  <button className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]" type="button" aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}>
+                                  <button
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      type="button"
+                                      aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
+                                      onClick={() => {
+                                          setOpenDayTimeChartStyleMenu(current => current === 'left' ? null : 'left');
+                                          setOpenDayTimeChartVisualDropdown(null);
+                                          setOpenDayTimeChartColorDropdown(null);
+                                          setOpenDayTimeMetricPicker(null);
+                                      }}
+                                  >
                                       <MoreVertical className="h-[16px] w-[16px]" />
                                   </button>
                               </div>
                               <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
                                   {renderDayTimeMetricChart({
                                       chartId: 'day-time-left',
-                                      metrics: getDayTimeMetricIds('left'),
+                                      metrics: getDayTimeRenderMetrics('left'),
                                       animate: shouldAnimateDayTimeCharts,
                                       animationDelayMs: 140,
                                   })}
@@ -5796,9 +6014,30 @@ const Reports: React.FC<ReportsProps> = ({
                           <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
-                                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
-                                          <FilledChartStyleIcon />
-                                      </span>
+                                      <div className="relative" data-day-time-chart-style-root="right">
+                                          <button
+                                              type="button"
+                                              onClick={() => {
+                                                  setOpenDayTimeChartStyleMenu(current => current === 'right' ? null : 'right');
+                                                  setOpenDayTimeChartVisualDropdown(null);
+                                                  setOpenDayTimeChartColorDropdown(null);
+                                                  setOpenDayTimeMetricPicker(null);
+                                              }}
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
+                                          >
+                                              <FilledChartStyleIcon />
+                                          </button>
+                                          <DayTimeChartStyleMenu
+                                              side="right"
+                                              metrics={getDayTimeRenderMetrics('right').map(metric => ({
+                                                  slot: metric.slot,
+                                                  config: { label: metric.label },
+                                                  visual: metric.visual,
+                                                  color: metric.color,
+                                              }))}
+                                          />
+                                      </div>
                                       <DayTimeMetricTrigger side="right" slot="primary" metricId={dayTimeRightPrimaryMetric} />
                                       {dayTimeRightSecondaryMetric && (
                                           <DayTimeMetricTrigger
@@ -5823,14 +6062,24 @@ const Reports: React.FC<ReportsProps> = ({
                                       )}
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
-                                  <button className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]" type="button" aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}>
+                                  <button
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      type="button"
+                                      aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
+                                      onClick={() => {
+                                          setOpenDayTimeChartStyleMenu(current => current === 'right' ? null : 'right');
+                                          setOpenDayTimeChartVisualDropdown(null);
+                                          setOpenDayTimeChartColorDropdown(null);
+                                          setOpenDayTimeMetricPicker(null);
+                                      }}
+                                  >
                                       <MoreVertical className="h-[16px] w-[16px]" />
                                   </button>
                               </div>
                               <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
                                   {renderDayTimeMetricChart({
                                       chartId: 'day-time-right',
-                                      metrics: getDayTimeMetricIds('right'),
+                                      metrics: getDayTimeRenderMetrics('right'),
                                       animate: shouldAnimateDayTimeCharts,
                                       animationDelayMs: 220,
                                   })}
