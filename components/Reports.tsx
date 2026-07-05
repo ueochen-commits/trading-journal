@@ -5667,36 +5667,34 @@ const Reports: React.FC<ReportsProps> = ({
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
                           <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="relative z-[90] flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
-                                  <div className="min-w-0 flex-1 overflow-visible">
-                                      <div className="flex min-w-max items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
-                                          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
-                                              <FilledChartStyleIcon />
-                                          </span>
-                                          <DayTimeMetricTrigger side="left" slot="primary" metricId={dayTimeLeftPrimaryMetric} />
-                                          {dayTimeLeftSecondaryMetric && (
-                                              <DayTimeMetricTrigger
-                                                  side="left"
-                                                  slot="secondary"
-                                                  metricId={dayTimeLeftSecondaryMetric}
-                                                  removable
-                                                  onRemove={() => {
-                                                      setDayTimeLeftSecondaryMetric(dayTimeLeftTertiaryMetric);
-                                                      setDayTimeLeftTertiaryMetric(null);
-                                                  }}
-                                              />
-                                          )}
-                                          {dayTimeLeftTertiaryMetric && (
-                                              <DayTimeMetricTrigger
-                                                  side="left"
-                                                  slot="tertiary"
-                                                  metricId={dayTimeLeftTertiaryMetric}
-                                                  removable
-                                                  onRemove={() => setDayTimeLeftTertiaryMetric(null)}
-                                              />
-                                          )}
-                                          <DayTimeAddMetricButton side="left" />
-                                      </div>
+                              <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
+                                  <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
+                                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
+                                          <FilledChartStyleIcon />
+                                      </span>
+                                      <DayTimeMetricTrigger side="left" slot="primary" metricId={dayTimeLeftPrimaryMetric} />
+                                      {dayTimeLeftSecondaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="left"
+                                              slot="secondary"
+                                              metricId={dayTimeLeftSecondaryMetric}
+                                              removable
+                                              onRemove={() => {
+                                                  setDayTimeLeftSecondaryMetric(dayTimeLeftTertiaryMetric);
+                                                  setDayTimeLeftTertiaryMetric(null);
+                                              }}
+                                          />
+                                      )}
+                                      {dayTimeLeftTertiaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="left"
+                                              slot="tertiary"
+                                              metricId={dayTimeLeftTertiaryMetric}
+                                              removable
+                                              onRemove={() => setDayTimeLeftTertiaryMetric(null)}
+                                          />
+                                      )}
+                                      <DayTimeAddMetricButton side="left" />
                                   </div>
                                   <button className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]" type="button" aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}>
                                       <MoreVertical className="h-[16px] w-[16px]" />
@@ -5709,36 +5707,34 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
 
                           <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="relative z-[90] flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
-                                  <div className="min-w-0 flex-1 overflow-visible">
-                                      <div className="flex min-w-max items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
-                                          <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
-                                              <FilledChartStyleIcon />
-                                          </span>
-                                          <DayTimeMetricTrigger side="right" slot="primary" metricId={dayTimeRightPrimaryMetric} />
-                                          {dayTimeRightSecondaryMetric && (
-                                              <DayTimeMetricTrigger
-                                                  side="right"
-                                                  slot="secondary"
-                                                  metricId={dayTimeRightSecondaryMetric}
-                                                  removable
-                                                  onRemove={() => {
-                                                      setDayTimeRightSecondaryMetric(dayTimeRightTertiaryMetric);
-                                                      setDayTimeRightTertiaryMetric(null);
-                                                  }}
-                                              />
-                                          )}
-                                          {dayTimeRightTertiaryMetric && (
-                                              <DayTimeMetricTrigger
-                                                  side="right"
-                                                  slot="tertiary"
-                                                  metricId={dayTimeRightTertiaryMetric}
-                                                  removable
-                                                  onRemove={() => setDayTimeRightTertiaryMetric(null)}
-                                              />
-                                          )}
-                                          <DayTimeAddMetricButton side="right" />
-                                      </div>
+                              <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
+                                  <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
+                                      <span className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
+                                          <FilledChartStyleIcon />
+                                      </span>
+                                      <DayTimeMetricTrigger side="right" slot="primary" metricId={dayTimeRightPrimaryMetric} />
+                                      {dayTimeRightSecondaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="right"
+                                              slot="secondary"
+                                              metricId={dayTimeRightSecondaryMetric}
+                                              removable
+                                              onRemove={() => {
+                                                  setDayTimeRightSecondaryMetric(dayTimeRightTertiaryMetric);
+                                                  setDayTimeRightTertiaryMetric(null);
+                                              }}
+                                          />
+                                      )}
+                                      {dayTimeRightTertiaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="right"
+                                              slot="tertiary"
+                                              metricId={dayTimeRightTertiaryMetric}
+                                              removable
+                                              onRemove={() => setDayTimeRightTertiaryMetric(null)}
+                                          />
+                                      )}
+                                      <DayTimeAddMetricButton side="right" />
                                   </div>
                                   <button className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]" type="button" aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}>
                                       <MoreVertical className="h-[16px] w-[16px]" />
