@@ -544,7 +544,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               cumulativePnl += value.pnl;
               const avgWin = value.wins > 0 ? value.winPnl / value.wins : 0;
               const avgLoss = value.losses > 0 ? value.lossPnl / value.losses : 0;
-              const avgDailyWinLoss = avgLoss < 0 ? Math.abs(avgWin / avgLoss) : avgWin > 0 ? avgWin : 0;
+              const hasAvgDailyWinLoss = avgWin > 0 && avgLoss < 0;
+              const avgDailyWinLoss = hasAvgDailyWinLoss ? Math.abs(avgWin / avgLoss) : 0;
               return {
                   date,
                   label: new Date(`${date}T00:00:00`).toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'short', day: '2-digit' }),
@@ -555,6 +556,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   losses: value.losses,
                   winRate: value.count > 0 ? (value.wins / value.count) * 100 : 0,
                   avgDailyWinLoss: Number(avgDailyWinLoss.toFixed(2)),
+                  hasAvgDailyWinLoss,
                   volume: value.volume,
               };
           });
@@ -583,6 +585,24 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return last < first;
   }, [performancePnlDisplayData]);
 
+  const avgDailyWinLossDisplayData = useMemo(() => {
+      const validDays = performanceDailyData.filter(day => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0);
+      const indexes = getEvenlySpacedIndexes(validDays.length, 5);
+      return indexes.map(index => {
+          const point = validDays[index];
+          return {
+              ...point,
+              label: formatChartDateLabel(point.date),
+          };
+      });
+  }, [performanceDailyData]);
+
+  const avgDailyWinLossTicks = useMemo(() => {
+      const indexSource = avgDailyWinLossDisplayData.length > 0 ? avgDailyWinLossDisplayData : performancePnlDisplayData;
+      const indexes = getEvenlySpacedIndexes(indexSource.length, 6);
+      return indexes.map(index => indexSource[index]?.label).filter(Boolean);
+  }, [avgDailyWinLossDisplayData, performancePnlDisplayData]);
+
   const performanceSummary = useMemo(() => {
       const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
       const tradesWithRisk = closedTrades.filter(t => t.riskAmount && t.riskAmount > 0);
@@ -598,8 +618,9 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           ? performanceDailyData.reduce((acc, d) => acc + d.winRate, 0) / performanceDailyData.length
           : 0;
       const avgTradeWinLoss = stats && stats.avgLoss < 0 ? Math.abs(stats.avgWin / stats.avgLoss) : stats && stats.avgWin > 0 ? stats.avgWin : 0;
-      const avgDailyWinLoss = performanceDailyData.length > 0
-          ? performanceDailyData.reduce((acc, d) => acc + d.avgDailyWinLoss, 0) / performanceDailyData.length
+      const validDailyWinLoss = performanceDailyData.filter(d => d.hasAvgDailyWinLoss && d.avgDailyWinLoss > 0);
+      const avgDailyWinLoss = validDailyWinLoss.length > 0
+          ? validDailyWinLoss.reduce((acc, d) => acc + d.avgDailyWinLoss, 0) / validDailyWinLoss.length
           : 0;
 
       return {
@@ -932,6 +953,21 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
+  const WinLossTooltip = ({ active, payload, label }: any) => {
+      if (!active || !payload?.length) return null;
+      const value = Number(payload[0]?.value || 0);
+
+      return (
+          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.18)]">
+              <div className="text-[12px] font-bold text-[#20232a]">{label}</div>
+              <div className="mt-1 flex items-center gap-2">
+                  <span className="h-[6px] w-[6px] rounded-full bg-[#55c39e]" />
+                  <span className="text-[12px] text-[#3f4650]">{language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}: {value.toFixed(2)}</span>
+              </div>
+          </div>
+      );
+  };
+
   const SummaryMetric = ({ label, value, tone = 'neutral' }: { label: string; value: string | number; tone?: 'neutral' | 'good' | 'bad' | 'accent' }) => {
       const toneClass = tone === 'good'
           ? 'text-emerald-600 dark:text-emerald-400'
@@ -1245,20 +1281,44 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       metricLabel={language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}
                       accent="text-emerald-500"
                       rightControl={language === 'cn' ? '日' : 'Day'}
+                      featured
                   >
-                      <ResponsiveContainer width="100%" height="100%">
-                          <BarChart data={performanceDailyData} margin={{ top: 8, right: 12, left: 8, bottom: 10 }}>
-                              <CartesianGrid strokeDasharray="4 4" vertical={false} stroke="#e5e7eb" />
-                              <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
-                              <YAxis tick={{ fontSize: 11, fill: '#8b95a1' }} axisLine={false} tickLine={false} width={48} />
-                              <Tooltip
-                                  cursor={{ fill: 'rgba(15, 23, 42, 0.03)' }}
-                                  contentStyle={{ borderRadius: 8, border: '1px solid #d8dbe3', boxShadow: '0 10px 28px rgba(15, 23, 42, 0.12)', fontSize: 12 }}
-                                  formatter={(value: number) => [Number(value).toFixed(2), language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss']}
-                              />
-                              <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} maxBarSize={42} />
-                          </BarChart>
-                      </ResponsiveContainer>
+                      {avgDailyWinLossDisplayData.length === 0 ? (
+                          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
+                              {language === 'cn' ? '暂无可计算的盈亏比数据' : 'No win/loss ratio data yet'}
+                          </div>
+                      ) : (
+                          <div className="relative h-full">
+                              <ResponsiveContainer width="100%" height="100%">
+                                  <BarChart data={avgDailyWinLossDisplayData} margin={{ top: 8, right: 10, left: 5, bottom: 42 }} barCategoryGap="48%">
+                                      <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                                      <XAxis
+                                          dataKey="label"
+                                          ticks={avgDailyWinLossTicks}
+                                          tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
+                                          axisLine={false}
+                                          tickLine={false}
+                                          interval={0}
+                                          minTickGap={22}
+                                          dy={15}
+                                      />
+                                      <YAxis
+                                          tick={{ fontSize: 12, fill: '#69717b', fontWeight: 400 }}
+                                          axisLine={false}
+                                          tickLine={false}
+                                          width={50}
+                                          tickFormatter={(value: number) => Number(value).toFixed(value < 1 ? 2 : 0).replace(/\.?0+$/, '')}
+                                      />
+                                      <Tooltip cursor={{ fill: 'rgba(85, 195, 158, 0.07)' }} content={<WinLossTooltip />} />
+                                      <Bar dataKey="avgDailyWinLoss" fill="#55c39e" radius={[4, 4, 0, 0]} maxBarSize={42} />
+                                  </BarChart>
+                              </ResponsiveContainer>
+                              <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
+                                  <span className="h-[14px] w-[14px] rounded-full bg-[#55c39e]" />
+                                  <span>{language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}</span>
+                              </div>
+                          </div>
+                      )}
                   </ChartCard>
               </div>
 
