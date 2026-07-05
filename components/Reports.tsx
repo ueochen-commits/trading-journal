@@ -97,6 +97,7 @@ const DEFAULT_SUMMARY_METRIC_IDS = [
   'maxDailyNetDrawdown',
   'avgDailyNetDrawdown',
 ] as const;
+const REPORT_CHART_Y_TICK_COUNT = 5;
 
 type SummaryMetricId = typeof ALL_SUMMARY_METRIC_IDS[number];
 type ChartMetricVisual = 'line' | 'area' | 'bar';
@@ -1866,7 +1867,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </linearGradient>
                               ))}
                           </defs>
-                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#dfe5eb" strokeOpacity={0.74} />
+                          <CartesianGrid strokeDasharray="5 5" vertical={false} stroke="#e2e8f0" strokeOpacity={0.82} />
                           {xAxis}
                           {axisGroups.map(axis => (
                               <YAxis
@@ -1878,6 +1879,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   width={getAxisWidth(axis.format)}
                                   tickMargin={axis.format === 'duration' ? 10 : 7}
                                   tick={<ChartYAxisTick format={axis.format} colors={axis.colors} orientation={axis.orientation} />}
+                                  tickCount={REPORT_CHART_Y_TICK_COUNT}
                                   allowDataOverflow={false}
                               />
                           ))}
