@@ -1152,7 +1152,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               return (
                   <PageContainer>
                       <Reports
-                          trades={filteredTrades}
+                          trades={trades}
                           accountSize={riskSettings.accountSize}
                           plans={plans}
                           isDataLoading={isDataLoading}
@@ -1160,6 +1160,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onPushNotification={handlePushNotification}
                           disciplineHistory={disciplineHistory}
                           riskSettings={riskSettings}
+                          tradingAccounts={tradingAccounts}
+                          selectedAccountId={selectedAccountId}
+                          onAccountChange={setSelectedAccountId}
                       />
                   </PageContainer>
               );

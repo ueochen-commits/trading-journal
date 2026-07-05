@@ -1,11 +1,11 @@
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report } from '../types';
+import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report, TradingAccount } from '../types';
 import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search, Check } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -19,6 +19,9 @@ interface ReportsProps {
   onSavePlan?: (plan: DailyPlan) => void;
   disciplineHistory?: any[];
   riskSettings?: any;
+  tradingAccounts?: TradingAccount[];
+  selectedAccountId?: string;
+  onAccountChange?: (accountId: string) => void;
 }
 
 const SUMMARY_LAYOUT_STORAGE_KEY = 'tg_reports_summary_metric_layout_v1';
@@ -131,7 +134,39 @@ const normalizeSummaryLayout = (ids: unknown): SummaryMetricId[] => {
   return deduped.length > 0 ? deduped : getDefaultSummaryLayout();
 };
 
-const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = [], isDataLoading = false, onPushNotification, onSavePlan, disciplineHistory = [], riskSettings = null }) => {
+const getRange = (period: 'today' | 'week' | 'month' | 'last30') => {
+    const end = new Date();
+    const start = new Date();
+    if (period === 'today') {
+        start.setHours(0, 0, 0, 0);
+        end.setHours(23, 59, 59, 999);
+    } else if (period === 'week') {
+        const day = start.getDay();
+        start.setDate(start.getDate() - day);
+        start.setHours(0, 0, 0, 0);
+    } else if (period === 'month') {
+        start.setDate(1);
+        start.setHours(0, 0, 0, 0);
+    } else if (period === 'last30') {
+        start.setDate(start.getDate() - 30);
+        start.setHours(0, 0, 0, 0);
+    }
+    return { start, end };
+};
+
+const Reports: React.FC<ReportsProps> = ({
+  trades: allTrades,
+  accountSize = 10000,
+  plans = [],
+  isDataLoading = false,
+  onPushNotification,
+  onSavePlan,
+  disciplineHistory = [],
+  riskSettings = null,
+  tradingAccounts = [],
+  selectedAccountId: externalAccountId = 'all',
+  onAccountChange,
+}) => {
   const { t, language } = useLanguage();
   
   // Helper: Format duration with localization
@@ -157,6 +192,13 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   // Sub-filter for Detailed Tab
   const [detailedFilter, setDetailedFilter] = useState<string>('DAYS');
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
+  const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(getRange('last30'));
+  const [activeDatePreset, setActiveDatePreset] = useState<string>('All Time');
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [viewDate, setViewDate] = useState(new Date());
+  const accountSwitcherRef = useRef<HTMLDivElement>(null);
+  const datePickerRef = useRef<HTMLDivElement>(null);
   // State for Time Interval Selection
   const [timeInterval, setTimeInterval] = useState<string>('1 Hour');
   // Risk Tab Sub-filter
@@ -204,6 +246,17 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   const [viewingReport, setViewingReport] = useState<Report | null>(null);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [previousReports, setPreviousReports] = useState<Report[]>([]);
+  const accounts = tradingAccounts || [];
+  const selectedAccountId = externalAccountId || 'all';
+  const setSelectedAccountId = (accountId: string) => onAccountChange?.(accountId);
+  const trades = useMemo(() => {
+      return allTrades.filter(trade => {
+          if (selectedAccountId !== 'all' && trade.accountId !== selectedAccountId) return false;
+          const tradeTime = new Date(trade.entryDate).getTime();
+          if (activeDatePreset === 'All Time' || activeDatePreset === '所有时间') return true;
+          return tradeTime >= dateRange.start.getTime() && tradeTime <= dateRange.end.getTime();
+      });
+  }, [allTrades, selectedAccountId, activeDatePreset, dateRange]);
 
   useEffect(() => {
       const fetchUser = async () => {
@@ -255,6 +308,21 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isPnlDisplayMenuOpen]);
+
+  useEffect(() => {
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target as Node;
+          if (accountSwitcherRef.current && !accountSwitcherRef.current.contains(target)) {
+              setIsAccountSwitcherOpen(false);
+          }
+          if (datePickerRef.current && !datePickerRef.current.contains(target)) {
+              setIsDatePickerOpen(false);
+          }
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, []);
 
   useEffect(() => {
       if (!isReportMenuOpen) return;
@@ -1873,6 +1941,133 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { id: 'month', label: language === 'cn' ? '月' : 'Month' },
   ];
 
+  const datePresets = [
+      { id: 'All Time', label: language === 'cn' ? '所有时间' : 'All Time' },
+      { id: 'Today', label: language === 'cn' ? '今天' : 'Today' },
+      { id: 'Yesterday', label: language === 'cn' ? '昨天' : 'Yesterday' },
+      { id: 'This Week', label: language === 'cn' ? '本周' : 'This Week' },
+      { id: 'Last Month', label: language === 'cn' ? '上个月' : 'Last Month' },
+      { id: 'Last 30 Days', label: language === 'cn' ? '最近30天' : 'Last 30 Days' },
+      { id: 'This Quarter', label: language === 'cn' ? '本季度' : 'This Quarter' },
+      { id: 'YTD', label: language === 'cn' ? '今年以来' : 'YTD' },
+  ];
+
+  const getActiveDatePresetLabel = () => {
+      if (activeDatePreset === 'Custom') return language === 'cn' ? '自定义范围' : 'Custom range';
+      return datePresets.find(preset => preset.id === activeDatePreset)?.label || activeDatePreset;
+  };
+
+  const getDateButtonValue = () => {
+      if (activeDatePreset === 'All Time' || activeDatePreset === '所有时间') {
+          return language === 'cn' ? '所有时间' : 'All Time';
+      }
+
+      return `${dateRange.start.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')} - ${dateRange.end.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US')}`;
+  };
+
+  const handlePresetSelect = (preset: string) => {
+      setActiveDatePreset(preset);
+      let { start, end } = getRange('today');
+
+      if (preset === 'All Time' || preset === '所有时间') {
+          start = new Date(0);
+          end = new Date(9999, 11, 31);
+      } else if (preset === 'Yesterday') {
+          start.setDate(start.getDate() - 1);
+          end.setDate(end.getDate() - 1);
+          end.setHours(23, 59, 59, 999);
+      } else if (preset === 'This Week') {
+          start.setDate(start.getDate() - start.getDay());
+          start.setHours(0, 0, 0, 0);
+      } else if (preset === 'Last Month') {
+          start = new Date(start.getFullYear(), start.getMonth() - 1, 1);
+          end = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+          end.setHours(23, 59, 59, 999);
+      } else if (preset === 'Last 30 Days') {
+          const range = getRange('last30');
+          start = range.start;
+          end = range.end;
+      } else if (preset === 'This Quarter') {
+          const now = new Date();
+          const quarterStartMonth = Math.floor(now.getMonth() / 3) * 3;
+          start = new Date(now.getFullYear(), quarterStartMonth, 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date();
+      } else if (preset === 'YTD') {
+          const now = new Date();
+          start = new Date(now.getFullYear(), 0, 1);
+          start.setHours(0, 0, 0, 0);
+          end = new Date();
+      }
+
+      setDateRange({ start, end });
+      setIsDatePickerOpen(false);
+  };
+
+  const getDaysInMonth = (date: Date) => ({
+      days: new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(),
+      firstDay: new Date(date.getFullYear(), date.getMonth(), 1).getDay(),
+  });
+
+  const renderMiniCalendar = (baseDate: Date) => {
+      const { days, firstDay } = getDaysInMonth(baseDate);
+      const dayCells = [];
+
+      for (let i = 0; i < firstDay; i++) {
+          dayCells.push(<div key={`empty-${i}`} className="h-8 w-8" />);
+      }
+
+      for (let day = 1; day <= days; day++) {
+          const current = new Date(baseDate.getFullYear(), baseDate.getMonth(), day);
+          const isSelected = current >= dateRange.start && current <= dateRange.end;
+          const isStart = current.toDateString() === dateRange.start.toDateString();
+          const isEnd = current.toDateString() === dateRange.end.toDateString();
+
+          dayCells.push(
+              <button
+                  key={day}
+                  type="button"
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs transition-all ${
+                      isStart || isEnd
+                          ? 'bg-indigo-600 font-bold text-white'
+                          : isSelected
+                            ? 'bg-indigo-100 text-indigo-700'
+                            : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                  onClick={() => {
+                      if (dateRange.start.toDateString() === dateRange.end.toDateString()) {
+                          if (current < dateRange.start) setDateRange({ start: current, end: dateRange.end });
+                          else setDateRange({ start: dateRange.start, end: current });
+                      } else {
+                          setDateRange({ start: current, end: current });
+                      }
+                      setActiveDatePreset('Custom');
+                  }}
+              >
+                  {day}
+              </button>
+          );
+      }
+
+      return (
+          <div className="w-full">
+              <div className="mb-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200">
+                  {baseDate.toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'short' })} {baseDate.getFullYear()}
+              </div>
+              <div className="grid grid-cols-7 justify-items-center gap-y-1">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                      <div key={`${day}-${index}`} className="text-[10px] font-bold text-slate-400">{day}</div>
+                  ))}
+                  {dayCells}
+              </div>
+          </div>
+      );
+  };
+
+  const currentAccountName = selectedAccountId === 'all'
+      ? (language === 'cn' ? '所有账户' : 'All Accounts')
+      : accounts.find(account => account.id === selectedAccountId)?.name || (language === 'cn' ? '未知账户' : 'Unknown');
+
   const updateChartStyle = (side: ChartSide, slot: ChartMetricSlot, patch: NonNullable<ChartStyleSettings[ChartSide][ChartMetricSlot]>) => {
       setChartStyleSettings(current => ({
           ...current,
@@ -3180,27 +3375,137 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
             <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
                 {t.reports.title}
             </h2>
-            <div className="flex flex-wrap items-center gap-2">
-                <button className={reportControlClass}>
-                    <Coins className="w-4 h-4 text-indigo-400" />
-                    USD
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-                <button className={reportControlClass}>
-                    <Filter className="w-4 h-4 text-indigo-400" />
-                    {language === 'cn' ? '筛选' : 'Filters'}
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-                <button className={reportControlClass}>
-                    <CalendarIcon className="w-4 h-4 text-indigo-400" />
-                    {language === 'cn' ? '日期范围' : 'Date range'}
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-                <button className={reportControlClass}>
-                    <Hash className="w-4 h-4 text-indigo-400" />
-                    {language === 'cn' ? '所有账户' : 'All accounts'}
-                    <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
+            <div className="flex flex-wrap items-center justify-end gap-3">
+                <div className="relative z-40" ref={datePickerRef}>
+                    <button
+                        type="button"
+                        onClick={() => setIsDatePickerOpen(current => !current)}
+                        className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                    >
+                        <div className="flex min-w-0 items-center gap-3">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                                <path d="M7 2a1 1 0 0 1 1 1v1h8V3a1 1 0 1 1 2 0v1h1a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3h1V3a1 1 0 0 1 1-1Zm13 8H4v9a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-9Z" />
+                            </svg>
+                            <div className="min-w-0 text-left">
+                                <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                                    {getActiveDatePresetLabel()}
+                                </p>
+                                <p className="truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
+                                    {getDateButtonValue()}
+                                </p>
+                            </div>
+                        </div>
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                        isDatePickerOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
+                    }`}>
+                        <div className="flex-1 border-r border-slate-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                            <div className="mb-4 flex items-center justify-between">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
+                                    className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </button>
+                                <div className="flex gap-8">
+                                    {renderMiniCalendar(viewDate)}
+                                    {renderMiniCalendar(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
+                                    className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex w-48 flex-col gap-1 bg-slate-50 p-2 dark:bg-slate-950">
+                            {datePresets.map(preset => (
+                                <button
+                                    key={preset.id}
+                                    type="button"
+                                    onClick={() => handlePresetSelect(preset.id)}
+                                    className={`rounded-lg px-4 py-2.5 text-left text-xs font-bold transition-colors ${
+                                        activeDatePreset === preset.id
+                                            ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300'
+                                            : 'text-slate-600 hover:bg-white hover:shadow-sm dark:text-slate-400 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    {preset.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="relative z-40" ref={accountSwitcherRef}>
+                    <button
+                        type="button"
+                        onClick={() => setIsAccountSwitcherOpen(current => !current)}
+                        className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                    >
+                        <div className="flex min-w-0 items-center gap-3">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="#64748B" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
+                                <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2H4V5Zm16 4v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9h16Zm-4 5a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1Z" />
+                            </svg>
+                            <div className="min-w-0 flex-1 text-left">
+                                <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">Trading Account</p>
+                                <p className="max-w-[130px] truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
+                                    {currentAccountName}
+                                </p>
+                            </div>
+                        </div>
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                        isAccountSwitcherOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
+                    }`}>
+                        <div className="space-y-1 p-2">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setSelectedAccountId('all');
+                                    setIsAccountSwitcherOpen(false);
+                                }}
+                                className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                                    selectedAccountId === 'all'
+                                        ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+                                        : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
+                                }`}
+                            >
+                                {language === 'cn' ? '所有账户' : 'All Accounts'}
+                                {selectedAccountId === 'all' && <Check className="h-4 w-4" />}
+                            </button>
+                            <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
+                            {accounts.map(account => (
+                                <button
+                                    key={account.id}
+                                    type="button"
+                                    onClick={() => {
+                                        setSelectedAccountId(account.id);
+                                        setIsAccountSwitcherOpen(false);
+                                    }}
+                                    className={`flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors ${
+                                        selectedAccountId === account.id
+                                            ? 'bg-indigo-50 font-bold text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-300'
+                                            : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <span className="flex min-w-0 items-center gap-2">
+                                        <span className={`h-2 w-2 shrink-0 rounded-full ${account.isReal ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                                        <span className="truncate">{account.name}</span>
+                                    </span>
+                                    {selectedAccountId === account.id && <Check className="h-4 w-4 shrink-0" />}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         
