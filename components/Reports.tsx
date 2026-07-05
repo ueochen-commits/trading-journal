@@ -1278,8 +1278,10 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   </AreaChart>
                               </ResponsiveContainer>
                               <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[7px] text-[14px] font-medium text-[#666b72]">
-                                  <span className="h-[14px] w-[14px] rounded-full bg-[#39c29a]" />
-                                  <span className="-ml-[14px] h-[14px] w-[14px] rounded-full bg-[#ff6468]" />
+                                  <span className="h-[14px] w-[14px] overflow-hidden rounded-full">
+                                      <span className="block h-1/2 bg-[#39c29a]" />
+                                      <span className="block h-1/2 bg-[#ff6468]" />
+                                  </span>
                                   <span>Net P&L</span>
                               </div>
                           </div>
