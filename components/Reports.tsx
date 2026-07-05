@@ -2451,66 +2451,67 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   };
 
   const ReportTabMark = ({ type, active }: { type: string; active: boolean }) => {
-      const tone = active ? 'text-[#6c55d9]' : 'text-[#9aa1ad] group-hover:text-[#6f7480]';
-      const stroke = active ? 'bg-[#6c55d9]' : 'bg-[#9aa1ad] group-hover:bg-[#6f7480]';
-      const border = active ? 'border-[#6c55d9]' : 'border-[#9aa1ad] group-hover:border-[#6f7480]';
+      const stroke = active ? 'bg-[#6f55d8]' : 'bg-[#858c98] group-hover:bg-[#636b77]';
+      const border = active ? 'border-[#6f55d8]' : 'border-[#858c98] group-hover:border-[#636b77]';
+      const softFill = active ? 'bg-[#6f55d8]/10' : 'bg-transparent group-hover:bg-[#eef1f5]';
+      const iconBase = `relative inline-flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center rounded-[7px] transition-colors ${softFill}`;
 
       if (type === 'performance') {
           return (
-              <span className={`relative inline-flex h-[17px] w-[17px] items-center justify-center ${tone}`} aria-hidden="true">
-                  <span className={`absolute left-[2px] top-[7px] h-[7px] w-[2px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[7px] top-[3px] h-[11px] w-[2px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[12px] top-[9px] h-[5px] w-[2px] rounded-full ${stroke}`} />
+              <span className={iconBase} aria-hidden="true">
+                  <span className={`absolute left-[4px] top-[8px] h-[6px] w-[2.2px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[8px] top-[5px] h-[9px] w-[2.2px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[12px] top-[10px] h-[4px] w-[2.2px] rounded-full ${stroke}`} />
               </span>
           );
       }
 
       if (type === 'overview') {
           return (
-              <span className={`relative inline-flex h-[17px] w-[17px] items-center justify-center ${tone}`} aria-hidden="true">
+              <span className={iconBase} aria-hidden="true">
                   <span className={`absolute h-[12px] w-[12px] rounded-full border-[1.7px] ${border}`} />
-                  <span className={`absolute h-[12px] w-[1.5px] rounded-full ${stroke}`} />
-                  <span className={`absolute h-[1.5px] w-[12px] rounded-full ${stroke}`} />
+                  <span className={`absolute h-[12px] w-[1.6px] rounded-full ${stroke}`} />
+                  <span className={`absolute h-[1.6px] w-[12px] rounded-full ${stroke}`} />
               </span>
           );
       }
 
       if (type === 'detailed') {
           return (
-              <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
-                  <span className={`absolute left-[3px] top-[2px] h-[13px] w-[11px] rounded-[2px] border-[1.6px] ${border}`} />
-                  <span className={`absolute left-[5px] top-[6px] h-[1.5px] w-[7px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[5px] top-[10px] h-[1.5px] w-[6px] rounded-full ${stroke}`} />
+              <span className={iconBase} aria-hidden="true">
+                  <span className={`absolute left-[4px] top-[3px] h-[12px] w-[10px] rounded-[3px] border-[1.6px] ${border}`} />
+                  <span className={`absolute left-[6px] top-[7px] h-[1.6px] w-[6px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[6px] top-[10.5px] h-[1.6px] w-[5px] rounded-full ${stroke}`} />
               </span>
           );
       }
 
       if (type === 'compare') {
           return (
-              <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
-                  <span className={`absolute left-[2px] top-[5px] h-[2px] w-[11px] rounded-full ${stroke}`} />
-                  <span className={`absolute right-[2px] top-[3px] h-[6px] w-[6px] rotate-45 border-r-[1.7px] border-t-[1.7px] ${border}`} />
-                  <span className={`absolute bottom-[5px] right-[2px] h-[2px] w-[11px] rounded-full ${stroke}`} />
-                  <span className={`absolute bottom-[3px] left-[2px] h-[6px] w-[6px] -rotate-[135deg] border-r-[1.7px] border-t-[1.7px] ${border}`} />
+              <span className={iconBase} aria-hidden="true">
+                  <span className={`absolute left-[4px] top-[5px] h-[2px] w-[9px] rounded-full ${stroke}`} />
+                  <span className={`absolute right-[3px] top-[3px] h-[5px] w-[5px] rotate-45 rounded-[1px] border-r-[1.6px] border-t-[1.6px] ${border}`} />
+                  <span className={`absolute bottom-[5px] right-[4px] h-[2px] w-[9px] rounded-full ${stroke}`} />
+                  <span className={`absolute bottom-[3px] left-[3px] h-[5px] w-[5px] -rotate-[135deg] rounded-[1px] border-r-[1.6px] border-t-[1.6px] ${border}`} />
               </span>
           );
       }
 
       if (type === 'calendar') {
           return (
-              <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
-                  <span className={`absolute h-[13px] w-[13px] rounded-[3px] border-[1.6px] ${border}`} />
-                  <span className={`absolute top-[6px] h-[1.5px] w-[13px] rounded-full ${stroke}`} />
-                  <span className={`absolute left-[5px] top-[9px] h-[2px] w-[2px] rounded-full ${stroke}`} />
-                  <span className={`absolute right-[5px] top-[9px] h-[2px] w-[2px] rounded-full ${stroke}`} />
+              <span className={iconBase} aria-hidden="true">
+                  <span className={`absolute h-[13px] w-[13px] rounded-[4px] border-[1.6px] ${border}`} />
+                  <span className={`absolute top-[7px] h-[1.6px] w-[13px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[5px] top-[10px] h-[2.3px] w-[2.3px] rounded-full ${stroke}`} />
+                  <span className={`absolute right-[5px] top-[10px] h-[2.3px] w-[2.3px] rounded-full ${stroke}`} />
               </span>
           );
       }
 
       return (
-          <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
-              <span className={`absolute left-[3px] top-[3px] h-[11px] w-[11px] rounded-[2px] border-[1.6px] ${border}`} />
-              <span className={`absolute left-[6px] top-[6px] h-[5px] w-[5px] rounded-[1px] ${stroke}`} />
+          <span className={iconBase} aria-hidden="true">
+              <span className={`absolute left-[4px] top-[4px] h-[10px] w-[10px] rounded-[3px] border-[1.6px] ${border}`} />
+              <span className={`absolute left-[7px] top-[7px] h-[4px] w-[4px] rounded-[1.5px] ${stroke}`} />
           </span>
       );
   };
@@ -2844,38 +2845,38 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
         
         {/* Navigation Bar */}
         <div className="flex min-h-[56px] items-center justify-between gap-4 overflow-x-auto border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60 no-scrollbar">
-            <div className="flex h-[56px] items-center gap-[30px]">
+            <div className="flex h-[56px] items-center gap-[27px]">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`group relative inline-flex h-[56px] items-center gap-[8px] whitespace-nowrap border-b-[2px] px-[1px] text-[13px] font-semibold transition-colors ${
+                            className={`group relative inline-flex h-[56px] items-center gap-[7px] whitespace-nowrap border-b-[2px] px-[2px] text-[14px] font-medium tracking-[-0.01em] transition-colors ${
                                 isActive
-                                    ? 'border-[#6c55d9] text-[#6c55d9] dark:text-indigo-400'
-                                    : 'border-transparent text-[#68717d] hover:text-[#323944] dark:text-slate-400 dark:hover:text-slate-200'
+                                    ? 'border-[#6f55d8] text-[#6f55d8] dark:text-indigo-400'
+                                    : 'border-transparent text-[#707783] hover:text-[#3e4652] dark:text-slate-400 dark:hover:text-slate-200'
                             }`}
                         >
                             <ReportTabMark type={tab.id} active={isActive} />
                             <span className="leading-none">{tab.label}</span>
                             {tab.isNew && (
-                                <span className="ml-[1px] rounded-[2px] bg-[#e8ebf1] px-[5px] py-[2px] text-[9px] font-bold leading-none text-[#596272]">
+                                <span className="ml-[1px] rounded-[3px] bg-[#e7e9f0] px-[6px] py-[3px] text-[10px] font-bold leading-none text-[#4f5664]">
                                     NEW
                                 </span>
                             )}
                             {tab.hasMenu && (
-                                <ChevronDown className={`h-[12px] w-[12px] ${isActive ? 'text-[#6c55d9]' : 'text-[#7f8792]'}`} />
+                                <ChevronDown className={`h-[12px] w-[12px] ${isActive ? 'text-[#6f55d8]' : 'text-[#7f8792]'}`} />
                             )}
                         </button>
                     );
                 })}
             </div>
-            <button className="group hidden shrink-0 items-center gap-[8px] text-[13px] font-semibold text-[#68717d] transition-colors hover:text-[#323944] xl:inline-flex">
-                <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
-                    <span className="absolute left-[3px] top-[3px] h-[11px] w-[5px] rounded-l-[2px] border border-[#9aa1ad] transition-colors group-hover:border-[#6f7480]" />
-                    <span className="absolute right-[3px] top-[3px] h-[11px] w-[5px] rounded-r-[2px] border border-[#9aa1ad] transition-colors group-hover:border-[#6f7480]" />
-                    <span className="absolute left-[8px] top-[4px] h-[9px] w-[1px] bg-[#9aa1ad] transition-colors group-hover:bg-[#6f7480]" />
+            <button className="group hidden shrink-0 items-center gap-[7px] text-[14px] font-medium tracking-[-0.01em] text-[#707783] transition-colors hover:text-[#3e4652] xl:inline-flex">
+                <span className="relative inline-flex h-[18px] w-[18px] items-center justify-center rounded-[7px] transition-colors group-hover:bg-[#eef1f5]" aria-hidden="true">
+                    <span className="absolute left-[4px] top-[4px] h-[10px] w-[4px] rounded-l-[2px] border border-[#858c98] transition-colors group-hover:border-[#636b77]" />
+                    <span className="absolute right-[4px] top-[4px] h-[10px] w-[4px] rounded-r-[2px] border border-[#858c98] transition-colors group-hover:border-[#636b77]" />
+                    <span className="absolute left-[8.5px] top-[5px] h-[8px] w-[1.5px] rounded-full bg-[#858c98] transition-colors group-hover:bg-[#636b77]" />
                 </span>
                 {language === 'cn' ? '阅读指南' : 'Read guide'}
             </button>
