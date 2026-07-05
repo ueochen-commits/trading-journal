@@ -3465,14 +3465,13 @@ const Reports: React.FC<ReportsProps> = ({
                                                   key={option.id}
                                                   type="button"
                                                   onClick={() => handleSelectMetric(option.id)}
-                                                  className={`report-metric-option flex w-full items-center gap-[8px] rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
+                                                  className={`report-metric-option block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
                                                       selected
                                                           ? 'bg-[#ebe7f8] text-[#2f255f]'
                                                           : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                   }`}
                                                   style={{ '--option-index': index } as React.CSSProperties}
                                               >
-                                                  <span className="h-[9px] w-[9px] shrink-0 rounded-full" style={{ backgroundColor: option.color }} />
                                                   <span className="truncate">{option.label}</span>
                                               </button>
                                           );
