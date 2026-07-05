@@ -3069,13 +3069,13 @@ const Reports: React.FC<ReportsProps> = ({
   ];
 
   const reportMenuOptions = [
-      { id: 'DAYS', label: 'Day & Time' },
-      { id: 'SYMBOLS', label: 'Symbols' },
-      { id: 'RISK', label: 'Risk' },
-      { id: 'SETUPS', label: 'Strategies' },
-      { id: 'TAGS', label: 'Tags' },
-      { id: 'TRADE DURATION', label: 'Options: Days till expiration' },
-      { id: 'WINS_LOSSES', label: 'Wins vs Losses' },
+      { id: 'DAYS', label: language === 'cn' ? '日期与时间' : 'Day & Time' },
+      { id: 'SYMBOLS', label: language === 'cn' ? '交易品种' : 'Symbols' },
+      { id: 'RISK', label: language === 'cn' ? '风险' : 'Risk' },
+      { id: 'SETUPS', label: language === 'cn' ? '策略' : 'Strategies' },
+      { id: 'TAGS', label: language === 'cn' ? '标签' : 'Tags' },
+      { id: 'TRADE DURATION', label: language === 'cn' ? '期权到期天数' : 'Options: Days till expiration' },
+      { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
   ];
 
   const selectDetailedReport = (filterId: string) => {
