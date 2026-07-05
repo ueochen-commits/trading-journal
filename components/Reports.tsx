@@ -5213,7 +5213,7 @@ const Reports: React.FC<ReportsProps> = ({
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
                           <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex h-[58px] items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[10px] py-[10px]">
+                              <div className="flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-0 flex-1 items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
                                       <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
                                           <FilledChartStyleIcon />
@@ -5253,7 +5253,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
 
                           <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex h-[58px] items-center justify-between gap-[10px] border-b border-[#e6e8ec] px-[10px] py-[10px]">
+                              <div className="flex h-[58px] items-center justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-0 flex-1 items-center gap-[8px] overflow-x-auto overflow-y-visible pb-[2px] no-scrollbar">
                                       <span className="inline-flex h-[34px] w-[34px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b]">
                                           <FilledChartStyleIcon />
