@@ -1802,7 +1802,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                               </button>
 
                                               {isAddMetricMenuOpen && (
-                                                  <div className="absolute bottom-full right-0 z-40 mb-[10px] flex max-h-[390px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+                                                  <div className="absolute bottom-full right-[-18px] z-40 mb-[10px] flex max-h-[420px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900 xl:right-0">
                                                       <div className="p-[12px] pb-[8px]">
                                                           <div className="relative">
                                                               <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
@@ -1830,31 +1830,31 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                                                           <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
                                                                       </button>
 
-                                                                      {isExpanded && (
-                                                                          <div className="pb-[6px]">
-                                                                              {category.metrics.map(metric => {
-                                                                                  const isSelected = draftSummaryMetricIds.includes(metric.id);
-                                                                                  const isFull = draftSummaryMetricIds.length >= 16;
-                                                                                  const isDisabled = isSelected || isFull;
+                                                                      <div className={`overflow-hidden transition-[max-height,opacity,transform,padding] duration-300 ease-out ${isExpanded ? 'max-h-[520px] translate-y-0 pb-[6px] opacity-100' : 'max-h-0 -translate-y-1 pb-0 opacity-0'}`}>
+                                                                          <div className="space-y-[1px]">
+                                                                          {category.metrics.map(metric => {
+                                                                              const isSelected = draftSummaryMetricIds.includes(metric.id);
+                                                                              const isFull = draftSummaryMetricIds.length >= 16;
+                                                                              const isDisabled = isSelected || isFull;
 
-                                                                                  return (
-                                                                                      <button
-                                                                                          key={metric.id}
-                                                                                          type="button"
-                                                                                          disabled={isDisabled}
-                                                                                          onClick={() => addSummaryMetric(metric.id)}
-                                                                                          className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
-                                                                                              isDisabled
-                                                                                                  ? 'cursor-not-allowed text-[#b4bac2]'
-                                                                                                  : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
-                                                                                          }`}
-                                                                                      >
-                                                                                          {metric.label}
-                                                                                      </button>
-                                                                                  );
-                                                                              })}
+                                                                              return (
+                                                                                  <button
+                                                                                      key={metric.id}
+                                                                                      type="button"
+                                                                                      disabled={isDisabled}
+                                                                                      onClick={() => addSummaryMetric(metric.id)}
+                                                                                      className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
+                                                                                          isDisabled
+                                                                                              ? 'cursor-not-allowed text-[#b4bac2]'
+                                                                                              : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                                                      }`}
+                                                                                  >
+                                                                                      {metric.label}
+                                                                                  </button>
+                                                                              );
+                                                                          })}
                                                                           </div>
-                                                                      )}
+                                                                      </div>
                                                                   </div>
                                                               );
                                                           }) : (
@@ -1864,17 +1864,17 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                                           )}
                                                       </div>
 
-                                                      <div className="border-t border-[#e5e7eb] px-[12px] py-[11px]">
-                                                          <label className="flex cursor-pointer items-center gap-[10px] text-[14px] font-semibold text-[#20232a] dark:text-slate-100">
+                                                      <div className="border-t border-[#e5e7eb] px-[14px] py-[12px]">
+                                                          <label className="flex cursor-pointer items-center gap-[12px] text-[14px] font-semibold text-[#20232a] dark:text-slate-100">
                                                               <button
                                                                   type="button"
                                                                   onClick={() => setShowMetricDifference(value => !value)}
-                                                                  className={`relative h-[26px] w-[46px] rounded-full transition-colors ${showMetricDifference ? 'bg-[#5b45d6]' : 'bg-[#e2e4e8]'}`}
+                                                                  className={`relative h-[26px] w-[46px] flex-shrink-0 rounded-full transition-colors duration-200 ${showMetricDifference ? 'bg-[#5b45d6]' : 'bg-[#e2e4e8]'}`}
                                                                   aria-pressed={showMetricDifference}
                                                               >
-                                                                  <span className={`absolute top-[3px] h-[20px] w-[20px] rounded-full bg-white shadow-sm transition-transform ${showMetricDifference ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
+                                                                  <span className={`absolute top-[3px] h-[20px] w-[20px] rounded-full bg-white shadow-sm transition-transform duration-200 ${showMetricDifference ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
                                                               </button>
-                                                              {language === 'cn' ? '显示差值' : 'Show difference'}
+                                                              <span className="min-w-0 whitespace-nowrap">{language === 'cn' ? '显示差值' : 'Show difference'}</span>
                                                           </label>
                                                       </div>
                                                   </div>
