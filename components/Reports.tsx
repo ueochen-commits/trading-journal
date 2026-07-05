@@ -3074,25 +3074,34 @@ const Reports: React.FC<ReportsProps> = ({
       detail,
       value,
       tone = 'neutral',
+      icon,
   }: {
       eyebrow: string;
       title: string;
       detail: string;
       value?: string;
       tone?: 'good' | 'bad' | 'accent' | 'neutral';
+      icon?: React.ReactNode;
   }) => {
-      const toneColor = tone === 'good' ? '#55c39e' : tone === 'bad' ? '#ff6468' : tone === 'accent' ? '#f59f00' : '#6b55cf';
+      const toneColor = tone === 'good' ? '#4dbd96' : tone === 'bad' ? '#f05258' : tone === 'accent' ? '#f59f00' : '#6b55cf';
+      const valueClass = tone === 'bad'
+          ? 'bg-[#ffe5e8] text-[#f05258]'
+          : tone === 'good'
+              ? 'bg-[#e0f5ee] text-[#31a77e]'
+              : 'bg-[#eeeaf8] text-[#6b55cf]';
       return (
-          <div className="min-h-[108px] rounded-[9px] bg-white px-[20px] py-[18px] shadow-none dark:bg-slate-900">
-              <div className="mb-[10px] flex items-center gap-[7px] text-[13px] font-semibold text-[#7b828c]">
-                  <span className="h-[8px] w-[8px] rounded-full" style={{ backgroundColor: toneColor }} />
+          <div className="min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900">
+              <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b]">
+                  <span className="inline-flex h-[15px] w-[15px] items-center justify-center" style={{ color: toneColor }}>
+                      {icon || <span className="h-[7px] w-[7px] rounded-full" style={{ backgroundColor: toneColor }} />}
+                  </span>
                   <span>{eyebrow}</span>
               </div>
-              <div className="text-[20px] font-bold leading-none text-[#252a32] dark:text-slate-100">{title}</div>
-              <div className="mt-[12px] flex items-center gap-[8px] text-[14px] font-semibold text-[#4d5560]">
+              <div className="text-[19px] font-bold leading-none text-[#28313c] dark:text-slate-100">{title}</div>
+              <div className="mt-[12px] flex items-center gap-[7px] text-[13px] font-bold text-[#3f4854]">
                   <span>{detail}</span>
                   {value && (
-                      <span className={`rounded-[4px] px-[5px] py-[2px] tabular-nums ${tone === 'bad' ? 'bg-[#ffe8eb] text-[#ff6468]' : tone === 'good' ? 'bg-[#e6f7f0] text-[#3baa86]' : 'bg-[#eeeaf8] text-[#6b55cf]'}`}>
+                      <span className={`rounded-[4px] px-[5px] py-[2px] text-[13px] font-bold tabular-nums ${valueClass}`}>
                           {value}
                       </span>
                   )}
@@ -5176,6 +5185,7 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={`${dayTimeHighlights.bestPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               value={dayTimeHighlights.bestPerforming ? formatSignedMoney(dayTimeHighlights.bestPerforming.netPnl) : undefined}
                               tone="good"
+                              icon={<TrendingUp className="h-[15px] w-[15px]" strokeWidth={2.4} />}
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最差表现' : 'Least performing'}
@@ -5183,18 +5193,21 @@ const Reports: React.FC<ReportsProps> = ({
                               detail={`${dayTimeHighlights.leastPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               value={dayTimeHighlights.leastPerforming ? formatSignedMoney(dayTimeHighlights.leastPerforming.netPnl) : undefined}
                               tone="bad"
+                              icon={<TrendingDown className="h-[15px] w-[15px]" strokeWidth={2.4} />}
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最活跃' : 'Most active'}
                               title={dayTimeHighlights.mostActive?.label || '--'}
                               detail={`${dayTimeHighlights.mostActive?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
                               tone="accent"
+                              icon={<Sparkles className="h-[15px] w-[15px]" strokeWidth={2.2} />}
                           />
                           <DayTimeInsightCard
                               eyebrow={language === 'cn' ? '最高胜率' : 'Best win rate'}
                               title={dayTimeHighlights.bestWinRate?.label || '--'}
                               detail={dayTimeHighlights.bestWinRate ? `${dayTimeHighlights.bestWinRate.winRate.toFixed(0)}% / ${dayTimeHighlights.bestWinRate.count} ${language === 'cn' ? '笔交易' : 'trades'}` : '--'}
                               tone="neutral"
+                              icon={<Activity className="h-[15px] w-[15px]" strokeWidth={2.2} />}
                           />
                       </div>
 
