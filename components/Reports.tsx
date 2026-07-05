@@ -1284,6 +1284,60 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       { slot: 'primary' as const, config: rightChartConfig, visual: rightChartVisual, color: rightChartColor },
       ...(rightSecondaryChartConfig && rightSecondaryChartVisual ? [{ slot: 'secondary' as const, config: rightSecondaryChartConfig, visual: rightSecondaryChartVisual, color: rightSecondaryChartColor }] : []),
   ];
+  const chartAnimationSignature = useMemo(() => {
+      const getChartDataSignature = (data: typeof leftChartData) => data
+          .map(row => `${row.date}:${row.primaryValue ?? ''}:${row.secondaryValue ?? ''}`)
+          .join('|');
+
+      return [
+          leftChartMetricId,
+          leftSecondaryChartMetricId || 'none',
+          leftChartVisual,
+          leftSecondaryChartVisual || 'none',
+          leftChartColor,
+          leftSecondaryChartColor,
+          getChartDataSignature(leftChartData),
+          rightChartMetricId,
+          rightSecondaryChartMetricId || 'none',
+          rightChartVisual,
+          rightSecondaryChartVisual || 'none',
+          rightChartColor,
+          rightSecondaryChartColor,
+          getChartDataSignature(rightChartData),
+      ].join('||');
+  }, [
+      leftChartMetricId,
+      leftSecondaryChartMetricId,
+      leftChartVisual,
+      leftSecondaryChartVisual,
+      leftChartColor,
+      leftSecondaryChartColor,
+      leftChartData,
+      rightChartMetricId,
+      rightSecondaryChartMetricId,
+      rightChartVisual,
+      rightSecondaryChartVisual,
+      rightChartColor,
+      rightSecondaryChartColor,
+      rightChartData,
+  ]);
+  const previousChartAnimationSignatureRef = useRef<string | null>(null);
+  const [shouldAnimateCharts, setShouldAnimateCharts] = useState(true);
+
+  useEffect(() => {
+      const hasChartChanged = previousChartAnimationSignatureRef.current !== chartAnimationSignature;
+      previousChartAnimationSignatureRef.current = chartAnimationSignature;
+
+      if (hasChartChanged) {
+          setShouldAnimateCharts(true);
+      }
+
+      const timer = window.setTimeout(() => {
+          setShouldAnimateCharts(false);
+      }, 700);
+
+      return () => window.clearTimeout(timer);
+  }, [chartAnimationSignature]);
 
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
@@ -1459,6 +1513,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       data,
       ticks,
       metrics,
+      animate,
   }: {
       side: ChartSide;
       data: any[];
@@ -1471,8 +1526,8 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
           dataKey: 'primaryValue' | 'secondaryValue';
           yAxisId: 'left' | 'right';
       }>;
+      animate: boolean;
   }) => {
-      const chartKey = `${side}-${metrics.map(metric => `${metric.config.label}-${metric.visual}-${metric.color}`).join('|')}`;
       const commonMargin = { top: 8, right: 10, left: 5, bottom: 42 };
       const primaryMetric = metrics[0];
       const secondaryMetric = metrics[1];
@@ -1512,7 +1567,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       radius={[4, 4, 0, 0]}
                       barSize={metric.slot === 'primary' ? 30 : 22}
                       maxBarSize={36}
-                      isAnimationActive
+                      isAnimationActive={animate}
                       animationDuration={520}
                       animationEasing="ease-out"
                   />
@@ -1529,7 +1584,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                       stroke={metric.color}
                       strokeWidth={2}
                       dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
-                      isAnimationActive
+                      isAnimationActive={animate}
                       animationDuration={560}
                       animationEasing="ease-out"
                       connectNulls
@@ -1553,7 +1608,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   strokeWidth={2}
                   fill={`url(#${gradientId})`}
                   dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
-                  isAnimationActive
+                  isAnimationActive={animate}
                   animationDuration={560}
                   animationEasing="ease-out"
                   connectNulls
@@ -1568,7 +1623,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       };
 
       return (
-          <div key={chartKey} className="relative h-full animate-fade-in">
+          <div className={`relative h-full ${animate ? 'animate-fade-in' : ''}`}>
               <ResponsiveContainer width="100%" height="100%">
                   <ComposedChart data={data} margin={commonMargin} barCategoryGap="48%">
                           <defs>
@@ -2393,6 +2448,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               side="left"
                               data={leftChartData}
                               ticks={leftChartTicks}
+                              animate={shouldAnimateCharts}
                               metrics={leftChartStyleMetrics.map((metric, index) => ({
                                   ...metric,
                                   dataKey: index === 0 ? 'primaryValue' : 'secondaryValue',
@@ -2432,6 +2488,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                               side="right"
                               data={rightChartData}
                               ticks={rightChartTicks}
+                              animate={shouldAnimateCharts}
                               metrics={rightChartStyleMetrics.map((metric, index) => ({
                                   ...metric,
                                   dataKey: index === 0 ? 'primaryValue' : 'secondaryValue',
