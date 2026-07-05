@@ -5,7 +5,7 @@ import { useLanguage } from '../LanguageContext';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
 } from 'recharts';
-import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, Globe2, Repeat2, BookOpen, FileBarChart2, GripVertical, X, Search } from 'lucide-react';
+import { Filter, Calendar as CalendarIcon, BarChart2, Clock, Calculator, Activity, TrendingUp, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Coins, Hash, Hourglass, TrendingDown, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search } from 'lucide-react';
 import FeatureGate from './FeatureGate';
 import { generatePeriodicReport } from '../services/geminiService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -2324,13 +2324,78 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
+  const ReportTabMark = ({ type, active }: { type: string; active: boolean }) => {
+      const tone = active ? 'text-[#6c55d9]' : 'text-[#9aa1ad] group-hover:text-[#6f7480]';
+      const stroke = active ? 'bg-[#6c55d9]' : 'bg-[#9aa1ad] group-hover:bg-[#6f7480]';
+      const border = active ? 'border-[#6c55d9]' : 'border-[#9aa1ad] group-hover:border-[#6f7480]';
+
+      if (type === 'performance') {
+          return (
+              <span className={`relative inline-flex h-[17px] w-[17px] items-center justify-center ${tone}`} aria-hidden="true">
+                  <span className={`absolute left-[2px] top-[7px] h-[7px] w-[2px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[7px] top-[3px] h-[11px] w-[2px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[12px] top-[9px] h-[5px] w-[2px] rounded-full ${stroke}`} />
+              </span>
+          );
+      }
+
+      if (type === 'overview') {
+          return (
+              <span className={`relative inline-flex h-[17px] w-[17px] items-center justify-center ${tone}`} aria-hidden="true">
+                  <span className={`absolute h-[12px] w-[12px] rounded-full border-[1.7px] ${border}`} />
+                  <span className={`absolute h-[12px] w-[1.5px] rounded-full ${stroke}`} />
+                  <span className={`absolute h-[1.5px] w-[12px] rounded-full ${stroke}`} />
+              </span>
+          );
+      }
+
+      if (type === 'detailed') {
+          return (
+              <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
+                  <span className={`absolute left-[3px] top-[2px] h-[13px] w-[11px] rounded-[2px] border-[1.6px] ${border}`} />
+                  <span className={`absolute left-[5px] top-[6px] h-[1.5px] w-[7px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[5px] top-[10px] h-[1.5px] w-[6px] rounded-full ${stroke}`} />
+              </span>
+          );
+      }
+
+      if (type === 'compare') {
+          return (
+              <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
+                  <span className={`absolute left-[2px] top-[5px] h-[2px] w-[11px] rounded-full ${stroke}`} />
+                  <span className={`absolute right-[2px] top-[3px] h-[6px] w-[6px] rotate-45 border-r-[1.7px] border-t-[1.7px] ${border}`} />
+                  <span className={`absolute bottom-[5px] right-[2px] h-[2px] w-[11px] rounded-full ${stroke}`} />
+                  <span className={`absolute bottom-[3px] left-[2px] h-[6px] w-[6px] -rotate-[135deg] border-r-[1.7px] border-t-[1.7px] ${border}`} />
+              </span>
+          );
+      }
+
+      if (type === 'calendar') {
+          return (
+              <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
+                  <span className={`absolute h-[13px] w-[13px] rounded-[3px] border-[1.6px] ${border}`} />
+                  <span className={`absolute top-[6px] h-[1.5px] w-[13px] rounded-full ${stroke}`} />
+                  <span className={`absolute left-[5px] top-[9px] h-[2px] w-[2px] rounded-full ${stroke}`} />
+                  <span className={`absolute right-[5px] top-[9px] h-[2px] w-[2px] rounded-full ${stroke}`} />
+              </span>
+          );
+      }
+
+      return (
+          <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
+              <span className={`absolute left-[3px] top-[3px] h-[11px] w-[11px] rounded-[2px] border-[1.6px] ${border}`} />
+              <span className={`absolute left-[6px] top-[6px] h-[5px] w-[5px] rounded-[1px] ${stroke}`} />
+          </span>
+      );
+  };
+
   const REPORT_TABS = [
-      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance', icon: Activity, isNew: true },
-      { id: 'overview', label: language === 'cn' ? '概览' : 'Overview', icon: Globe2 },
-      { id: 'detailed', label: language === 'cn' ? '详细报表' : 'Reports', icon: FileBarChart2, hasMenu: true },
-      { id: 'compare', label: language === 'cn' ? '对比' : 'Compare', icon: Repeat2 },
-      { id: 'calendar', label: language === 'cn' ? '日历' : 'Calendar', icon: CalendarIcon },
-      { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights', icon: FileText },
+      { id: 'performance', label: language === 'cn' ? '表现' : 'Performance', isNew: true },
+      { id: 'overview', label: language === 'cn' ? '概览' : 'Overview' },
+      { id: 'detailed', label: language === 'cn' ? '详细报表' : 'Reports', hasMenu: true },
+      { id: 'compare', label: language === 'cn' ? '对比' : 'Compare' },
+      { id: 'calendar', label: language === 'cn' ? '日历' : 'Calendar' },
+      { id: 'ai', label: language === 'cn' ? '复盘洞察' : 'Recaps & Insights' },
   ];
 
   // Helper to determine active data and configuration for Detailed View
@@ -2652,37 +2717,40 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
         </div>
         
         {/* Navigation Bar */}
-        <div className="flex min-h-[52px] items-center justify-between gap-4 overflow-x-auto border-b border-slate-200 dark:border-slate-800 no-scrollbar">
-            <div className="flex items-center gap-[28px]">
+        <div className="flex min-h-[56px] items-center justify-between gap-4 overflow-x-auto border-b border-[#dfe5ec] bg-white/70 px-[2px] dark:border-slate-800 dark:bg-slate-900/60 no-scrollbar">
+            <div className="flex h-[56px] items-center gap-[30px]">
                 {REPORT_TABS.map((tab) => {
-                    const Icon = tab.icon;
                     const isActive = activeTab === tab.id;
                     return (
                         <button
                             key={tab.id}
                             onClick={() => setActiveTab(tab.id)}
-                            className={`group relative inline-flex h-[52px] items-center gap-[9px] whitespace-nowrap border-b-2 text-[14px] font-semibold transition-colors ${
+                            className={`group relative inline-flex h-[56px] items-center gap-[8px] whitespace-nowrap border-b-[2px] px-[1px] text-[13px] font-semibold transition-colors ${
                                 isActive
-                                    ? 'border-[#5b45d6] text-[#5b45d6] dark:text-indigo-400'
-                                    : 'border-transparent text-[#5f6875] hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                                    ? 'border-[#6c55d9] text-[#6c55d9] dark:text-indigo-400'
+                                    : 'border-transparent text-[#68717d] hover:text-[#323944] dark:text-slate-400 dark:hover:text-slate-200'
                             }`}
                         >
-                            <Icon className={`h-[18px] w-[18px] ${isActive ? 'text-[#5b45d6]' : 'text-[#68717d] group-hover:text-slate-800 dark:text-slate-400'}`} />
-                            <span>{tab.label}</span>
+                            <ReportTabMark type={tab.id} active={isActive} />
+                            <span className="leading-none">{tab.label}</span>
                             {tab.isNew && (
-                                <span className="rounded-[3px] bg-[#e8ebf1] px-[5px] py-[2px] text-[10px] font-bold leading-none text-[#536070]">
+                                <span className="ml-[1px] rounded-[2px] bg-[#e8ebf1] px-[5px] py-[2px] text-[9px] font-bold leading-none text-[#596272]">
                                     NEW
                                 </span>
                             )}
                             {tab.hasMenu && (
-                                <ChevronDown className="h-[13px] w-[13px] text-[#68717d]" />
+                                <ChevronDown className={`h-[12px] w-[12px] ${isActive ? 'text-[#6c55d9]' : 'text-[#7f8792]'}`} />
                             )}
                         </button>
                     );
                 })}
             </div>
-            <button className="hidden shrink-0 items-center gap-2 text-[14px] font-medium text-[#5f6875] transition-colors hover:text-[#5b45d6] xl:inline-flex">
-                <BookOpen className="h-[17px] w-[17px]" />
+            <button className="group hidden shrink-0 items-center gap-[8px] text-[13px] font-semibold text-[#68717d] transition-colors hover:text-[#323944] xl:inline-flex">
+                <span className="relative inline-flex h-[17px] w-[17px] items-center justify-center" aria-hidden="true">
+                    <span className="absolute left-[3px] top-[3px] h-[11px] w-[5px] rounded-l-[2px] border border-[#9aa1ad] transition-colors group-hover:border-[#6f7480]" />
+                    <span className="absolute right-[3px] top-[3px] h-[11px] w-[5px] rounded-r-[2px] border border-[#9aa1ad] transition-colors group-hover:border-[#6f7480]" />
+                    <span className="absolute left-[8px] top-[4px] h-[9px] w-[1px] bg-[#9aa1ad] transition-colors group-hover:bg-[#6f7480]" />
+                </span>
                 {language === 'cn' ? '阅读指南' : 'Read guide'}
             </button>
         </div>
