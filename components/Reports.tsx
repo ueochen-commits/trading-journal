@@ -1274,18 +1274,40 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       return Array.from(rowMap.values()).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   };
 
-  const leftChartData = buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual);
-  const rightChartData = buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual);
-  const leftChartTicks = getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean);
-  const rightChartTicks = getEvenlySpacedIndexes(rightChartData.length, 6).map(index => rightChartData[index]?.label).filter(Boolean);
-  const leftChartStyleMetrics = [
+  const leftChartData = useMemo(
+      () => buildCombinedChartData(leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual),
+      [leftChartMetricId, leftChartVisual, leftSecondaryChartMetricId, leftSecondaryChartVisual, performanceDailyData]
+  );
+  const rightChartData = useMemo(
+      () => buildCombinedChartData(rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual),
+      [rightChartMetricId, rightChartVisual, rightSecondaryChartMetricId, rightSecondaryChartVisual, performanceDailyData]
+  );
+  const leftChartTicks = useMemo(
+      () => getEvenlySpacedIndexes(leftChartData.length, 6).map(index => leftChartData[index]?.label).filter(Boolean),
+      [leftChartData]
+  );
+  const rightChartTicks = useMemo(
+      () => getEvenlySpacedIndexes(rightChartData.length, 6).map(index => rightChartData[index]?.label).filter(Boolean),
+      [rightChartData]
+  );
+  const leftChartStyleMetrics = useMemo(() => [
       { slot: 'primary' as const, config: leftChartConfig, visual: leftChartVisual, color: leftChartColor },
       ...(leftSecondaryChartConfig && leftSecondaryChartVisual ? [{ slot: 'secondary' as const, config: leftSecondaryChartConfig, visual: leftSecondaryChartVisual, color: leftSecondaryChartColor }] : []),
-  ];
-  const rightChartStyleMetrics = [
+  ], [leftChartConfig, leftChartVisual, leftChartColor, leftSecondaryChartConfig, leftSecondaryChartVisual, leftSecondaryChartColor]);
+  const rightChartStyleMetrics = useMemo(() => [
       { slot: 'primary' as const, config: rightChartConfig, visual: rightChartVisual, color: rightChartColor },
       ...(rightSecondaryChartConfig && rightSecondaryChartVisual ? [{ slot: 'secondary' as const, config: rightSecondaryChartConfig, visual: rightSecondaryChartVisual, color: rightSecondaryChartColor }] : []),
-  ];
+  ], [rightChartConfig, rightChartVisual, rightChartColor, rightSecondaryChartConfig, rightSecondaryChartVisual, rightSecondaryChartColor]);
+  const leftChartRenderMetrics = useMemo(() => leftChartStyleMetrics.map((metric, index) => ({
+      ...metric,
+      dataKey: index === 0 ? 'primaryValue' as const : 'secondaryValue' as const,
+      yAxisId: index === 0 ? 'left' as const : 'right' as const,
+  })), [leftChartStyleMetrics]);
+  const rightChartRenderMetrics = useMemo(() => rightChartStyleMetrics.map((metric, index) => ({
+      ...metric,
+      dataKey: index === 0 ? 'primaryValue' as const : 'secondaryValue' as const,
+      yAxisId: index === 0 ? 'left' as const : 'right' as const,
+  })), [rightChartStyleMetrics]);
   const chartAnimationSignature = useMemo(() => {
       const getChartDataSignature = (data: typeof leftChartData) => data
           .map(row => `${row.date}:${row.primaryValue ?? ''}:${row.secondaryValue ?? ''}`)
@@ -1538,7 +1560,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
-  const MetricChart = ({
+  const renderMetricChart = ({
       side,
       data,
       ticks,
@@ -1698,6 +1720,42 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       );
   };
 
+  const leftChartContent = useMemo(() => {
+      if (!isDataLoading && leftChartData.length === 0) {
+          return (
+              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
+                  {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
+              </div>
+          );
+      }
+
+      return renderMetricChart({
+          side: 'left',
+          data: leftChartData,
+          ticks: leftChartTicks,
+          animate: shouldAnimateCharts,
+          metrics: leftChartRenderMetrics,
+      });
+  }, [isDataLoading, language, leftChartData, leftChartTicks, leftChartRenderMetrics, shouldAnimateCharts]);
+
+  const rightChartContent = useMemo(() => {
+      if (!isDataLoading && rightChartData.length === 0) {
+          return (
+              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
+                  {language === 'cn' ? '暂无可计算的数据' : 'No chartable data yet'}
+              </div>
+          );
+      }
+
+      return renderMetricChart({
+          side: 'right',
+          data: rightChartData,
+          ticks: rightChartTicks,
+          animate: shouldAnimateCharts,
+          metrics: rightChartRenderMetrics,
+      });
+  }, [isDataLoading, language, rightChartData, rightChartTicks, rightChartRenderMetrics, shouldAnimateCharts]);
+
   const FilledChartStyleIcon = ({ className = '' }: { className?: string }) => (
       <span className={`inline-flex h-4 w-4 items-end justify-center gap-[2px] ${className}`} aria-hidden="true">
           <span className="h-[7px] w-[3px] rounded-[1px] bg-current" />
@@ -1706,7 +1764,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       </span>
   );
 
-  const ChartCard = ({
+  const renderChartCard = ({
       title,
       metricLabel,
       metricColor,
@@ -2469,89 +2527,55 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
               </div>
 
               <div className="grid grid-cols-1 xl:grid-cols-2 gap-[10px]">
-                  <ChartCard
-                      title={leftChartConfig.label}
-                      metricLabel={leftChartConfig.label}
-                      metricColor={leftChartColor}
-                      secondaryMetricLabel={leftSecondaryChartConfig?.label}
-                      secondaryMetricColor={leftSecondaryChartColor}
-                      side="left"
-                      styleMetrics={leftChartStyleMetrics}
-                      metricPicker={<ChartMetricPicker side="left" slot="primary" selectedMetricId={leftChartMetricId} excludedMetricIds={leftSecondaryChartMetricId ? [leftSecondaryChartMetricId] : []} />}
-                      secondaryMetricPicker={<ChartMetricPicker side="left" slot="secondary" selectedMetricId={leftSecondaryChartMetricId} excludedMetricIds={[leftChartMetricId]} />}
-                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'primary' ? null : { side: 'left', slot: 'primary' })}
-                      onSecondaryMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' })}
-                      onAddMetricClick={() => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' })}
-                      onRemoveSecondaryMetric={() => {
+                  {renderChartCard({
+                      title: leftChartConfig.label,
+                      metricLabel: leftChartConfig.label,
+                      metricColor: leftChartColor,
+                      secondaryMetricLabel: leftSecondaryChartConfig?.label,
+                      secondaryMetricColor: leftSecondaryChartColor,
+                      side: 'left',
+                      styleMetrics: leftChartStyleMetrics,
+                      metricPicker: <ChartMetricPicker side="left" slot="primary" selectedMetricId={leftChartMetricId} excludedMetricIds={leftSecondaryChartMetricId ? [leftSecondaryChartMetricId] : []} />,
+                      secondaryMetricPicker: <ChartMetricPicker side="left" slot="secondary" selectedMetricId={leftSecondaryChartMetricId} excludedMetricIds={[leftChartMetricId]} />,
+                      onMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'primary' ? null : { side: 'left', slot: 'primary' }),
+                      onSecondaryMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' }),
+                      onAddMetricClick: () => setOpenChartMetricPicker(current => current?.side === 'left' && current.slot === 'secondary' ? null : { side: 'left', slot: 'secondary' }),
+                      onRemoveSecondaryMetric: () => {
                           setLeftSecondaryChartMetricId(null);
                           setOpenChartMetricPicker(null);
                           setOpenChartVisualDropdown(null);
                           setChartStyleSettings(current => ({ ...current, left: { ...current.left, secondary: undefined } }));
-                      }}
-                      accent="text-[#5f636b]"
-                      rightControl={language === 'cn' ? '日' : 'Day'}
-                      featured
-                  >
-                      {!isDataLoading && leftChartData.length === 0 ? (
-                          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
-                              {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
-                          </div>
-                      ) : (
-                          <MetricChart
-                              side="left"
-                              data={leftChartData}
-                              ticks={leftChartTicks}
-                              animate={shouldAnimateCharts}
-                              metrics={leftChartStyleMetrics.map((metric, index) => ({
-                                  ...metric,
-                                  dataKey: index === 0 ? 'primaryValue' : 'secondaryValue',
-                                  yAxisId: index === 0 ? 'left' : 'right',
-                              }))}
-                          />
-                      )}
-                  </ChartCard>
+                      },
+                      accent: 'text-[#5f636b]',
+                      rightControl: language === 'cn' ? '日' : 'Day',
+                      featured: true,
+                      children: leftChartContent,
+                  })}
 
-                  <ChartCard
-                      title={rightChartConfig.label}
-                      metricLabel={rightChartConfig.label}
-                      metricColor={rightChartColor}
-                      secondaryMetricLabel={rightSecondaryChartConfig?.label}
-                      secondaryMetricColor={rightSecondaryChartColor}
-                      side="right"
-                      styleMetrics={rightChartStyleMetrics}
-                      metricPicker={<ChartMetricPicker side="right" slot="primary" selectedMetricId={rightChartMetricId} excludedMetricIds={rightSecondaryChartMetricId ? [rightSecondaryChartMetricId] : []} />}
-                      secondaryMetricPicker={<ChartMetricPicker side="right" slot="secondary" selectedMetricId={rightSecondaryChartMetricId} excludedMetricIds={[rightChartMetricId]} />}
-                      onMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'primary' ? null : { side: 'right', slot: 'primary' })}
-                      onSecondaryMetricButtonClick={() => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' })}
-                      onAddMetricClick={() => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' })}
-                      onRemoveSecondaryMetric={() => {
+                  {renderChartCard({
+                      title: rightChartConfig.label,
+                      metricLabel: rightChartConfig.label,
+                      metricColor: rightChartColor,
+                      secondaryMetricLabel: rightSecondaryChartConfig?.label,
+                      secondaryMetricColor: rightSecondaryChartColor,
+                      side: 'right',
+                      styleMetrics: rightChartStyleMetrics,
+                      metricPicker: <ChartMetricPicker side="right" slot="primary" selectedMetricId={rightChartMetricId} excludedMetricIds={rightSecondaryChartMetricId ? [rightSecondaryChartMetricId] : []} />,
+                      secondaryMetricPicker: <ChartMetricPicker side="right" slot="secondary" selectedMetricId={rightSecondaryChartMetricId} excludedMetricIds={[rightChartMetricId]} />,
+                      onMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'primary' ? null : { side: 'right', slot: 'primary' }),
+                      onSecondaryMetricButtonClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' }),
+                      onAddMetricClick: () => setOpenChartMetricPicker(current => current?.side === 'right' && current.slot === 'secondary' ? null : { side: 'right', slot: 'secondary' }),
+                      onRemoveSecondaryMetric: () => {
                           setRightSecondaryChartMetricId(null);
                           setOpenChartMetricPicker(null);
                           setOpenChartVisualDropdown(null);
                           setChartStyleSettings(current => ({ ...current, right: { ...current.right, secondary: undefined } }));
-                      }}
-                      accent="text-emerald-500"
-                      rightControl={language === 'cn' ? '日' : 'Day'}
-                      featured
-                  >
-                      {!isDataLoading && rightChartData.length === 0 ? (
-                          <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
-                              {language === 'cn' ? '暂无可计算的数据' : 'No chartable data yet'}
-                          </div>
-                      ) : (
-                          <MetricChart
-                              side="right"
-                              data={rightChartData}
-                              ticks={rightChartTicks}
-                              animate={shouldAnimateCharts}
-                              metrics={rightChartStyleMetrics.map((metric, index) => ({
-                                  ...metric,
-                                  dataKey: index === 0 ? 'primaryValue' : 'secondaryValue',
-                                  yAxisId: index === 0 ? 'left' : 'right',
-                              }))}
-                          />
-                      )}
-                  </ChartCard>
+                      },
+                      accent: 'text-emerald-500',
+                      rightControl: language === 'cn' ? '日' : 'Day',
+                      featured: true,
+                      children: rightChartContent,
+                  })}
               </div>
 
               <div className="relative rounded-[8px] bg-white shadow-none dark:bg-slate-900">
