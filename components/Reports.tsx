@@ -1771,12 +1771,12 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       }, new Map<string, { id: string; format: ChartMetricFormat; orientation: 'left' | 'right'; colors: string[] }>()).values());
       const leftAxisGroups = axisGroups.filter(axis => axis.orientation === 'left');
       const rightAxisGroups = axisGroups.filter(axis => axis.orientation === 'right');
-      const getAxisWidth = (format: ChartMetricFormat) => format === 'duration' ? 88 : format === 'money' ? 68 : format === 'percent' ? 52 : 48;
-      const getAxisPadding = (axisCount: number) => Math.max(0, axisCount - 1) * 10;
+      const getAxisWidth = (format: ChartMetricFormat) => format === 'duration' ? 74 : format === 'money' ? 56 : format === 'percent' ? 44 : 38;
+      const getAxisPadding = (axisCount: number) => Math.max(0, axisCount - 1) * 3;
       const commonMargin = {
           top: hasDurationAxis ? 18 : 8,
-          right: 10 + getAxisPadding(rightAxisGroups.length),
-          left: 5 + getAxisPadding(leftAxisGroups.length),
+          right: getAxisPadding(rightAxisGroups.length),
+          left: getAxisPadding(leftAxisGroups.length),
           bottom: 42,
       };
 
@@ -1893,7 +1893,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                                   axisLine={false}
                                   tickLine={false}
                                   width={getAxisWidth(axis.format)}
-                                  tickMargin={axis.format === 'duration' ? 10 : 7}
+                                  tickMargin={axis.format === 'duration' ? 6 : 4}
                                   tick={<ChartYAxisTick format={axis.format} colors={axis.colors} orientation={axis.orientation} />}
                                   tickCount={REPORT_CHART_Y_TICK_COUNT}
                                   allowDataOverflow={false}
@@ -2194,7 +2194,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
                   </button>
               </div>
           </div>
-          <div className={`${featured ? 'px-[10px] pb-[12px]' : 'px-4 pt-4'}`}>
+          <div className={`${featured ? 'px-[2px] pb-[12px]' : 'px-4 pt-4'}`}>
               {!featured && (
                 <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
