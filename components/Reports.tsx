@@ -3181,7 +3181,7 @@ const Reports: React.FC<ReportsProps> = ({
       };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(292px,24vw,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
                       <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
