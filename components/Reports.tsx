@@ -109,6 +109,7 @@ type ChartMetricSlot = 'primary' | 'secondary' | 'tertiary';
 type PnlDisplayMode = 'net' | 'gross';
 type DayTimeReportView = 'DAYS' | 'MONTHS' | 'TIME' | 'TRADE DURATION';
 type SymbolReportView = 'SYMBOLS' | 'INSTRUMENTS' | 'PRICES';
+type RiskReportView = 'VOLUMES' | 'POSITION SIZES' | 'R_MULTIPLES';
 type DayTimeMetricId = SummaryMetricId;
 type DayTimeCrossMetric = 'winRate' | 'pnl' | 'trades';
 type DayTimeSymbolLimit = 5 | 10 | 20 | 'all';
@@ -250,6 +251,7 @@ const Reports: React.FC<ReportsProps> = ({
   const [detailedFilter, setDetailedFilter] = useState<string | null>(null);
   const [dayTimeReportView, setDayTimeReportView] = useState<DayTimeReportView>('DAYS');
   const [symbolReportView, setSymbolReportView] = useState<SymbolReportView>('SYMBOLS');
+  const [riskReportView, setRiskReportView] = useState<RiskReportView>('VOLUMES');
   const [dayTimeLeftPrimaryMetric, setDayTimeLeftPrimaryMetric] = useState<DayTimeMetricId>('netPnl');
   const [dayTimeLeftSecondaryMetric, setDayTimeLeftSecondaryMetric] = useState<DayTimeMetricId | null>('tradeCount');
   const [dayTimeLeftTertiaryMetric, setDayTimeLeftTertiaryMetric] = useState<DayTimeMetricId | null>(null);
@@ -1681,6 +1683,108 @@ const Reports: React.FC<ReportsProps> = ({
       const rows = finalizeDayTimeRows(Array.from(grouped.values()));
       return rows.sort((a, b) => b.count - a.count || Math.abs(b.netPnl) - Math.abs(a.netPnl) || a.label.localeCompare(b.label));
   }, [trades, language, pnlDisplayMode, symbolReportView]);
+
+  const riskVolumeBuckets = useMemo(() => language === 'cn'
+      ? [
+          { key: '1-4', label: '1 到 4', shortLabel: '1 到 4', min: 1, max: 5 },
+          { key: '20-49', label: '20 到 49', shortLabel: '20 到 49', min: 20, max: 50 },
+          { key: '50-99', label: '50 到 99', shortLabel: '50 到 99', min: 50, max: 100 },
+          { key: '100-499', label: '100 到 499', shortLabel: '100 到 499', min: 100, max: 500 },
+          { key: '2000-2999', label: '2000 到 2999', shortLabel: '2000 到 2999', min: 2000, max: 3000 },
+          { key: '3000+', label: '3000 以上', shortLabel: '3000 以上', min: 3000, max: Number.POSITIVE_INFINITY },
+      ]
+      : [
+          { key: '1-4', label: '1 to 4', shortLabel: '1 to 4', min: 1, max: 5 },
+          { key: '20-49', label: '20 to 49', shortLabel: '20 to 49', min: 20, max: 50 },
+          { key: '50-99', label: '50 to 99', shortLabel: '50 to 99', min: 50, max: 100 },
+          { key: '100-499', label: '100 to 499', shortLabel: '100 to 499', min: 100, max: 500 },
+          { key: '2000-2999', label: '2000 to 2999', shortLabel: '2000 to 2999', min: 2000, max: 3000 },
+          { key: '3000+', label: '3000 and over', shortLabel: '3000 and over', min: 3000, max: Number.POSITIVE_INFINITY },
+      ], [language]);
+
+  const riskPositionSizeBuckets = useMemo(() => language === 'cn'
+      ? [
+          { key: 'lt-100', label: '100 以下', shortLabel: '100 以下', min: 0, max: 100 },
+          { key: '100-499', label: '100 到 499', shortLabel: '100 到 499', min: 100, max: 500 },
+          { key: '500-999', label: '500 到 999', shortLabel: '500 到 999', min: 500, max: 1000 },
+          { key: '1000-2499', label: '1000 到 2499', shortLabel: '1000 到 2499', min: 1000, max: 2500 },
+          { key: '2500-4999', label: '2500 到 4999', shortLabel: '2500 到 4999', min: 2500, max: 5000 },
+          { key: '5000+', label: '5000 以上', shortLabel: '5000 以上', min: 5000, max: Number.POSITIVE_INFINITY },
+      ]
+      : [
+          { key: 'lt-100', label: 'Below 100', shortLabel: 'Below 100', min: 0, max: 100 },
+          { key: '100-499', label: '100 to 499', shortLabel: '100 to 499', min: 100, max: 500 },
+          { key: '500-999', label: '500 to 999', shortLabel: '500 to 999', min: 500, max: 1000 },
+          { key: '1000-2499', label: '1000 to 2499', shortLabel: '1000 to 2499', min: 1000, max: 2500 },
+          { key: '2500-4999', label: '2500 to 4999', shortLabel: '2500 to 4999', min: 2500, max: 5000 },
+          { key: '5000+', label: '5000 and over', shortLabel: '5000 and over', min: 5000, max: Number.POSITIVE_INFINITY },
+      ], [language]);
+
+  const riskRMultipleBuckets = useMemo(() => language === 'cn'
+      ? [
+          { key: 'none', label: '未设置', shortLabel: '未设置', min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY, isNone: true },
+          { key: '+4+', label: '+4R 以上', shortLabel: '+4R 以上', min: 4, max: Number.POSITIVE_INFINITY },
+          { key: '+3-3.99', label: '+3R 到 3.99R', shortLabel: '+3R 到 3.99R', min: 3, max: 4 },
+          { key: '+2-2.99', label: '+2R 到 2.99R', shortLabel: '+2R 到 2.99R', min: 2, max: 3 },
+          { key: '+1-1.99', label: '+1R 到 1.99R', shortLabel: '+1R 到 1.99R', min: 1, max: 2 },
+          { key: '0-0.99', label: '0R 到 0.99R', shortLabel: '0R 到 0.99R', min: 0, max: 1 },
+          { key: '-0.99--0.01', label: '-0.99R 到 -0.01R', shortLabel: '-0.99R 到 -0.01R', min: -1, max: 0 },
+          { key: '-1--1.99', label: '-1R 到 -1.99R', shortLabel: '-1R 到 -1.99R', min: -2, max: -1 },
+          { key: '-2--2.99', label: '-2R 到 -2.99R', shortLabel: '-2R 到 -2.99R', min: -3, max: -2 },
+          { key: '-3--3.99', label: '-3R 到 -3.99R', shortLabel: '-3R 到 -3.99R', min: -4, max: -3 },
+          { key: '-4+', label: '-4R 或更低', shortLabel: '-4R 或更低', min: Number.NEGATIVE_INFINITY, max: -4 },
+      ]
+      : [
+          { key: 'none', label: 'None', shortLabel: 'None', min: Number.NEGATIVE_INFINITY, max: Number.POSITIVE_INFINITY, isNone: true },
+          { key: '+4+', label: '+4R and more', shortLabel: '+4R and more', min: 4, max: Number.POSITIVE_INFINITY },
+          { key: '+3-3.99', label: '+3R to 3.99R', shortLabel: '+3R to 3.99R', min: 3, max: 4 },
+          { key: '+2-2.99', label: '+2R to 2.99R', shortLabel: '+2R to 2.99R', min: 2, max: 3 },
+          { key: '+1-1.99', label: '+1R to 1.99R', shortLabel: '+1R to 1.99R', min: 1, max: 2 },
+          { key: '0-0.99', label: '0R to 0.99R', shortLabel: '0R to 0.99R', min: 0, max: 1 },
+          { key: '-0.99--0.01', label: '-0.99R to -0.01R', shortLabel: '-0.99R to -0.01R', min: -1, max: 0 },
+          { key: '-1--1.99', label: '-1R to -1.99R', shortLabel: '-1R to -1.99R', min: -2, max: -1 },
+          { key: '-2--2.99', label: '-2R to -2.99R', shortLabel: '-2R to -2.99R', min: -3, max: -2 },
+          { key: '-3--3.99', label: '-3R to -3.99R', shortLabel: '-3R to -3.99R', min: -4, max: -3 },
+          { key: '-4+', label: '-4R or less', shortLabel: '-4R or less', min: Number.NEGATIVE_INFINITY, max: -4 },
+      ], [language]);
+
+  const riskReportRows = useMemo(() => {
+      const getRowBuckets = () => {
+          if (riskReportView === 'POSITION SIZES') return riskPositionSizeBuckets;
+          if (riskReportView === 'R_MULTIPLES') return riskRMultipleBuckets;
+          return riskVolumeBuckets;
+      };
+
+      const buckets = getRowBuckets();
+      const rows = buckets.map(bucket => createDayTimeRow(bucket.key, bucket.label, bucket.shortLabel));
+
+      trades.forEach(trade => {
+          const quantity = Math.abs(Number(trade.quantity) || 0);
+          const volume = getTradeVolume(trade);
+          const riskAmount = Number(trade.riskAmount) || 0;
+          const tradeR = riskAmount > 0 ? getDisplayPnl(trade) / riskAmount : null;
+
+          let matchedIndex = -1;
+
+          if (riskReportView === 'POSITION SIZES') {
+              matchedIndex = buckets.findIndex(bucket => volume >= bucket.min && volume < bucket.max);
+          } else if (riskReportView === 'R_MULTIPLES') {
+              matchedIndex = buckets.findIndex(bucket => {
+                  if ('isNone' in bucket && bucket.isNone) return tradeR === null;
+                  if (tradeR === null) return false;
+                  return tradeR >= bucket.min && tradeR < bucket.max;
+              });
+          } else {
+              matchedIndex = buckets.findIndex(bucket => quantity >= bucket.min && quantity < bucket.max);
+          }
+
+          if (matchedIndex >= 0) {
+              addTradeToDayTimeRow(rows[matchedIndex], trade);
+          }
+      });
+
+      return finalizeDayTimeRows(rows);
+  }, [trades, pnlDisplayMode, riskReportView, riskVolumeBuckets, riskPositionSizeBuckets, riskRMultipleBuckets]);
 
   const getDayTimeMetricValue = (row: DayTimeReportRow, metric: DayTimeMetricId) => {
       return Number(row[metric as keyof DayTimeReportRow]) || 0;
@@ -4739,6 +4843,74 @@ const Reports: React.FC<ReportsProps> = ({
       });
   }, [visibleSymbolRows, symbolCrossColumns, pnlDisplayMode]);
 
+  const riskHighlights = useMemo(() => {
+      const rowsWithTrades = riskReportRows.filter(row => row.count > 0);
+      const bestPerforming = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((best, row) => row.netPnl > best.netPnl ? row : best, rowsWithTrades[0])
+          : null;
+      const leastPerforming = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((worst, row) => row.netPnl < worst.netPnl ? row : worst, rowsWithTrades[0])
+          : null;
+      const mostActive = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((best, row) => row.count > best.count ? row : best, rowsWithTrades[0])
+          : null;
+      const bestWinRate = rowsWithTrades.length > 0
+          ? rowsWithTrades.reduce((best, row) => row.winRate > best.winRate || (row.winRate === best.winRate && row.count > best.count) ? row : best, rowsWithTrades[0])
+          : null;
+
+      return { bestPerforming, leastPerforming, mostActive, bestWinRate };
+  }, [riskReportRows]);
+
+  const riskSummaryColumns = [
+      { id: 'label', label: riskReportView === 'POSITION SIZES' ? (language === 'cn' ? '仓位大小' : 'Position sizes') : riskReportView === 'R_MULTIPLES' ? (language === 'cn' ? 'R 倍数' : 'R-multiples') : (language === 'cn' ? '成交量区间' : 'Volumes') },
+      { id: 'winRate', label: language === 'cn' ? '胜率' : 'Win %' },
+      { id: 'netPnl', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L') },
+      { id: 'count', label: language === 'cn' ? '交易次数' : 'Trade count' },
+      { id: 'avgDailyVolume', label: language === 'cn' ? '平均成交额' : 'Avg daily volume' },
+      { id: 'avgWin', label: language === 'cn' ? '平均盈利' : 'Avg win' },
+      { id: 'avgLoss', label: language === 'cn' ? '平均亏损' : 'Avg loss' },
+  ];
+
+  const riskCrossRows = useMemo(() => {
+      return riskReportRows.filter(row => row.count > 0);
+  }, [riskReportRows]);
+
+  const riskCrossSymbols = useMemo(() => {
+      const totals = new Map<string, { symbol: string; count: number; pnl: number }>();
+      trades.forEach(trade => {
+          const symbol = getNormalizedSymbol(trade);
+          const current = totals.get(symbol) || { symbol, count: 0, pnl: 0 };
+          current.count += 1;
+          current.pnl += getDisplayPnl(trade);
+          totals.set(symbol, current);
+      });
+      const sortedSymbols = Array.from(totals.values())
+          .sort((a, b) => b.count - a.count || Math.abs(b.pnl) - Math.abs(a.pnl))
+          .map(item => item.symbol);
+      return dayTimeSymbolLimit === 'all' ? sortedSymbols : sortedSymbols.slice(0, dayTimeSymbolLimit);
+  }, [trades, pnlDisplayMode, dayTimeSymbolLimit, language]);
+
+  const riskCrossAnalysisRows = useMemo(() => {
+      const symbolSet = new Set(riskCrossSymbols);
+      return riskCrossRows.map(row => {
+          const cells = new Map<string, { count: number; pnl: number; wins: number }>();
+
+          row.trades.forEach(trade => {
+              const symbol = getNormalizedSymbol(trade);
+              if (!symbolSet.has(symbol)) return;
+
+              const cell = cells.get(symbol) || { count: 0, pnl: 0, wins: 0 };
+              const pnl = getDisplayPnl(trade);
+              cell.count += 1;
+              cell.pnl += pnl;
+              if (pnl > 0) cell.wins += 1;
+              cells.set(symbol, cell);
+          });
+
+          return { row, cells };
+      });
+  }, [riskCrossRows, riskCrossSymbols, pnlDisplayMode, language]);
+
   const topCrossSymbols = useMemo(() => {
       const totals = new Map<string, { symbol: string; count: number; pnl: number }>();
       trades.forEach(trade => {
@@ -6754,6 +6926,403 @@ const Reports: React.FC<ReportsProps> = ({
                                                       return (
                                                           <td
                                                               key={`${row.key}-${column}`}
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              }`}
+                                                          >
+                                                              {dayTimeCrossMetric === 'pnl'
+                                                                  ? formatSignedMoney(value)
+                                                                  : dayTimeCrossMetric === 'trades'
+                                                                      ? value
+                                                                      : `${value.toFixed(value % 1 === 0 ? 0 : 1)}%`}
+                                                          </td>
+                                                      );
+                                                  })}
+                                              </tr>
+                                          ))}
+                                      </tbody>
+                                  </table>
+                              )}
+                          </div>
+                      </section>
+                  </div>
+              ) : detailedFilter === 'RISK' ? (
+                  <div className="space-y-[14px]">
+                      <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
+                          <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                              {([
+                                  { id: 'VOLUMES' as const, label: language === 'cn' ? '成交量' : 'Volumes' },
+                                  { id: 'POSITION SIZES' as const, label: language === 'cn' ? '仓位大小' : 'Position sizes' },
+                                  { id: 'R_MULTIPLES' as const, label: language === 'cn' ? 'R 倍数' : 'R-multiples' },
+                              ]).map(option => (
+                                  <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => setRiskReportView(option.id)}
+                                      className={`h-[38px] min-w-[92px] px-[18px] text-[13px] font-semibold transition-colors ${
+                                          riskReportView === option.id
+                                              ? 'bg-[#e8e4f4] text-[#5f47c9]'
+                                              : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-slate-300 dark:hover:bg-slate-800'
+                                      }`}
+                                  >
+                                      {option.label}
+                                  </button>
+                              ))}
+                          </div>
+
+                          <div className="relative" data-pnl-display-menu>
+                              <button
+                                  type="button"
+                                  onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
+                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                              >
+                                  <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
+                                  <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                              </button>
+                              <div
+                                  className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                  }`}
+                              >
+                                  {([
+                                      { id: 'net' as const, label: language === 'cn' ? '净盈亏' : 'NET P&L' },
+                                      { id: 'gross' as const, label: language === 'cn' ? '总盈亏' : 'GROSS P&L' },
+                                  ]).map(option => (
+                                      <button
+                                          key={option.id}
+                                          type="button"
+                                          onClick={() => {
+                                              setPnlDisplayMode(option.id);
+                                              setIsPnlDisplayMenuOpen(false);
+                                          }}
+                                          className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                              pnlDisplayMode === option.id
+                                                  ? 'bg-[#e8e4f4] text-[#303044]'
+                                                  : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                          }`}
+                                      >
+                                          {option.label}
+                                      </button>
+                                  ))}
+                              </div>
+                          </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[10px] md:grid-cols-2 xl:grid-cols-4">
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最佳表现' : 'Best performing'}
+                              title={riskHighlights.bestPerforming?.label || '--'}
+                              detail={`${riskHighlights.bestPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
+                              value={riskHighlights.bestPerforming ? formatSignedMoney(riskHighlights.bestPerforming.netPnl) : undefined}
+                              tone="good"
+                              iconType="best"
+                              animate={shouldAnimateDayTimeInsights}
+                              animationDelayMs={40}
+                          />
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最差表现' : 'Least performing'}
+                              title={riskHighlights.leastPerforming?.label || '--'}
+                              detail={`${riskHighlights.leastPerforming?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
+                              value={riskHighlights.leastPerforming ? formatSignedMoney(riskHighlights.leastPerforming.netPnl) : undefined}
+                              tone="bad"
+                              iconType="worst"
+                              animate={shouldAnimateDayTimeInsights}
+                              animationDelayMs={100}
+                          />
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最活跃' : 'Most active'}
+                              title={riskHighlights.mostActive?.label || '--'}
+                              detail={`${riskHighlights.mostActive?.count || 0} ${language === 'cn' ? '笔交易' : 'trades'}`}
+                              tone="accent"
+                              iconType="active"
+                              animate={shouldAnimateDayTimeInsights}
+                              animationDelayMs={160}
+                          />
+                          <DayTimeInsightCard
+                              eyebrow={language === 'cn' ? '最高胜率' : 'Best win rate'}
+                              title={riskHighlights.bestWinRate?.label || '--'}
+                              detail={riskHighlights.bestWinRate ? `${riskHighlights.bestWinRate.winRate.toFixed(0)}% / ${riskHighlights.bestWinRate.count} ${language === 'cn' ? '笔交易' : 'trades'}` : '--'}
+                              tone="neutral"
+                              iconType="winRate"
+                              animate={shouldAnimateDayTimeInsights}
+                              animationDelayMs={220}
+                          />
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
+                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
+                                  <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
+                                      <div className="relative" data-day-time-chart-style-root="left">
+                                          <button
+                                              type="button"
+                                              onClick={() => {
+                                                  setOpenDayTimeChartStyleMenu(current => current === 'left' ? null : 'left');
+                                                  setOpenDayTimeChartVisualDropdown(null);
+                                                  setOpenDayTimeChartColorDropdown(null);
+                                                  setOpenDayTimeMetricPicker(null);
+                                              }}
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
+                                          >
+                                              <FilledChartStyleIcon />
+                                          </button>
+                                          <DayTimeChartStyleMenu
+                                              side="left"
+                                              metrics={getDayTimeRenderMetrics('left').map(metric => ({
+                                                  slot: metric.slot,
+                                                  config: { label: metric.label },
+                                                  visual: metric.visual,
+                                                  color: metric.color,
+                                              }))}
+                                          />
+                                      </div>
+                                      <DayTimeMetricTrigger side="left" slot="primary" metricId={dayTimeLeftPrimaryMetric} />
+                                      {dayTimeLeftSecondaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="left"
+                                              slot="secondary"
+                                              metricId={dayTimeLeftSecondaryMetric}
+                                              removable
+                                              onRemove={() => {
+                                                  setDayTimeLeftSecondaryMetric(dayTimeLeftTertiaryMetric);
+                                                  setDayTimeLeftTertiaryMetric(null);
+                                              }}
+                                          />
+                                      )}
+                                      {dayTimeLeftTertiaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="left"
+                                              slot="tertiary"
+                                              metricId={dayTimeLeftTertiaryMetric}
+                                              removable
+                                              onRemove={() => setDayTimeLeftTertiaryMetric(null)}
+                                          />
+                                      )}
+                                      <DayTimeAddMetricButton side="left" />
+                                  </div>
+                                  <button
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      type="button"
+                                      aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
+                                      onClick={() => {
+                                          setOpenDayTimeChartStyleMenu(current => current === 'left' ? null : 'left');
+                                          setOpenDayTimeChartVisualDropdown(null);
+                                          setOpenDayTimeChartColorDropdown(null);
+                                          setOpenDayTimeMetricPicker(null);
+                                      }}
+                                  >
+                                      <MoreVertical className="h-[16px] w-[16px]" />
+                                  </button>
+                              </div>
+                              <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
+                                  {renderDayTimeMetricChart({
+                                      chartId: 'risk-left',
+                                      rows: riskCrossRows,
+                                      metrics: getDayTimeRenderMetrics('left'),
+                                      animate: shouldAnimateDayTimeCharts,
+                                      animationDelayMs: 140,
+                                  })}
+                              </div>
+                              <ReportCardLoadingOverlay radius={8} />
+                          </section>
+
+                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
+                                  <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
+                                      <div className="relative" data-day-time-chart-style-root="right">
+                                          <button
+                                              type="button"
+                                              onClick={() => {
+                                                  setOpenDayTimeChartStyleMenu(current => current === 'right' ? null : 'right');
+                                                  setOpenDayTimeChartVisualDropdown(null);
+                                                  setOpenDayTimeChartColorDropdown(null);
+                                                  setOpenDayTimeMetricPicker(null);
+                                              }}
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
+                                          >
+                                              <FilledChartStyleIcon />
+                                          </button>
+                                          <DayTimeChartStyleMenu
+                                              side="right"
+                                              metrics={getDayTimeRenderMetrics('right').map(metric => ({
+                                                  slot: metric.slot,
+                                                  config: { label: metric.label },
+                                                  visual: metric.visual,
+                                                  color: metric.color,
+                                              }))}
+                                          />
+                                      </div>
+                                      <DayTimeMetricTrigger side="right" slot="primary" metricId={dayTimeRightPrimaryMetric} />
+                                      {dayTimeRightSecondaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="right"
+                                              slot="secondary"
+                                              metricId={dayTimeRightSecondaryMetric}
+                                              removable
+                                              onRemove={() => {
+                                                  setDayTimeRightSecondaryMetric(dayTimeRightTertiaryMetric);
+                                                  setDayTimeRightTertiaryMetric(null);
+                                              }}
+                                          />
+                                      )}
+                                      {dayTimeRightTertiaryMetric && (
+                                          <DayTimeMetricTrigger
+                                              side="right"
+                                              slot="tertiary"
+                                              metricId={dayTimeRightTertiaryMetric}
+                                              removable
+                                              onRemove={() => setDayTimeRightTertiaryMetric(null)}
+                                          />
+                                      )}
+                                      <DayTimeAddMetricButton side="right" />
+                                  </div>
+                                  <button
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      type="button"
+                                      aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
+                                      onClick={() => {
+                                          setOpenDayTimeChartStyleMenu(current => current === 'right' ? null : 'right');
+                                          setOpenDayTimeChartVisualDropdown(null);
+                                          setOpenDayTimeChartColorDropdown(null);
+                                          setOpenDayTimeMetricPicker(null);
+                                      }}
+                                  >
+                                      <MoreVertical className="h-[16px] w-[16px]" />
+                                  </button>
+                              </div>
+                              <div className="relative z-0 h-[342px] overflow-hidden rounded-b-[8px] px-[10px] pb-[8px] pt-[6px]">
+                                  {renderDayTimeMetricChart({
+                                      chartId: 'risk-right',
+                                      rows: riskCrossRows,
+                                      metrics: getDayTimeRenderMetrics('right'),
+                                      animate: shouldAnimateDayTimeCharts,
+                                      animationDelayMs: 220,
+                                  })}
+                              </div>
+                              <ReportCardLoadingOverlay radius={8} />
+                          </section>
+                      </div>
+
+                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                              <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                                  <Settings className="h-[15px] w-[15px]" />
+                              </button>
+                          </div>
+                          <div className="overflow-x-auto">
+                              <table className="w-full min-w-[980px] text-left text-[13px]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                      <tr>
+                                          {riskSummaryColumns.map(column => (
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                          ))}
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      {riskCrossRows.map(row => (
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          </tr>
+                                      ))}
+                                  </tbody>
+                              </table>
+                          </div>
+                      </section>
+
+                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                              <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
+                              <div className="flex flex-wrap items-center gap-[8px]">
+                                  <div className="relative" data-day-time-symbol-limit-menu>
+                                      <button
+                                          type="button"
+                                          onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      >
+                                          <span>{activeSymbolLimitLabel}</span>
+                                          <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
+                                      </button>
+                                      <div
+                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                              isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                          }`}
+                                      >
+                                          {symbolLimitOptions.map(option => (
+                                              <button
+                                                  key={String(option.id)}
+                                                  type="button"
+                                                  onClick={() => {
+                                                      setDayTimeSymbolLimit(option.id);
+                                                      setIsDayTimeSymbolLimitOpen(false);
+                                                  }}
+                                                  className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                                      dayTimeSymbolLimit === option.id
+                                                          ? 'bg-[#e8e4f4] text-[#303044]'
+                                                          : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                                  }`}
+                                              >
+                                                  {option.label}
+                                              </button>
+                                          ))}
+                                      </div>
+                                  </div>
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                      {([
+                                          { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
+                                          { id: 'pnl' as const, label: 'P&L' },
+                                          { id: 'trades' as const, label: language === 'cn' ? '交易' : 'Trades' },
+                                      ]).map(option => (
+                                          <button
+                                              key={option.id}
+                                              type="button"
+                                              onClick={() => setDayTimeCrossMetric(option.id)}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                          >
+                                              {option.label}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="overflow-x-auto">
+                              {riskCrossSymbols.length === 0 ? (
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                      {language === 'cn' ? '暂无可用于交叉分析的交易品种' : 'No symbols available for cross analysis'}
+                                  </div>
+                              ) : (
+                                  <table className="w-full min-w-[1120px] text-left text-[13px]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                          <tr>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              {riskCrossSymbols.map(symbol => (
+                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{symbol}</th>
+                                              ))}
+                                          </tr>
+                                      </thead>
+                                      <tbody>
+                                          {riskCrossAnalysisRows.map(({ row, cells }) => (
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                                  {riskCrossSymbols.map(symbol => {
+                                                      const cell = cells.get(symbol);
+                                                      const value = dayTimeCrossMetric === 'pnl'
+                                                          ? (cell?.pnl || 0)
+                                                          : dayTimeCrossMetric === 'trades'
+                                                              ? (cell?.count || 0)
+                                                              : cell && cell.count > 0 ? (cell.wins / cell.count) * 100 : 0;
+                                                      const tone = dayTimeCrossMetric === 'pnl' ? value : 0;
+                                                      return (
+                                                          <td
+                                                              key={`${row.key}-${symbol}`}
                                                               className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
                                                                   tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
                                                               }`}
