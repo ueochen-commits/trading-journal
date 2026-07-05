@@ -193,6 +193,20 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
   }, []);
 
   useEffect(() => {
+      if (!openChartStyleMenu) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (target instanceof Element && target.closest(`[data-chart-style-root="${openChartStyleMenu}"]`)) return;
+          setOpenChartStyleMenu(null);
+          setOpenChartVisualDropdown(null);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [openChartStyleMenu]);
+
+  useEffect(() => {
       if (!currentUserId) return;
 
       // 初始加载
@@ -1545,7 +1559,7 @@ const Reports: React.FC<ReportsProps> = ({ trades, accountSize = 10000, plans = 
       <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
           <div className={`${featured ? 'h-[64px] px-[10px]' : 'h-14 px-4 border-b border-slate-100 dark:border-slate-800'} flex items-center justify-between bg-white dark:bg-slate-900`}>
               <div className={`${featured ? 'gap-[12px]' : 'gap-3'} flex items-center min-w-0`}>
-                  <div className="relative">
+                  <div className="relative" data-chart-style-root={side}>
                       <button
                           type="button"
                           onClick={() => {
