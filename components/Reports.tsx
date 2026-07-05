@@ -3474,12 +3474,12 @@ const Reports: React.FC<ReportsProps> = ({
       if (type === 'best') {
           return (
               <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-                  <path d="M5.7 7.2c0-1.8 1.2-3.2 3-3.5l7.2-1.1c1.2-.2 2.2.8 2.2 2v1.5h.7c1.9 0 3.2 1.4 3.2 3.3v7.4c0 2-1.4 3.4-3.4 3.4H6.4C4.5 20.2 3 18.7 3 16.8V9.9c0-1.5 1.1-2.7 2.7-2.7Z" fill="#c9f2e4" />
-                  <path d="M5.7 7.2c.3-1.3 1.4-2.2 2.9-2.4l6.9-1.1c.8-.1 1.5.5 1.5 1.3v2.2H5.7Z" fill="#61d4ad" />
-                  <path d="M8.1 15.1h1.8v-2H8.1v2Zm3.2 0h1.8v-3.7h-1.8v3.7Zm3.3 0h1.8V9.8h-1.8v5.3Z" fill="#2faf82" />
-                  <path d="m8.4 10.5 3-1.8 2.4 1.2 3.7-2.7" fill="none" stroke="#1d9f74" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="18" cy="7" r="2.2" fill="#e9fff6" />
-                  <path d="m17 7 0.7.7L19 6.4" fill="none" stroke="#1d9f74" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M4.2 8.4c0-2.8 1.9-4.8 4.7-5.1l6.4-.7c1.2-.1 2.2.8 2.2 2v1.7h1.2c1.8 0 3.1 1.3 3.1 3.1v7.4c0 2-1.5 3.5-3.5 3.5H7.6c-2 0-3.4-1.5-3.4-3.5V8.4Z" fill="#cff4e7" />
+                  <path d="M4.2 8.4c.3-1.9 1.7-3.2 3.9-3.4l5.9-.7c.9-.1 1.6.6 1.6 1.5v1.5H7.3c-1.3 0-2.3.4-3.1 1.1Z" fill="#63d2a9" />
+                  <path d="M7.8 15.5c0-.5.4-.9.9-.9h1c.5 0 .9.4.9.9v1c0 .5-.4.9-.9.9h-1a.9.9 0 0 1-.9-.9v-1Zm3.2-2.3c0-.5.4-.9.9-.9h1c.5 0 .9.4.9.9v3.3c0 .5-.4.9-.9.9h-1a.9.9 0 0 1-.9-.9v-3.3Zm3.3-2.6c0-.5.4-.9.9-.9h1c.5 0 .9.4.9.9v5.9c0 .5-.4.9-.9.9h-1a.9.9 0 0 1-.9-.9v-5.9Z" fill="#27a978" />
+                  <path d="m8.2 11.1 2.7-1.9 2.1 1.2 3.5-2.7" fill="none" stroke="#f8fffc" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="18.1" cy="6.1" r="2.25" fill="#effcf7" />
+                  <path d="m17.2 6.1.6.7 1.3-1.4" fill="none" stroke="#24a571" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
           );
       }
@@ -3487,13 +3487,13 @@ const Reports: React.FC<ReportsProps> = ({
       if (type === 'worst') {
           return (
               <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-                  <path d="M4.1 6.8c0-1.7 1.3-3 3-3h9.8c1.8 0 3.1 1.3 3.1 3.1v10.2c0 1.8-1.3 3.1-3.1 3.1H7.1c-1.8 0-3-1.3-3-3.1V6.8Z" fill="#ffd9df" />
-                  <path d="M4.1 6.8c0-1.7 1.3-3 3-3h7.7c.8 0 1.3.8.9 1.5L14.5 7H4.1v-.2Z" fill="#ff6d76" />
-                  <path d="M8 9.3h8.2c.8 0 1.4.6 1.4 1.4v3.9c0 .9-.6 1.5-1.5 1.5H8c-.8 0-1.5-.6-1.5-1.5v-3.8c0-.9.7-1.5 1.5-1.5Z" fill="#fff4f5" />
-                  <path d="m8.3 11 2.6 2.6 2-1.5 3 3" fill="none" stroke="#f05258" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <path d="M14.2 15.1h1.7v-1.7" fill="none" stroke="#f05258" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="17.3" cy="6.4" r="2.1" fill="#ffedf0" />
-                  <path d="M16.6 6.4h1.4" stroke="#f05258" strokeWidth="1.4" strokeLinecap="round" />
+                  <path d="M4 7.6c0-2.2 1.6-3.9 3.8-3.9h8.2c2.1 0 3.7 1.5 3.7 3.7v9.1c0 2.2-1.6 3.8-3.8 3.8H7.8A3.8 3.8 0 0 1 4 16.5V7.6Z" fill="#ffdbe1" />
+                  <path d="M4 7.6c0-2.2 1.6-3.9 3.8-3.9h6.3c1 0 1.6 1 1.1 1.8l-.8 1.3H4.1v-.2Z" fill="#ff707b" />
+                  <path d="M7.1 9.8c0-.8.7-1.4 1.4-1.4h7.1c.8 0 1.4.6 1.4 1.4v5.1c0 .8-.6 1.4-1.4 1.4H8.5c-.7 0-1.4-.6-1.4-1.4V9.8Z" fill="#fff5f7" />
+                  <path d="m8.4 11.2 2.4 2.2 2.1-1.6 2.8 2.6" fill="none" stroke="#ef5560" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M14.1 14.5h1.8v-1.8" fill="none" stroke="#ef5560" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round" />
+                  <circle cx="17.5" cy="6" r="2.25" fill="#fff0f3" />
+                  <path d="M16.7 6h1.6" stroke="#ef5560" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
           );
       }
@@ -3501,25 +3501,24 @@ const Reports: React.FC<ReportsProps> = ({
       if (type === 'active') {
           return (
               <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-                  <path d="M12 3.1c4.7 0 8.4 3.5 8.4 8.2 0 4.9-3.7 8.8-8.4 8.8-4.8 0-8.4-3.9-8.4-8.8 0-4.7 3.6-8.2 8.4-8.2Z" fill="#ffe3a3" />
-                  <path d="M7.8 6.9c1.1-1 2.5-1.5 4.2-1.5 3.3 0 5.9 2.5 5.9 5.9 0 3.6-2.6 6.5-5.9 6.5-1.8 0-3.3-.7-4.4-1.8 1.6.3 3-.2 4.2-1.5 1.9-2.2 1.4-5.4-1.2-7.1-.9-.6-1.8-.7-2.8-.5Z" fill="#ffbf47" />
-                  <path d="m12.8 6.5-5.1 6.6h3.4l-.7 4.4 5.4-6.9h-3.4l.4-4.1Z" fill="#f59f00" />
-                  <path d="M12.2 4.7c.8.2 1.5.6 2.1 1.1M5.7 12.1c.1 1.3.6 2.4 1.5 3.3" fill="none" stroke="#d88400" strokeWidth="1.3" strokeLinecap="round" opacity="0.65" />
-                  <circle cx="17.7" cy="7.3" r="1.4" fill="#fff6de" />
+                  <path d="M12 2.8c1.3 0 2.2 1.4 3.2 1.7 1 .3 2.6-.4 3.5.3.9.7.8 2.3 1.5 3.2.7.9 2.3 1.4 2.3 2.6s-1.6 1.8-2.2 2.8c-.6 1 .1 2.6-.6 3.5-.7.9-2.3.8-3.3 1.4-1 .6-1.5 2.2-2.7 2.2s-1.8-1.5-2.8-2.1c-1-.6-2.6.1-3.5-.7-.9-.7-.8-2.3-1.4-3.3-.6-1-2.1-1.6-2.1-2.8 0-1.2 1.5-1.8 2-2.8.6-1-.1-2.6.7-3.5.8-.9 2.4-.8 3.4-1.4 1-.6 1.6-2.1 2.8-2.1Z" fill="#ffe5ad" />
+                  <path d="M12 5.2c3.6 0 6.2 2.6 6.2 6 0 3.6-2.6 6.3-6.2 6.3s-6.2-2.7-6.2-6.3c0-3.4 2.6-6 6.2-6Z" fill="#ffc54f" />
+                  <path d="m12.8 6.9-4.8 6h3.1l-.7 4 5-6.3H12l.8-3.7Z" fill="#f59f00" />
+                  <circle cx="17.6" cy="6.6" r="1.35" fill="#fff6dd" />
               </svg>
           );
       }
 
       return (
           <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-              <path d="M6 5.3c0-1.6 1.2-2.8 2.8-2.8h6.4c1.6 0 2.8 1.2 2.8 2.8v13.4c0 1.6-1.2 2.8-2.8 2.8H8.8c-1.6 0-2.8-1.2-2.8-2.8V5.3Z" fill="#ded4ff" />
-              <path d="M6 5.3c0-1.6 1.2-2.8 2.8-2.8h6.4c1.6 0 2.8 1.2 2.8 2.8v1.4H6V5.3Z" fill="#7a61df" />
-              <path d="M8.9 10.2h6.2c1.2 0 2.1.9 2.1 2.1v3.1c0 1.3-.9 2.2-2.2 2.2H8.9c-1.2 0-2.1-.9-2.1-2.1v-3.2c0-1.2.9-2.1 2.1-2.1Z" fill="#f6f2ff" />
-              <path d="m8.5 14.2 1.5-2.5 1.8 4.2 1.3-2.6h2.4" fill="none" stroke="#6b55cf" strokeWidth="1.55" strokeLinecap="round" strokeLinejoin="round" />
-              <circle cx="10" cy="11.7" r="1.1" fill="#7a61df" />
-              <circle cx="15.8" cy="13.3" r="1.1" fill="#8c78e7" />
-              <path d="M9.4 4.9h1.8M12.8 4.9h1.8" stroke="#cfc3ff" strokeWidth="1.1" strokeLinecap="round" />
-          </svg>
+              <path d="M6.1 4.9c0-1.6 1.3-2.9 2.9-2.9H15c1.6 0 2.9 1.3 2.9 2.9v.9h.8c1.8 0 3.2 1.4 3.2 3.2v7.7c0 1.9-1.4 3.3-3.3 3.3H7.4c-1.9 0-3.3-1.4-3.3-3.3V9c0-1.8 1.4-3.2 3.2-3.2h8.4V4.9c0-.4-.3-.7-.7-.7H9c-.4 0-.7.3-.7.7v.9H6.1v-.9Z" fill="#e2d9ff" />
+              <path d="M4.1 9c0-1.8 1.4-3.2 3.2-3.2h11.4c1.8 0 3.2 1.4 3.2 3.2v1.3H4.1V9Z" fill="#7b63de" />
+              <circle cx="8.2" cy="5.5" r="1.15" fill="#7b63de" />
+              <circle cx="15.9" cy="5.5" r="1.15" fill="#7b63de" />
+              <path d="M7.4 12.3c0-.9.7-1.6 1.6-1.6h7c.9 0 1.7.7 1.7 1.6v2.8c0 1-.8 1.7-1.7 1.7H9c-.9 0-1.6-.7-1.6-1.7v-2.8Z" fill="#f6f2ff" />
+              <path d="m8.7 14 1.5-2.1 1.6 3 1.1-1.8h2.3" fill="none" stroke="#6b55cf" strokeWidth="1.45" strokeLinecap="round" strokeLinejoin="round" />
+              <circle cx="10.2" cy="11.9" r="1.05" fill="#836be3" />
+              </svg>
       );
   };
 
