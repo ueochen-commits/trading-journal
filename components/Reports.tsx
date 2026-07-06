@@ -5071,7 +5071,6 @@ const Reports: React.FC<ReportsProps> = ({
       { id: 'RISK', label: language === 'cn' ? '风险' : 'Risk' },
       { id: 'SETUPS', label: language === 'cn' ? t.reports.filters.setups : 'Strategies' },
       { id: 'TAGS', label: language === 'cn' ? t.reports.filters.tags : 'Tags' },
-      { id: 'TRADE DURATION', label: language === 'cn' ? t.reports.filters.duration : 'Options: Days till expiration' },
       { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
   ];
 
@@ -5081,7 +5080,6 @@ const Reports: React.FC<ReportsProps> = ({
       { id: 'RISK', label: language === 'cn' ? '风险' : 'Risk' },
       { id: 'SETUPS', label: language === 'cn' ? '策略' : 'Strategies' },
       { id: 'TAGS', label: language === 'cn' ? '标签' : 'Tags' },
-      { id: 'TRADE DURATION', label: language === 'cn' ? '期权到期天数' : 'Options: Days till expiration' },
       { id: 'WINS_LOSSES', label: language === 'cn' ? '盈亏结果' : 'Wins vs Losses' },
   ];
 
