@@ -527,10 +527,10 @@ const TagsPage: React.FC<{
 
   const handleDeleteCategory = (categoryId: string) => {
     const target = categories.find(category => category.id === categoryId);
-    if (!target || target.isSystem) return;
+    if (!target) return;
     const next = categories.filter(category => category.id !== categoryId);
     persist(next);
-    setSelectedCategoryId(next[0]?.id || 'mistakes');
+    setSelectedCategoryId(next[0]?.id || '');
   };
 
   const handleAddOption = () => {
@@ -586,9 +586,7 @@ const TagsPage: React.FC<{
                   </div>
                   <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4 }}>{category.type === 'single' ? '单选' : '多选'} · {category.options.length} 个标签</div>
                 </div>
-                {!category.isSystem && (
-                  <SmallBtn danger onClick={() => handleDeleteCategory(category.id)}>删除</SmallBtn>
-                )}
+                <SmallBtn danger onClick={() => handleDeleteCategory(category.id)}>删除</SmallBtn>
               </div>
             );
           })}
@@ -608,7 +606,7 @@ const TagsPage: React.FC<{
                     />
                   </div>
                   <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 10 }}>
-                    {selectedCategory.isSystem ? '系统分类不可删除，但可以调整名称和颜色。' : '自定义分类可编辑名称、颜色和标签内容。'}
+                    {'标签分类可编辑名称、颜色和标签内容，也可删除。'}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

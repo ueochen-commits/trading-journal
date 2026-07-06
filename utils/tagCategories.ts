@@ -35,11 +35,6 @@ const LEGACY_SETUP_OPTIONS = [
 
 const LEGACY_CUSTOM_OPTIONS = ['纪律差', '睡眠不足', '消息面影响', 'Did not sleep well', 'Phone Distraction'];
 
-const SYSTEM_CATEGORY_LABELS: Record<string, string> = {
-  mistakes: '交易错误',
-  custom_tags: '自定义标签',
-};
-
 const LEGACY_OPTION_SETS: Record<string, string[]> = {
   mistakes: LEGACY_MISTAKE_OPTIONS,
   setup: LEGACY_SETUP_OPTIONS,
@@ -52,7 +47,7 @@ export const DEFAULT_TAG_CATEGORIES: TagCategoryDefinition[] = [
     label: '交易错误',
     options: [],
     type: 'multi',
-    isSystem: true,
+    isSystem: false,
     iconKey: 'tag',
     color: '#f59e0b',
   },
@@ -85,10 +80,10 @@ export const normalizeTagCategories = (
       const sanitizedOptions = rawOptions.filter(option => !(LEGACY_OPTION_SETS[id] || []).includes(option));
       return {
         id,
-        label: SYSTEM_CATEGORY_LABELS[id] || String(raw.label),
+        label: String(raw.label),
         options: sanitizedOptions,
         type: raw.type === 'single' ? 'single' : 'multi',
-        isSystem: Boolean(raw.isSystem),
+        isSystem: false,
         iconKey: raw.iconKey || 'tag',
         color: typeof raw.color === 'string' && raw.color ? raw.color : '#10b981',
       };
@@ -98,13 +93,13 @@ export const normalizeTagCategories = (
   const merged = fallback.map(defaultCategory => {
     const matched = sanitized.find(category => category.id === defaultCategory.id);
     if (!matched) {
-      return defaultCategory;
+      return null;
     }
     return {
       ...matched,
-      label: SYSTEM_CATEGORY_LABELS[defaultCategory.id] || matched.label,
+      label: matched.label,
     };
-  });
+  }).filter((category): category is TagCategoryDefinition => Boolean(category));
 
   const customs = sanitized.filter(
     category => !merged.some(defaultCategory => defaultCategory.id === category.id),

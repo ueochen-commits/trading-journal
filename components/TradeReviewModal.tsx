@@ -1014,6 +1014,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     // Save Status Indicator State
     const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'synced'>('saved');
     const autoSaveTimerRef = useRef<any>(null);
+    const tradeAutoSaveTimerRef = useRef<any>(null);
     const [isReviewed, setIsReviewed] = useState(!!trade.reviewNotes);
 
     const [categoryDefs, setCategoryDefs] = useState<TagCategoryDefinition[]>(() =>
@@ -1134,6 +1135,22 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         };
     }, [isDragging]);
 
+    const persistTradeDraft = useCallback((updatedTrade: Trade) => {
+        setCurrentTrade(updatedTrade);
+        setSaveStatus('saving');
+
+        if (tradeAutoSaveTimerRef.current) clearTimeout(tradeAutoSaveTimerRef.current);
+        tradeAutoSaveTimerRef.current = setTimeout(() => {
+            onUpdateTrade(updatedTrade);
+        }, 350);
+    }, [onUpdateTrade]);
+
+    useEffect(() => {
+        return () => {
+            if (tradeAutoSaveTimerRef.current) clearTimeout(tradeAutoSaveTimerRef.current);
+        };
+    }, []);
+
 
     const currentIndex = allTrades?.findIndex(t => t.id === currentTrade.id) ?? -1;
     
@@ -1224,16 +1241,14 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         // 2. Add to Trade
         if (catId === 'mistakes') {
             const updated = { ...currentTrade, mistakes: [...(currentTrade.mistakes || []), tag] };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
+            persistTradeDraft(updated);
         } else {
             // Custom Categories
             const currentTags = currentTrade.customTags?.[catId] || [];
             if (!currentTags.includes(tag)) {
                 const newCustomTags = { ...currentTrade.customTags, [catId]: [...currentTags, tag] };
                 const updated = { ...currentTrade, customTags: newCustomTags };
-                setCurrentTrade(updated);
-                onUpdateTrade(updated);
+                persistTradeDraft(updated);
             }
         }
     };
@@ -1241,14 +1256,12 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     const handleRemoveTag = (catId: string, tag: string) => {
         if (catId === 'mistakes') {
             const updated = { ...currentTrade, mistakes: currentTrade.mistakes?.filter(m => m !== tag) };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
+            persistTradeDraft(updated);
         } else {
             const currentTags = currentTrade.customTags?.[catId] || [];
             const newCustomTags = { ...currentTrade.customTags, [catId]: currentTags.filter(t => t !== tag) };
             const updated = { ...currentTrade, customTags: newCustomTags };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
+            persistTradeDraft(updated);
         }
     };
 
@@ -1287,12 +1300,17 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         setCategoryDefs(next);
         onSaveTagCategories(next);
 
+        if (category.id === 'mistakes') {
+            const updatedTrade = { ...currentTrade, mistakes: [] };
+            persistTradeDraft(updatedTrade);
+            return;
+        }
+
         if (currentTrade.customTags?.[category.id]) {
             const nextCustomTags = { ...(currentTrade.customTags || {}) };
             delete nextCustomTags[category.id];
             const updatedTrade = { ...currentTrade, customTags: nextCustomTags };
-            setCurrentTrade(updatedTrade);
-            onUpdateTrade(updatedTrade);
+            persistTradeDraft(updatedTrade);
         }
     };
 
@@ -1323,8 +1341,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                 ...currentTrade,
                 mistakes: (currentTrade.mistakes || []).map(tag => tag === oldTag ? trimmed : tag),
             };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
+            persistTradeDraft(updated);
             return;
         }
 
@@ -1334,8 +1351,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             [catId]: currentTags.map(tag => tag === oldTag ? trimmed : tag),
         };
         const updated = { ...currentTrade, customTags: updatedCustomTags };
-        setCurrentTrade(updated);
-        onUpdateTrade(updated);
+        persistTradeDraft(updated);
     };
 
     const handleDeleteTagOption = (catId: string, tagToDelete: string) => {
@@ -1354,8 +1370,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                 ...currentTrade,
                 mistakes: (currentTrade.mistakes || []).filter(tag => tag !== tagToDelete),
             };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
+            persistTradeDraft(updated);
             return;
         }
 
@@ -1365,8 +1380,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             [catId]: currentTags.filter(tag => tag !== tagToDelete),
         };
         const updated = { ...currentTrade, customTags: updatedCustomTags };
-        setCurrentTrade(updated);
-        onUpdateTrade(updated);
+        persistTradeDraft(updated);
     };
 
     const handleCategoryDragStart = (catId: string) => {
@@ -1460,8 +1474,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             compliance: newCompliance,
             executionGrade: newGrade
         };
-        setCurrentTrade(updated);
-        onUpdateTrade(updated);
+        persistTradeDraft(updated);
     };
 
     const handleCheckAllRules = () => {
@@ -1471,8 +1484,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             newCompliance[item.id] = true;
         });
         const updated = { ...currentTrade, compliance: newCompliance, executionGrade: 'A+' };
-        setCurrentTrade(updated);
-        onUpdateTrade(updated);
+        persistTradeDraft(updated);
     };
 
     const calculateComplianceProgress = () => {
@@ -1506,8 +1518,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
 
     const setRating = (r: number) => {
         const updated = { ...currentTrade, rating: r };
-        setCurrentTrade(updated);
-        onUpdateTrade(updated);
+        persistTradeDraft(updated);
     };
 
     const isWin = currentTrade.pnl >= 0;
@@ -2056,8 +2067,10 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.profitTarget ?? ''}
-                                            onChange={(e) => { const val = e.target.value ? parseFloat(e.target.value) : undefined; setCurrentTrade(prev => ({ ...prev, profitTarget: val })); }}
-                                            onBlur={() => onUpdateTrade({ ...currentTrade })}
+                                            onChange={(e) => {
+                                                const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                                persistTradeDraft({ ...currentTrade, profitTarget: val });
+                                            }}
                                             className="w-24 text-right text-[13px] font-mono font-semibold outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
@@ -2066,8 +2079,10 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.stopLoss ?? ''}
-                                            onChange={(e) => { const val = e.target.value ? parseFloat(e.target.value) : undefined; setCurrentTrade(prev => ({ ...prev, stopLoss: val })); }}
-                                            onBlur={() => onUpdateTrade({ ...currentTrade })}
+                                            onChange={(e) => {
+                                                const val = e.target.value ? parseFloat(e.target.value) : undefined;
+                                                persistTradeDraft({ ...currentTrade, stopLoss: val });
+                                            }}
                                             className="w-24 text-right text-[13px] font-mono font-semibold outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
