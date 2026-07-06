@@ -521,6 +521,51 @@ const Reports: React.FC<ReportsProps> = ({
       return strategyNameLookup.get(rawSetup.toLowerCase()) || rawSetup;
   };
 
+  const getPriceBucket = (trade: Trade) => {
+      const entryPrice = Number(trade.entryPrice) || 0;
+      const priceBuckets = language === 'cn'
+          ? [
+              { key: 'lt-1', label: '低于 1', shortLabel: '<1', min: Number.NEGATIVE_INFINITY, max: 1 },
+              { key: '1-5', label: '1 - 5', shortLabel: '1-5', min: 1, max: 5 },
+              { key: '5-20', label: '5 - 20', shortLabel: '5-20', min: 5, max: 20 },
+              { key: '20-100', label: '20 - 100', shortLabel: '20-100', min: 20, max: 100 },
+              { key: '100-500', label: '100 - 500', shortLabel: '100-500', min: 100, max: 500 },
+              { key: '500-plus', label: '500 以上', shortLabel: '500+', min: 500, max: Number.POSITIVE_INFINITY },
+          ]
+          : [
+              { key: 'lt-1', label: 'Below 1', shortLabel: '<1', min: Number.NEGATIVE_INFINITY, max: 1 },
+              { key: '1-5', label: '1 - 5', shortLabel: '1-5', min: 1, max: 5 },
+              { key: '5-20', label: '5 - 20', shortLabel: '5-20', min: 5, max: 20 },
+              { key: '20-100', label: '20 - 100', shortLabel: '20-100', min: 20, max: 100 },
+              { key: '100-500', label: '100 - 500', shortLabel: '100-500', min: 100, max: 500 },
+              { key: '500-plus', label: '500+', shortLabel: '500+', min: 500, max: Number.POSITIVE_INFINITY },
+          ];
+
+      return priceBuckets.find(bucket => entryPrice >= bucket.min && entryPrice < bucket.max) || priceBuckets[priceBuckets.length - 1];
+  };
+  
+  // Calendar Report State
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const [reportResult, setReportResult] = useState<string | null>(null);
+  const [savedReports, setSavedReports] = useState<Report[]>([]);
+  const [isLoadingReports, setIsLoadingReports] = useState(false);
+  const [viewingReport, setViewingReport] = useState<Report | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [previousReports, setPreviousReports] = useState<Report[]>([]);
+  const accounts = tradingAccounts || [];
+  const selectedAccountId = externalAccountId || 'all';
+  const setSelectedAccountId = (accountId: string) => onAccountChange?.(accountId);
+  const trades = useMemo(() => {
+      return allTrades.filter(trade => {
+          if (selectedAccountId !== 'all' && trade.accountId !== selectedAccountId) return false;
+          const tradeTime = new Date(trade.entryDate).getTime();
+          if (activeDatePreset === 'All Time' || activeDatePreset === '所有时间') return true;
+          return tradeTime >= dateRange.start.getTime() && tradeTime <= dateRange.end.getTime();
+      });
+  }, [allTrades, selectedAccountId, activeDatePreset, dateRange]);
+
   const normalizedTagCategories = useMemo(() => {
       const ordered = [...tagCategories];
       const knownIds = new Set(ordered.map(category => category.id));
@@ -584,51 +629,6 @@ const Reports: React.FC<ReportsProps> = ({
   const activeTagReportCategory = useMemo(() => {
       return availableTagReportCategories.find(category => category.id === tagReportCategoryId) || availableTagReportCategories[0] || null;
   }, [availableTagReportCategories, tagReportCategoryId]);
-
-  const getPriceBucket = (trade: Trade) => {
-      const entryPrice = Number(trade.entryPrice) || 0;
-      const priceBuckets = language === 'cn'
-          ? [
-              { key: 'lt-1', label: '低于 1', shortLabel: '<1', min: Number.NEGATIVE_INFINITY, max: 1 },
-              { key: '1-5', label: '1 - 5', shortLabel: '1-5', min: 1, max: 5 },
-              { key: '5-20', label: '5 - 20', shortLabel: '5-20', min: 5, max: 20 },
-              { key: '20-100', label: '20 - 100', shortLabel: '20-100', min: 20, max: 100 },
-              { key: '100-500', label: '100 - 500', shortLabel: '100-500', min: 100, max: 500 },
-              { key: '500-plus', label: '500 以上', shortLabel: '500+', min: 500, max: Number.POSITIVE_INFINITY },
-          ]
-          : [
-              { key: 'lt-1', label: 'Below 1', shortLabel: '<1', min: Number.NEGATIVE_INFINITY, max: 1 },
-              { key: '1-5', label: '1 - 5', shortLabel: '1-5', min: 1, max: 5 },
-              { key: '5-20', label: '5 - 20', shortLabel: '5-20', min: 5, max: 20 },
-              { key: '20-100', label: '20 - 100', shortLabel: '20-100', min: 20, max: 100 },
-              { key: '100-500', label: '100 - 500', shortLabel: '100-500', min: 100, max: 500 },
-              { key: '500-plus', label: '500+', shortLabel: '500+', min: 500, max: Number.POSITIVE_INFINITY },
-          ];
-
-      return priceBuckets.find(bucket => entryPrice >= bucket.min && entryPrice < bucket.max) || priceBuckets[priceBuckets.length - 1];
-  };
-  
-  // Calendar Report State
-  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
-
-  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
-  const [reportResult, setReportResult] = useState<string | null>(null);
-  const [savedReports, setSavedReports] = useState<Report[]>([]);
-  const [isLoadingReports, setIsLoadingReports] = useState(false);
-  const [viewingReport, setViewingReport] = useState<Report | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [previousReports, setPreviousReports] = useState<Report[]>([]);
-  const accounts = tradingAccounts || [];
-  const selectedAccountId = externalAccountId || 'all';
-  const setSelectedAccountId = (accountId: string) => onAccountChange?.(accountId);
-  const trades = useMemo(() => {
-      return allTrades.filter(trade => {
-          if (selectedAccountId !== 'all' && trade.accountId !== selectedAccountId) return false;
-          const tradeTime = new Date(trade.entryDate).getTime();
-          if (activeDatePreset === 'All Time' || activeDatePreset === '所有时间') return true;
-          return tradeTime >= dateRange.start.getTime() && tradeTime <= dateRange.end.getTime();
-      });
-  }, [allTrades, selectedAccountId, activeDatePreset, dateRange]);
 
   useEffect(() => {
       const fetchUser = async () => {
