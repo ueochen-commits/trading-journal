@@ -185,6 +185,37 @@ type WinLossDetailSummary = {
   chartData: WinLossDetailChartPoint[];
 };
 
+type CompareGroupKey = 'left' | 'right';
+type CompareSideFilter = 'all' | 'long' | 'short';
+type ComparePnlFilter = 'all' | 'win' | 'loss';
+type CompareMultiSelectField = 'symbols' | 'tags';
+type CompareSelectField = 'side' | 'pnl';
+type CompareCalendarField = 'startDate' | 'endDate';
+type CompareGroupFilters = {
+  symbols: string[];
+  tags: string[];
+  side: CompareSideFilter;
+  pnl: ComparePnlFilter;
+  startDate: string;
+  endDate: string;
+};
+type CompareGroupSummary = WinLossDetailSummary & {
+  matchedTradeCount: number;
+  evaluatedTradeCount: number;
+  maxConsecutiveWins: number;
+  maxConsecutiveLosses: number;
+  winRate: number;
+};
+
+const createDefaultCompareGroupFilters = (): CompareGroupFilters => ({
+  symbols: [],
+  tags: [],
+  side: 'all',
+  pnl: 'all',
+  startDate: '',
+  endDate: '',
+});
+
 const DEFAULT_REPORT_PREFERENCES: ReportPreferences = {
   summaryMetricIds: getDefaultSummaryLayout(),
   pnlDisplayMode: 'net',
@@ -503,6 +534,26 @@ const Reports: React.FC<ReportsProps> = ({
   const [expandedDayTimeMetricCategory, setExpandedDayTimeMetricCategory] = useState<string | null>('time');
   const [hasHydratedReportPreferences, setHasHydratedReportPreferences] = useState(false);
   const lastSavedReportPreferencesRef = useRef<string | null>(null);
+  const [compareDraftFilters, setCompareDraftFilters] = useState<Record<CompareGroupKey, CompareGroupFilters>>({
+      left: createDefaultCompareGroupFilters(),
+      right: createDefaultCompareGroupFilters(),
+  });
+  const [compareAppliedFilters, setCompareAppliedFilters] = useState<Record<CompareGroupKey, CompareGroupFilters>>({
+      left: createDefaultCompareGroupFilters(),
+      right: createDefaultCompareGroupFilters(),
+  });
+  const [compareHasGenerated, setCompareHasGenerated] = useState(false);
+  const [activeCompareMultiSelect, setActiveCompareMultiSelect] = useState<{ group: CompareGroupKey; field: CompareMultiSelectField } | null>(null);
+  const [compareSearch, setCompareSearch] = useState<Record<CompareGroupKey, Record<CompareMultiSelectField, string>>>({
+      left: { symbols: '', tags: '' },
+      right: { symbols: '', tags: '' },
+  });
+  const [activeCompareSelect, setActiveCompareSelect] = useState<{ group: CompareGroupKey; field: CompareSelectField } | null>(null);
+  const [activeCompareCalendar, setActiveCompareCalendar] = useState<{ group: CompareGroupKey; field: CompareCalendarField } | null>(null);
+  const [compareCalendarViewDate, setCompareCalendarViewDate] = useState<Record<CompareGroupKey, Date>>({
+      left: new Date(),
+      right: new Date(),
+  });
 
   const getDisplayPnl = (trade: Trade) => {
       const grossPnl = Number(trade.pnl) || 0;
@@ -636,6 +687,36 @@ const Reports: React.FC<ReportsProps> = ({
   const availableTagReportCategories = useMemo(() => {
       return normalizedTagCategories.filter(category => category.id !== 'setup');
   }, [normalizedTagCategories]);
+
+  const compareTagSuggestions = useMemo(() => {
+      const emptyLabel = language === 'cn' ? '未填写标签' : 'No tag';
+      const values = new Set<string>();
+
+      trades.forEach(trade => {
+          (trade.mistakes || []).forEach(value => {
+              const normalized = value.trim();
+              if (normalized) values.add(normalized);
+          });
+
+          Object.values(trade.customTags || {}).forEach(categoryValues => {
+              categoryValues.forEach(value => {
+                  const normalized = value.trim();
+                  if (normalized) values.add(normalized);
+              });
+          });
+      });
+
+      if (values.size === 0) {
+          return [emptyLabel];
+      }
+
+      return Array.from(values).sort((a, b) => a.localeCompare(b, language === 'cn' ? 'zh-CN' : 'en-US'));
+  }, [trades, language]);
+
+  const compareSymbolSuggestions = useMemo(() => {
+      const values = Array.from(new Set(trades.map(trade => getNormalizedSymbol(trade)).filter(Boolean)));
+      return values.sort((a, b) => a.localeCompare(b, 'en-US'));
+  }, [trades, language]);
 
   useEffect(() => {
       if (availableTagReportCategories.length === 0) return;
@@ -924,6 +1005,22 @@ const Reports: React.FC<ReportsProps> = ({
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [openDayTimeMetricPicker]);
+
+  useEffect(() => {
+      if (!activeCompareMultiSelect && !activeCompareSelect && !activeCompareCalendar) return;
+
+      const handlePointerDown = (event: PointerEvent) => {
+          const target = event.target;
+          if (!(target instanceof Element)) return;
+          if (target.closest('[data-compare-field-root]')) return;
+          setActiveCompareMultiSelect(null);
+          setActiveCompareSelect(null);
+          setActiveCompareCalendar(null);
+      };
+
+      document.addEventListener('pointerdown', handlePointerDown);
+      return () => document.removeEventListener('pointerdown', handlePointerDown);
+  }, [activeCompareMultiSelect, activeCompareSelect, activeCompareCalendar]);
 
   useEffect(() => {
       if (!currentUserId) return;
@@ -3484,9 +3581,133 @@ const Reports: React.FC<ReportsProps> = ({
       );
   };
 
+  const formatCompareDateValue = (value: string) => {
+      if (!value) return '';
+      const date = new Date(`${value}T00:00:00`);
+      if (Number.isNaN(date.getTime())) return '';
+      return language === 'cn'
+          ? date.toLocaleDateString('zh-CN')
+          : date.toLocaleDateString('en-US');
+  };
+
+  const renderCompareMiniCalendar = (group: CompareGroupKey, field: CompareCalendarField, baseDate: Date) => {
+      const { days, firstDay } = getDaysInMonth(baseDate);
+      const dayCells = [];
+      const selectedValue = compareDraftFilters[group][field];
+
+      for (let i = 0; i < firstDay; i++) {
+          dayCells.push(<div key={`compare-empty-${group}-${field}-${i}`} className="h-8 w-8" />);
+      }
+
+      for (let day = 1; day <= days; day++) {
+          const current = new Date(baseDate.getFullYear(), baseDate.getMonth(), day);
+          const currentValue = current.toLocaleDateString('en-CA');
+          const isSelected = currentValue === selectedValue;
+
+          dayCells.push(
+              <button
+                  key={`${group}-${field}-${day}`}
+                  type="button"
+                  className={`flex h-8 w-8 items-center justify-center rounded-full text-xs transition-all ${
+                      isSelected
+                          ? 'bg-indigo-600 font-bold text-white'
+                          : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+                  }`}
+                  onClick={() => {
+                      setCompareDraftFilters(currentState => ({
+                          ...currentState,
+                          [group]: {
+                              ...currentState[group],
+                              [field]: currentValue,
+                          },
+                      }));
+                      setActiveCompareCalendar(null);
+                  }}
+              >
+                  {day}
+              </button>
+          );
+      }
+
+      return (
+          <div className="w-full">
+              <div className="mb-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200">
+                  {baseDate.toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'short' })} {baseDate.getFullYear()}
+              </div>
+              <div className="grid grid-cols-7 justify-items-center gap-y-1">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+                      <div key={`compare-day-${day}-${index}`} className="text-[10px] font-bold text-slate-400">{day}</div>
+                  ))}
+                  {dayCells}
+              </div>
+          </div>
+      );
+  };
+
   const currentAccountName = selectedAccountId === 'all'
       ? (language === 'cn' ? '所有账户' : 'All Accounts')
       : accounts.find(account => account.id === selectedAccountId)?.name || (language === 'cn' ? '未知账户' : 'Unknown');
+
+  const compareSideOptions: Array<{ id: CompareSideFilter; label: string }> = [
+      { id: 'all', label: language === 'cn' ? '全部' : 'All' },
+      { id: 'long', label: language === 'cn' ? '多' : 'Long' },
+      { id: 'short', label: language === 'cn' ? '空' : 'Short' },
+  ];
+  const comparePnlOptions: Array<{ id: ComparePnlFilter; label: string }> = [
+      { id: 'all', label: language === 'cn' ? '全部' : 'All' },
+      { id: 'win', label: language === 'cn' ? '盈利' : 'Win' },
+      { id: 'loss', label: language === 'cn' ? '亏损' : 'Loss' },
+  ];
+
+  const updateCompareDraftFilters = (
+      group: CompareGroupKey,
+      updater: (current: CompareGroupFilters) => CompareGroupFilters,
+  ) => {
+      setCompareDraftFilters(current => ({
+          ...current,
+          [group]: updater(current[group]),
+      }));
+  };
+
+  const toggleCompareMultiValue = (group: CompareGroupKey, field: CompareMultiSelectField, value: string) => {
+      updateCompareDraftFilters(group, current => {
+          const nextValues = current[field].includes(value)
+              ? current[field].filter(item => item !== value)
+              : [...current[field], value];
+          return {
+              ...current,
+              [field]: nextValues,
+          };
+      });
+  };
+
+  const resetCompareFilters = () => {
+      const next = {
+          left: createDefaultCompareGroupFilters(),
+          right: createDefaultCompareGroupFilters(),
+      };
+      setCompareDraftFilters(next);
+      setCompareAppliedFilters(next);
+      setCompareHasGenerated(false);
+      setActiveCompareMultiSelect(null);
+      setActiveCompareSelect(null);
+      setActiveCompareCalendar(null);
+      setCompareSearch({
+          left: { symbols: '', tags: '' },
+          right: { symbols: '', tags: '' },
+      });
+  };
+
+  const generateCompareReport = () => {
+      setCompareAppliedFilters({
+          left: { ...compareDraftFilters.left },
+          right: { ...compareDraftFilters.right },
+      });
+      setCompareHasGenerated(true);
+      setActiveCompareMultiSelect(null);
+      setActiveCompareSelect(null);
+      setActiveCompareCalendar(null);
+  };
 
   const ReportRangeIcon = () => (
       <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
@@ -5577,6 +5798,113 @@ const Reports: React.FC<ReportsProps> = ({
           },
       };
   }, [winningTradesDetail, losingTradesDetail, winningTradePnlsDetail, losingTradePnlsDetail, language, pnlDisplayMode]);
+
+  const getTradeCompareTags = (trade: Trade) => {
+      const values = new Set<string>();
+      (trade.mistakes || []).forEach(value => {
+          const normalized = value.trim();
+          if (normalized) values.add(normalized);
+      });
+      Object.values(trade.customTags || {}).forEach(categoryValues => {
+          categoryValues.forEach(value => {
+              const normalized = value.trim();
+              if (normalized) values.add(normalized);
+          });
+      });
+      return values;
+  };
+
+  const compareFilteredTrades = useMemo(() => {
+      const applyFilters = (filters: CompareGroupFilters) => {
+          return trades.filter(trade => {
+              if (filters.symbols.length > 0 && !filters.symbols.includes(getNormalizedSymbol(trade))) return false;
+
+              if (filters.tags.length > 0) {
+                  const tags = getTradeCompareTags(trade);
+                  const hasMatch = filters.tags.some(tag => tags.has(tag));
+                  if (!hasMatch) return false;
+              }
+
+              if (filters.side === 'long' && trade.direction !== Direction.LONG) return false;
+              if (filters.side === 'short' && trade.direction !== Direction.SHORT) return false;
+
+              const entryTime = new Date(trade.entryDate).getTime();
+              if (filters.startDate) {
+                  const startTime = new Date(`${filters.startDate}T00:00:00`).getTime();
+                  if (Number.isFinite(startTime) && entryTime < startTime) return false;
+              }
+              if (filters.endDate) {
+                  const endTime = new Date(`${filters.endDate}T23:59:59.999`).getTime();
+                  if (Number.isFinite(endTime) && entryTime > endTime) return false;
+              }
+
+              if (filters.pnl !== 'all') {
+                  if (!isClosedTrade(trade)) return false;
+                  const pnl = getDisplayPnl(trade);
+                  if (filters.pnl === 'win' && pnl <= 0) return false;
+                  if (filters.pnl === 'loss' && pnl >= 0) return false;
+              }
+
+              return true;
+          });
+      };
+
+      return {
+          left: applyFilters(compareAppliedFilters.left),
+          right: applyFilters(compareAppliedFilters.right),
+      };
+  }, [trades, compareAppliedFilters, pnlDisplayMode, language]);
+
+  const buildCompareGroupSummary = (subsetTrades: Trade[]): CompareGroupSummary => {
+      const baseSummary = buildWinLossDetailSummary(subsetTrades);
+      const closedSubsetTrades = subsetTrades.filter(isClosedTrade);
+      const chronologicalTradePnls = [...closedSubsetTrades]
+          .sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime())
+          .map(getDisplayPnl);
+      const winRate = closedSubsetTrades.length > 0
+          ? (baseSummary.numberOfWinningTrades / closedSubsetTrades.length) * 100
+          : 0;
+
+      return {
+          ...baseSummary,
+          matchedTradeCount: subsetTrades.length,
+          evaluatedTradeCount: closedSubsetTrades.length,
+          maxConsecutiveWins: getMaxConsecutiveCount(chronologicalTradePnls, pnl => pnl > 0),
+          maxConsecutiveLosses: getMaxConsecutiveCount(chronologicalTradePnls, pnl => pnl < 0),
+          winRate,
+      };
+  };
+
+  const compareSummaries = useMemo(() => ({
+      left: buildCompareGroupSummary(compareFilteredTrades.left),
+      right: buildCompareGroupSummary(compareFilteredTrades.right),
+  }), [compareFilteredTrades, pnlDisplayMode, language]);
+
+  const compareAnimationSignature = useMemo(() => {
+      const serialize = (points: WinLossDetailChartPoint[]) => points.map(point => `${point.date}:${point.value}`).join('|');
+      return [
+          JSON.stringify(compareAppliedFilters.left),
+          JSON.stringify(compareAppliedFilters.right),
+          compareSummaries.left.matchedTradeCount,
+          compareSummaries.right.matchedTradeCount,
+          compareSummaries.left.totalPnl,
+          compareSummaries.right.totalPnl,
+          serialize(compareSummaries.left.chartData),
+          serialize(compareSummaries.right.chartData),
+      ].join('||');
+  }, [compareAppliedFilters, compareSummaries]);
+  const previousCompareAnimationSignatureRef = useRef<string | null>(null);
+  const [shouldAnimateCompareCharts, setShouldAnimateCompareCharts] = useState(true);
+
+  useEffect(() => {
+      const hasChanged = previousCompareAnimationSignatureRef.current !== compareAnimationSignature;
+      previousCompareAnimationSignatureRef.current = compareAnimationSignature;
+      if (hasChanged) {
+          setShouldAnimateCompareCharts(true);
+      }
+      const timer = window.setTimeout(() => setShouldAnimateCompareCharts(false), 760);
+      return () => window.clearTimeout(timer);
+  }, [compareAnimationSignature]);
 
   const winsLossesChartAnimationSignature = useMemo(() => {
       const serialize = (points: WinLossDetailChartPoint[]) => points.map(point => `${point.date}:${point.value}`).join('|');
@@ -9633,6 +9961,539 @@ const Reports: React.FC<ReportsProps> = ({
           </div>
       )}
 
+      {activeTab === 'compare' && (
+          <div className="space-y-[14px]">
+              <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                  {([
+                      { key: 'left' as const, title: 'Group #1', summary: compareSummaries.left },
+                      { key: 'right' as const, title: 'Group #2', summary: compareSummaries.right },
+                  ]).map(group => {
+                      const filters = compareDraftFilters[group.key];
+                      const symbolSearch = compareSearch[group.key].symbols.trim().toLowerCase();
+                      const tagSearch = compareSearch[group.key].tags.trim().toLowerCase();
+                      const visibleSymbolSuggestions = compareSymbolSuggestions
+                          .filter(item => !filters.symbols.includes(item))
+                          .filter(item => !symbolSearch || item.toLowerCase().includes(symbolSearch))
+                          .slice(0, 10);
+                      const visibleTagSuggestions = compareTagSuggestions
+                          .filter(item => !filters.tags.includes(item))
+                          .filter(item => !tagSearch || item.toLowerCase().includes(tagSearch))
+                          .slice(0, 10);
+                      const matchedLabel = language === 'cn'
+                          ? `${group.summary.matchedTradeCount} 笔交易匹配`
+                          : `${group.summary.matchedTradeCount} Trades Matched`;
+
+                      const renderChipButton = (value: string, field: CompareMultiSelectField) => (
+                          <span className="inline-flex max-w-full items-center rounded-full bg-[#ece8f7] px-[10px] py-[3px] text-[12px] font-semibold text-[#4b35b8]">
+                              <span className="truncate">{value}</span>
+                              <button
+                                  type="button"
+                                  onClick={(event) => {
+                                      event.stopPropagation();
+                                      toggleCompareMultiValue(group.key, field, value);
+                                  }}
+                                  className="ml-[6px] inline-flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#d8d0f2] text-[#6a55cf]"
+                              >
+                                  <X className="h-[10px] w-[10px]" />
+                              </button>
+                          </span>
+                      );
+
+                      return (
+                          <section key={group.key} className="overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="border-b border-[#eceff3] px-[22px] py-[14px]">
+                                  <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
+                                      {group.title}{compareHasGenerated ? ` (${matchedLabel})` : ''}
+                                  </h3>
+                              </div>
+                              <div className="grid grid-cols-1 gap-[12px] px-[22px] py-[22px] md:grid-cols-[112px_minmax(0,1fr)_112px_minmax(0,1fr)] md:items-start md:gap-x-[20px]">
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '标的' : 'Symbol'}</div>
+                                  <div className="relative min-w-0" data-compare-field-root>
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setActiveCompareMultiSelect(current => current?.group === group.key && current.field === 'symbols' ? null : { group: group.key, field: 'symbols' });
+                                              setActiveCompareSelect(null);
+                                              setActiveCompareCalendar(null);
+                                          }}
+                                          className="flex min-h-[38px] w-full items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[10px] py-[6px] text-left text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                      >
+                                          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-[6px]">
+                                              {filters.symbols.length === 0 ? (
+                                                  <span className="text-[#9aa3af]">{language === 'cn' ? '选择标的' : 'Select symbols'}</span>
+                                              ) : filters.symbols.length === 1 ? (
+                                                  renderChipButton(filters.symbols[0], 'symbols')
+                                              ) : (
+                                                  <>
+                                                      {renderChipButton(filters.symbols[0], 'symbols')}
+                                                      <span className="text-[13px] font-semibold text-[#4d5560]">+{filters.symbols.length - 1}</span>
+                                                  </>
+                                              )}
+                                          </div>
+                                      </button>
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[6px] shadow-[0_12px_32px_rgba(15,23,42,0.12)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                          activeCompareMultiSelect?.group === group.key && activeCompareMultiSelect.field === 'symbols'
+                                              ? 'max-h-[320px] scale-100 opacity-100'
+                                              : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
+                                      }`}>
+                                          <input
+                                              value={compareSearch[group.key].symbols}
+                                              onChange={(event) => setCompareSearch(current => ({
+                                                  ...current,
+                                                  [group.key]: { ...current[group.key], symbols: event.target.value },
+                                              }))}
+                                              placeholder={language === 'cn' ? '搜索标的' : 'Search symbols'}
+                                              className="mb-[6px] h-[34px] w-full rounded-[7px] border border-[#dfe4ec] px-[10px] text-[13px] text-[#20232a] outline-none placeholder:text-[#9aa3af] focus:border-[#6a55cf]"
+                                          />
+                                          <div className="max-h-[240px] overflow-y-auto">
+                                              {visibleSymbolSuggestions.length === 0 ? (
+                                                  <div className="px-[8px] py-[10px] text-[12px] font-medium text-[#9aa3af]">{language === 'cn' ? '没有可选标的' : 'No symbols found'}</div>
+                                              ) : visibleSymbolSuggestions.map(item => (
+                                                  <button
+                                                      key={`${group.key}-symbol-${item}`}
+                                                      type="button"
+                                                      onClick={() => toggleCompareMultiValue(group.key, 'symbols', item)}
+                                                      className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-medium text-[#303844] transition-colors hover:bg-[#f4f5f7]"
+                                                  >
+                                                      <span>{item}</span>
+                                                      {filters.symbols.includes(item) && <Check className="h-[14px] w-[14px] text-[#5f47c9]" />}
+                                                  </button>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '标签' : 'Tags'}</div>
+                                  <div className="relative min-w-0" data-compare-field-root>
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setActiveCompareMultiSelect(current => current?.group === group.key && current.field === 'tags' ? null : { group: group.key, field: 'tags' });
+                                              setActiveCompareSelect(null);
+                                              setActiveCompareCalendar(null);
+                                          }}
+                                          className="flex min-h-[38px] w-full items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[10px] py-[6px] text-left text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                      >
+                                          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-[6px]">
+                                              {filters.tags.length === 0 ? (
+                                                  <span className="text-[#9aa3af]">{language === 'cn' ? '选择标签' : 'Select tags'}</span>
+                                              ) : filters.tags.length === 1 ? (
+                                                  renderChipButton(filters.tags[0], 'tags')
+                                              ) : (
+                                                  <>
+                                                      {renderChipButton(filters.tags[0], 'tags')}
+                                                      <span className="text-[13px] font-semibold text-[#4d5560]">+{filters.tags.length - 1}</span>
+                                                  </>
+                                              )}
+                                          </div>
+                                      </button>
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[6px] shadow-[0_12px_32px_rgba(15,23,42,0.12)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                          activeCompareMultiSelect?.group === group.key && activeCompareMultiSelect.field === 'tags'
+                                              ? 'max-h-[320px] scale-100 opacity-100'
+                                              : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
+                                      }`}>
+                                          <input
+                                              value={compareSearch[group.key].tags}
+                                              onChange={(event) => setCompareSearch(current => ({
+                                                  ...current,
+                                                  [group.key]: { ...current[group.key], tags: event.target.value },
+                                              }))}
+                                              placeholder={language === 'cn' ? '搜索标签' : 'Search tags'}
+                                              className="mb-[6px] h-[34px] w-full rounded-[7px] border border-[#dfe4ec] px-[10px] text-[13px] text-[#20232a] outline-none placeholder:text-[#9aa3af] focus:border-[#6a55cf]"
+                                          />
+                                          <div className="max-h-[240px] overflow-y-auto">
+                                              {visibleTagSuggestions.length === 0 ? (
+                                                  <div className="px-[8px] py-[10px] text-[12px] font-medium text-[#9aa3af]">{language === 'cn' ? '没有可选标签' : 'No tags found'}</div>
+                                              ) : visibleTagSuggestions.map(item => (
+                                                  <button
+                                                      key={`${group.key}-tag-${item}`}
+                                                      type="button"
+                                                      onClick={() => toggleCompareMultiValue(group.key, 'tags', item)}
+                                                      className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-medium text-[#303844] transition-colors hover:bg-[#f4f5f7]"
+                                                  >
+                                                      <span>{item}</span>
+                                                      {filters.tags.includes(item) && <Check className="h-[14px] w-[14px] text-[#5f47c9]" />}
+                                                  </button>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  </div>
+
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '多空方向' : 'Side'}</div>
+                                  <div className="relative" data-compare-field-root>
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setActiveCompareSelect(current => current?.group === group.key && current.field === 'side' ? null : { group: group.key, field: 'side' });
+                                              setActiveCompareMultiSelect(null);
+                                              setActiveCompareCalendar(null);
+                                          }}
+                                          className="inline-flex h-[38px] w-full items-center justify-between rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                      >
+                                          <span>{compareSideOptions.find(option => option.id === filters.side)?.label}</span>
+                                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform ${activeCompareSelect?.group === group.key && activeCompareSelect.field === 'side' ? 'rotate-180' : ''}`} />
+                                      </button>
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                          activeCompareSelect?.group === group.key && activeCompareSelect.field === 'side'
+                                              ? 'max-h-[180px] scale-100 opacity-100'
+                                              : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                      }`}>
+                                          {compareSideOptions.map(option => (
+                                              <button
+                                                  key={`${group.key}-side-${option.id}`}
+                                                  type="button"
+                                                  onClick={() => {
+                                                      updateCompareDraftFilters(group.key, current => ({ ...current, side: option.id }));
+                                                      setActiveCompareSelect(null);
+                                                  }}
+                                                  className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                                      filters.side === option.id ? 'bg-[#e8e4f4] text-[#303044]' : 'text-[#303844] hover:bg-[#f1f2f4]'
+                                                  }`}
+                                              >
+                                                  {option.label}
+                                              </button>
+                                          ))}
+                                      </div>
+                                  </div>
+
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '开始日期' : 'Start date'}</div>
+                                  <div className="relative" data-compare-field-root>
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setActiveCompareCalendar(current => current?.group === group.key && current.field === 'startDate' ? null : { group: group.key, field: 'startDate' });
+                                              setActiveCompareMultiSelect(null);
+                                              setActiveCompareSelect(null);
+                                          }}
+                                          className="inline-flex h-[38px] w-full items-center justify-start rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                      >
+                                          <span className={filters.startDate ? 'text-[#20232a]' : 'text-[#9aa3af]'}>
+                                              {filters.startDate ? formatCompareDateValue(filters.startDate) : 'MM/DD/YY'}
+                                          </span>
+                                      </button>
+                                      <div className={`absolute left-0 top-full z-[90] mt-[8px] w-[280px] origin-top-left overflow-hidden rounded-[12px] border border-[#e3e7ee] bg-white p-[14px] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                          activeCompareCalendar?.group === group.key && activeCompareCalendar.field === 'startDate'
+                                              ? 'max-h-[360px] scale-100 opacity-100'
+                                              : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
+                                      }`}>
+                                          <div className="mb-[10px] flex items-center justify-between">
+                                              <button
+                                                  type="button"
+                                                  onClick={() => setCompareCalendarViewDate(current => ({
+                                                      ...current,
+                                                      [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() - 1, 1),
+                                                  }))}
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                              >
+                                                  <ChevronLeft className="h-[16px] w-[16px]" />
+                                              </button>
+                                              <div className="text-[14px] font-bold text-[#20232a]">
+                                                  {compareCalendarViewDate[group.key].toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' })}
+                                              </div>
+                                              <button
+                                                  type="button"
+                                                  onClick={() => setCompareCalendarViewDate(current => ({
+                                                      ...current,
+                                                      [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() + 1, 1),
+                                                  }))}
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                              >
+                                                  <ChevronRight className="h-[16px] w-[16px]" />
+                                              </button>
+                                          </div>
+                                          {renderCompareMiniCalendar(group.key, 'startDate', compareCalendarViewDate[group.key])}
+                                      </div>
+                                  </div>
+
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '盈亏状态' : 'Trade P&L'}</div>
+                                  <div className="relative" data-compare-field-root>
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setActiveCompareSelect(current => current?.group === group.key && current.field === 'pnl' ? null : { group: group.key, field: 'pnl' });
+                                              setActiveCompareMultiSelect(null);
+                                              setActiveCompareCalendar(null);
+                                          }}
+                                          className="inline-flex h-[38px] w-full items-center justify-between rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                      >
+                                          <span>{comparePnlOptions.find(option => option.id === filters.pnl)?.label}</span>
+                                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform ${activeCompareSelect?.group === group.key && activeCompareSelect.field === 'pnl' ? 'rotate-180' : ''}`} />
+                                      </button>
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                          activeCompareSelect?.group === group.key && activeCompareSelect.field === 'pnl'
+                                              ? 'max-h-[180px] scale-100 opacity-100'
+                                              : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                      }`}>
+                                          {comparePnlOptions.map(option => (
+                                              <button
+                                                  key={`${group.key}-pnl-${option.id}`}
+                                                  type="button"
+                                                  onClick={() => {
+                                                      updateCompareDraftFilters(group.key, current => ({ ...current, pnl: option.id }));
+                                                      setActiveCompareSelect(null);
+                                                  }}
+                                                  className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                                      filters.pnl === option.id ? 'bg-[#e8e4f4] text-[#303044]' : 'text-[#303844] hover:bg-[#f1f2f4]'
+                                                  }`}
+                                              >
+                                                  {option.label}
+                                              </button>
+                                          ))}
+                                      </div>
+                                  </div>
+
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '结束日期' : 'End date'}</div>
+                                  <div className="relative" data-compare-field-root>
+                                      <button
+                                          type="button"
+                                          onClick={() => {
+                                              setActiveCompareCalendar(current => current?.group === group.key && current.field === 'endDate' ? null : { group: group.key, field: 'endDate' });
+                                              setActiveCompareMultiSelect(null);
+                                              setActiveCompareSelect(null);
+                                          }}
+                                          className="inline-flex h-[38px] w-full items-center justify-start rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                      >
+                                          <span className={filters.endDate ? 'text-[#20232a]' : 'text-[#9aa3af]'}>
+                                              {filters.endDate ? formatCompareDateValue(filters.endDate) : 'MM/DD/YY'}
+                                          </span>
+                                      </button>
+                                      <div className={`absolute left-0 top-full z-[90] mt-[8px] w-[280px] origin-top-left overflow-hidden rounded-[12px] border border-[#e3e7ee] bg-white p-[14px] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                          activeCompareCalendar?.group === group.key && activeCompareCalendar.field === 'endDate'
+                                              ? 'max-h-[360px] scale-100 opacity-100'
+                                              : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
+                                      }`}>
+                                          <div className="mb-[10px] flex items-center justify-between">
+                                              <button
+                                                  type="button"
+                                                  onClick={() => setCompareCalendarViewDate(current => ({
+                                                      ...current,
+                                                      [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() - 1, 1),
+                                                  }))}
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                              >
+                                                  <ChevronLeft className="h-[16px] w-[16px]" />
+                                              </button>
+                                              <div className="text-[14px] font-bold text-[#20232a]">
+                                                  {compareCalendarViewDate[group.key].toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' })}
+                                              </div>
+                                              <button
+                                                  type="button"
+                                                  onClick={() => setCompareCalendarViewDate(current => ({
+                                                      ...current,
+                                                      [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() + 1, 1),
+                                                  }))}
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                              >
+                                                  <ChevronRight className="h-[16px] w-[16px]" />
+                                              </button>
+                                          </div>
+                                          {renderCompareMiniCalendar(group.key, 'endDate', compareCalendarViewDate[group.key])}
+                                      </div>
+                                  </div>
+                              </div>
+                          </section>
+                      );
+                  })}
+              </div>
+
+              <div className="flex justify-end gap-[10px]">
+                  <button
+                      type="button"
+                      onClick={resetCompareFilters}
+                      className="inline-flex h-[38px] items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[16px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc]"
+                  >
+                      {language === 'cn' ? '重置' : 'Reset'}
+                  </button>
+                  <button
+                      type="button"
+                      onClick={generateCompareReport}
+                      className="inline-flex h-[38px] items-center rounded-[8px] bg-[#6b55cf] px-[16px] text-[13px] font-semibold text-white shadow-[0_10px_24px_rgba(107,85,207,0.24)] transition-colors hover:bg-[#5d48c3]"
+                  >
+                      {language === 'cn' ? '生成报告' : 'Generate Report'}
+                  </button>
+              </div>
+
+              {compareHasGenerated && (
+                  <>
+                      <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                          {([
+                              { key: 'left' as const, title: 'Group #1', summary: compareSummaries.left },
+                              { key: 'right' as const, title: 'Group #2', summary: compareSummaries.right },
+                          ]).map(group => {
+                              const rows = [
+                                  [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(group.summary.totalPnl)],
+                                  [language === 'cn' ? '平均每日成交额' : 'Average daily volume', group.summary.avgDailyVolume.toFixed(2)],
+                                  [language === 'cn' ? '平均盈利交易' : 'Average winning trade', group.summary.avgWinningTrade === null ? 'N/A' : formatSignedMoney(group.summary.avgWinningTrade)],
+                                  [language === 'cn' ? '平均亏损交易' : 'Average losing trade', group.summary.avgLosingTrade === null ? 'N/A' : formatSignedMoney(group.summary.avgLosingTrade)],
+                                  [language === 'cn' ? '盈利交易数量' : 'Number of winning trades', group.summary.numberOfWinningTrades],
+                                  [language === 'cn' ? '亏损交易数量' : 'Number of losing trades', group.summary.numberOfLosingTrades],
+                                  [language === 'cn' ? '总佣金' : 'Total commissions', formatSignedMoney(group.summary.totalCommissions)],
+                                  [language === 'cn' ? '最大连续盈利' : 'Max consecutive wins', group.summary.maxConsecutiveWins],
+                                  [language === 'cn' ? '最大连续亏损' : 'Max consecutive losses', group.summary.maxConsecutiveLosses],
+                              ];
+
+                              return (
+                                  <section key={`${group.key}-stats`} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px]">
+                                          <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
+                                              {language === 'cn' ? `统计（${group.title}）` : `STATISTICS (${group.title.toUpperCase()})`}
+                                          </h3>
+                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                              {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
+                                          </div>
+                                      </div>
+                                      <div>
+                                          {rows.map(([label, value], index) => (
+                                              <div
+                                                  key={`${group.key}-${label}`}
+                                                  className={`flex items-center justify-between gap-[18px] px-[24px] py-[11px] text-[13px] ${
+                                                      index < rows.length - 1 ? 'border-b border-[#eceff3]' : ''
+                                                  }`}
+                                              >
+                                                  <span className="font-semibold text-[#6b7280]">{label}</span>
+                                                  <span className="font-semibold tabular-nums text-[#4d5560]">{value}</span>
+                                              </div>
+                                          ))}
+                                      </div>
+                                  </section>
+                              );
+                          })}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                          {([
+                              { key: 'left' as const, title: 'Group #1', summary: compareSummaries.left },
+                              { key: 'right' as const, title: 'Group #2', summary: compareSummaries.right },
+                          ]).map(group => {
+                              const winCount = group.summary.numberOfWinningTrades;
+                              const lossCount = group.summary.numberOfLosingTrades;
+                              const total = Math.max(1, winCount + lossCount);
+                              const winPercent = (winCount / total) * 100;
+
+                              return (
+                                  <section key={`${group.key}-evaluation`} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px]">
+                                          <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
+                                              {language === 'cn' ? `综合评估（${group.title}）` : `OVERALL EVALUATION (${group.title.toUpperCase()})`}
+                                          </h3>
+                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                              {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
+                                          </div>
+                                      </div>
+                                      <div className="flex flex-col items-center justify-between gap-[24px] px-[24px] py-[18px] md:flex-row">
+                                          <div className="relative flex h-[180px] w-[180px] items-center justify-center">
+                                              <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+                                                  <circle cx="60" cy="60" r="44" fill="none" stroke="#edf1f5" strokeWidth="10" />
+                                                  <circle
+                                                      cx="60"
+                                                      cy="60"
+                                                      r="44"
+                                                      fill="none"
+                                                      stroke="#52c69a"
+                                                      strokeWidth="10"
+                                                      strokeLinecap="round"
+                                                      strokeDasharray={`${winPercent} ${100 - winPercent}`}
+                                                      pathLength={100}
+                                                  />
+                                                  <circle
+                                                      cx="60"
+                                                      cy="60"
+                                                      r="44"
+                                                      fill="none"
+                                                      stroke="#ff6468"
+                                                      strokeWidth="10"
+                                                      strokeLinecap="round"
+                                                      strokeDasharray={`${100 - winPercent} ${winPercent}`}
+                                                      strokeDashoffset={-winPercent}
+                                                      pathLength={100}
+                                                  />
+                                              </svg>
+                                              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                                  <div className="text-[22px] font-bold text-[#52c69a]">{group.summary.winRate.toFixed(0)}<span className="ml-[2px] text-[12px]">%</span></div>
+                                                  <div className="mt-[4px] text-[11px] font-bold uppercase tracking-[0.08em] text-[#86d8b8]">
+                                                      {language === 'cn' ? '胜率' : 'WINRATE'}
+                                                  </div>
+                                              </div>
+                                          </div>
+                                          <div className="flex flex-1 flex-col gap-[16px]">
+                                              <div className="flex items-center gap-[12px]">
+                                                  <span className="h-[22px] w-[22px] rounded-[5px] bg-[#52c69a]" />
+                                                  <div>
+                                                      <div className="text-[30px] font-bold leading-none text-[#2f3742]">{winCount}</div>
+                                                      <div className="mt-[4px] text-[14px] font-medium text-[#7b828c]">{language === 'cn' ? '盈利' : 'winners'}</div>
+                                                  </div>
+                                              </div>
+                                              <div className="flex items-center gap-[12px]">
+                                                  <span className="h-[22px] w-[22px] rounded-[5px] bg-[#ff6468]" />
+                                                  <div>
+                                                      <div className="text-[30px] font-bold leading-none text-[#2f3742]">{lossCount}</div>
+                                                      <div className="mt-[4px] text-[14px] font-medium text-[#7b828c]">{language === 'cn' ? '亏损' : 'losers'}</div>
+                                                  </div>
+                                              </div>
+                                          </div>
+                                      </div>
+                                  </section>
+                              );
+                          })}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                          {([
+                              {
+                                  key: 'left' as const,
+                                  title: pnlDisplayMode === 'net'
+                                      ? (language === 'cn' ? '每日净累计盈亏（Group #1）' : 'DAILY NET CUMULATIVE P&L (GROUP #1)')
+                                      : (language === 'cn' ? '每日总累计盈亏（Group #1）' : 'DAILY GROSS CUMULATIVE P&L (GROUP #1)'),
+                                  summary: compareSummaries.left,
+                                  chartId: 'compare-left',
+                              },
+                              {
+                                  key: 'right' as const,
+                                  title: pnlDisplayMode === 'net'
+                                      ? (language === 'cn' ? '每日净累计盈亏（Group #2）' : 'DAILY NET CUMULATIVE P&L (GROUP #2)')
+                                      : (language === 'cn' ? '每日总累计盈亏（Group #2）' : 'DAILY GROSS CUMULATIVE P&L (GROUP #2)'),
+                                  summary: compareSummaries.right,
+                                  chartId: 'compare-right',
+                              },
+                          ]).map(group => (
+                              <section key={`${group.key}-chart`} className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                  <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px]">
+                                      <div className="flex items-center gap-[10px]">
+                                          <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">{group.title}</h3>
+                                          <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                              {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
+                                          </span>
+                                      </div>
+                                      <OverviewInfoBadge />
+                                  </div>
+                                  <div className="h-[392px] px-[12px] pb-[12px] pt-[8px]">
+                                      {group.summary.chartData.length === 0 ? (
+                                          <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d]">
+                                              {language === 'cn' ? '暂无可用图表数据' : 'No chart data available'}
+                                          </div>
+                                      ) : renderWinLossDetailedChart({
+                                          chartId: group.chartId,
+                                          data: group.summary.chartData,
+                                          color: '#5d53d8',
+                                          gradientStops: {
+                                              start: group.summary.totalPnl >= 0 ? '#6bd1a4' : '#ff7b86',
+                                              end: group.summary.totalPnl >= 0 ? '#eef8f4' : '#fff0f1',
+                                          },
+                                          title: pnlDisplayMode === 'net'
+                                              ? (language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative')
+                                              : (language === 'cn' ? '总盈亏 - 累计' : 'Gross P&L - cumulative'),
+                                          animate: shouldAnimateCompareCharts,
+                                      })}
+                                  </div>
+                                  <ReportCardLoadingOverlay radius={8} />
+                              </section>
+                          ))}
+                      </div>
+                  </>
+              )}
+          </div>
+      )}
+
       {/* --- AI Reports Tab --- */}
       {activeTab === 'ai' && (
           <div className="h-full">
@@ -9755,7 +10616,7 @@ const Reports: React.FC<ReportsProps> = ({
       )}
 
       {/* Placeholders for tabs not yet fully implemented */}
-      {['options', 'wins_losses', 'compare'].includes(activeTab) && (
+      {['options', 'wins_losses'].includes(activeTab) && (
            <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 border-dashed text-slate-400">
                <Activity className="w-16 h-16 mb-4 opacity-20" />
                <p className="font-medium">This report view is coming soon.</p>
