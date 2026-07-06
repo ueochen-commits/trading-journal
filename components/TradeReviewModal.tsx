@@ -639,12 +639,12 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         }}
                         onDragEnd={() => onDragEnd()}
                         onClick={(e) => e.preventDefault()}
-                        className="flex h-[22px] w-[18px] cursor-grab active:cursor-grabbing items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-400 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 hover:text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500 dark:hover:border-slate-600"
+                        className="flex h-[20px] w-[14px] cursor-grab active:cursor-grabbing items-center justify-center text-slate-400 transition-colors hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-400"
                         aria-label={language === 'cn' ? '拖动分类排序' : 'Drag category to reorder'}
                     >
                         <span className="grid grid-cols-2 gap-[2px]">
                             {Array.from({ length: 6 }).map((_, index) => (
-                                <span key={index} className="h-[2.5px] w-[2.5px] rounded-full bg-current opacity-80" />
+                                <span key={index} className="h-[2px] w-[2px] rounded-full bg-current opacity-80" />
                             ))}
                         </span>
                     </button>
