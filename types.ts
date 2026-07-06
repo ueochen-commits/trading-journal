@@ -58,6 +58,26 @@ export interface Trade {
   accountId?: string; // Optional for backward compatibility, but populated in mocks
 }
 
+export type TagCategoryType = 'single' | 'multi';
+
+export type TagCategoryIconKey =
+  | 'mistake'
+  | 'setup'
+  | 'tag'
+  | 'mindset'
+  | 'session'
+  | 'flag';
+
+export interface TagCategoryDefinition {
+  id: string;
+  label: string;
+  options: string[];
+  type: TagCategoryType;
+  isSystem?: boolean;
+  iconKey: TagCategoryIconKey;
+  color: string;
+}
+
 export interface CalendarDay {
   date: string;
   pnl: number;

@@ -1,11 +1,23 @@
 import { supabase } from '../supabaseClient';
-import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, TradingAccount, ExchangeConnection } from '../types';
+import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, TradingAccount, ExchangeConnection, TagCategoryDefinition } from '../types';
+import { normalizeTagCategories } from '../utils/tagCategories';
 import { MOCK_TRADES } from '../constants';
 
 // 获取当前用户ID
 async function getCurrentUserId(): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser();
   return user?.id || null;
+}
+
+async function getExistingUserSettings(userId: string) {
+  const { data, error } = await supabase
+    .from('user_settings')
+    .select('settings, risk_settings')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) return { data: null, error };
+  return { data, error: null };
 }
 
 // ============ DB ↔ TS 映射工具 ============
@@ -136,6 +148,7 @@ async function seedDemoTrades(userId: string, accountId: string): Promise<void> 
     notes: trade.notes || '',
     review_notes: trade.reviewNotes || '',
     mistakes: JSON.stringify(trade.mistakes || []),
+    custom_tags: trade.customTags || {},
   }));
 
   const { error } = await supabase.from('trading_journals').insert(data);
@@ -178,6 +191,7 @@ export const userDataService = {
       disciplineRules: (disciplineRulesRes.data || []).map(dbToDisciplineRule),
       disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
       weeklyGoal: settingsRes.data?.settings?.weeklyGoal || null,
+      tagCategories: normalizeTagCategories(settingsRes.data?.settings?.tagCategories),
       riskSettings: (() => {
         const base = settingsRes.data?.risk_settings || null;
         const ruleDaily = ruleSettingsRes.data?.net_max_loss_per_day_enabled && ruleSettingsRes.data?.net_max_loss_per_day_value > 0
@@ -216,6 +230,7 @@ export const userDataService = {
       notes: trade.notes,
       review_notes: trade.reviewNotes || '',
       mistakes: JSON.stringify(trade.mistakes || []),
+      custom_tags: trade.customTags || {},
       emotions: trade.emotions
     });
 
@@ -244,6 +259,7 @@ export const userDataService = {
       notes: trade.notes,
       review_notes: trade.reviewNotes || '',
       mistakes: JSON.stringify(trade.mistakes || []),
+      custom_tags: trade.customTags || {},
       emotions: trade.emotions
     }).eq('id', id).eq('user_id', userId);
 
@@ -282,6 +298,7 @@ export const userDataService = {
       notes: trade.notes,
       review_notes: trade.reviewNotes || '',
       mistakes: JSON.stringify(trade.mistakes || []),
+      custom_tags: trade.customTags || {},
       emotions: trade.emotions
     }));
 
@@ -336,10 +353,53 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
+    const existingResult = await getExistingUserSettings(userId);
+    if (existingResult.error) return { error: existingResult.error };
+
     const { error } = await supabase.from('user_settings').upsert({
       user_id: userId,
-      settings,
+      settings: {
+        ...(existingResult.data?.settings || {}),
+        ...settings,
+      },
+      risk_settings: existingResult.data?.risk_settings || null,
       updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+    return { error };
+  },
+
+  async getTagCategories() {
+    const userId = await getCurrentUserId();
+    if (!userId) return { data: null, error: 'Not authenticated' };
+
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('settings')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    return {
+      data: normalizeTagCategories(data?.settings?.tagCategories),
+      error,
+    };
+  },
+
+  async saveTagCategories(tagCategories: TagCategoryDefinition[]) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const existingResult = await getExistingUserSettings(userId);
+    if (existingResult.error) return { error: existingResult.error };
+
+    const { error } = await supabase.from('user_settings').upsert({
+      user_id: userId,
+      settings: {
+        ...(existingResult.data?.settings || {}),
+        tagCategories,
+      },
+      risk_settings: existingResult.data?.risk_settings || null,
+      updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
 
     return { error };
@@ -365,22 +425,16 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
-    const { data: existing, error: existingError } = await supabase
-      .from('user_settings')
-      .select('settings')
-      .eq('user_id', userId)
-      .maybeSingle();
-
-    if (existingError) {
-      return { error: existingError };
-    }
+    const existingResult = await getExistingUserSettings(userId);
+    if (existingResult.error) return { error: existingResult.error };
 
     const { error } = await supabase.from('user_settings').upsert({
       user_id: userId,
       settings: {
-        ...(existing?.settings || {}),
+        ...(existingResult.data?.settings || {}),
         reportPreferences,
       },
+      risk_settings: existingResult.data?.risk_settings || null,
       updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id' });
 
@@ -392,11 +446,12 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
-    const { data: existing } = await supabase.from('user_settings').select('settings').eq('user_id', userId).single();
+    const existingResult = await getExistingUserSettings(userId);
+    if (existingResult.error) return { error: existingResult.error };
 
     const { error } = await supabase.from('user_settings').upsert({
       user_id: userId,
-      settings: existing?.settings || {},
+      settings: existingResult.data?.settings || {},
       risk_settings: riskSettings,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
@@ -409,14 +464,16 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return { error: 'Not authenticated' };
 
-    const { data: existing } = await supabase.from('user_settings').select('settings').eq('user_id', userId).single();
+    const existingResult = await getExistingUserSettings(userId);
+    if (existingResult.error) return { error: existingResult.error };
 
     const { error } = await supabase.from('user_settings').upsert({
       user_id: userId,
       settings: {
-        ...existing?.settings,
+        ...existingResult.data?.settings,
         weeklyGoal: goal
       },
+      risk_settings: existingResult.data?.risk_settings || null,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
 

@@ -89,8 +89,9 @@ import {
   Trade, Strategy, ChecklistItem, RiskSettings, DailyPlan,
   TrackerRule, Post, Notification, ShareIntent, DisciplineRule,
   DailyDisciplineRecord, WeeklyGoal, TradeStatus, Direction,
-  TradingAccount
+  TradingAccount, TagCategoryDefinition
 } from './types';
+import { normalizeTagCategories } from './utils/tagCategories';
 
 const PageContainer = ({ children }: { children?: React.ReactNode }) => (
     <div className="min-w-0 py-6 px-4 md:py-8 md:px-8 h-full overflow-y-auto bg-slate-50 dark:bg-slate-950 transition-colors">
@@ -183,6 +184,7 @@ const formatTradeFromDB = (trade: any): Trade => {
     reviewNotes: trade.review_notes || '',
     fees: trade.fees || 0,
     mistakes: trade.mistakes ? (typeof trade.mistakes === 'string' ? JSON.parse(trade.mistakes) : trade.mistakes) : [],
+    customTags: trade.custom_tags ? (typeof trade.custom_tags === 'string' ? JSON.parse(trade.custom_tags) : trade.custom_tags) : {},
     images: trade.screenshot_url ? [trade.screenshot_url] : [],
     rating: trade.rating || undefined,
     compliance: trade.compliance || undefined,
@@ -286,6 +288,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
   // Trading Accounts (从 Supabase 加载)
   const [tradingAccounts, setTradingAccounts] = useState<TradingAccount[]>([]);
+  const [tagCategories, setTagCategories] = useState<TagCategoryDefinition[]>(() => normalizeTagCategories(null));
 
   // 全局账户选择（持久化，跨页面同步）
   const [selectedAccountId, setSelectedAccountId] = useState<string>('all');
@@ -332,6 +335,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         if (result.disciplineHistory.length > 0) setDisciplineHistory(result.disciplineHistory);
         if (result.weeklyGoal) setWeeklyGoal(result.weeklyGoal);
         if (result.riskSettings) setRiskSettings(result.riskSettings);
+        if ((result as any).tagCategories) setTagCategories(normalizeTagCategories((result as any).tagCategories));
 
         // 确保 Demo Account 存在，并将 NULL account_id 的旧交易迁移过去
         const demoResult = await userDataService.ensureDefaultAccount();
@@ -502,6 +506,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       notes: trade.notes,
       review_notes: trade.reviewNotes || '',
       mistakes: JSON.stringify(trade.mistakes || []),
+      custom_tags: trade.customTags || {},
       screenshot_url: screenshotUrl
     }).select().single();
 
@@ -567,6 +572,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       notes: updated.notes,
       review_notes: updated.reviewNotes || '',
       mistakes: JSON.stringify(updated.mistakes || []),
+      custom_tags: updated.customTags || {},
       screenshot_url: screenshotUrl,
       rating: updated.rating || null,
       compliance: updated.compliance || null,
@@ -650,7 +656,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         setup: trade.setup,
         notes: trade.notes,
         review_notes: trade.reviewNotes || '',
-        mistakes: JSON.stringify(trade.mistakes || [])
+        mistakes: JSON.stringify(trade.mistakes || []),
+        custom_tags: trade.customTags || {}
       };
     });
 
@@ -683,19 +690,47 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const handleAddStrategy = async (strategy: Strategy) => {
     const { data, error } = await userDataService.saveStrategy(strategy);
     if (!error && data) {
-      setStrategies(prev => [{ ...strategy, id: data.id }, ...prev]);
+      setStrategies(prev => {
+        const next = [{ ...strategy, id: data.id }, ...prev];
+        return next;
+      });
     } else {
       // fallback: 用本地 id
-      setStrategies(prev => [...prev, strategy]);
+      setStrategies(prev => {
+        const next = [...prev, strategy];
+        return next;
+      });
     }
   };
   const handleUpdateStrategy = async (updated: Strategy) => {
-    setStrategies(strategies.map(s => s.id === updated.id ? updated : s));
+    setStrategies(prev => prev.map(s => s.id === updated.id ? updated : s));
     await userDataService.updateStrategy(updated.id, updated);
   };
   const handleDeleteStrategy = async (id: string) => {
-    setStrategies(strategies.filter(s => s.id !== id));
+    setStrategies(prev => {
+      const removed = prev.find(s => s.id === id);
+      const next = prev.filter(s => s.id !== id);
+      setTagCategories(current => {
+        const normalized = normalizeTagCategories(current);
+        if (!removed) return normalized;
+        return normalized.map(category =>
+          category.id !== 'setup'
+            ? {
+                ...category,
+                options: category.options.filter(option => option !== removed.name),
+              }
+            : category,
+        );
+      });
+      return next;
+    });
     await userDataService.deleteStrategy(id);
+  };
+
+  const handleSaveTagCategories = async (nextCategories: TagCategoryDefinition[]) => {
+    const normalized = normalizeTagCategories(nextCategories);
+    setTagCategories(normalized);
+    await userDataService.saveTagCategories(normalized);
   };
 
   const handleSavePlan = async (plan: DailyPlan) => {
@@ -1109,6 +1144,13 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           initialReviewTradeId={journalReviewTradeId}
                           onResetReviewTradeId={() => journalReviewTradeId && setJournalReviewTradeId(null)}
                           strategies={strategies}
+                          tagCategories={tagCategories}
+                          onSaveTagCategories={handleSaveTagCategories}
+                          onManageTags={() => {
+                              setSettingsInitialSection('tags');
+                              handleSetActiveTab('settings');
+                              setTimeout(() => setSettingsInitialSection(undefined), 200);
+                          }}
                           tradingAccounts={tradingAccounts}
                           initialAccountId={selectedAccountId}
                           onNavigateToNote={(id) => {
@@ -1256,6 +1298,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onImportTrades={handleImportTrades}
                 tradingAccounts={tradingAccounts}
                 initialSection={settingsInitialSection}
+                tagCategories={tagCategories}
+                onSaveTagCategories={handleSaveTagCategories}
                 onAddAccount={() => setShowConnectExchange(true)}
                 onDeleteAccount={async (id) => {
                   await userDataService.deleteTradingAccount(id);

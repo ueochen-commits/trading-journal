@@ -12,7 +12,7 @@ import { AreaChart, Area, ResponsiveContainer, YAxis, XAxis, Tooltip as Recharts
 import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
 import { useTour } from './TourContext';
-import { Trade, TradeStatus, Direction, DailyPlan, ChecklistItem, RiskSettings, Strategy, TradingAccount } from '../types';
+import { Trade, TradeStatus, Direction, DailyPlan, ChecklistItem, RiskSettings, Strategy, TradingAccount, TagCategoryDefinition } from '../types';
 import TradeReviewModal from './TradeReviewModal';
 
 // Helper to compress image
@@ -107,6 +107,9 @@ interface JournalProps {
   autoOpen?: boolean;
   onResetAutoOpen?: () => void;
   strategies: Strategy[];
+  tagCategories: TagCategoryDefinition[];
+  onSaveTagCategories: (categories: TagCategoryDefinition[]) => Promise<void> | void;
+  onManageTags: () => void;
   onNavigateToNote?: (noteId: string) => void;
   onCreateNoteIntent?: (date: string, tradeIds: string[]) => void;
   tradingAccounts?: TradingAccount[];
@@ -162,6 +165,7 @@ const Journal: React.FC<JournalProps> = ({
     trades, plans, onAddTrade, onUpdateTrade, onDeleteTrade, onBatchDeleteTrades,
     checklist, onUpdateChecklist, onImportTrades, onShare,
     riskSettings, onSavePlan, autoOpen, onResetAutoOpen, strategies,
+    tagCategories, onSaveTagCategories, onManageTags,
     onNavigateToNote, onCreateNoteIntent, tradingAccounts, initialAccountId,
     initialReviewTradeId, onResetReviewTradeId
 }) => {
@@ -895,6 +899,9 @@ const Journal: React.FC<JournalProps> = ({
                   onClose={() => setReviewTrade(null)}
                   onUpdateTrade={onUpdateTrade}
                   strategies={strategies}
+                  tagCategories={tagCategories}
+                  onSaveTagCategories={onSaveTagCategories}
+                  onManageTags={onManageTags}
                   tradingAccounts={tradingAccounts}
                   onSavePlan={onSavePlan}
                   plans={plans}

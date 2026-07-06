@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount } from '../types';
+import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount, TagCategoryDefinition } from '../types';
+import { buildCategoryId, normalizeTagCategories, TAG_CATEGORY_COLORS } from '../utils/tagCategories';
 import {
     X, ChevronLeft, ChevronRight, Star, Plus, Trash2, Calendar, Clock, Hash, Tag,
     AlertTriangle, FileText, Check, MoreHorizontal, GripVertical, Edit2, Share2,
@@ -212,34 +213,23 @@ interface TradeReviewModalProps {
     onClose: () => void;
     onUpdateTrade: (trade: Trade) => void;
     strategies?: Strategy[];
+    tagCategories: TagCategoryDefinition[];
+    onSaveTagCategories: (categories: TagCategoryDefinition[]) => Promise<void> | void;
+    onManageTags: () => void;
     tradingAccounts?: TradingAccount[];
     onSavePlan?: (plan: DailyPlan) => void; // New Prop for Notebook Sync
     plans?: DailyPlan[]; // To find existing note for this trade
 }
 
-// Default Constants
-const DEFAULT_MISTAKES = ["FOMO", "Revenge Trading", "Too Large Size", "Hesitation", "Early Exit", "No Stop Loss", "Chasing", "Impulsive", "Distracted"];
-const DEFAULT_SETUPS = ["Breakout", "Trend Pullback", "Liquidity Sweep", "Fib Retracement", "Support Bounce", "Gap Fill", "Gap and Go", "Reversal"];
-
 // Icon Mapping (String Keys to Components) to prevent React State errors
 const CATEGORY_ICON_MAP: Record<string, React.ElementType> = {
     'mistake': AlertTriangle,
     'setup': MapPin,
-    'custom': Tag,
-    'habit': Zap,
-    'routine': Clock,
+    'tag': Tag,
+    'mindset': Zap,
+    'session': Clock,
     'flag': Flag
 };
-
-interface CategoryDef {
-    id: string;
-    label: string;
-    options: string[];
-    type: 'single' | 'multi';
-    isSystem?: boolean; 
-    iconKey: string; 
-    color: string;
-}
 
 // Helper to compress image
 const compressImage = (file: File): Promise<string> => {
@@ -516,21 +506,25 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
 };
 
 interface TagSelectorProps {
-    cat: CategoryDef;
+    cat: TagCategoryDefinition;
     tags: string[];
+    language: 'cn' | 'en';
     onAdd: (tag: string) => void;
     onRemove: (tag: string) => void;
     onDeleteCategory: () => void;
     onRenameCategory: (newName: string) => void;
+    onChangeColor: (color: string) => void;
 }
 
 const TagSelector: React.FC<TagSelectorProps> = ({ 
     cat,
     tags, 
+    language,
     onAdd, 
     onRemove, 
     onDeleteCategory,
-    onRenameCategory
+    onRenameCategory,
+    onChangeColor
 }) => {
     const [inputValue, setInputValue] = useState('');
     const [isFocused, setIsFocused] = useState(false);
@@ -568,7 +562,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     };
 
     const handleRename = () => {
-        const newName = prompt("Rename category:", cat.label);
+        const newName = prompt(language === 'cn' ? '重命名分类：' : 'Rename category:', cat.label);
         if (newName) onRenameCategory(newName);
         setIsMenuOpen(false);
     };
@@ -583,7 +577,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         <GripVertical className="w-3 h-3" />
                     </div>
                     
-                    <Icon className="w-3.5 h-3.5" fill={cat.color === 'text-amber-500' ? '#eab308' : cat.color === 'text-indigo-500' ? '#818cf8' : '#34d399'} strokeWidth={0} />
+                    <Icon className="w-3.5 h-3.5" fill={cat.color} strokeWidth={0} />
                     <span className="text-[13px] font-medium" style={{ color: '#9ca3af' }}>{cat.label}</span>
                 </div>
                 
@@ -598,11 +592,31 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                     {isMenuOpen && (
                         <div className="absolute right-0 top-6 w-32 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-100 dark:border-slate-700 z-50 py-1 overflow-hidden animate-fade-in-up">
                             <button onClick={handleRename} className="w-full text-left px-3 py-2 text-xs hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                <Edit2 className="w-3 h-3" /> Rename
+                                <Edit2 className="w-3 h-3" /> {language === 'cn' ? '重命名' : 'Rename'}
                             </button>
+                            <div className="px-3 py-2 border-t border-slate-100 dark:border-slate-700">
+                                <div className="text-[10px] font-semibold text-slate-400 uppercase tracking-wide mb-2">{language === 'cn' ? '颜色' : 'Color'}</div>
+                                <div className="flex flex-wrap gap-1.5">
+                                    {TAG_CATEGORY_COLORS.map(color => (
+                                        <button
+                                            key={color}
+                                            onClick={() => {
+                                                onChangeColor(color);
+                                                setIsMenuOpen(false);
+                                            }}
+                                            className="w-4 h-4 rounded-full border"
+                                            style={{
+                                                background: color,
+                                                borderColor: cat.color === color ? '#0f172a' : 'rgba(148,163,184,0.35)',
+                                                boxShadow: cat.color === color ? '0 0 0 1px white inset' : 'none',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
                             {!cat.isSystem && (
                                 <button onClick={onDeleteCategory} className="w-full text-left px-3 py-2 text-xs hover:bg-rose-50 dark:hover:bg-rose-900/20 text-rose-500 flex items-center gap-2">
-                                    <Trash2 className="w-3 h-3" /> Delete
+                                    <Trash2 className="w-3 h-3" /> {language === 'cn' ? '删除' : 'Delete'}
                                 </button>
                             )}
                         </div>
@@ -642,7 +656,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         onChange={(e) => setInputValue(e.target.value)}
                         onKeyDown={handleKeyDown}
                         onFocus={() => setIsFocused(true)}
-                        placeholder={tags.length === 0 ? "Select tag" : ""}
+                        placeholder={tags.length === 0 ? (language === 'cn' ? '选择标签' : 'Select tag') : ""}
                         className="w-full bg-transparent border-none outline-none text-sm text-slate-900 dark:text-white placeholder-slate-400 h-full py-1"
                     />
                 </div>
@@ -683,10 +697,10 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                         }}
                                         className="text-indigo-500 font-bold hover:underline"
                                     >
-                                        Create "{inputValue}"
+                                        {language === 'cn' ? `创建 "${inputValue}"` : `Create "${inputValue}"`}
                                     </button>
                                 ) : (
-                                    <span className="italic">Type to create new...</span>
+                                    <span className="italic">{language === 'cn' ? '输入后创建新标签...' : 'Type to create new...'}</span>
                                 )}
                             </div>
                         )}
@@ -697,7 +711,20 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     );
 };
 
-const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, isOpen, onClose, onUpdateTrade, strategies, tradingAccounts, onSavePlan, plans = [] }) => {
+const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
+    trade,
+    allTrades,
+    isOpen,
+    onClose,
+    onUpdateTrade,
+    strategies,
+    tagCategories,
+    onSaveTagCategories,
+    onManageTags,
+    tradingAccounts,
+    onSavePlan,
+    plans = [],
+}) => {
     const { t, language } = useLanguage();
     const [currentTrade, setCurrentTrade] = useState<Trade>(trade);
     // Find the plan note for this trade (including deleted ones)
@@ -724,30 +751,11 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
     const autoSaveTimerRef = useRef<any>(null);
     const [isReviewed, setIsReviewed] = useState(!!trade.reviewNotes);
 
-    // Dynamic Categories State - Initialize safely from localStorage or Default
-    const [categoryDefs, setCategoryDefs] = useState<CategoryDef[]>(() => {
-        try {
-            const saved = localStorage.getItem('tradeGrail_categoryDefs');
-            if (saved) return JSON.parse(saved);
-        } catch (e) { console.warn("Parse error", e); }
-        
-        return [
-            { id: 'mistakes', label: 'Mistakes', options: DEFAULT_MISTAKES, type: 'multi', isSystem: true, iconKey: 'mistake', color: 'text-amber-500' },
-            { id: 'setup', label: 'Setups', options: DEFAULT_SETUPS, type: 'single', isSystem: true, iconKey: 'setup', color: 'text-indigo-500' },
-            { id: 'custom_tags', label: 'Custom Tags', options: ["Did not sleep well", "Phone Distraction"], type: 'multi', isSystem: false, iconKey: 'custom', color: 'text-emerald-500' }
-        ];
-    });
-
-    // Modals for Category Management
-    const [isManageTagsOpen, setIsManageTagsOpen] = useState(false);
+    const [categoryDefs, setCategoryDefs] = useState<TagCategoryDefinition[]>(() =>
+        normalizeTagCategories(tagCategories),
+    );
     const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
-    const [manageActiveCatId, setManageActiveCatId] = useState<string>('mistakes');
-    const [manageNewTag, setManageNewTag] = useState('');
-
-    useEffect(() => {
-        localStorage.setItem('tradeGrail_categoryDefs', JSON.stringify(categoryDefs));
-    }, [categoryDefs]);
 
     // Close strategy menu when clicking outside
     useEffect(() => {
@@ -760,24 +768,9 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Sync strategies to 'setup' category options
     useEffect(() => {
-        if (strategies && strategies.length > 0) {
-            const strategyNames = strategies.map(s => s.name);
-            setCategoryDefs(prev => {
-                return prev.map(c => {
-                    if (c.id === 'setup') {
-                        // Only update if different to avoid infinite loops if utilizing objects
-                        // Simple array comparison (assuming order matters or sort first)
-                        if (JSON.stringify(c.options) !== JSON.stringify(strategyNames)) {
-                             return { ...c, options: strategyNames };
-                        }
-                    }
-                    return c;
-                });
-            });
-        }
-    }, [strategies]);
+        setCategoryDefs(normalizeTagCategories(tagCategories));
+    }, [tagCategories]);
 
     // Sync state when trade prop changes & handle Auto-save indicator
     useEffect(() => {
@@ -958,6 +951,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         if (catDef && !catDef.options.includes(tag)) {
             const newDefs = categoryDefs.map(c => c.id === catId ? { ...c, options: [...c.options, tag] } : c);
             setCategoryDefs(newDefs);
+            onSaveTagCategories(newDefs);
         }
 
         // 2. Add to Trade
@@ -1001,56 +995,56 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
 
     const handleCreateCategory = () => {
         if (!newCategoryName.trim()) return;
-        const newId = newCategoryName.toLowerCase().replace(/\s+/g, '_');
+        const newId = buildCategoryId(newCategoryName);
         if (categoryDefs.some(c => c.id === newId)) {
-            alert("Category already exists");
+            alert(language === 'cn' ? '该分类已存在' : 'Category already exists');
             return;
         }
-        
-        // Randomly assign color
-        const colors = ['text-pink-500', 'text-purple-500', 'text-cyan-500', 'text-orange-500'];
-        const randomColor = colors[Math.floor(Math.random() * colors.length)];
 
-        const newCat: CategoryDef = {
+        const newCat: TagCategoryDefinition = {
             id: newId,
             label: newCategoryName,
             options: [],
             type: 'multi',
             isSystem: false,
-            iconKey: 'custom', // Default icon for new cats
-            color: randomColor
+            iconKey: 'tag',
+            color: TAG_CATEGORY_COLORS[categoryDefs.length % TAG_CATEGORY_COLORS.length],
         };
-        setCategoryDefs([...categoryDefs, newCat]);
+        const next = [...categoryDefs, newCat];
+        setCategoryDefs(next);
+        onSaveTagCategories(next);
         setNewCategoryName('');
         setIsAddCategoryOpen(false);
     };
 
     const handleRenameCategory = (id: string, newName: string) => {
-        setCategoryDefs(prev => prev.map(c => c.id === id ? { ...c, label: newName } : c));
+        const next = categoryDefs.map(c => c.id === id ? { ...c, label: newName } : c);
+        setCategoryDefs(next);
+        onSaveTagCategories(next);
     };
 
     const handleDeleteCategory = (id: string) => {
-        if(window.confirm("Delete this category?")) {
-            setCategoryDefs(prev => prev.filter(c => c.id !== id));
+        if(window.confirm(language === 'cn' ? '确定删除这个分类吗？' : 'Delete this category?')) {
+            const next = categoryDefs.filter(c => c.id !== id);
+            setCategoryDefs(next);
+            onSaveTagCategories(next);
+
+            if (currentTrade.customTags?.[id]) {
+                const nextCustomTags = { ...(currentTrade.customTags || {}) };
+                delete nextCustomTags[id];
+                const updatedTrade = { ...currentTrade, customTags: nextCustomTags };
+                setCurrentTrade(updatedTrade);
+                onUpdateTrade(updatedTrade);
+            }
         }
     };
 
-    const handleManageAddTag = () => {
-        if (!manageNewTag.trim()) return;
-        setCategoryDefs(prev => prev.map(c => 
-            c.id === manageActiveCatId && !c.options.includes(manageNewTag) 
-            ? { ...c, options: [...c.options, manageNewTag] } 
-            : c
-        ));
-        setManageNewTag('');
-    };
-
-    const handleManageDeleteTag = (tag: string) => {
-        setCategoryDefs(prev => prev.map(c => 
-            c.id === manageActiveCatId 
-            ? { ...c, options: c.options.filter(o => o !== tag) } 
-            : c
-        ));
+    const handleChangeCategoryColor = (id: string, color: string) => {
+        const next = categoryDefs.map(category =>
+            category.id === id ? { ...category, color } : category,
+        );
+        setCategoryDefs(next);
+        onSaveTagCategories(next);
     };
 
     // --- Playbook Logic ---
@@ -1403,8 +1397,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
         if (grade === 'C' || grade === 'D') return 'text-rose-500';
         return 'text-slate-400';
     };
-
-    const activeCategory = categoryDefs.find(c => c.id === manageActiveCatId);
 
     return (
         <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 animate-fade-in overflow-hidden">
@@ -1766,6 +1758,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             <TagSelector 
                                                 key={cat.id}
                                                 cat={cat}
+                                                language={language}
                                                 tags={
                                                     cat.id === 'mistakes' ? (currentTrade.mistakes || []) :
                                                     cat.id === 'setup' ? (currentTrade.setup ? [currentTrade.setup] : []) :
@@ -1775,6 +1768,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                                 onRemove={(tag) => handleRemoveTag(cat.id, tag)}
                                                 onDeleteCategory={() => handleDeleteCategory(cat.id)}
                                                 onRenameCategory={(newName) => handleRenameCategory(cat.id, newName)}
+                                                onChangeColor={(color) => handleChangeCategoryColor(cat.id, color)}
                                             />
                                         ))}
                                     </div>
@@ -1785,13 +1779,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
                                             onClick={() => setIsAddCategoryOpen(true)}
                                             className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-500"
                                         >
-                                            <Plus className="w-3 h-3" /> Add new category
+                                            <Plus className="w-3 h-3" /> {language === 'cn' ? '新增分类' : 'Add new category'}
                                         </button>
                                         <button
-                                            onClick={() => setIsManageTagsOpen(true)}
+                                            onClick={onManageTags}
                                             className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-500"
                                         >
-                                            <Settings className="w-3 h-3" /> Manage tags
+                                            <Settings className="w-3 h-3" /> {language === 'cn' ? '管理标签' : 'Manage tags'}
                                         </button>
                                     </div>
                                 </div>
@@ -2015,9 +2009,9 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({ trade, allTrades, i
             {isAddCategoryOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-sm p-4 border border-slate-200">
-                        <h3 className="font-bold mb-4">Add New Category</h3>
-                        <input type="text" placeholder="Category Name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg px-3 py-2 text-sm mb-4" />
-                        <button onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold">Create</button>
+                        <h3 className="font-bold mb-4">{language === 'cn' ? '新增分类' : 'Add New Category'}</h3>
+                        <input type="text" placeholder={language === 'cn' ? '分类名称' : 'Category Name'} value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg px-3 py-2 text-sm mb-4" />
+                        <button onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold">{language === 'cn' ? '创建' : 'Create'}</button>
                     </div>
                 </div>
             )}

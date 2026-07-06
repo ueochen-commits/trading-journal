@@ -56,6 +56,7 @@ export function useUserData(userId: string | null) {
           reviewNotes: t.review_notes || '',
           fees: t.fees || 0,
           mistakes: t.mistakes ? (typeof t.mistakes === 'string' ? JSON.parse(t.mistakes) : t.mistakes) : [],
+          customTags: t.custom_tags ? (typeof t.custom_tags === 'string' ? JSON.parse(t.custom_tags) : t.custom_tags) : {},
           images: t.screenshot_url ? [t.screenshot_url] : [],
           rating: t.rating || undefined,
           compliance: t.compliance || undefined,
@@ -110,6 +111,7 @@ export function useUserData(userId: string | null) {
       notes: trade.notes,
       reviewNotes: trade.reviewNotes,
       mistakes: trade.mistakes,
+      customTags: trade.customTags,
     });
     await loadData();
   };
@@ -132,6 +134,7 @@ export function useUserData(userId: string | null) {
       notes: trade.notes,
       reviewNotes: trade.reviewNotes,
       mistakes: trade.mistakes,
+      customTags: trade.customTags,
     });
     setTrades(prev => prev.map(t => t.id === id ? { ...trade, id } : t));
   };

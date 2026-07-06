@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from './UserContext';
-import { Trade, TradingAccount, RiskSettings } from '../types';
+import { Trade, TradingAccount, RiskSettings, TagCategoryDefinition } from '../types';
+import { buildCategoryId, normalizeTagCategories, TAG_CATEGORY_COLORS } from '../utils/tagCategories';
 import BrokersPage from './BrokersPage';
 
 // ─── Helper ───────────────────────────────────────────────────────────────────
@@ -467,34 +468,213 @@ const NotificationsPage: React.FC<{ showToast: (m?: string) => void }> = ({ show
 };
 
 // ─── Tags page ────────────────────────────────────────────────────────────────
-const TagsPage: React.FC = () => {
-  const COLORS = ['#5b5bd6','#e05555','#16a34a','#d97706','#0891b2','#7c3aed','#db2777'];
-  const [tags, setTags] = useState([{ id: '1', name: '趋势交易', color: '#5b5bd6' }, { id: '2', name: '突破', color: '#16a34a' }, { id: '3', name: '反转', color: '#e05555' }]);
-  const [adding, setAdding] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newColor, setNewColor] = useState(COLORS[0]);
+const TagsPage: React.FC<{
+  tagCategories: TagCategoryDefinition[];
+  onSaveTagCategories?: (categories: TagCategoryDefinition[]) => Promise<void> | void;
+}> = ({ tagCategories, onSaveTagCategories }) => {
+  const [categories, setCategories] = useState<TagCategoryDefinition[]>(() => normalizeTagCategories(tagCategories));
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>(tagCategories[0]?.id || 'mistakes');
+  const [search, setSearch] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newOptionName, setNewOptionName] = useState('');
+
+  useEffect(() => {
+    const normalized = normalizeTagCategories(tagCategories);
+    setCategories(normalized);
+    if (!normalized.some(item => item.id === selectedCategoryId)) {
+      setSelectedCategoryId(normalized[0]?.id || 'mistakes');
+    }
+  }, [tagCategories, selectedCategoryId]);
+
+  const persist = (next: TagCategoryDefinition[]) => {
+    setCategories(next);
+    onSaveTagCategories?.(next);
+  };
+
+  const filteredCategories = categories.filter(category =>
+    !search.trim() ||
+    category.label.toLowerCase().includes(search.toLowerCase()) ||
+    category.options.some(option => option.toLowerCase().includes(search.toLowerCase())),
+  );
+
+  const selectedCategory = categories.find(item => item.id === selectedCategoryId) || filteredCategories[0];
+
+  const handleAddCategory = () => {
+    if (!newCategoryName.trim()) return;
+    const id = buildCategoryId(newCategoryName);
+    if (!id || categories.some(category => category.id === id)) return;
+    const next = [
+      ...categories,
+      {
+        id,
+        label: newCategoryName.trim(),
+        options: [],
+        type: 'multi',
+        isSystem: false,
+        iconKey: 'tag',
+        color: TAG_CATEGORY_COLORS[categories.length % TAG_CATEGORY_COLORS.length],
+      },
+    ];
+    persist(next);
+    setSelectedCategoryId(id);
+    setNewCategoryName('');
+  };
+
+  const updateCategory = (categoryId: string, updater: (category: TagCategoryDefinition) => TagCategoryDefinition) => {
+    const next = categories.map(category => category.id === categoryId ? updater(category) : category);
+    persist(next);
+  };
+
+  const handleDeleteCategory = (categoryId: string) => {
+    const target = categories.find(category => category.id === categoryId);
+    if (!target || target.isSystem) return;
+    const next = categories.filter(category => category.id !== categoryId);
+    persist(next);
+    setSelectedCategoryId(next[0]?.id || 'mistakes');
+  };
+
+  const handleAddOption = () => {
+    if (!selectedCategory || !newOptionName.trim()) return;
+    if (selectedCategory.options.includes(newOptionName.trim())) return;
+    updateCategory(selectedCategory.id, category => ({
+      ...category,
+      options: [...category.options, newOptionName.trim()],
+    }));
+    setNewOptionName('');
+  };
+
   return (
-    <div style={{ maxWidth: 640 }}>
-      <div style={{ marginTop: 4 }}>
-        <SectionLabel>标签列表</SectionLabel>
-        {tags.map((tag, i) => (
-          <FieldRow key={tag.id} label={tag.name} last={i === tags.length - 1 && !adding}>
-            <div style={{ width: 12, height: 12, borderRadius: '50%', background: tag.color, marginRight: 4 }} />
-            <SmallBtn danger onClick={() => setTags(t => t.filter(x => x.id !== tag.id))}>删除</SmallBtn>
-          </FieldRow>
-        ))}
-        {adding && (
-          <FieldRow label="" last>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              {COLORS.map(c => <div key={c} onClick={() => setNewColor(c)} style={{ width: 16, height: 16, borderRadius: '50%', background: c, cursor: 'pointer', border: newColor === c ? `2px solid #1a1a2e` : '2px solid transparent' }} />)}
-              <FieldInput value={newName} onChange={setNewName} placeholder="标签名称" width={140} />
-              <SmallBtn onClick={() => { if (newName.trim()) { setTags(t => [...t, { id: Date.now().toString(), name: newName.trim(), color: newColor }]); setNewName(''); setAdding(false); } }}>添加</SmallBtn>
-              <SmallBtn onClick={() => setAdding(false)}>取消</SmallBtn>
-            </div>
-          </FieldRow>
-        )}
+    <div style={{ maxWidth: 980 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22, gap: 16 }}>
+        <div>
+          <SectionLabel>标签管理</SectionLabel>
+          <div style={{ fontSize: 13, color: T.textTertiary, marginTop: -8 }}>在这里统一管理复盘页可选的标签分类、颜色与标签内容。</div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <FieldInput value={search} onChange={setSearch} placeholder="搜索分类或标签" width={180} />
+          <FieldInput value={newCategoryName} onChange={setNewCategoryName} placeholder="新增分类名称" width={160} />
+          <SmallBtn onClick={handleAddCategory}>新增分类</SmallBtn>
+        </div>
       </div>
-      {!adding && <button onClick={() => setAdding(true)} style={{ marginTop: 16, height: 30, padding: '0 12px', borderRadius: 7, border: `1px solid ${T.borderField}`, background: 'transparent', fontSize: 12, fontWeight: 500, color: '#5050a0', cursor: 'pointer' }}>+ 新增标签</button>}
+
+      <div style={{ display: 'grid', gridTemplateColumns: '340px minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
+        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, overflow: 'hidden', background: '#fff' }}>
+          <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 600, color: T.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            分类列表
+          </div>
+          {filteredCategories.map(category => {
+            const active = selectedCategory?.id === category.id;
+            return (
+              <div
+                key={category.id}
+                onClick={() => setSelectedCategoryId(category.id)}
+                style={{
+                  padding: '14px 18px',
+                  borderBottom: `1px solid ${T.border}`,
+                  cursor: 'pointer',
+                  background: active ? '#f7f5fd' : '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: category.color, flexShrink: 0 }} />
+                    <div style={{ fontSize: 13, fontWeight: 600, color: active ? T.primary : T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{category.label}</div>
+                  </div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4 }}>{category.type === 'single' ? '单选' : '多选'} · {category.options.length} 个标签</div>
+                </div>
+                {!category.isSystem && (
+                  <SmallBtn danger onClick={() => handleDeleteCategory(category.id)}>删除</SmallBtn>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, background: '#fff', padding: 22 }}>
+          {selectedCategory ? (
+            <>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 12, height: 12, borderRadius: '50%', background: selectedCategory.color }} />
+                    <FieldInput
+                      value={selectedCategory.label}
+                      onChange={value => updateCategory(selectedCategory.id, category => ({ ...category, label: value }))}
+                      width={220}
+                    />
+                  </div>
+                  <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 10 }}>
+                    {selectedCategory.isSystem ? '系统分类不可删除，但可以调整名称和颜色。' : '自定义分类可编辑名称、颜色和标签内容。'}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {TAG_CATEGORY_COLORS.map(color => (
+                    <button
+                      key={color}
+                      onClick={() => updateCategory(selectedCategory.id, category => ({ ...category, color }))}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        background: color,
+                        border: selectedCategory.color === color ? '2px solid #1a1a2e' : '2px solid transparent',
+                        cursor: 'pointer',
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+                <FieldInput value={newOptionName} onChange={setNewOptionName} placeholder="添加新标签" width={220} />
+                <SmallBtn onClick={handleAddOption}>新增标签</SmallBtn>
+              </div>
+
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                {selectedCategory.options.map(option => (
+                  <div
+                    key={option}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: '8px 10px',
+                      borderRadius: 999,
+                      border: `1px solid ${T.borderField}`,
+                      background: '#fafafe',
+                    }}
+                  >
+                    <span style={{ fontSize: 12, color: T.textPrimary }}>{option}</span>
+                    <button
+                      onClick={() => updateCategory(selectedCategory.id, category => ({
+                        ...category,
+                        options: category.options.filter(item => item !== option),
+                      }))}
+                      style={{
+                        border: 'none',
+                        background: 'transparent',
+                        color: T.textMuted,
+                        cursor: 'pointer',
+                        fontSize: 12,
+                        lineHeight: 1,
+                        padding: 0,
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div style={{ padding: '48px 0', textAlign: 'center', color: T.textTertiary, fontSize: 13 }}>暂无可管理的标签分类</div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -519,9 +699,24 @@ interface SettingsPageProps {
   initialSection?: string;
   riskSettings?: RiskSettings;
   onSaveRiskSettings?: (s: RiskSettings) => void;
+  tagCategories?: TagCategoryDefinition[];
+  onSaveTagCategories?: (categories: TagCategoryDefinition[]) => Promise<void> | void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAccounts, onAddAccount, onDeleteAccount, onSyncAccount, onUpdateAccount, onClearTrades, initialSection, riskSettings, onSaveRiskSettings }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({
+  onImportTrades,
+  tradingAccounts,
+  onAddAccount,
+  onDeleteAccount,
+  onSyncAccount,
+  onUpdateAccount,
+  onClearTrades,
+  initialSection,
+  riskSettings,
+  onSaveRiskSettings,
+  tagCategories = [],
+  onSaveTagCategories,
+}) => {
   const { user, updateProfile } = useUser();
   const [activeSection, setActiveSection] = useState(initialSection || 'profile');
   const [toast, setToast] = useState<string | null>(null);
@@ -546,7 +741,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onImportTrades, tradingAcco
       case 'brokers': return <BrokersPage userPlan={user.tier} accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} onUpdateAccount={onUpdateAccount} onClearTrades={onClearTrades} />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} riskSettings={riskSettings} onSaveRiskSettings={onSaveRiskSettings} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
-      case 'tags': return <TagsPage />;
+      case 'tags': return <TagsPage tagCategories={tagCategories} onSaveTagCategories={onSaveTagCategories} />;
       default: return <PlaceholderPage title={NAV_GROUPS.flatMap(g => g.items).find(i => i.id === activeSection)?.label ?? activeSection} />;
     }
   };
