@@ -713,14 +713,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       setTagCategories(current => {
         const normalized = normalizeTagCategories(current);
         if (!removed) return normalized;
-        return normalized.map(category =>
-          category.id !== 'setup'
-            ? {
-                ...category,
-                options: category.options.filter(option => option !== removed.name),
-              }
-            : category,
-        );
+        return normalized.map(category => ({
+          ...category,
+          options: category.options.filter(option => option !== removed.name),
+        }));
       });
       return next;
     });

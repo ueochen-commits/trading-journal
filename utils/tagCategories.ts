@@ -37,7 +37,6 @@ const LEGACY_CUSTOM_OPTIONS = ['纪律差', '睡眠不足', '消息面影响', '
 
 const SYSTEM_CATEGORY_LABELS: Record<string, string> = {
   mistakes: '交易错误',
-  setup: '交易策略',
   custom_tags: '自定义标签',
 };
 
@@ -54,17 +53,8 @@ export const DEFAULT_TAG_CATEGORIES: TagCategoryDefinition[] = [
     options: [],
     type: 'multi',
     isSystem: true,
-    iconKey: 'mistake',
+    iconKey: 'tag',
     color: '#f59e0b',
-  },
-  {
-    id: 'setup',
-    label: '交易策略',
-    options: [],
-    type: 'single',
-    isSystem: true,
-    iconKey: 'setup',
-    color: '#6366f1',
   },
   {
     id: 'custom_tags',
@@ -103,7 +93,7 @@ export const normalizeTagCategories = (
         color: typeof raw.color === 'string' && raw.color ? raw.color : '#10b981',
       };
     })
-    .filter(Boolean) as TagCategoryDefinition[];
+    .filter((category): category is TagCategoryDefinition => Boolean(category) && category.id !== 'setup');
 
   const merged = fallback.map(defaultCategory => {
     const matched = sanitized.find(category => category.id === defaultCategory.id);

@@ -959,10 +959,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             const updated = { ...currentTrade, mistakes: [...(currentTrade.mistakes || []), tag] };
             setCurrentTrade(updated);
             onUpdateTrade(updated);
-        } else if (catId === 'setup') {
-            const updated = { ...currentTrade, setup: tag };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
         } else {
             // Custom Categories
             const currentTags = currentTrade.customTags?.[catId] || [];
@@ -978,10 +974,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     const handleRemoveTag = (catId: string, tag: string) => {
         if (catId === 'mistakes') {
             const updated = { ...currentTrade, mistakes: currentTrade.mistakes?.filter(m => m !== tag) };
-            setCurrentTrade(updated);
-            onUpdateTrade(updated);
-        } else if (catId === 'setup') {
-            const updated = { ...currentTrade, setup: '' };
             setCurrentTrade(updated);
             onUpdateTrade(updated);
         } else {
@@ -1761,7 +1753,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                 language={language}
                                                 tags={
                                                     cat.id === 'mistakes' ? (currentTrade.mistakes || []) :
-                                                    cat.id === 'setup' ? (currentTrade.setup ? [currentTrade.setup] : []) :
                                                     (currentTrade.customTags?.[cat.id] || [])
                                                 }
                                                 onAdd={(tag) => handleAddTag(cat.id, tag)}
