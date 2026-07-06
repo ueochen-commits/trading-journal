@@ -1567,6 +1567,12 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         }
     };
 
+    const statsSectionTitleClass = 'text-[10px] font-semibold uppercase tracking-[1.28px] text-slate-400 dark:text-slate-500';
+    const statsLabelClass = 'text-[13px] font-medium text-[#7d86b2] dark:text-slate-400';
+    const statsValueClass = 'text-[13px] font-semibold font-mono text-slate-800 dark:text-slate-100';
+    const statsMutedValueClass = 'text-[13px] font-medium text-slate-300 dark:text-slate-600';
+    const statsRowClass = 'flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]';
+
     const getGradeColorClass = (grade?: string) => {
         if (!grade || grade === '-') return 'text-slate-400';
         if (grade.startsWith('A')) return 'text-emerald-500';
@@ -1754,12 +1760,12 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 {/* Top PnL Block */}
                                 <div className="px-5 pt-5 pb-4 flex items-center justify-between gap-3">
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[11px] font-normal uppercase tracking-wider mb-1.5 text-slate-500 dark:text-slate-400">{labels.stats.netPnl}</p>
+                                        <p className="mb-1.5 text-[11px] font-medium uppercase tracking-[1.1px] text-[#7d86b2] dark:text-slate-400">{labels.stats.netPnl}</p>
                                         <div className="flex items-baseline gap-3">
                                             <h3 className={`text-[32px] font-semibold tracking-tight leading-none ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                 {currentTrade.pnl >= 0 ? '+' : ''}{currentTrade.pnl.toFixed(2)}
                                             </h3>
-                                            <span className={`text-[14px] font-medium opacity-70 ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                            <span className={`text-[14px] font-semibold opacity-80 ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                 {netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%
                                             </span>
                                         </div>
@@ -1773,61 +1779,61 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 <div className="px-5 pb-4">
 
                                     {/* ── Basic Info ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-1 text-slate-400 dark:text-slate-500">{language === 'cn' ? '基本信息' : 'BASIC INFO'}</p>
+                                    <p className={`${statsSectionTitleClass} pb-2 pt-1`}>{language === 'cn' ? '基本信息' : 'BASIC INFO'}</p>
                                     {currentTrade.accountId && tradingAccounts && (
-                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.account}</span>
-                                            <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">
+                                        <div className={statsRowClass}>
+                                            <span className={statsLabelClass}>{labels.stats.account}</span>
+                                            <span className={statsValueClass}>
                                                 {tradingAccounts.find(a => a.id === currentTrade.accountId)?.name || currentTrade.accountId}
                                             </span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.side}</span>
-                                        <span className={`text-[13px] font-medium uppercase ${currentTrade.direction === Direction.LONG ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.side}</span>
+                                        <span className={`text-[13px] font-semibold uppercase tracking-[0.02em] ${currentTrade.direction === Direction.LONG ? 'text-emerald-500' : 'text-rose-500'}`}>
                                             {currentTrade.direction}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.strategy}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.strategy}</span>
                                         {activeStrategy
-                                            ? <span className="text-[13px] font-medium text-indigo-500 dark:text-indigo-400">{activeStrategy.name}</span>
-                                            : <span className="text-[13px] text-slate-300 dark:text-slate-600">--</span>
+                                            ? <span className="text-[13px] font-semibold text-indigo-500 dark:text-indigo-400">{activeStrategy.name}</span>
+                                            : <span className={statsMutedValueClass}>--</span>
                                         }
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.netRoi}</span>
-                                        <span className={`text-[13px] font-medium font-mono ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>{netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.netRoi}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>{netRoi >= 0 ? '+' : ''}{netRoi.toFixed(2)}%</span>
                                     </div>
                                     {(currentTrade.leverage ?? 1) > 1 && (
-                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.leverage}</span>
-                                            <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">{currentTrade.leverage}x</span>
+                                        <div className={statsRowClass}>
+                                            <span className={statsLabelClass}>{labels.stats.leverage}</span>
+                                            <span className={statsValueClass}>{currentTrade.leverage}x</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.contracts}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">{currentTrade.quantity}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.contracts}</span>
+                                        <span className={statsValueClass}>{currentTrade.quantity}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.adjustedCost}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${adjustedCost.toFixed(2)}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.adjustedCost}</span>
+                                        <span className={statsValueClass}>${adjustedCost.toFixed(2)}</span>
                                     </div>
                                     {margin != null && margin > 0 && (
-                                        <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                            <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.margin}</span>
-                                            <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${margin.toFixed(2)}</span>
+                                        <div className={statsRowClass}>
+                                            <span className={statsLabelClass}>{labels.stats.margin}</span>
+                                            <span className={statsValueClass}>${margin.toFixed(2)}</span>
                                         </div>
                                     )}
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.entryTime}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.entryTime}</span>
+                                        <span className={statsValueClass}>
                                             {currentTrade.entryDate ? new Date(currentTrade.entryDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.exitTime}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.exitTime}</span>
+                                        <span className={statsValueClass}>
                                             {currentTrade.exitDate ? new Date(currentTrade.exitDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '--'}
                                         </span>
                                     </div>
@@ -1835,7 +1841,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     {/* 执行评分 — 持仓成本下方 */}
                                     <div className="py-2 border-b border-slate-100 dark:border-white/[0.04]">
                                         <div className="flex justify-between items-center mb-2">
-                                            <span className="text-[13px] flex items-center gap-1.5 text-slate-500 dark:text-slate-400">
+                                            <span className={`flex items-center gap-1.5 ${statsLabelClass}`}>
                                                 <Trophy className="w-3.5 h-3.5" fill="#818cf8" strokeWidth={0} />
                                                 {labels.stats.grailScale}
                                             </span>
@@ -1848,44 +1854,44 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         </div>
                                         <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500">
                                             <span>Based on Playbook rules</span>
-                                            <span className="font-mono font-medium">{executionStats.checked}/{executionStats.total} Rules</span>
+                                            <span className="font-mono font-semibold">{executionStats.checked}/{executionStats.total} Rules</span>
                                         </div>
                                     </div>
 
                                     {/* ── Price Info ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '价格信息' : 'PRICE INFO'}</p>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.entryPrice}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${currentTrade.entryPrice.toFixed(2)}</span>
+                                    <p className={`${statsSectionTitleClass} pb-2 pt-5`}>{language === 'cn' ? '价格信息' : 'PRICE INFO'}</p>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.entryPrice}</span>
+                                        <span className={statsValueClass}>${currentTrade.entryPrice.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.exitPrice}</span>
-                                        <span className={`text-[13px] font-medium font-mono ${currentTrade.exitPrice ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.exitPrice}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${currentTrade.exitPrice ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                    <div className={statsRowClass}>
                                         <span className="text-[13px] font-medium" style={{ color: '#00c896' }}>{labels.stats.profitTarget}</span>
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.profitTarget ?? ''}
                                             onChange={(e) => { const val = e.target.value ? parseFloat(e.target.value) : undefined; setCurrentTrade(prev => ({ ...prev, profitTarget: val })); }}
                                             onBlur={() => onUpdateTrade({ ...currentTrade })}
-                                            className="w-24 text-right text-[13px] font-mono font-medium outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-700 dark:text-slate-200"
+                                            className="w-24 text-right text-[13px] font-mono font-semibold outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
+                                    <div className={statsRowClass}>
                                         <span className="text-[13px] font-medium" style={{ color: '#ff4d4d' }}>{labels.stats.stopLoss}</span>
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.stopLoss ?? ''}
                                             onChange={(e) => { const val = e.target.value ? parseFloat(e.target.value) : undefined; setCurrentTrade(prev => ({ ...prev, stopLoss: val })); }}
                                             onBlur={() => onUpdateTrade({ ...currentTrade })}
-                                            className="w-24 text-right text-[13px] font-mono font-medium outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-700 dark:text-slate-200"
+                                            className="w-24 text-right text-[13px] font-mono font-semibold outline-none bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-md px-2.5 py-1.5 text-slate-800 dark:text-slate-100"
                                         />
                                     </div>
 
                                     {/* 交易评分 — 计划止损价格下方 */}
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.rating}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.rating}</span>
                                         <div className="flex gap-0.5">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button key={star} onClick={() => setRating(star)} className="p-0.5 transition-transform hover:scale-110">
@@ -1896,37 +1902,37 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     </div>
 
                                     {/* ── P&L Details ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '盈亏详情' : 'P&L DETAILS'}</p>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.grossPnl}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${grossPnl.toFixed(2)}</span>
+                                    <p className={`${statsSectionTitleClass} pb-2 pt-5`}>{language === 'cn' ? '盈亏详情' : 'P&L DETAILS'}</p>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.grossPnl}</span>
+                                        <span className={statsValueClass}>${grossPnl.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.fees}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">${currentTrade.fees.toFixed(2)}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.fees}</span>
+                                        <span className={statsValueClass}>${currentTrade.fees.toFixed(2)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.duration}</span>
-                                        <span className="text-[13px] font-medium font-mono text-slate-700 dark:text-slate-200">{durationStr}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.duration}</span>
+                                        <span className={statsValueClass}>{durationStr}</span>
                                     </div>
 
                                     {/* ── Risk & Reward ── */}
-                                    <p className="text-[10px] font-medium uppercase tracking-[1.2px] pb-2 pt-5 text-slate-400 dark:text-slate-500">{language === 'cn' ? '风险与回报' : 'RISK & REWARD'}</p>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.tradeRisk}</span>
-                                        <span className={`text-[13px] font-medium font-mono ${tradeRisk != null ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
+                                    <p className={`${statsSectionTitleClass} pb-2 pt-5`}>{language === 'cn' ? '风险与回报' : 'RISK & REWARD'}</p>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.tradeRisk}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${tradeRisk != null ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.initialTarget}</span>
-                                        <span className={`text-[13px] font-medium font-mono ${initialTarget != null ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.initialTarget}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${initialTarget != null ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.plannedR}</span>
-                                        <span className={`text-[13px] font-medium font-mono ${plannedR !== 'N/A' ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>{plannedR}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.plannedR}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${plannedR !== 'N/A' ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{plannedR}</span>
                                     </div>
-                                    <div className="flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]">
-                                        <span className="text-[13px] text-slate-500 dark:text-slate-400">{labels.stats.realizedR}</span>
-                                        <span className={`text-[13px] font-medium font-mono ${realizedRFromTarget !== 'N/A' ? (isWin ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-300 dark:text-slate-600'}`}>{realizedRFromTarget}</span>
+                                    <div className={statsRowClass}>
+                                        <span className={statsLabelClass}>{labels.stats.realizedR}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${realizedRFromTarget !== 'N/A' ? (isWin ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-300 dark:text-slate-600'}`}>{realizedRFromTarget}</span>
                                     </div>
 
                                     {/* CATEGORIES SECTION */}
