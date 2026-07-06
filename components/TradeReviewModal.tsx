@@ -566,7 +566,10 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter' && inputValue.trim()) {
+            e.preventDefault();
+            onAdd(inputValue.trim());
             setInputValue('');
+            return;
         }
         if (e.key === 'Backspace' && !inputValue && tags.length > 0) {
             onRemove(tags[tags.length - 1]);
