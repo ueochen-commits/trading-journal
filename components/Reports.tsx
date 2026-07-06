@@ -5658,10 +5658,8 @@ const Reports: React.FC<ReportsProps> = ({
         </div>
         
         {/* Navigation Bar */}
-        <div
-            className="relative z-30 -mx-4 flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 transition-[padding-bottom] duration-200 ease-out dark:border-slate-800 dark:bg-slate-900/60 md:-mx-8 md:px-8"
-            style={{ paddingBottom: reportMenuReservedHeight ? `${reportMenuReservedHeight}px` : undefined }}
-        >
+        <div className="relative z-30 -mx-4 md:-mx-8">
+            <div className="flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 dark:border-slate-800 dark:bg-slate-900/60 md:px-8">
             <div className="flex min-h-[56px] max-w-full flex-wrap items-center gap-x-[27px] gap-y-0 pr-3">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
@@ -5729,6 +5727,12 @@ const Reports: React.FC<ReportsProps> = ({
                 <ReportTabMark type="guide" active={false} />
                 {language === 'cn' ? '阅读指南' : 'Read guide'}
             </button>
+            </div>
+            <div
+                aria-hidden="true"
+                className="pointer-events-none border-b border-transparent transition-[height] duration-200 ease-out"
+                style={{ height: reportMenuReservedHeight ? `${reportMenuReservedHeight}px` : '0px' }}
+            />
         </div>
       </div>
 
