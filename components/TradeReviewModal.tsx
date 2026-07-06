@@ -519,7 +519,7 @@ interface TagSelectorProps {
     onRemove: (tag: string) => void;
     onRenameTag: (oldTag: string, newTag: string) => void;
     onDeleteTag: (tag: string) => void;
-    onDeleteCategory: () => void;
+    onDeleteCategory: (category: TagCategoryDefinition) => void;
     onRenameCategory: (newName: string) => void;
     onChangeColor: (color: string) => void;
 }
@@ -548,6 +548,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     const [categoryDraftName, setCategoryDraftName] = useState(cat.label);
     const [categoryDraftColor, setCategoryDraftColor] = useState(cat.color);
     const [activeTagMenu, setActiveTagMenu] = useState<string | null>(null);
+    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [editingTag, setEditingTag] = useState<string | null>(null);
     const [editingValue, setEditingValue] = useState('');
     const [tagMenuAnchor, setTagMenuAnchor] = useState<{ top: number; left: number } | null>(null);
@@ -623,6 +624,16 @@ const TagSelector: React.FC<TagSelectorProps> = ({
         setEditingTag(null);
         setEditingValue('');
         setTagMenuAnchor(null);
+    };
+
+    const handleOpenDeleteConfirm = () => {
+        setIsDeleteConfirmOpen(true);
+        setIsMenuOpen(false);
+    };
+
+    const handleConfirmDeleteCategory = () => {
+        onDeleteCategory(cat);
+        setIsDeleteConfirmOpen(false);
     };
 
     return (
@@ -722,10 +733,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                             <div className="flex items-center justify-between px-1">
                                 {!cat.isSystem ? (
                                     <button
-                                        onClick={() => {
-                                            onDeleteCategory();
-                                            setIsMenuOpen(false);
-                                        }}
+                                        onClick={handleOpenDeleteConfirm}
                                         className="text-[13px] font-medium text-rose-500"
                                     >
                                         {language === 'cn' ? '删除' : 'Delete'}
@@ -914,6 +922,53 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         >
                             {language === 'cn' ? '保存' : 'Save'}
                         </button>
+                    </div>
+                </div>
+            )}
+
+            {isDeleteConfirmOpen && (
+                <div className="fixed inset-0 z-[140] flex items-center justify-center">
+                    <div
+                        className="absolute inset-0 bg-slate-900/38 backdrop-blur-[2px]"
+                        onClick={() => setIsDeleteConfirmOpen(false)}
+                    />
+                    <div className="relative z-[141] w-[min(520px,calc(100vw-32px))] overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.24)] animate-fade-in-up dark:border-slate-700 dark:bg-slate-900">
+                        <div className="flex items-start justify-between px-6 pb-4 pt-6">
+                            <div>
+                                <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100">
+                                    {language === 'cn'
+                                        ? `你即将删除“${cat.label}”`
+                                        : `You're about to delete "${cat.label}"`}
+                                </h3>
+                            </div>
+                            <button
+                                onClick={() => setIsDeleteConfirmOpen(false)}
+                                className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+
+                        <div className="px-6 pb-8 text-[15px] leading-7 text-slate-600 dark:text-slate-300">
+                            {language === 'cn'
+                                ? '如果你删除这个分类，分类下创建的所有标签也会一起被删除。这意味着该分类下的标签数据将一并移除，而且这个操作无法撤销。'
+                                : 'If you delete a category, all tags that belong to it will be deleted as well. This action cannot be undone.'}
+                        </div>
+
+                        <div className="flex items-center gap-3 border-t border-slate-200 px-4 py-4 dark:border-slate-700">
+                            <button
+                                onClick={() => setIsDeleteConfirmOpen(false)}
+                                className="flex-1 rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-[16px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                            >
+                                {language === 'cn' ? '取消' : 'Cancel'}
+                            </button>
+                            <button
+                                onClick={handleConfirmDeleteCategory}
+                                className="flex-1 rounded-[12px] bg-[#dc3a3a] px-4 py-3 text-[16px] font-medium text-white transition-colors hover:bg-[#c92f2f]"
+                            >
+                                {language === 'cn' ? '删除' : 'Delete'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -1227,19 +1282,17 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         onSaveTagCategories(next);
     };
 
-    const handleDeleteCategory = (id: string) => {
-        if(window.confirm(language === 'cn' ? '确定删除这个分类吗？' : 'Delete this category?')) {
-            const next = categoryDefs.filter(c => c.id !== id);
-            setCategoryDefs(next);
-            onSaveTagCategories(next);
+    const handleDeleteCategory = (category: TagCategoryDefinition) => {
+        const next = categoryDefs.filter(c => c.id !== category.id);
+        setCategoryDefs(next);
+        onSaveTagCategories(next);
 
-            if (currentTrade.customTags?.[id]) {
-                const nextCustomTags = { ...(currentTrade.customTags || {}) };
-                delete nextCustomTags[id];
-                const updatedTrade = { ...currentTrade, customTags: nextCustomTags };
-                setCurrentTrade(updatedTrade);
-                onUpdateTrade(updatedTrade);
-            }
+        if (currentTrade.customTags?.[category.id]) {
+            const nextCustomTags = { ...(currentTrade.customTags || {}) };
+            delete nextCustomTags[category.id];
+            const updatedTrade = { ...currentTrade, customTags: nextCustomTags };
+            setCurrentTrade(updatedTrade);
+            onUpdateTrade(updatedTrade);
         }
     };
 
@@ -2086,7 +2139,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                 onRemove={(tag) => handleRemoveTag(cat.id, tag)}
                                                 onRenameTag={(oldTag, newTag) => handleRenameTagOption(cat.id, oldTag, newTag)}
                                                 onDeleteTag={(tag) => handleDeleteTagOption(cat.id, tag)}
-                                                onDeleteCategory={() => handleDeleteCategory(cat.id)}
+                                                onDeleteCategory={handleDeleteCategory}
                                                 onRenameCategory={(newName) => handleRenameCategory(cat.id, newName)}
                                                 onChangeColor={(color) => handleChangeCategoryColor(cat.id, color)}
                                             />
