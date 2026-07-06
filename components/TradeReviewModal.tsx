@@ -536,6 +536,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     const [activeTagMenu, setActiveTagMenu] = useState<string | null>(null);
     const [editingTag, setEditingTag] = useState<string | null>(null);
     const [editingValue, setEditingValue] = useState('');
+    const [tagMenuAnchor, setTagMenuAnchor] = useState<{ top: number; left: number } | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -556,6 +557,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
             }
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setActiveTagMenu(null);
+                setTagMenuAnchor(null);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -590,6 +592,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
         onRenameTag(editingTag, nextValue);
         setEditingTag(null);
         setEditingValue('');
+        setTagMenuAnchor(null);
     };
 
     return (
@@ -701,35 +704,13 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                     className="relative px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                 >
                                     {editingTag === opt ? (
-                                        <div className="flex items-center gap-2 rounded-[12px] bg-white border border-slate-200 px-2.5 py-2 shadow-sm">
-                                            <input
-                                                autoFocus
-                                                value={editingValue}
-                                                onChange={(e) => setEditingValue(e.target.value)}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter') {
-                                                        e.preventDefault();
-                                                        handleSaveTagRename();
-                                                    }
-                                                    if (e.key === 'Escape') {
-                                                        setEditingTag(null);
-                                                        setEditingValue('');
-                                                    }
-                                                }}
-                                                className="flex-1 bg-transparent border-none outline-none text-[13px] text-slate-700"
-                                            />
-                                            <button
-                                                onMouseDown={(e) => {
-                                                    e.preventDefault();
-                                                    handleSaveTagRename();
-                                                }}
-                                                className="text-[13px] font-semibold text-[#6c5ce7]"
-                                            >
-                                                {language === 'cn' ? '保存' : 'Save'}
-                                            </button>
+                                        <div className="flex min-h-[36px] items-center justify-between rounded-[12px] bg-transparent px-2 py-1.5 pr-3">
+                                            <span className="min-w-0 flex-1 text-sm text-slate-700 dark:text-slate-300">
+                                                {opt}
+                                            </span>
                                         </div>
                                     ) : (
-                                        <div className="flex min-h-[36px] items-center justify-between gap-3 rounded-[12px] bg-transparent px-2 py-1.5 pr-3">
+                                        <div className="flex min-h-[36px] items-center gap-2 rounded-[12px] bg-transparent px-2 py-1.5">
                                             <button
                                                 onMouseDown={(e) => {
                                                     e.preventDefault(); 
@@ -740,39 +721,22 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             >
                                                 {opt}
                                             </button>
-                                            <div className="relative flex w-7 shrink-0 justify-end">
+                                            <div className="relative ml-1 flex w-6 shrink-0 justify-start">
                                                 <button
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
+                                                        const rect = (e.currentTarget as HTMLButtonElement).getBoundingClientRect();
                                                         setActiveTagMenu(activeTagMenu === opt ? null : opt);
+                                                        setTagMenuAnchor(
+                                                            activeTagMenu === opt
+                                                                ? null
+                                                                : { top: rect.bottom + 8, left: rect.left - 12 },
+                                                        );
                                                     }}
                                                     className="rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                                                 >
                                                     <MoreHorizontal className="w-[15px] h-[15px]" />
                                                 </button>
-                                                {activeTagMenu === opt && (
-                                                    <div className="absolute right-0 top-6 z-20 w-[88px] rounded-[12px] border border-slate-200 bg-white py-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
-                                                        <button
-                                                            onMouseDown={(e) => {
-                                                                e.preventDefault();
-                                                                handleStartEditTag(opt);
-                                                            }}
-                                                            className="block w-full px-3 py-1.5 text-left text-[13px] text-slate-600 hover:bg-slate-50"
-                                                        >
-                                                            {language === 'cn' ? '编辑' : 'Edit'}
-                                                        </button>
-                                                        <button
-                                                            onMouseDown={(e) => {
-                                                                e.preventDefault();
-                                                                onDeleteTag(opt);
-                                                                setActiveTagMenu(null);
-                                                            }}
-                                                            className="block w-full px-3 py-1.5 text-left text-[13px] text-rose-500 hover:bg-rose-50"
-                                                        >
-                                                            {language === 'cn' ? '删除' : 'Delete'}
-                                                        </button>
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
                                     )}
@@ -806,6 +770,60 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                     </div>
                 )}
             </div>
+
+            {activeTagMenu && tagMenuAnchor && (
+                <div
+                    className="fixed z-[120] w-[200px] rounded-[14px] border border-slate-200 bg-white px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)]"
+                    style={{ top: tagMenuAnchor.top, left: tagMenuAnchor.left }}
+                >
+                    <input
+                        autoFocus
+                        value={editingTag === activeTagMenu ? editingValue : activeTagMenu}
+                        onChange={(e) => {
+                            if (editingTag !== activeTagMenu) setEditingTag(activeTagMenu);
+                            setEditingValue(e.target.value);
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                handleSaveTagRename();
+                            }
+                            if (e.key === 'Escape') {
+                                setEditingTag(null);
+                                setEditingValue('');
+                                setActiveTagMenu(null);
+                                setTagMenuAnchor(null);
+                            }
+                        }}
+                        className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300"
+                    />
+                    <div className="mt-3 flex items-center justify-between px-1">
+                        <button
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                onDeleteTag(activeTagMenu);
+                                setEditingTag(null);
+                                setEditingValue('');
+                                setActiveTagMenu(null);
+                                setTagMenuAnchor(null);
+                            }}
+                            className="text-[13px] font-medium text-rose-500"
+                        >
+                            {language === 'cn' ? '删除' : 'Delete'}
+                        </button>
+                        <button
+                            onMouseDown={(e) => {
+                                e.preventDefault();
+                                handleSaveTagRename();
+                                setActiveTagMenu(null);
+                            }}
+                            className="text-[13px] font-semibold text-[#6c5ce7]"
+                        >
+                            {language === 'cn' ? '保存' : 'Save'}
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
