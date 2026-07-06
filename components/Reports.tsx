@@ -688,6 +688,19 @@ const Reports: React.FC<ReportsProps> = ({
       return normalizedTagCategories.filter(category => category.id !== 'setup');
   }, [normalizedTagCategories]);
 
+  const getSafeTagValues = (rawValue: unknown) => {
+      if (Array.isArray(rawValue)) {
+          return rawValue
+              .map(value => typeof value === 'string' ? value.trim() : '')
+              .filter(Boolean);
+      }
+      if (typeof rawValue === 'string') {
+          const normalized = rawValue.trim();
+          return normalized ? [normalized] : [];
+      }
+      return [] as string[];
+  };
+
   const compareTagSuggestions = useMemo(() => {
       const emptyLabel = language === 'cn' ? '未填写标签' : 'No tag';
       const values = new Set<string>();
@@ -699,7 +712,7 @@ const Reports: React.FC<ReportsProps> = ({
           });
 
           Object.values(trade.customTags || {}).forEach(categoryValues => {
-              categoryValues.forEach(value => {
+              getSafeTagValues(categoryValues).forEach(value => {
                   const normalized = value.trim();
                   if (normalized) values.add(normalized);
               });
@@ -1365,7 +1378,7 @@ const Reports: React.FC<ReportsProps> = ({
   const tagStats = useMemo(() => {
       const grouped = new Map<string, DetailedStatRow>();
       trades.forEach(trade => {
-          const tags = Object.values(trade.customTags || {}).flat().filter(Boolean);
+          const tags = Object.values(trade.customTags || {}).flatMap(value => getSafeTagValues(value)).filter(Boolean);
           const labels = tags.length > 0 ? tags : [language === 'cn' ? '未填写标签' : 'No tag'];
           labels.forEach(label => {
               if (!grouped.has(label)) grouped.set(label, createDetailedStatRow(label));
@@ -2297,7 +2310,7 @@ const Reports: React.FC<ReportsProps> = ({
           });
       } else {
           trades.forEach(trade => {
-              const values = (trade.customTags?.[activeCategoryId] || []).map(value => value.trim()).filter(Boolean);
+              const values = getSafeTagValues(trade.customTags?.[activeCategoryId]);
               const labels = values.length > 0 ? values : [emptyLabel];
 
               labels.forEach(label => {
@@ -5806,7 +5819,7 @@ const Reports: React.FC<ReportsProps> = ({
           if (normalized) values.add(normalized);
       });
       Object.values(trade.customTags || {}).forEach(categoryValues => {
-          categoryValues.forEach(value => {
+          getSafeTagValues(categoryValues).forEach(value => {
               const normalized = value.trim();
               if (normalized) values.add(normalized);
           });
