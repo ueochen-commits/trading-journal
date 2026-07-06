@@ -650,7 +650,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                     </button>
                     
                     <Icon className="w-3.5 h-3.5" fill={cat.color} strokeWidth={0} />
-                    <span className="text-[15px] font-black leading-none tracking-[-0.01em] text-slate-900 dark:text-slate-100">{cat.label}</span>
+                    <span className="text-[14px] font-black leading-none tracking-[-0.01em] text-slate-900 dark:text-slate-100">{cat.label}</span>
                 </div>
                 
                 {/* 3 Dots Menu */}
