@@ -668,7 +668,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
                 {/* Dropdown Menu Overlay */}
                 {isFocused && (
-                    <div className="absolute top-[105%] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden max-h-56 overflow-y-auto animate-fade-in-up">
+                    <div className="absolute top-[105%] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[14px] shadow-[0_12px_28px_rgba(15,23,42,0.08)] z-50 overflow-hidden max-h-56 overflow-y-auto animate-fade-in-up">
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map((opt, i) => (
                                 <button
@@ -687,7 +687,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 </button>
                             ))
                         ) : (
-                            <div className="px-4 py-3 text-xs text-slate-400">
+                            <div className="px-2 py-2 bg-[#f8f8fb] border-t border-slate-100 dark:border-slate-800">
                                 {inputValue ? (
                                     <button 
                                         onMouseDown={(e) => {
@@ -695,12 +695,19 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             onAdd(inputValue);
                                             setInputValue('');
                                         }}
-                                        className="text-indigo-500 font-bold hover:underline"
+                                        className="w-full flex items-center gap-2 rounded-[10px] bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 px-3 py-2.5 transition-colors text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
                                     >
-                                        {language === 'cn' ? `创建 "${inputValue}"` : `Create "${inputValue}"`}
+                                        <span className="text-[13px] font-semibold text-[#6c5ce7] tracking-[0.01em]">
+                                            {language === 'cn' ? '+ 创建' : '+ Create'}
+                                        </span>
+                                        <span className="inline-flex items-center rounded-full bg-[#ededf1] px-3 py-1 text-[12px] font-medium text-slate-500">
+                                            {inputValue}
+                                        </span>
                                     </button>
                                 ) : (
-                                    <span className="italic">{language === 'cn' ? '输入后创建新标签...' : 'Type to create new...'}</span>
+                                    <div className="px-3 py-2 text-[12px] italic text-slate-400">
+                                        {language === 'cn' ? '输入后创建新标签...' : 'Type to create new...'}
+                                    </div>
                                 )}
                             </div>
                         )}
