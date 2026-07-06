@@ -1194,6 +1194,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           accountSize={riskSettings.accountSize}
                           plans={plans}
                           strategies={strategies}
+                          tagCategories={tagCategories}
                           isDataLoading={isDataLoading}
                           onSavePlan={handleSavePlan}
                           onPushNotification={handlePushNotification}
