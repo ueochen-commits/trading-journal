@@ -166,6 +166,25 @@ type ReportPreferences = {
   tagReportCategoryId: string;
 };
 
+type WinLossDetailChartPoint = {
+  date: string;
+  label: string;
+  tooltipLabel: string;
+  value: number;
+};
+
+type WinLossDetailSummary = {
+  tradeCount: number;
+  totalPnl: number;
+  avgDailyVolume: number;
+  avgWinningTrade: number | null;
+  avgLosingTrade: number | null;
+  numberOfWinningTrades: number;
+  numberOfLosingTrades: number;
+  totalCommissions: number;
+  chartData: WinLossDetailChartPoint[];
+};
+
 const DEFAULT_REPORT_PREFERENCES: ReportPreferences = {
   summaryMetricIds: getDefaultSummaryLayout(),
   pnlDisplayMode: 'net',
@@ -1821,6 +1840,61 @@ const Reports: React.FC<ReportsProps> = ({
       return max;
   };
 
+  const buildWinLossDetailSummary = (subsetTrades: Trade[]): WinLossDetailSummary => {
+      const closedSubsetTrades = subsetTrades.filter(isClosedTrade);
+      const positiveTrades = closedSubsetTrades.filter(trade => getDisplayPnl(trade) > 0);
+      const negativeTrades = closedSubsetTrades.filter(trade => getDisplayPnl(trade) < 0);
+      const totalPnl = closedSubsetTrades.reduce((sum, trade) => sum + getDisplayPnl(trade), 0);
+      const totalCommissions = closedSubsetTrades.reduce((sum, trade) => sum + (Number(trade.fees) || 0), 0);
+
+      const dailyBuckets = new Map<string, { pnl: number; volume: number }>();
+      closedSubsetTrades.forEach(trade => {
+          const dateKey = getDayTimeDateKey(trade);
+          if (!dateKey) return;
+          const current = dailyBuckets.get(dateKey) || { pnl: 0, volume: 0 };
+          current.pnl += getDisplayPnl(trade);
+          current.volume += getTradeVolume(trade);
+          dailyBuckets.set(dateKey, current);
+      });
+
+      let cumulative = 0;
+      const chartData = Array.from(dailyBuckets.entries())
+          .sort(([a], [b]) => new Date(a).getTime() - new Date(b).getTime())
+          .map(([date, bucket]) => {
+              cumulative += bucket.pnl;
+              const pointDate = new Date(`${date}T00:00:00`);
+              return {
+                  date,
+                  label: pointDate.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', { month: '2-digit', day: '2-digit' }),
+                  tooltipLabel: pointDate.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
+                  value: Number(cumulative.toFixed(2)),
+              };
+          });
+
+      const avgDailyVolume = dailyBuckets.size > 0
+          ? Array.from(dailyBuckets.values()).reduce((sum, bucket) => sum + bucket.volume, 0) / dailyBuckets.size
+          : 0;
+
+      const avgWinningTrade = positiveTrades.length > 0
+          ? positiveTrades.reduce((sum, trade) => sum + getDisplayPnl(trade), 0) / positiveTrades.length
+          : null;
+      const avgLosingTrade = negativeTrades.length > 0
+          ? negativeTrades.reduce((sum, trade) => sum + getDisplayPnl(trade), 0) / negativeTrades.length
+          : null;
+
+      return {
+          tradeCount: closedSubsetTrades.length,
+          totalPnl: Number(totalPnl.toFixed(2)),
+          avgDailyVolume,
+          avgWinningTrade,
+          avgLosingTrade,
+          numberOfWinningTrades: positiveTrades.length,
+          numberOfLosingTrades: negativeTrades.length,
+          totalCommissions,
+          chartData,
+      };
+  };
+
   const getRiskMetrics = (closedTrades: Trade[]) => {
       let plannedTotal = 0;
       let realizedTotal = 0;
@@ -3202,6 +3276,8 @@ const Reports: React.FC<ReportsProps> = ({
   const previousDayTimeChartAnimationSignatureRef = useRef<string | null>(null);
   const [shouldAnimateDayTimeCharts, setShouldAnimateDayTimeCharts] = useState(true);
   const [shouldAnimateDayTimeInsights, setShouldAnimateDayTimeInsights] = useState(true);
+  const previousWinLossesChartAnimationSignatureRef = useRef<string | null>(null);
+  const [shouldAnimateWinLossesCharts, setShouldAnimateWinLossesCharts] = useState(true);
 
   useEffect(() => {
       const hasDayTimeChartChanged = previousDayTimeChartAnimationSignatureRef.current !== dayTimeChartAnimationSignature;
@@ -3225,6 +3301,21 @@ const Reports: React.FC<ReportsProps> = ({
 
       return () => window.clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+      const hasChartChanged = previousWinLossesChartAnimationSignatureRef.current !== winsLossesChartAnimationSignature;
+      previousWinLossesChartAnimationSignatureRef.current = winsLossesChartAnimationSignature;
+
+      if (hasChartChanged) {
+          setShouldAnimateWinLossesCharts(true);
+      }
+
+      const timer = window.setTimeout(() => {
+          setShouldAnimateWinLossesCharts(false);
+      }, 760);
+
+      return () => window.clearTimeout(timer);
+  }, [winsLossesChartAnimationSignature]);
 
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
@@ -4832,6 +4923,117 @@ const Reports: React.FC<ReportsProps> = ({
       );
   }
 
+  const WinLossDetailedTooltip = ({
+      active,
+      payload,
+      title,
+      color,
+  }: {
+      active?: boolean;
+      payload?: Array<{ value?: number; payload?: { tooltipLabel?: string } }>;
+      title: string;
+      color: string;
+  }) => {
+      if (!active || !payload?.length) return null;
+      const value = Number(payload[0]?.value || 0);
+      const tooltipTitle = payload[0]?.payload?.tooltipLabel || '';
+
+      return (
+          <div className="min-w-[188px] rounded-[4px] border border-[#d7dce4] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.18)]">
+              <div className="text-[12px] font-semibold leading-[16px] text-[#20232a]">{tooltipTitle}</div>
+              <div className="mt-[5px] flex items-center gap-[6px]">
+                  <span className="h-[6px] w-[6px] rounded-full" style={{ backgroundColor: color }} />
+                  <span className="text-[12px] font-medium leading-[16px] text-[#303844]">
+                      {title}: {formatSignedMoney(value)}
+                  </span>
+              </div>
+          </div>
+      );
+  };
+
+  const renderWinLossDetailedChart = ({
+      chartId,
+      data,
+      color,
+      gradientStops,
+      title,
+      animate,
+  }: {
+      chartId: string;
+      data: WinLossDetailChartPoint[];
+      color: string;
+      gradientStops: { start: string; end: string };
+      title: string;
+      animate: boolean;
+  }) => {
+      const ticks = getEvenlySpacedIndexes(data.length, Math.min(data.length, 6))
+          .map(index => data[index]?.label)
+          .filter(Boolean);
+      const yTicks = getChartAxisTicks(data.map(point => point.value));
+
+      return (
+          <div className={`relative h-full ${animate ? 'animate-fade-in' : ''}`}>
+              <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={data} margin={{ top: 10, right: 26, left: 18, bottom: 26 }}>
+                      <defs>
+                          <linearGradient id={`${chartId}-fill`} x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor={gradientStops.start} stopOpacity={0.58} />
+                              <stop offset="58%" stopColor={gradientStops.start} stopOpacity={0.2} />
+                              <stop offset="100%" stopColor={gradientStops.end} stopOpacity={0.02} />
+                          </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} horizontal stroke="#dfe5eb" strokeOpacity={0.48} strokeDasharray="4 4" />
+                      <XAxis
+                          dataKey="label"
+                          ticks={ticks}
+                          interval={0}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 500 }}
+                          dy={16}
+                          padding={{ left: 14, right: 24 }}
+                      />
+                      <YAxis
+                          axisLine={false}
+                          tickLine={false}
+                          width={62}
+                          ticks={yTicks}
+                          domain={[yTicks[0], yTicks[yTicks.length - 1]]}
+                          tick={<ChartYAxisTick format="money" colors={[color]} orientation="left" />}
+                      />
+                      <Tooltip
+                          cursor={{ stroke: color, strokeDasharray: '3 3', strokeWidth: 1 }}
+                          content={<WinLossDetailedTooltip title={title} color={color} />}
+                      />
+                      {yTicks.map(tick => (
+                          <ReferenceLine
+                              key={`${chartId}-tick-${tick}`}
+                              y={tick}
+                              stroke="#dfe5eb"
+                              strokeOpacity={0.42}
+                              strokeDasharray="4 4"
+                              strokeWidth={1}
+                              ifOverflow="extendDomain"
+                          />
+                      ))}
+                      <Area
+                          type="monotone"
+                          dataKey="value"
+                          stroke={color}
+                          strokeWidth={1.8}
+                          fill={`url(#${chartId}-fill)`}
+                          isAnimationActive={animate}
+                          animationDuration={620}
+                          animationEasing="ease-out"
+                          dot={false}
+                          activeDot={{ r: 4.8, fill: '#fff', stroke: color, strokeWidth: 2 }}
+                      />
+                  </AreaChart>
+              </ResponsiveContainer>
+          </div>
+      );
+  };
+
   const ChartMetricPicker = ({ side, slot, selectedMetricId, excludedMetricIds = [] }: { side: ChartSide; slot: ChartMetricSlot; selectedMetricId: SummaryMetricId | null; excludedMetricIds?: SummaryMetricId[] }) => {
       if (openChartMetricPicker?.side !== side || openChartMetricPicker.slot !== slot) return null;
 
@@ -5368,6 +5570,41 @@ const Reports: React.FC<ReportsProps> = ({
   const visibleTagRows = useMemo(() => {
       return dayTimeSymbolLimit === 'all' ? tagRowsWithTrades : tagRowsWithTrades.slice(0, dayTimeSymbolLimit);
   }, [tagRowsWithTrades, dayTimeSymbolLimit]);
+
+  const closedTrades = useMemo(() => trades.filter(isClosedTrade), [trades]);
+  const winningTradesDetail = useMemo(() => closedTrades.filter(trade => getDisplayPnl(trade) > 0), [closedTrades, pnlDisplayMode]);
+  const losingTradesDetail = useMemo(() => closedTrades.filter(trade => getDisplayPnl(trade) < 0), [closedTrades, pnlDisplayMode]);
+  const winningTradePnlsDetail = useMemo(() => winningTradesDetail.map(trade => getDisplayPnl(trade)), [winningTradesDetail, pnlDisplayMode]);
+  const losingTradePnlsDetail = useMemo(() => losingTradesDetail.map(trade => getDisplayPnl(trade)), [losingTradesDetail, pnlDisplayMode]);
+
+  const winsLossesSummary = useMemo(() => {
+      const winsSummary = buildWinLossDetailSummary(winningTradesDetail);
+      const lossesSummary = buildWinLossDetailSummary(losingTradesDetail);
+
+      return {
+          wins: {
+              ...winsSummary,
+              streakValue: getMaxConsecutiveCount(winningTradePnlsDetail, pnl => pnl > 0),
+          },
+          losses: {
+              ...lossesSummary,
+              streakValue: getMaxConsecutiveCount(losingTradePnlsDetail, pnl => pnl < 0),
+          },
+      };
+  }, [winningTradesDetail, losingTradesDetail, winningTradePnlsDetail, losingTradePnlsDetail, language, pnlDisplayMode]);
+
+  const winsLossesChartAnimationSignature = useMemo(() => {
+      const serialize = (points: WinLossDetailChartPoint[]) => points.map(point => `${point.date}:${point.value}`).join('|');
+      return [
+          pnlDisplayMode,
+          serialize(winsLossesSummary.wins.chartData),
+          serialize(winsLossesSummary.losses.chartData),
+          winsLossesSummary.wins.totalPnl,
+          winsLossesSummary.losses.totalPnl,
+          winsLossesSummary.wins.tradeCount,
+          winsLossesSummary.losses.tradeCount,
+      ].join('||');
+  }, [winsLossesSummary, pnlDisplayMode]);
 
   const symbolCrossAnalysisRows = useMemo(() => {
       return visibleSymbolRows.map(row => {
@@ -7565,6 +7802,198 @@ const Reports: React.FC<ReportsProps> = ({
                               )}
                           </div>
                       </section>
+                  </div>
+              ) : detailedFilter === 'WINS_LOSSES' ? (
+                  <div className="space-y-[14px]">
+                      <div className="flex flex-col gap-[10px] lg:flex-row lg:items-center lg:justify-between">
+                          <div className="flex items-center gap-[12px]">
+                              <span className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#7b828c]">
+                                  {language === 'cn' ? '盈亏显示' : 'P&L Showing'}
+                              </span>
+                              <div className="relative" data-pnl-display-menu>
+                                  <button
+                                      type="button"
+                                      onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
+                                      className="inline-flex h-[36px] min-w-[116px] items-center justify-between gap-[10px] rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                  >
+                                      <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
+                                      <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                                  </button>
+                                  <div
+                                      className={`absolute left-0 top-full z-[80] mt-[6px] w-[132px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                                      }`}
+                                  >
+                                      {([
+                                          { id: 'net' as const, label: language === 'cn' ? '净盈亏' : 'NET P&L' },
+                                          { id: 'gross' as const, label: language === 'cn' ? '总盈亏' : 'GROSS P&L' },
+                                      ]).map(option => (
+                                          <button
+                                              key={option.id}
+                                              type="button"
+                                              onClick={() => {
+                                                  setPnlDisplayMode(option.id);
+                                                  setIsPnlDisplayMenuOpen(false);
+                                              }}
+                                              className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
+                                                  pnlDisplayMode === option.id
+                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
+                                              }`}
+                                          >
+                                              {option.label}
+                                          </button>
+                                      ))}
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                          {([
+                              {
+                                  key: 'wins',
+                                  header: language === 'cn' ? '盈利交易' : 'WINS',
+                                  matchedLabel: language === 'cn' ? '笔交易匹配' : 'Trades Matched',
+                              },
+                              {
+                                  key: 'losses',
+                                  header: language === 'cn' ? '亏损交易' : 'LOSSES',
+                                  matchedLabel: language === 'cn' ? '笔交易匹配' : 'Trades Matched',
+                              },
+                          ] as const).map(section => {
+                              const summary = section.key === 'wins' ? winsLossesSummary.wins : winsLossesSummary.losses;
+                              return (
+                                  <div key={section.key} className="rounded-[8px] bg-white px-[22px] py-[15px] shadow-none dark:bg-slate-900">
+                                      <div className="text-[15px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
+                                          {section.header} ({summary.tradeCount} {section.matchedLabel})
+                                      </div>
+                                  </div>
+                              );
+                          })}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                          {([
+                              {
+                                  key: 'wins',
+                                  heading: language === 'cn' ? '统计（盈利）' : 'STATISTICS (WINS)',
+                                  subtitle: language === 'cn' ? '（全部日期）' : '(ALL DATES)',
+                                  positiveOnly: true,
+                              },
+                              {
+                                  key: 'losses',
+                                  heading: language === 'cn' ? '统计（亏损）' : 'STATISTICS (LOSSES)',
+                                  subtitle: language === 'cn' ? '（全部日期）' : '(ALL DATES)',
+                                  positiveOnly: false,
+                              },
+                          ] as const).map(section => {
+                              const summary = section.key === 'wins' ? winsLossesSummary.wins : winsLossesSummary.losses;
+                              const streakLabel = section.positiveOnly
+                                  ? (language === 'cn' ? '最大连续盈利' : 'Max consecutive wins')
+                                  : (language === 'cn' ? '最大连续亏损' : 'Max consecutive losses');
+                              const rows = [
+                                  [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(summary.totalPnl)],
+                                  [language === 'cn' ? '平均每日成交额' : 'Average daily volume', summary.avgDailyVolume.toFixed(2)],
+                                  [language === 'cn' ? '平均盈利交易' : 'Average winning trade', summary.avgWinningTrade === null ? 'N/A' : formatSignedMoney(summary.avgWinningTrade)],
+                                  [language === 'cn' ? '平均亏损交易' : 'Average losing trade', summary.avgLosingTrade === null ? 'N/A' : formatSignedMoney(summary.avgLosingTrade)],
+                                  [language === 'cn' ? '盈利交易数量' : 'Number of winning trades', summary.numberOfWinningTrades],
+                                  [language === 'cn' ? '亏损交易数量' : 'Number of losing trades', summary.numberOfLosingTrades],
+                                  [language === 'cn' ? '总佣金' : 'Total commissions', formatSignedMoney(summary.totalCommissions)],
+                                  [streakLabel, summary.streakValue],
+                              ];
+
+                              return (
+                                  <section key={section.key} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px]">
+                                          <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">{section.heading}</h3>
+                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">{section.subtitle}</div>
+                                      </div>
+                                      <div>
+                                          {rows.map(([label, value], index) => (
+                                              <div
+                                                  key={`${section.key}-${label}`}
+                                                  className={`flex items-center justify-between gap-[18px] px-[24px] py-[11px] text-[13px] ${
+                                                      index < rows.length - 1 ? 'border-b border-[#eceff3]' : ''
+                                                  }`}
+                                              >
+                                                  <span className="font-semibold text-[#6b7280]">{label}</span>
+                                                  <span className="font-semibold tabular-nums text-[#4d5560]">{value}</span>
+                                              </div>
+                                          ))}
+                                      </div>
+                                  </section>
+                              );
+                          })}
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
+                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px]">
+                                  <div className="flex items-center gap-[10px]">
+                                      <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
+                                          {pnlDisplayMode === 'net'
+                                              ? (language === 'cn' ? '每日净累计盈亏（盈利）' : 'DAILY NET CUMULATIVE P&L (WINS)')
+                                              : (language === 'cn' ? '每日总累计盈亏（盈利）' : 'DAILY GROSS CUMULATIVE P&L (WINS)')}
+                                      </h3>
+                                      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                          {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
+                                      </span>
+                                  </div>
+                                  <OverviewInfoBadge />
+                              </div>
+                              <div className="h-[392px] px-[12px] pb-[12px] pt-[8px]">
+                                  {winsLossesSummary.wins.chartData.length === 0 ? (
+                                      <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d]">
+                                          {language === 'cn' ? '暂无盈利交易数据' : 'No winning trade data'}
+                                      </div>
+                                  ) : renderWinLossDetailedChart({
+                                      chartId: 'wins-losses-wins',
+                                      data: winsLossesSummary.wins.chartData,
+                                      color: '#5d53d8',
+                                      gradientStops: { start: '#6bd1a4', end: '#eef8f4' },
+                                      title: pnlDisplayMode === 'net'
+                                          ? (language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative')
+                                          : (language === 'cn' ? '总盈亏 - 累计' : 'Gross P&L - cumulative'),
+                                      animate: shouldAnimateWinLossesCharts,
+                                  })}
+                              </div>
+                              <ReportCardLoadingOverlay radius={8} />
+                          </section>
+
+                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px]">
+                                  <div className="flex items-center gap-[10px]">
+                                      <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
+                                          {pnlDisplayMode === 'net'
+                                              ? (language === 'cn' ? '每日净累计盈亏（亏损）' : 'DAILY NET CUMULATIVE P&L (LOSSES)')
+                                              : (language === 'cn' ? '每日总累计盈亏（亏损）' : 'DAILY GROSS CUMULATIVE P&L (LOSSES)')}
+                                      </h3>
+                                      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                          {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
+                                      </span>
+                                  </div>
+                                  <OverviewInfoBadge />
+                              </div>
+                              <div className="h-[392px] px-[12px] pb-[12px] pt-[8px]">
+                                  {winsLossesSummary.losses.chartData.length === 0 ? (
+                                      <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d]">
+                                          {language === 'cn' ? '暂无亏损交易数据' : 'No losing trade data'}
+                                      </div>
+                                  ) : renderWinLossDetailedChart({
+                                      chartId: 'wins-losses-losses',
+                                      data: winsLossesSummary.losses.chartData,
+                                      color: '#5d53d8',
+                                      gradientStops: { start: '#ff7b86', end: '#fff0f1' },
+                                      title: pnlDisplayMode === 'net'
+                                          ? (language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative')
+                                          : (language === 'cn' ? '总盈亏 - 累计' : 'Gross P&L - cumulative'),
+                                      animate: shouldAnimateWinLossesCharts,
+                                  })}
+                              </div>
+                              <ReportCardLoadingOverlay radius={8} />
+                          </section>
+                      </div>
                   </div>
               ) : detailedFilter === 'TAGS' ? (
                   <div className="space-y-[14px]">
