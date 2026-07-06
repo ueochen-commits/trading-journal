@@ -422,7 +422,6 @@ const Reports: React.FC<ReportsProps> = ({
   const [dayTimeSymbolLimit, setDayTimeSymbolLimit] = useState<DayTimeSymbolLimit>(initialLocalReportPreferences.dayTimeSymbolLimit);
   const [isDayTimeSymbolLimitOpen, setIsDayTimeSymbolLimitOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
-  const [reportMenuReservedHeight, setReportMenuReservedHeight] = useState(0);
   const [isAccountSwitcherOpen, setIsAccountSwitcherOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ start: Date, end: Date }>(getRange('last30'));
   const [activeDatePreset, setActiveDatePreset] = useState<string>('All Time');
@@ -430,7 +429,6 @@ const Reports: React.FC<ReportsProps> = ({
   const [viewDate, setViewDate] = useState(new Date());
   const accountSwitcherRef = useRef<HTMLDivElement>(null);
   const datePickerRef = useRef<HTMLDivElement>(null);
-  const reportMenuRef = useRef<HTMLDivElement>(null);
   // State for Time Interval Selection
   const [timeInterval, setTimeInterval] = useState<string>('1 Hour');
   // Risk Tab Sub-filter
@@ -786,25 +784,6 @@ const Reports: React.FC<ReportsProps> = ({
       document.addEventListener('pointerdown', handlePointerDown);
       return () => document.removeEventListener('pointerdown', handlePointerDown);
   }, [isReportMenuOpen]);
-
-  useEffect(() => {
-      const updateReservedHeight = () => {
-          if (activeTab !== 'detailed' || !isReportMenuOpen || !reportMenuRef.current) {
-              setReportMenuReservedHeight(0);
-              return;
-          }
-
-          const menuHeight = reportMenuRef.current.offsetHeight;
-          setReportMenuReservedHeight(menuHeight > 0 ? menuHeight + 10 : 0);
-      };
-
-      updateReservedHeight();
-
-      if (activeTab !== 'detailed' || !isReportMenuOpen) return;
-
-      window.addEventListener('resize', updateReservedHeight);
-      return () => window.removeEventListener('resize', updateReservedHeight);
-  }, [activeTab, isReportMenuOpen, language, detailedFilter]);
 
   useEffect(() => {
       if (!openChartMetricPicker) return;
@@ -5700,7 +5679,6 @@ const Reports: React.FC<ReportsProps> = ({
                             </button>
                             {isReportMenuTab && (
                                 <div
-                                    ref={reportMenuRef}
                                     className={`absolute left-[-2px] top-[calc(100%-6px)] z-50 w-[180px] origin-top-left overflow-hidden rounded-[10px] border border-[#dedfe4] bg-white py-[7px] shadow-[0_1px_2px_rgba(20,24,36,0.08),0_8px_18px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
                                         isReportMenuOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-1 scale-[0.98] opacity-0'
                                     }`}
@@ -5728,11 +5706,6 @@ const Reports: React.FC<ReportsProps> = ({
                 {language === 'cn' ? '阅读指南' : 'Read guide'}
             </button>
             </div>
-            <div
-                aria-hidden="true"
-                className="pointer-events-none border-b border-transparent transition-[height] duration-200 ease-out"
-                style={{ height: reportMenuReservedHeight ? `${reportMenuReservedHeight}px` : '0px' }}
-            />
         </div>
       </div>
 
