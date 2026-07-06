@@ -345,6 +345,48 @@ export const userDataService = {
     return { error };
   },
 
+  async getReportPreferences() {
+    const userId = await getCurrentUserId();
+    if (!userId) return { data: null, error: 'Not authenticated' };
+
+    const { data, error } = await supabase
+      .from('user_settings')
+      .select('settings')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    return {
+      data: data?.settings?.reportPreferences || null,
+      error,
+    };
+  },
+
+  async saveReportPreferences(reportPreferences: any) {
+    const userId = await getCurrentUserId();
+    if (!userId) return { error: 'Not authenticated' };
+
+    const { data: existing, error: existingError } = await supabase
+      .from('user_settings')
+      .select('settings')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (existingError) {
+      return { error: existingError };
+    }
+
+    const { error } = await supabase.from('user_settings').upsert({
+      user_id: userId,
+      settings: {
+        ...(existing?.settings || {}),
+        reportPreferences,
+      },
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' });
+
+    return { error };
+  },
+
   // 保存风险设置
   async saveRiskSettings(riskSettings: RiskSettings) {
     const userId = await getCurrentUserId();
