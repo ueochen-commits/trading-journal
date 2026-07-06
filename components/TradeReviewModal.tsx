@@ -511,6 +511,8 @@ interface TagSelectorProps {
     language: 'cn' | 'en';
     onAdd: (tag: string) => void;
     onRemove: (tag: string) => void;
+    onRenameTag: (oldTag: string, newTag: string) => void;
+    onDeleteTag: (tag: string) => void;
     onDeleteCategory: () => void;
     onRenameCategory: (newName: string) => void;
     onChangeColor: (color: string) => void;
@@ -522,6 +524,8 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     language,
     onAdd, 
     onRemove, 
+    onRenameTag,
+    onDeleteTag,
     onDeleteCategory,
     onRenameCategory,
     onChangeColor
@@ -529,6 +533,9 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     const [inputValue, setInputValue] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeTagMenu, setActiveTagMenu] = useState<string | null>(null);
+    const [editingTag, setEditingTag] = useState<string | null>(null);
+    const [editingValue, setEditingValue] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
     const menuRef = useRef<HTMLDivElement>(null);
 
@@ -546,6 +553,9 @@ const TagSelector: React.FC<TagSelectorProps> = ({
             }
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
                 setIsMenuOpen(false);
+            }
+            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+                setActiveTagMenu(null);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -565,6 +575,21 @@ const TagSelector: React.FC<TagSelectorProps> = ({
         const newName = prompt(language === 'cn' ? '重命名分类：' : 'Rename category:', cat.label);
         if (newName) onRenameCategory(newName);
         setIsMenuOpen(false);
+    };
+
+    const handleStartEditTag = (tag: string) => {
+        setEditingTag(tag);
+        setEditingValue(tag);
+        setActiveTagMenu(null);
+    };
+
+    const handleSaveTagRename = () => {
+        if (!editingTag) return;
+        const nextValue = editingValue.trim();
+        if (!nextValue) return;
+        onRenameTag(editingTag, nextValue);
+        setEditingTag(null);
+        setEditingValue('');
     };
 
     return (
@@ -671,20 +696,87 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                     <div className="absolute top-[105%] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[14px] shadow-[0_12px_28px_rgba(15,23,42,0.08)] z-50 overflow-hidden max-h-56 overflow-y-auto animate-fade-in-up">
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map((opt, i) => (
-                                <button
+                                <div
                                     key={i}
-                                    onMouseDown={(e) => {
-                                        e.preventDefault(); 
-                                        onAdd(opt);
-                                        setInputValue('');
-                                    }}
-                                    className="w-full text-left px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex justify-between items-center group"
+                                    className="relative px-3 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                 >
-                                    {opt}
-                                    <span className="opacity-0 group-hover:opacity-100 text-slate-400">
-                                        <Plus className="w-3 h-3" />
-                                    </span>
-                                </button>
+                                    {editingTag === opt ? (
+                                        <div className="flex items-center gap-2 rounded-[12px] bg-white border border-slate-200 px-2.5 py-2 shadow-sm">
+                                            <input
+                                                autoFocus
+                                                value={editingValue}
+                                                onChange={(e) => setEditingValue(e.target.value)}
+                                                onKeyDown={(e) => {
+                                                    if (e.key === 'Enter') {
+                                                        e.preventDefault();
+                                                        handleSaveTagRename();
+                                                    }
+                                                    if (e.key === 'Escape') {
+                                                        setEditingTag(null);
+                                                        setEditingValue('');
+                                                    }
+                                                }}
+                                                className="flex-1 bg-transparent border-none outline-none text-[13px] text-slate-700"
+                                            />
+                                            <button
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    handleSaveTagRename();
+                                                }}
+                                                className="text-[13px] font-semibold text-[#6c5ce7]"
+                                            >
+                                                {language === 'cn' ? '保存' : 'Save'}
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between gap-3 rounded-[12px] bg-transparent px-1 py-1">
+                                            <button
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault(); 
+                                                    onAdd(opt);
+                                                    setInputValue('');
+                                                }}
+                                                className="flex-1 text-left text-sm text-slate-700 dark:text-slate-300"
+                                            >
+                                                {opt}
+                                            </button>
+                                            <div className="relative">
+                                                <button
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault();
+                                                        setActiveTagMenu(activeTagMenu === opt ? null : opt);
+                                                    }}
+                                                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                                >
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </button>
+                                                {activeTagMenu === opt && (
+                                                    <div className="absolute right-0 top-7 z-20 w-[88px] rounded-[12px] border border-slate-200 bg-white py-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
+                                                        <button
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                handleStartEditTag(opt);
+                                                            }}
+                                                            className="block w-full px-3 py-1.5 text-left text-[13px] text-slate-600 hover:bg-slate-50"
+                                                        >
+                                                            {language === 'cn' ? '编辑' : 'Edit'}
+                                                        </button>
+                                                        <button
+                                                            onMouseDown={(e) => {
+                                                                e.preventDefault();
+                                                                onDeleteTag(opt);
+                                                                setActiveTagMenu(null);
+                                                            }}
+                                                            className="block w-full px-3 py-1.5 text-left text-[13px] text-rose-500 hover:bg-rose-50"
+                                                        >
+                                                            {language === 'cn' ? '删除' : 'Delete'}
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             ))
                         ) : (
                             <div className="px-2 py-2 bg-[#f8f8fb] border-t border-slate-100 dark:border-slate-800">
@@ -1044,6 +1136,71 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         );
         setCategoryDefs(next);
         onSaveTagCategories(next);
+    };
+
+    const handleRenameTagOption = (catId: string, oldTag: string, newTag: string) => {
+        const trimmed = newTag.trim();
+        if (!trimmed || trimmed === oldTag) return;
+
+        const nextDefs = categoryDefs.map(category => {
+            if (category.id !== catId) return category;
+            return {
+                ...category,
+                options: category.options.map(option => option === oldTag ? trimmed : option),
+            };
+        });
+        setCategoryDefs(nextDefs);
+        onSaveTagCategories(nextDefs);
+
+        if (catId === 'mistakes') {
+            const updated = {
+                ...currentTrade,
+                mistakes: (currentTrade.mistakes || []).map(tag => tag === oldTag ? trimmed : tag),
+            };
+            setCurrentTrade(updated);
+            onUpdateTrade(updated);
+            return;
+        }
+
+        const currentTags = currentTrade.customTags?.[catId] || [];
+        const updatedCustomTags = {
+            ...(currentTrade.customTags || {}),
+            [catId]: currentTags.map(tag => tag === oldTag ? trimmed : tag),
+        };
+        const updated = { ...currentTrade, customTags: updatedCustomTags };
+        setCurrentTrade(updated);
+        onUpdateTrade(updated);
+    };
+
+    const handleDeleteTagOption = (catId: string, tagToDelete: string) => {
+        const nextDefs = categoryDefs.map(category => {
+            if (category.id !== catId) return category;
+            return {
+                ...category,
+                options: category.options.filter(option => option !== tagToDelete),
+            };
+        });
+        setCategoryDefs(nextDefs);
+        onSaveTagCategories(nextDefs);
+
+        if (catId === 'mistakes') {
+            const updated = {
+                ...currentTrade,
+                mistakes: (currentTrade.mistakes || []).filter(tag => tag !== tagToDelete),
+            };
+            setCurrentTrade(updated);
+            onUpdateTrade(updated);
+            return;
+        }
+
+        const currentTags = currentTrade.customTags?.[catId] || [];
+        const updatedCustomTags = {
+            ...(currentTrade.customTags || {}),
+            [catId]: currentTags.filter(tag => tag !== tagToDelete),
+        };
+        const updated = { ...currentTrade, customTags: updatedCustomTags };
+        setCurrentTrade(updated);
+        onUpdateTrade(updated);
     };
 
     // --- Playbook Logic ---
@@ -1764,6 +1921,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                 }
                                                 onAdd={(tag) => handleAddTag(cat.id, tag)}
                                                 onRemove={(tag) => handleRemoveTag(cat.id, tag)}
+                                                onRenameTag={(oldTag, newTag) => handleRenameTagOption(cat.id, oldTag, newTag)}
+                                                onDeleteTag={(tag) => handleDeleteTagOption(cat.id, tag)}
                                                 onDeleteCategory={() => handleDeleteCategory(cat.id)}
                                                 onRenameCategory={(newName) => handleRenameCategory(cat.id, newName)}
                                                 onChangeColor={(color) => handleChangeCategoryColor(cat.id, color)}
