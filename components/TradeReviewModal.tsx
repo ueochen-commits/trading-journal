@@ -713,18 +713,18 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             </span>
                                         </div>
                                     ) : (
-                                        <div className="flex min-h-[36px] items-center gap-2 rounded-[12px] bg-transparent px-2 py-1.5">
-                                            <button
-                                                onMouseDown={(e) => {
-                                                    e.preventDefault(); 
-                                                    onAdd(opt);
-                                                    setInputValue('');
-                                                }}
-                                                className="min-w-0 flex-1 text-left text-sm text-slate-700 dark:text-slate-300"
-                                            >
-                                                {opt}
-                                            </button>
-                                            <div className="relative ml-1 flex w-6 shrink-0 justify-start">
+                                        <div className="flex min-h-[36px] items-center rounded-[12px] bg-transparent px-2 py-1.5">
+                                            <div className="relative inline-flex max-w-full items-center gap-1.5">
+                                                <button
+                                                    onMouseDown={(e) => {
+                                                        e.preventDefault(); 
+                                                        onAdd(opt);
+                                                        setInputValue('');
+                                                    }}
+                                                    className="min-w-0 max-w-[180px] truncate text-left text-sm text-slate-700 dark:text-slate-300"
+                                                >
+                                                    {opt}
+                                                </button>
                                                 <button
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
