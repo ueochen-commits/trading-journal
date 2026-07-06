@@ -789,7 +789,7 @@ const Reports: React.FC<ReportsProps> = ({
 
   useEffect(() => {
       const updateReservedHeight = () => {
-          if (!isReportMenuOpen || !reportMenuRef.current) {
+          if (activeTab !== 'detailed' || !isReportMenuOpen || !reportMenuRef.current) {
               setReportMenuReservedHeight(0);
               return;
           }
@@ -800,11 +800,11 @@ const Reports: React.FC<ReportsProps> = ({
 
       updateReservedHeight();
 
-      if (!isReportMenuOpen) return;
+      if (activeTab !== 'detailed' || !isReportMenuOpen) return;
 
       window.addEventListener('resize', updateReservedHeight);
       return () => window.removeEventListener('resize', updateReservedHeight);
-  }, [isReportMenuOpen, language, detailedFilter]);
+  }, [activeTab, isReportMenuOpen, language, detailedFilter]);
 
   useEffect(() => {
       if (!openChartMetricPicker) return;
