@@ -729,29 +729,29 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             </button>
                                         </div>
                                     ) : (
-                                        <div className="flex items-center justify-between gap-3 rounded-[12px] bg-transparent px-1 py-1">
+                                        <div className="flex min-h-[36px] items-center justify-between gap-3 rounded-[12px] bg-transparent px-2 py-1.5 pr-3">
                                             <button
                                                 onMouseDown={(e) => {
                                                     e.preventDefault(); 
                                                     onAdd(opt);
                                                     setInputValue('');
                                                 }}
-                                                className="flex-1 text-left text-sm text-slate-700 dark:text-slate-300"
+                                                className="min-w-0 flex-1 text-left text-sm text-slate-700 dark:text-slate-300"
                                             >
                                                 {opt}
                                             </button>
-                                            <div className="relative">
+                                            <div className="relative flex w-7 shrink-0 justify-end">
                                                 <button
                                                     onMouseDown={(e) => {
                                                         e.preventDefault();
                                                         setActiveTagMenu(activeTagMenu === opt ? null : opt);
                                                     }}
-                                                    className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                                    className="rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                                                 >
-                                                    <MoreHorizontal className="w-4 h-4" />
+                                                    <MoreHorizontal className="w-[15px] h-[15px]" />
                                                 </button>
                                                 {activeTagMenu === opt && (
-                                                    <div className="absolute right-0 top-7 z-20 w-[88px] rounded-[12px] border border-slate-200 bg-white py-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
+                                                    <div className="absolute right-0 top-6 z-20 w-[88px] rounded-[12px] border border-slate-200 bg-white py-1.5 shadow-[0_12px_30px_rgba(15,23,42,0.12)]">
                                                         <button
                                                             onMouseDown={(e) => {
                                                                 e.preventDefault();
