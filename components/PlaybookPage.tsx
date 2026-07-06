@@ -1178,15 +1178,35 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
 }) => {
     const { t, language } = useLanguage();
     const { registerStepAction, unregisterStepAction } = useTour();
-    const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
     const [detailedStrategyId, setDetailedStrategyId] = useState<string | null>(null);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [editStrategy, setEditStrategy] = useState<Strategy | undefined>(undefined);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [activeCollection, setActiveCollection] = useState<'mine' | 'shared' | 'templates'>('mine');
+    const [lifecycleTab, setLifecycleTab] = useState<'active' | 'archived'>('active');
+    const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
     const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
-    const [sortOption, setSortOption] = useState('name-asc');
-    const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
-    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [isColumnModalOpen, setIsColumnModalOpen] = useState(false);
+    const [selectedTimeLabel, setSelectedTimeLabel] = useState(language === 'cn' ? '时间范围' : 'Date range');
+    const [selectedAccountLabel, setSelectedAccountLabel] = useState(language === 'cn' ? '所有账户' : 'All accounts');
+    const menuRef = useRef<HTMLDivElement>(null);
+
+    const tableColumns = useMemo(() => ([
+        { id: 'title', label: language === 'cn' ? '标题' : 'Title' },
+        { id: 'missedTrades', label: language === 'cn' ? '错过交易' : 'Missed trades' },
+        { id: 'sharedStrategies', label: language === 'cn' ? '共享策略' : 'Shared strategies' },
+        { id: 'avgLoss', label: language === 'cn' ? '平均亏损' : 'Average loser' },
+        { id: 'avgWin', label: language === 'cn' ? '平均盈利' : 'Average winner' },
+        { id: 'netPnl', label: language === 'cn' ? '总净盈亏' : 'Total net P&L' },
+        { id: 'profitFactor', label: language === 'cn' ? '盈利因子' : 'Profit factor' },
+        { id: 'trades', label: language === 'cn' ? '交易数' : 'Trades' },
+        { id: 'winRate', label: language === 'cn' ? '胜率' : 'Win rate' },
+    ]), [language]);
+    const defaultVisibleColumns = useMemo(
+        () => ['title', 'missedTrades', 'sharedStrategies', 'avgLoss', 'avgWin', 'netPnl', 'profitFactor', 'trades'],
+        []
+    );
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultVisibleColumns);
+    const [draftVisibleColumns, setDraftVisibleColumns] = useState<string[]>(defaultVisibleColumns);
 
     const handleCreatePlaybook = () => { setEditStrategy(undefined); setIsCreateModalOpen(true); };
     const handleEditPlaybook = (strategy: Strategy) => { setEditStrategy(strategy); setIsCreateModalOpen(true); setMenuOpenId(null); };
@@ -1210,6 +1230,29 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
         };
     }, []);
 
+    useEffect(() => {
+        setSelectedTimeLabel(language === 'cn' ? '时间范围' : 'Date range');
+        setSelectedAccountLabel(language === 'cn' ? '所有账户' : 'All accounts');
+    }, [language]);
+
+    useEffect(() => {
+        if (!autoCreate) return;
+        setEditStrategy(undefined);
+        setIsCreateModalOpen(true);
+        onResetAutoCreate?.();
+    }, [autoCreate, onResetAutoCreate]);
+
+    useEffect(() => {
+        const handlePointerDown = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setMenuOpenId(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handlePointerDown);
+        return () => document.removeEventListener('mousedown', handlePointerDown);
+    }, []);
+
     const handleSaveStrategy = (strategy: Strategy) => {
         const exists = strategies.some(s => s.id === strategy.id);
         if (exists) onUpdateStrategy(strategy);
@@ -1217,8 +1260,10 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
     };
 
     const playbookData = useMemo(() => {
-        let data = strategies.map(strategy => {
-            const relatedTrades = trades.filter(t => t.setup === strategy.name);
+        return strategies.map(strategy => {
+            const relatedTrades = trades
+                .filter(t => t.setup === strategy.name)
+                .sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
             const count = relatedTrades.length;
             const wins = relatedTrades.filter(t => t.pnl > 0);
             const losses = relatedTrades.filter(t => t.pnl <= 0);
@@ -1231,19 +1276,166 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
             const avgLoss = losses.length > 0 ? grossLoss / losses.length : 0;
             const winPctDec = winRate / 100;
             const expectancy = (winPctDec * avgWin) - ((1 - winPctDec) * avgLoss);
-            return { ...strategy, count, winRate, netPnl, profitFactor, avgWin, avgLoss, expectancy };
-        }).filter(s => s.name.toLowerCase().includes(searchTerm.toLowerCase()));
+            const uniqueTradeDays = new Set(
+                relatedTrades.map(trade => new Date(trade.entryDate).toDateString()).filter(Boolean)
+            );
+            const winningTradeDays = new Set(
+                relatedTrades
+                    .filter(trade => trade.pnl > 0)
+                    .map(trade => new Date(trade.entryDate).toDateString())
+                    .filter(Boolean)
+            );
+            const dailyWinRate = uniqueTradeDays.size > 0 ? (winningTradeDays.size / uniqueTradeDays.size) * 100 : 0;
+            const closedTrades = relatedTrades.filter(trade => Boolean(trade.exitDate));
+            const avgDurationMs = closedTrades.length > 0
+                ? closedTrades.reduce((sum, trade) => {
+                    const start = new Date(trade.entryDate).getTime();
+                    const end = new Date(trade.exitDate || trade.entryDate).getTime();
+                    return sum + Math.max(0, end - start);
+                }, 0) / closedTrades.length
+                : 0;
+            const avgTradeDurationHours = avgDurationMs / (1000 * 60 * 60);
+            const winLossRatio = losses.length > 0 ? wins.length / losses.length : wins.length > 0 ? wins.length : 0;
+            const tags = Array.from(
+                new Set(
+                    strategy.checklist
+                        .map(item => item.text.match(/^(.+?):/)?.[1]?.trim())
+                        .filter(Boolean)
+                )
+            ).slice(0, 4) as string[];
 
-        return data.sort((a, b) => {
-            switch(sortOption) {
-                case 'name-asc': return a.name.localeCompare(b.name);
-                case 'name-desc': return b.name.localeCompare(a.name);
-                case 'winrate-desc': return b.winRate - a.winRate;
-                case 'count-desc': return b.count - a.count;
-                default: return 0;
-            }
+            return {
+                ...strategy,
+                count,
+                winRate,
+                netPnl,
+                profitFactor,
+                avgWin,
+                avgLoss,
+                expectancy,
+                dailyWinRate,
+                avgTradeDurationHours,
+                winLossRatio,
+                missedTrades: 0,
+                sharedStrategies: '—',
+                tags,
+            };
         });
-    }, [strategies, trades, searchTerm, sortOption]);
+    }, [strategies, trades]);
+
+    const activeStrategies = useMemo(() => playbookData, [playbookData]);
+    const archivedStrategies = useMemo(() => [] as typeof playbookData, []);
+    const visibleStrategies = lifecycleTab === 'active' ? activeStrategies : archivedStrategies;
+
+    const summaryCards = useMemo(() => {
+        const fallback = {
+            name: language === 'cn' ? '暂无策略' : 'No strategies yet',
+            count: 0,
+            netPnl: 0,
+            winRate: 0,
+            color: '#8b5cf6',
+        };
+        const best = [...activeStrategies].sort((a, b) => b.netPnl - a.netPnl)[0] || fallback;
+        const least = [...activeStrategies].sort((a, b) => a.netPnl - b.netPnl)[0] || fallback;
+        const mostActive = [...activeStrategies].sort((a, b) => b.count - a.count)[0] || fallback;
+        const bestWinRate = [...activeStrategies].sort((a, b) => b.winRate - a.winRate)[0] || fallback;
+
+        return [
+            {
+                id: 'best',
+                title: language === 'cn' ? '最佳表现策略' : 'Best performing strategy',
+                icon: <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />,
+                strategy: best,
+                value: best.count > 0 ? `${best.netPnl >= 0 ? '+' : '-'}$${Math.abs(best.netPnl).toFixed(2)}` : '',
+                chipClass: best.netPnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600',
+                footer: best.count > 0 ? `${best.count} ${language === 'cn' ? '笔交易' : best.count === 1 ? 'trade' : 'trades'}` : (language === 'cn' ? '暂无数据' : 'No data'),
+            },
+            {
+                id: 'least',
+                title: language === 'cn' ? '最差表现策略' : 'Least performing strategy',
+                icon: <ArrowDown className="h-3.5 w-3.5 text-rose-500" />,
+                strategy: least,
+                value: least.count > 0 ? `${least.netPnl >= 0 ? '+' : '-'}$${Math.abs(least.netPnl).toFixed(2)}` : '',
+                chipClass: least.netPnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600',
+                footer: least.count > 0 ? `${least.count} ${language === 'cn' ? '笔交易' : least.count === 1 ? 'trade' : 'trades'}` : (language === 'cn' ? '暂无数据' : 'No data'),
+            },
+            {
+                id: 'active',
+                title: language === 'cn' ? '最活跃策略' : 'Most active strategy',
+                icon: <Activity className="h-3.5 w-3.5 text-amber-500" />,
+                strategy: mostActive,
+                value: '',
+                chipClass: 'bg-slate-100 text-slate-600',
+                footer: mostActive.count > 0 ? `${mostActive.count} ${language === 'cn' ? '笔交易' : mostActive.count === 1 ? 'trade' : 'trades'}` : (language === 'cn' ? '暂无数据' : 'No data'),
+            },
+            {
+                id: 'win-rate',
+                title: language === 'cn' ? '最高胜率' : 'Best win rate',
+                icon: <Sparkles className="h-3.5 w-3.5 text-violet-500" />,
+                strategy: bestWinRate,
+                value: '',
+                chipClass: 'bg-slate-100 text-slate-600',
+                footer: bestWinRate.count > 0
+                    ? `${bestWinRate.winRate.toFixed(0)}% / ${bestWinRate.count} ${language === 'cn' ? '笔交易' : bestWinRate.count === 1 ? 'trade' : 'trades'}`
+                    : (language === 'cn' ? '暂无数据' : 'No data'),
+            },
+        ];
+    }, [activeStrategies, language]);
+
+    const collectionTabs = [
+        { id: 'mine' as const, label: `${language === 'cn' ? '我的策略' : 'My Strategies'} (${strategies.length}/${strategies.length})` },
+        { id: 'shared' as const, label: language === 'cn' ? '共享给我' : 'Shared with me' },
+        { id: 'templates' as const, label: language === 'cn' ? '模板' : 'Templates' },
+    ];
+
+    const iconTile = (color?: string) => (
+        <div
+            className="flex h-8 w-8 items-end gap-[3px] rounded-[10px] border border-slate-200/80 bg-white px-[5px] py-[5px] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+            style={{ borderColor: `${color || '#8b5cf6'}22` }}
+        >
+            <span className="w-1.5 rounded-full bg-emerald-500/90" style={{ height: '70%' }} />
+            <span className="w-1.5 rounded-full bg-indigo-500/90" style={{ height: '95%' }} />
+            <span className="w-1.5 rounded-full bg-rose-500/90" style={{ height: '58%' }} />
+        </div>
+    );
+
+    const formatMoney = (value: number) => value === 0 ? '$0' : `${value < 0 ? '-' : ''}$${Math.abs(value).toFixed(2)}`;
+    const formatDuration = (hours: number) => {
+        if (!hours || hours <= 0) return '0h';
+        if (hours >= 24) return `${(hours / 24).toFixed(1)}d`;
+        return `${hours.toFixed(1)}h`;
+    };
+    const formatMetricValue = (columnId: string, value: any) => {
+        switch (columnId) {
+            case 'avgLoss':
+                return formatMoney(-Math.abs(Number(value || 0)));
+            case 'avgWin':
+            case 'netPnl':
+                return formatMoney(Number(value || 0));
+            case 'profitFactor':
+                return Number(value || 0).toFixed(1);
+            case 'winRate':
+                return `${Number(value || 0).toFixed(0)}%`;
+            case 'trades':
+            case 'missedTrades':
+                return String(value ?? 0);
+            default:
+                return String(value ?? '—');
+        }
+    };
+
+    const toggleDraftColumn = (columnId: string) => {
+        setDraftVisibleColumns(current =>
+            current.includes(columnId)
+                ? current.filter(id => id !== columnId)
+                : [...current, columnId]
+        );
+    };
+
+    const openColumnModal = () => {
+        setDraftVisibleColumns(visibleColumns);
+        setIsColumnModalOpen(true);
+    };
 
     if (detailedStrategyId) {
         const strategy = strategies.find(s => s.id === detailedStrategyId);
@@ -1266,92 +1458,457 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
     }
 
     return (
-        <div className="w-full h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
+        <div className="flex h-full w-full flex-col overflow-hidden bg-[#f6f5f3] dark:bg-slate-950">
             <CreatePlaybookModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSave={handleSaveStrategy} initialData={editStrategy} />
-
-            <div className="px-8 py-5 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 shrink-0 shadow-sm z-20">
-                <div className="flex items-center gap-4">
-                    <div className="bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded-lg text-indigo-600 dark:text-indigo-400"><Layout className="w-6 h-6" /></div>
-                    <div><h2 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">Strategies</h2><a href="#" className="text-indigo-500 flex items-center gap-1 text-sm font-medium hover:text-indigo-600 transition-colors">Learn more <ExternalLink className="w-3 h-3" /></a></div>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
-                    <div className="relative flex-1 md:flex-none">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input type="text" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search strategy..." className="pl-9 pr-4 py-2 bg-slate-100 dark:bg-slate-800 border-none rounded-lg text-sm w-full outline-none focus:ring-2 focus:ring-indigo-500" />
-                    </div>
-                    <button id="playbook-create-btn" onClick={handleCreatePlaybook} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2 transform hover:scale-105"><Plus className="w-4 h-4" /> {t.playbook.create}</button>
-                    <div className="relative" ref={dropdownRef}>
-                        <button onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)} className="flex items-center justify-between gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 font-bold min-w-[140px] hover:border-slate-300 dark:hover:border-slate-600 transition-colors shadow-sm">{sortOption} <ChevronDown className="w-3.5 h-3.5 text-slate-400" /></button>
-                        {isSortDropdownOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden animate-fade-in-up origin-top-right">
-                                {[{v:'name-asc', l:'Name A-Z'}, {v:'name-desc', l:'Name Z-A'}, {v:'winrate-desc', l:'Best Win Rate'}].map(opt => (
-                                    <button key={opt.v} onClick={() => { setSortOption(opt.v); setIsSortDropdownOpen(false); }} className={`w-full text-left px-4 py-2.5 text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${sortOption === opt.v ? 'font-bold text-indigo-600 bg-indigo-50' : 'text-slate-700 dark:text-slate-300'}`}>{opt.l}</button>
-                                ))}
+            {isColumnModalOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/30 px-4 backdrop-blur-[2px]">
+                    <div className="w-full max-w-[750px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-slate-800 dark:bg-slate-900">
+                        <div className="flex items-start justify-between px-6 pb-4 pt-6">
+                            <div>
+                                <h3 className="text-[16px] font-semibold text-slate-900 dark:text-white">
+                                    {language === 'cn' ? '选择列' : 'Select columns'}
+                                </h3>
+                                <p className="mt-2 text-[14px] text-slate-500 dark:text-slate-400">
+                                    {language === 'cn' ? '选择你希望在表格中展示的列' : 'Choose the columns you want to display in the table'}
+                                </p>
+                                <div className="mt-4 flex items-center gap-4 text-[13px] font-medium text-violet-600 dark:text-violet-400">
+                                    <button onClick={() => setDraftVisibleColumns(tableColumns.map(column => column.id))}>
+                                        {language === 'cn' ? '全部' : 'All'}
+                                    </button>
+                                    <span className="text-slate-300">•</span>
+                                    <button onClick={() => setDraftVisibleColumns([])}>
+                                        {language === 'cn' ? '清空' : 'None'}
+                                    </button>
+                                    <span className="text-slate-300">•</span>
+                                    <button onClick={() => setDraftVisibleColumns(defaultVisibleColumns)}>
+                                        {language === 'cn' ? '默认' : 'Default'}
+                                    </button>
+                                </div>
                             </div>
-                        )}
+                            <button
+                                onClick={() => setIsColumnModalOpen(false)}
+                                className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-x-12 gap-y-4 px-6 pb-8 pt-2 md:grid-cols-2">
+                            {tableColumns.map(column => {
+                                const checked = draftVisibleColumns.includes(column.id);
+                                return (
+                                    <label key={column.id} className="flex items-center gap-3 text-[14px] text-slate-700 dark:text-slate-300">
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={() => toggleDraftColumn(column.id)}
+                                            className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                                        />
+                                        <span>{column.label}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+                        <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+                            <button
+                                onClick={() => setIsColumnModalOpen(false)}
+                                className="rounded-xl border border-slate-200 px-6 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                            >
+                                {language === 'cn' ? '取消' : 'Cancel'}
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setVisibleColumns(draftVisibleColumns);
+                                    setIsColumnModalOpen(false);
+                                }}
+                                className="rounded-xl bg-violet-600 px-6 py-2.5 text-[14px] font-semibold text-white transition-colors hover:bg-violet-700"
+                            >
+                                {language === 'cn' ? '更新' : 'Update'}
+                            </button>
+                        </div>
                     </div>
+                </div>
+            )}
+
+            <div className="shrink-0 border-b border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900">
+                <div className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+                    <h2 className="text-[20px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">
+                        {language === 'cn' ? '策略手册' : 'Strategies'}
+                    </h2>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                            <div className="rounded-md bg-violet-100 p-1 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">
+                                <Activity className="h-3.5 w-3.5" />
+                            </div>
+                            <span>{selectedTimeLabel}</span>
+                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                        </button>
+                        <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                            <div className="rounded-md bg-violet-100 p-1 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">
+                                <BookMarked className="h-3.5 w-3.5" />
+                            </div>
+                            <span>{selectedAccountLabel}</span>
+                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                        </button>
+                    </div>
+                </div>
+                <div className="flex gap-6 overflow-x-auto border-t border-slate-100 px-6 pt-3 dark:border-slate-800">
+                    {collectionTabs.map(tab => {
+                        const active = activeCollection === tab.id;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveCollection(tab.id)}
+                                className={`relative flex items-center gap-2 whitespace-nowrap pb-3 text-[14px] font-medium transition-colors ${
+                                    active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <span className={`h-4 w-4 rounded-full border ${active ? 'border-violet-400 bg-violet-50' : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'}`} />
+                                <span>{tab.label}</span>
+                                {active && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-violet-600" />}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            <div id="playbook-grid" className="flex-1 overflow-y-auto p-6 md:p-8 custom-scrollbar">
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-12 items-start">
-                    {playbookData.map(pb => {
-                        const isExpanded = selectedStrategyId === pb.id;
-                        const isMenuOpen = menuOpenId === pb.id;
-                        return (
-                            <div key={pb.id} 
-                                onClick={() => setSelectedStrategyId(isExpanded ? null : pb.id)}
-                                onDoubleClick={() => setDetailedStrategyId(pb.id)}
-                                className={`bg-white dark:bg-slate-900 rounded-2xl border transition-all duration-300 cursor-pointer relative group overflow-visible flex flex-col shadow-sm hover:shadow-md ${isExpanded ? 'border-indigo-500 ring-1 ring-indigo-500 z-10' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700'}`}
-                            >
-                                <div className="p-5">
-                                    <div className="flex justify-between items-start mb-2">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-sm text-lg shrink-0" style={{ backgroundColor: `${pb.color}20`, color: pb.color }}><RefreshCw className="w-5 h-5" /></div>
-                                            <div className="overflow-hidden"><h3 className="text-base font-bold text-slate-900 dark:text-white truncate leading-tight">{pb.name}</h3></div>
-                                        </div>
-                                        <div className="relative -mr-2 -mt-2">
-                                            <button onClick={(e) => { e.stopPropagation(); setMenuOpenId(isMenuOpen ? null : pb.id); }} className="p-2 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><MoreHorizontal className="w-5 h-5" /></button>
-                                            {isMenuOpen && (
-                                                <div className="absolute right-0 top-full mt-1 w-40 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 py-1 animate-fade-in-up origin-top-right">
-                                                    <button onClick={(e) => { e.stopPropagation(); handleEditPlaybook(pb); }} className="w-full text-left px-4 py-2.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 flex items-center gap-2"><Settings className="w-3.5 h-3.5" /> Settings</button>
-                                                    <div className="h-px bg-slate-100 my-1"></div>
-                                                    <button onClick={(e) => { e.stopPropagation(); onDeleteStrategy(pb.id); }} className="w-full text-left px-4 py-2.5 text-xs font-bold text-rose-50 hover:bg-rose-50 flex items-center gap-2"><Trash2 className="w-3.5 h-3.5" /> Delete</button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center justify-between mb-6 pl-[52px]">
-                                        <button className="text-indigo-600 dark:text-indigo-400 text-sm font-bold hover:underline decoration-2 underline-offset-4">{pb.count} trades</button>
-                                        <div className="flex items-center gap-1 text-slate-400 text-xs font-medium"><Lock className="w-3 h-3" /> Private</div>
-                                    </div>
-                                    <div className="flex items-center">
-                                        <div className="flex items-center gap-3">
-                                            <CircularProgress percentage={pb.winRate} size={42} color={pb.color} />
-                                            <div><p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">{t.playbook.winRate}</p><p className="text-lg font-bold text-slate-900 dark:text-white leading-none">{pb.winRate.toFixed(2)}%</p></div>
-                                        </div>
-                                        <div className="w-8"></div>
-                                        <div><p className="text-[10px] uppercase font-bold text-slate-400 mb-0.5">{t.playbook.netPnl}</p><p className={`text-lg font-bold leading-none ${pb.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{pb.netPnl >= 0 ? '+' : ''}${pb.netPnl.toLocaleString()}</p></div>
-                                    </div>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-5 line-clamp-2">{pb.description || "Double click to view detailed trade history."}</p>
-                                </div>
-                                <div className={`overflow-hidden transition-all duration-300 ease-in-out bg-slate-50/50 dark:bg-slate-950/30 ${isExpanded ? 'max-h-96 opacity-100 border-t border-slate-100 dark:border-slate-800' : 'max-h-0 opacity-0'}`}>
-                                    <div className="p-5 grid grid-cols-2 gap-y-5 gap-x-4">
-                                        <div><p className="text-xs text-slate-500 font-bold uppercase mb-1">{t.playbook.profitFactor}</p><p className="text-base font-bold text-slate-900 dark:text-white">{pb.profitFactor.toFixed(2)}</p></div>
-                                        <div><p className="text-xs text-slate-500 font-bold uppercase mb-1">{t.playbook.expectancy}</p><p className="text-base font-bold text-slate-900 dark:text-white">${pb.expectancy.toFixed(2)}</p></div>
-                                        <div><p className="text-xs text-slate-500 font-bold uppercase mb-1">{t.playbook.avgWinner}</p><p className="text-base font-bold text-slate-900 dark:text-white">${pb.avgWin.toFixed(2)}</p></div>
-                                        <div><p className="text-xs text-slate-500 font-bold uppercase mb-1">{t.playbook.avgLoser}</p><p className="text-base font-bold text-slate-900 dark:text-white">${pb.avgLoss.toFixed(2)}</p></div>
-                                    </div>
-                                </div>
-                                {!isExpanded && <div className="absolute bottom-1 left-0 right-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"><ChevronDown className="w-4 h-4 text-slate-300" /></div>}
-                            </div>
-                        );
-                    })}
-                    <div onClick={handleCreatePlaybook} className="rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 flex flex-col items-center justify-center p-8 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50 hover:border-indigo-400 dark:border-indigo-600 transition-all min-h-[240px] group">
-                        <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform group-hover:bg-indigo-100"><Plus className="w-6 h-6 text-slate-400 group-hover:text-indigo-600" /></div>
-                        <h3 className="font-bold text-slate-600 dark:text-slate-400 group-hover:text-indigo-600 transition-colors">{t.playbook.create}</h3>
+            <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar">
+                {activeCollection !== 'mine' ? (
+                    <div className="rounded-[24px] border border-slate-200 bg-white px-10 py-20 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+                        <h3 className="text-[18px] font-semibold text-slate-900 dark:text-white">
+                            {activeCollection === 'shared'
+                                ? (language === 'cn' ? '共享策略即将上线' : 'Shared strategies coming soon')
+                                : (language === 'cn' ? '模板中心即将上线' : 'Templates coming soon')}
+                        </h3>
+                        <p className="mx-auto mt-3 max-w-[520px] text-[14px] leading-6 text-slate-500 dark:text-slate-400">
+                            {language === 'cn'
+                                ? '这次先完成策略手册主页的视觉升级。共享与模板能力会在后续版本接上真实逻辑。'
+                                : 'This pass focuses on the strategies home UI. Shared and template flows will be wired in a later release.'}
+                        </p>
                     </div>
-                </div>
+                ) : (
+                    <div className="space-y-4">
+                        <div className="flex justify-end">
+                            <button
+                                id="playbook-create-btn"
+                                onClick={handleCreatePlaybook}
+                                className="inline-flex h-10 items-center gap-2 rounded-xl bg-violet-600 px-4 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(109,90,220,0.24)] transition-colors hover:bg-violet-700"
+                            >
+                                <Plus className="h-4 w-4" />
+                                <span>{language === 'cn' ? '创建策略' : 'Create strategy'}</span>
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 xl:grid-cols-4">
+                            {summaryCards.map(card => (
+                                <div
+                                    key={card.id}
+                                    className="rounded-[20px] border border-slate-200/90 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900"
+                                >
+                                    <div className="flex items-center gap-2 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                                        {card.icon}
+                                        <span>{card.title}</span>
+                                    </div>
+                                    <div className="mt-4 flex items-center gap-3">
+                                        {iconTile(card.strategy.color)}
+                                        <div className="min-w-0">
+                                            <div className="truncate text-[16px] font-semibold text-slate-800 dark:text-white">
+                                                {card.strategy.name}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-300">
+                                        <span>{card.footer}</span>
+                                        {card.value && (
+                                            <span className={`rounded-md px-2 py-0.5 text-[12px] font-semibold ${card.chipClass}`}>
+                                                {card.value}
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_8px_28px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+                            <div className="flex items-center justify-end gap-2 px-5 py-4">
+                                {([
+                                    { id: 'grid', icon: <LayoutGrid className="h-5 w-5" /> },
+                                    { id: 'table', icon: <ListIcon className="h-5 w-5" /> },
+                                ] as const).map(item => {
+                                    const active = viewMode === item.id;
+                                    return (
+                                        <button
+                                            key={item.id}
+                                            onClick={() => setViewMode(item.id)}
+                                            className={`relative rounded-lg p-2 transition-colors ${
+                                                active ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                                            }`}
+                                        >
+                                            {item.icon}
+                                            {active && <span className="absolute inset-x-1 -bottom-[11px] h-0.5 rounded-full bg-violet-600" />}
+                                        </button>
+                                    );
+                                })}
+                                <button
+                                    onClick={openColumnModal}
+                                    className="rounded-lg p-2 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-200"
+                                >
+                                    <Settings className="h-5 w-5" />
+                                </button>
+                            </div>
+                            <div className="border-t border-slate-200/80 px-3 py-4 dark:border-slate-800">
+                                <div className="inline-flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+                                    {([
+                                        { id: 'active', label: language === 'cn' ? '进行中' : 'Active' },
+                                        { id: 'archived', label: language === 'cn' ? '已归档' : 'Archived' },
+                                    ] as const).map(item => {
+                                        const active = lifecycleTab === item.id;
+                                        return (
+                                            <button
+                                                key={item.id}
+                                                onClick={() => setLifecycleTab(item.id)}
+                                                className={`rounded-[14px] px-4 py-2 text-[14px] font-medium transition-all ${
+                                                    active
+                                                        ? 'bg-white text-slate-900 shadow-[0_2px_6px_rgba(15,23,42,0.08)] dark:bg-slate-700 dark:text-white'
+                                                        : 'text-slate-600 dark:text-slate-400'
+                                                }`}
+                                            >
+                                                {item.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {visibleStrategies.length === 0 ? (
+                                <div className="px-10 py-20 text-center">
+                                    <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400">
+                                        {language === 'cn' ? '这个分组里还没有策略。' : 'There are no strategies in this view yet.'}
+                                    </p>
+                                </div>
+                            ) : viewMode === 'grid' ? (
+                                <div ref={menuRef} className="grid grid-cols-1 gap-4 px-4 pb-4 xl:grid-cols-3">
+                                    {visibleStrategies.map(strategy => {
+                                        const isMenuOpen = menuOpenId === strategy.id;
+                                        return (
+                                            <article
+                                                key={strategy.id}
+                                                onClick={() => setDetailedStrategyId(strategy.id)}
+                                                className="group cursor-pointer rounded-[20px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_18px_rgba(15,23,42,0.035)] transition-all hover:border-slate-300 hover:shadow-[0_10px_28px_rgba(15,23,42,0.07)] dark:border-slate-800 dark:bg-slate-900"
+                                            >
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-3">
+                                                            {iconTile(strategy.color)}
+                                                            <h3 className="truncate text-[17px] font-semibold tracking-[-0.01em] text-slate-800 dark:text-white">
+                                                                {strategy.name}
+                                                            </h3>
+                                                        </div>
+                                                        {strategy.tags.length > 0 && (
+                                                            <div className="mt-3 flex flex-wrap gap-2">
+                                                                {strategy.tags.map(tag => (
+                                                                    <span
+                                                                        key={tag}
+                                                                        className="rounded-full bg-slate-100 px-2.5 py-1 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                                                    >
+                                                                        {tag}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="relative">
+                                                        <button
+                                                            onClick={event => {
+                                                                event.stopPropagation();
+                                                                setMenuOpenId(current => current === strategy.id ? null : strategy.id);
+                                                            }}
+                                                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                        >
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </button>
+                                                        {isMenuOpen && (
+                                                            <div className="absolute right-0 top-full z-20 mt-2 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+                                                                <button
+                                                                    onClick={event => {
+                                                                        event.stopPropagation();
+                                                                        handleEditPlaybook(strategy);
+                                                                    }}
+                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                                                                >
+                                                                    <Edit2 className="h-3.5 w-3.5" />
+                                                                    <span>{language === 'cn' ? '编辑' : 'Edit'}</span>
+                                                                </button>
+                                                                <button
+                                                                    onClick={event => {
+                                                                        event.stopPropagation();
+                                                                        if (window.confirm(language === 'cn' ? '确认删除该策略？' : 'Delete this strategy?')) {
+                                                                            onDeleteStrategy(strategy.id);
+                                                                        }
+                                                                    }}
+                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/10"
+                                                                >
+                                                                    <Trash2 className="h-3.5 w-3.5" />
+                                                                    <span>{language === 'cn' ? '删除' : 'Delete'}</span>
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
+                                                    <div className="grid grid-cols-3 gap-4">
+                                                        <div className="space-y-1">
+                                                            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{language === 'cn' ? '胜率' : 'Win rate'}</div>
+                                                            <div className="text-[13px] font-semibold text-slate-800 dark:text-white">{strategy.winRate.toFixed(0)}%</div>
+                                                            <div className="text-[11px] text-slate-500 dark:text-slate-400">{language === 'cn' ? '日胜率' : 'Daily win rate'}</div>
+                                                            <div className="text-[13px] font-semibold text-slate-800 dark:text-white">{strategy.dailyWinRate.toFixed(0)}%</div>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{language === 'cn' ? '交易数' : 'Trades'}</div>
+                                                            <div className="text-[13px] font-semibold text-slate-800 dark:text-white">{strategy.count}</div>
+                                                            <div className="text-[11px] text-slate-500 dark:text-slate-400">{language === 'cn' ? '平均时长' : 'Avg trade duration'}</div>
+                                                            <div className="text-[13px] font-semibold text-slate-800 dark:text-white">{formatDuration(strategy.avgTradeDurationHours)}</div>
+                                                        </div>
+                                                        <div className="space-y-1">
+                                                            <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{language === 'cn' ? '盈利因子' : 'Profit factor'}</div>
+                                                            <div className="text-[13px] font-semibold text-slate-800 dark:text-white">{strategy.profitFactor === 999 ? '999' : strategy.profitFactor.toFixed(1)}</div>
+                                                            <div className="text-[11px] text-slate-500 dark:text-slate-400">{language === 'cn' ? '盈亏比' : 'Win/Loss'}</div>
+                                                            <div className="text-[13px] font-semibold text-slate-800 dark:text-white">{strategy.winLossRatio.toFixed(1)}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </article>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div ref={menuRef} className="overflow-x-auto px-0 pb-2">
+                                    <table className="min-w-full border-separate border-spacing-0">
+                                        <thead>
+                                            <tr className="bg-[#f0eef8] text-left dark:bg-slate-800/80">
+                                                {visibleColumns.map(columnId => {
+                                                    const column = tableColumns.find(item => item.id === columnId);
+                                                    if (!column) return null;
+                                                    return (
+                                                        <th
+                                                            key={columnId}
+                                                            className={`whitespace-nowrap px-5 py-4 text-[13px] font-medium text-slate-600 dark:text-slate-300 ${
+                                                                columnId === 'title' ? 'text-left' : 'text-center'
+                                                            }`}
+                                                        >
+                                                            {column.label}
+                                                        </th>
+                                                    );
+                                                })}
+                                                <th className="w-12 px-5 py-4" />
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {visibleStrategies.map(strategy => {
+                                                const isMenuOpen = menuOpenId === strategy.id;
+                                                return (
+                                                    <tr
+                                                        key={strategy.id}
+                                                        onClick={() => setDetailedStrategyId(strategy.id)}
+                                                        className="cursor-pointer bg-white transition-colors hover:bg-slate-50 dark:bg-slate-900 dark:hover:bg-slate-800/60"
+                                                    >
+                                                        {visibleColumns.map(columnId => {
+                                                            let content: React.ReactNode = null;
+                                                            if (columnId === 'title') {
+                                                                content = (
+                                                                    <div className="flex items-center gap-3">
+                                                                        {iconTile(strategy.color)}
+                                                                        <span className="truncate text-[14px] font-medium text-slate-800 dark:text-white">
+                                                                            {strategy.name}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            } else {
+                                                                const rawValue =
+                                                                    columnId === 'trades' ? strategy.count :
+                                                                    columnId === 'sharedStrategies' ? strategy.sharedStrategies :
+                                                                    (strategy as any)[columnId];
+                                                                const colorClass =
+                                                                    columnId === 'netPnl'
+                                                                        ? Number(rawValue) >= 0 ? 'text-emerald-500' : 'text-rose-500'
+                                                                        : 'text-slate-700 dark:text-slate-300';
+                                                                content = (
+                                                                    <span className={`text-[14px] ${colorClass}`}>
+                                                                        {formatMetricValue(columnId, rawValue)}
+                                                                    </span>
+                                                                );
+                                                            }
+
+                                                            return (
+                                                                <td
+                                                                    key={columnId}
+                                                                    className={`border-t border-slate-200 px-5 py-5 align-middle dark:border-slate-800 ${
+                                                                        columnId === 'title' ? 'text-left' : 'text-center'
+                                                                    }`}
+                                                                >
+                                                                    {content}
+                                                                </td>
+                                                            );
+                                                        })}
+                                                        <td className="relative border-t border-slate-200 px-5 py-5 text-center dark:border-slate-800">
+                                                            <button
+                                                                onClick={event => {
+                                                                    event.stopPropagation();
+                                                                    setMenuOpenId(current => current === strategy.id ? null : strategy.id);
+                                                                }}
+                                                                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                            >
+                                                                <MoreVertical className="h-4 w-4" />
+                                                            </button>
+                                                            {isMenuOpen && (
+                                                                <div className="absolute right-4 top-[calc(100%-6px)] z-20 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+                                                                    <button
+                                                                        onClick={event => {
+                                                                            event.stopPropagation();
+                                                                            handleEditPlaybook(strategy);
+                                                                        }}
+                                                                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800"
+                                                                    >
+                                                                        <Edit2 className="h-3.5 w-3.5" />
+                                                                        <span>{language === 'cn' ? '编辑' : 'Edit'}</span>
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={event => {
+                                                                            event.stopPropagation();
+                                                                            if (window.confirm(language === 'cn' ? '确认删除该策略？' : 'Delete this strategy?')) {
+                                                                                onDeleteStrategy(strategy.id);
+                                                                            }
+                                                                        }}
+                                                                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/10"
+                                                                    >
+                                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                                        <span>{language === 'cn' ? '删除' : 'Delete'}</span>
+                                                                    </button>
+                                                                </div>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                    <div className="flex justify-center px-6 py-7">
+                                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-3 text-[14px] text-slate-600 shadow-[0_4px_16px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                            <span className="font-semibold">
+                                                {language === 'cn'
+                                                    ? `结果：1 - ${visibleStrategies.length} / 共 ${visibleStrategies.length} 个策略`
+                                                    : `Result: 1 - ${visibleStrategies.length} of ${visibleStrategies.length} strategies`}
+                                            </span>
+                                            <div className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
+                                            <button className="rounded-lg border border-slate-200 px-3 py-1.5 dark:border-slate-700">1</button>
+                                            <span>{language === 'cn' ? '共 1 页' : 'of 1 pages'}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
