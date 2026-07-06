@@ -3302,21 +3302,6 @@ const Reports: React.FC<ReportsProps> = ({
       return () => window.clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-      const hasChartChanged = previousWinLossesChartAnimationSignatureRef.current !== winsLossesChartAnimationSignature;
-      previousWinLossesChartAnimationSignatureRef.current = winsLossesChartAnimationSignature;
-
-      if (hasChartChanged) {
-          setShouldAnimateWinLossesCharts(true);
-      }
-
-      const timer = window.setTimeout(() => {
-          setShouldAnimateWinLossesCharts(false);
-      }, 760);
-
-      return () => window.clearTimeout(timer);
-  }, [winsLossesChartAnimationSignature]);
-
   function formatChartDateLabel(date: string) {
       const d = new Date(`${date}T00:00:00`);
       if (language === 'cn') {
@@ -5605,6 +5590,21 @@ const Reports: React.FC<ReportsProps> = ({
           winsLossesSummary.losses.tradeCount,
       ].join('||');
   }, [winsLossesSummary, pnlDisplayMode]);
+
+  useEffect(() => {
+      const hasChartChanged = previousWinLossesChartAnimationSignatureRef.current !== winsLossesChartAnimationSignature;
+      previousWinLossesChartAnimationSignatureRef.current = winsLossesChartAnimationSignature;
+
+      if (hasChartChanged) {
+          setShouldAnimateWinLossesCharts(true);
+      }
+
+      const timer = window.setTimeout(() => {
+          setShouldAnimateWinLossesCharts(false);
+      }, 760);
+
+      return () => window.clearTimeout(timer);
+  }, [winsLossesChartAnimationSignature]);
 
   const symbolCrossAnalysisRows = useMemo(() => {
       return visibleSymbolRows.map(row => {
