@@ -509,6 +509,12 @@ interface TagSelectorProps {
     cat: TagCategoryDefinition;
     tags: string[];
     language: 'cn' | 'en';
+    isDragging?: boolean;
+    isDragOver?: boolean;
+    onDragStart: (catId: string) => void;
+    onDragEnd: () => void;
+    onDragOver: (catId: string) => void;
+    onDrop: (catId: string) => void;
     onAdd: (tag: string) => void;
     onRemove: (tag: string) => void;
     onRenameTag: (oldTag: string, newTag: string) => void;
@@ -522,6 +528,12 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     cat,
     tags, 
     language,
+    isDragging = false,
+    isDragOver = false,
+    onDragStart,
+    onDragEnd,
+    onDragOver,
+    onDrop,
     onAdd, 
     onRemove, 
     onRenameTag,
@@ -599,17 +611,46 @@ const TagSelector: React.FC<TagSelectorProps> = ({
     };
 
     return (
-        <div className="mb-5 relative group/section" ref={containerRef}>
+        <div
+            ref={containerRef}
+            onDragOver={(e) => {
+                e.preventDefault();
+                onDragOver(cat.id);
+            }}
+            onDrop={(e) => {
+                e.preventDefault();
+                onDrop(cat.id);
+            }}
+            className={`mb-5 relative group/section rounded-[14px] transition-all duration-200 ${
+                isDragOver ? 'bg-indigo-50/50' : ''
+            } ${isDragging ? 'opacity-70' : ''}`}
+        >
             {/* Header Row: Icon + Label + ... Menu */}
             <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                    {/* Drag Handle (Visual only for now) */}
-                    <div className="opacity-0 group-hover/section:opacity-100 cursor-grab text-slate-300 -ml-4 absolute">
-                        <GripVertical className="w-3 h-3" />
-                    </div>
+                <div className="flex items-center gap-2.5">
+                    <button
+                        type="button"
+                        draggable
+                        onDragStart={(e) => {
+                            e.stopPropagation();
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.dataTransfer.setData('text/plain', cat.id);
+                            onDragStart(cat.id);
+                        }}
+                        onDragEnd={() => onDragEnd()}
+                        onClick={(e) => e.preventDefault()}
+                        className="flex h-[22px] w-[18px] cursor-grab active:cursor-grabbing items-center justify-center rounded-[5px] border border-slate-200 bg-white text-slate-400 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 hover:text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-500 dark:hover:border-slate-600"
+                        aria-label={language === 'cn' ? '拖动分类排序' : 'Drag category to reorder'}
+                    >
+                        <span className="grid grid-cols-2 gap-[2px]">
+                            {Array.from({ length: 6 }).map((_, index) => (
+                                <span key={index} className="h-[2.5px] w-[2.5px] rounded-full bg-current opacity-80" />
+                            ))}
+                        </span>
+                    </button>
                     
                     <Icon className="w-3.5 h-3.5" fill={cat.color} strokeWidth={0} />
-                    <span className="text-[13px] font-medium" style={{ color: '#9ca3af' }}>{cat.label}</span>
+                    <span className="text-[15px] font-black leading-none tracking-[-0.01em] text-slate-900 dark:text-slate-100">{cat.label}</span>
                 </div>
                 
                 {/* 3 Dots Menu */}
@@ -876,6 +917,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     );
     const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
     const [newCategoryName, setNewCategoryName] = useState('');
+    const [draggingCategoryId, setDraggingCategoryId] = useState<string | null>(null);
+    const [dragOverCategoryId, setDragOverCategoryId] = useState<string | null>(null);
 
     // Close strategy menu when clicking outside
     useEffect(() => {
@@ -1222,6 +1265,44 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         const updated = { ...currentTrade, customTags: updatedCustomTags };
         setCurrentTrade(updated);
         onUpdateTrade(updated);
+    };
+
+    const handleCategoryDragStart = (catId: string) => {
+        setDraggingCategoryId(catId);
+        setDragOverCategoryId(catId);
+    };
+
+    const handleCategoryDragEnd = () => {
+        setDraggingCategoryId(null);
+        setDragOverCategoryId(null);
+    };
+
+    const handleCategoryDragOver = (catId: string) => {
+        if (!draggingCategoryId || draggingCategoryId === catId) return;
+        setDragOverCategoryId(catId);
+    };
+
+    const handleCategoryDrop = (targetCatId: string) => {
+        if (!draggingCategoryId || draggingCategoryId === targetCatId) {
+            handleCategoryDragEnd();
+            return;
+        }
+
+        const fromIndex = categoryDefs.findIndex(category => category.id === draggingCategoryId);
+        const toIndex = categoryDefs.findIndex(category => category.id === targetCatId);
+
+        if (fromIndex === -1 || toIndex === -1) {
+            handleCategoryDragEnd();
+            return;
+        }
+
+        const reordered = [...categoryDefs];
+        const [moved] = reordered.splice(fromIndex, 1);
+        reordered.splice(toIndex, 0, moved);
+
+        setCategoryDefs(reordered);
+        onSaveTagCategories(reordered);
+        handleCategoryDragEnd();
     };
 
     // --- Playbook Logic ---
@@ -1942,6 +2023,12 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                 key={cat.id}
                                                 cat={cat}
                                                 language={language}
+                                                isDragging={draggingCategoryId === cat.id}
+                                                isDragOver={dragOverCategoryId === cat.id && draggingCategoryId !== cat.id}
+                                                onDragStart={handleCategoryDragStart}
+                                                onDragEnd={handleCategoryDragEnd}
+                                                onDragOver={handleCategoryDragOver}
+                                                onDrop={handleCategoryDrop}
                                                 tags={
                                                     cat.id === 'mistakes' ? (currentTrade.mistakes || []) :
                                                     (currentTrade.customTags?.[cat.id] || [])
