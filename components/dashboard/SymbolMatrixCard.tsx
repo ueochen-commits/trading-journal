@@ -252,6 +252,8 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
   const cardStyle: React.CSSProperties = {
     background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12,
     padding: '16px 20px', display: 'flex', flexDirection: 'column',
+    height: 420,
+    overflow: 'hidden',
   };
 
   if (symbols.length < 3) {

@@ -2454,7 +2454,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   { color: '#f16363', label: language === 'cn' ? '平均负场' : 'Avg loss' },
                 ];
 	                return (
-	                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 392, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
+	                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 420, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
 	                    <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
 	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '16px 20px 14px', borderBottom: '1px solid #edf0f4', flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
