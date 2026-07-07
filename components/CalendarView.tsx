@@ -753,17 +753,17 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       let cardBorder = '1px solid #eef0f3';
       if (data && data.count > 0) {
         if (data.netPnl > 0) {
-          bgStyle = '#dff7e8';
+          bgStyle = '#dff6e7';
           textColor = '#15824d';
           pnlTextColor = '#15824d';
-          metaTextColor = '#6e8e79';
-          cardBorder = '1px solid #cdeed8';
+          metaTextColor = '#768a7b';
+          cardBorder = '1px solid #bfe8cd';
         } else if (data.netPnl < 0) {
-          bgStyle = '#fbe1e1';
-          textColor = '#ea3d3d';
-          pnlTextColor = '#ea3d3d';
-          metaTextColor = '#8f7a7a';
-          cardBorder = '1px solid #f2b2b2';
+          bgStyle = '#f9dddd';
+          textColor = '#ef3f3f';
+          pnlTextColor = '#ef3f3f';
+          metaTextColor = '#8d7676';
+          cardBorder = '1px solid #f17f7f';
         } else {
           bgStyle = '#f8f1d8';
           textColor = '#8d6a17';
@@ -877,7 +877,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         </div>
         <div className="flex items-center gap-2.5">
           <span className="text-[13px] font-semibold text-[#111827]">{cal.monthlyStats || 'Monthly:'}</span>
-          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${monthStats.totalPnl >= 0 ? 'bg-[#dff7e8] text-[#15824d]' : 'bg-[#fde5e5] text-[#ea3d3d]'}`}
+          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${monthStats.totalPnl >= 0 ? 'bg-[#dff6e7] text-[#15824d]' : 'bg-[#f9dddd] text-[#ef3f3f]'}`}
             style={{ fontVariantNumeric: 'tabular-nums' }}>
             {monthStats.totalPnl >= 0 ? '+' : '\u2212'}${Math.abs(monthStats.totalPnl).toFixed(2)}
           </span>
