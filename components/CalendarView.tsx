@@ -202,6 +202,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const [screenshotUrl, setScreenshotUrl] = useState<string | null>(null);
   const [screenshotBlob, setScreenshotBlob] = useState<Blob | null>(null);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'error'>('idle');
+  const [yearPickerOpen, setYearPickerOpen] = useState(false);
+  const [yearPickerPos, setYearPickerPos] = useState<{ top: number; left: number } | null>(null);
+  const yearPickerButtonRef = useRef<HTMLButtonElement>(null);
+  const yearPickerPanelRef = useRef<HTMLDivElement>(null);
 
   const handleCapture = useCallback(async () => {
     if (!calendarRef.current || isCapturing) return;
@@ -594,6 +598,31 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     if (!selectedDay) onExternalClose?.();
   }, [selectedDay]);
 
+  useEffect(() => {
+    if (!yearPickerOpen) return;
+    const updatePosition = () => {
+      const rootRect = calendarRef.current?.getBoundingClientRect();
+      const buttonRect = yearPickerButtonRef.current?.getBoundingClientRect();
+      if (!rootRect || !buttonRect) return;
+      setYearPickerPos({
+        top: buttonRect.bottom - rootRect.top + 12,
+        left: buttonRect.left - rootRect.left,
+      });
+    };
+    updatePosition();
+    const handleOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (yearPickerButtonRef.current?.contains(target) || yearPickerPanelRef.current?.contains(target)) return;
+      setYearPickerOpen(false);
+    };
+    window.addEventListener('resize', updatePosition);
+    document.addEventListener('mousedown', handleOutside);
+    return () => {
+      window.removeEventListener('resize', updatePosition);
+      document.removeEventListener('mousedown', handleOutside);
+    };
+  }, [yearPickerOpen]);
+
   const selectedDayTrades = useMemo(() => {
     if (!selectedDay) return [];
     const key = `${selectedDay.getFullYear()}-${String(selectedDay.getMonth()+1).padStart(2,'0')}-${String(selectedDay.getDate()).padStart(2,'0')}`;
@@ -682,6 +711,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
   const year = currentDate.getFullYear();
   const cal = t.calendar as any;
+  const monthTitle = currentDate.toLocaleDateString(cal.weekSuffix ? 'zh-CN' : 'en-US', {
+    month: cal.weekSuffix ? 'long' : 'long',
+    year: 'numeric',
+  });
+  const yearOptions = Array.from({ length: 15 }, (_, index) => year - 8 + index);
 
   const totalCells = firstDayOfMonth + daysInMonth;
   const totalRows = Math.ceil(totalCells / 7);
@@ -692,8 +726,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     return Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthDays - firstDayOfMonth + 1 + i;
       return (
-        <div key={`prev-${i}`} className="rounded-[8px] relative" style={{ minHeight: 130, background: '#FAFAFA' }}>
-          <span className="absolute text-[13px]" style={{ top: 12, right: 14, color: '#B0B5BD' }}>{day}</span>
+        <div key={`prev-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: '#f3f4f6', border: '1px solid #eef0f3' }}>
+          <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: '#aeb5bf' }}>{day}</span>
         </div>
       );
     });
@@ -701,8 +735,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const renderNextMonthBlanks = () => {
     return Array.from({ length: trailingBlanks }, (_, i) => (
-      <div key={`next-${i}`} className="rounded-[8px] relative" style={{ minHeight: 130, background: '#FAFAFA' }}>
-        <span className="absolute text-[13px]" style={{ top: 12, right: 14, color: '#B0B5BD' }}>{i + 1}</span>
+      <div key={`next-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: '#ffffff', border: '1px solid #eef0f3' }}>
+        <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: '#b7bec8' }}>{i + 1}</span>
       </div>
     ));
   };
@@ -712,26 +746,48 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       const d = i + 1;
       const data = getDayData(d);
       const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), d).toDateString();
-      let bgStyle = '#F3F4F6';
-      let textClass = 'text-[#9CA3AF]';
-      let pnlTextClass = 'text-[#9CA3AF]';
-      let borderClass = '';
+      let bgStyle = '#f3f4f6';
+      let textColor = '#23262d';
+      let pnlTextColor = '#23262d';
+      let metaTextColor = '#6b7280';
+      let cardBorder = '1px solid #eef0f3';
       if (data && data.count > 0) {
-        if (data.netPnl > 0) { bgStyle = '#DCFCE7'; textClass = 'text-[#15803D]'; pnlTextClass = 'text-[#15803D]'; }
-        else if (data.netPnl < 0) { bgStyle = '#FEE2E2'; textClass = 'text-[#DC2626]'; pnlTextClass = 'text-[#DC2626]'; }
-        else { bgStyle = '#FEF3C7'; textClass = 'text-[#92400E]'; pnlTextClass = 'text-[#92400E]'; }
+        if (data.netPnl > 0) {
+          bgStyle = '#dff7e8';
+          textColor = '#15824d';
+          pnlTextColor = '#15824d';
+          metaTextColor = '#6e8e79';
+          cardBorder = '1px solid #cdeed8';
+        } else if (data.netPnl < 0) {
+          bgStyle = '#fbe1e1';
+          textColor = '#ea3d3d';
+          pnlTextColor = '#ea3d3d';
+          metaTextColor = '#8f7a7a';
+          cardBorder = '1px solid #f2b2b2';
+        } else {
+          bgStyle = '#f8f1d8';
+          textColor = '#8d6a17';
+          pnlTextColor = '#8d6a17';
+          metaTextColor = '#857a5d';
+          cardBorder = '1px solid #ead9a6';
+        }
       }
-      if (isToday) borderClass = 'ring-2 ring-[#3B82F6] ring-inset';
       const iconColor = data && data.count > 0
-        ? (data.netPnl > 0 ? '#15803D' : data.netPnl < 0 ? '#DC2626' : '#92400E')
-        : '#64748B';
-      const iconOpacity = data && data.count > 0 ? 0.55 : 0.45;
+        ? (data.netPnl > 0 ? '#15824d' : data.netPnl < 0 ? '#ea3d3d' : '#8d6a17')
+        : '#6b7280';
+      const iconOpacity = data && data.count > 0 ? 0.7 : 0.5;
       return (
         <div key={d} onClick={() => handleDayClick(d)} role="button" tabIndex={0}
-          className={`rounded-[8px] cursor-pointer relative ${borderClass}`}
-          style={{ minHeight: 130, background: bgStyle, transition: 'all 150ms ease' }}
-          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)'; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = ''; }}
+          className="rounded-[12px] cursor-pointer relative"
+          style={{
+            minHeight: 128,
+            background: bgStyle,
+            border: cardBorder,
+            boxShadow: isToday ? 'inset 0 0 0 1px rgba(76, 92, 116, 0.08)' : 'none',
+            transition: 'all 150ms ease',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(15,23,42,0.06)'; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = ''; e.currentTarget.style.boxShadow = isToday ? 'inset 0 0 0 1px rgba(76, 92, 116, 0.08)' : 'none'; }}
         >
           {/* 左上角：复盘笔记图标 */}
           {data?.hasReview && (
@@ -744,22 +800,47 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
               </svg>
             </div>
           )}
-          <span className={`absolute text-[13px] font-medium ${textClass}`} style={{ top: 12, right: 14 }}>{d}</span>
+          <span
+            className="absolute text-[13px] font-medium"
+            style={{
+              top: 10,
+              right: 12,
+              color: isToday ? '#1f2937' : textColor,
+              width: 18,
+              height: 18,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: isToday ? 999 : 0,
+              background: isToday ? '#ffffff' : 'transparent',
+              boxShadow: isToday ? '0 1px 3px rgba(15,23,42,0.08)' : 'none',
+            }}
+          >
+            {d}
+          </span>
           {data && data.count > 0 && (
             <>
-              <div className="absolute flex flex-col items-end" style={{ bottom: 12, right: 14, lineHeight: 1.5 }}>
-                <span className={`text-[15px] font-semibold ${pnlTextClass}`} style={{ fontVariantNumeric: 'tabular-nums' }}>
+              <div className="absolute flex flex-col items-end" style={{ top: 42, right: 14, lineHeight: 1.35 }}>
+                <span className="text-[14px] font-semibold" style={{ color: pnlTextColor, fontVariantNumeric: 'tabular-nums' }}>
                   {data.netPnl >= 0 ? '+' : '\u2212'}${Math.abs(data.netPnl).toFixed(2)}
                 </span>
-                <span className="text-[12px] font-normal" style={{ color: '#6B7280' }}>{data.count} {cal.trades || 'trades'}</span>
-                <span className="text-[12px] font-normal" style={{ color: '#9CA3AF' }}>{data.winRate.toFixed(1)}%</span>
+                <span className="text-[11.5px] font-normal" style={{ color: metaTextColor }}>{data.count} {cal.trades || 'trades'}</span>
+                <span className="text-[11.5px] font-normal" style={{ color: metaTextColor }}>{data.winRate.toFixed(1)}%</span>
               </div>
-              <div className={`absolute rounded-full ${data.netPnl >= 0 ? 'bg-[#15803D]' : 'bg-[#DC2626]'}`}
-                style={{ width: 5, height: 5, bottom: 6, right: 6 }} />
+              <div
+                className="absolute rounded-full"
+                style={{
+                  width: 6,
+                  height: 6,
+                  bottom: 8,
+                  right: 8,
+                  background: data.netPnl >= 0 ? '#16a34a' : '#ef4444',
+                }}
+              />
             </>
           )}
           {(!data || data.count === 0) && data?.hasReview && (
-            <div className="absolute rounded-full bg-[#F97316]" style={{ width: 5, height: 5, bottom: 6, right: 6 }} />
+            <div className="absolute rounded-full bg-[#f97316]" style={{ width: 6, height: 6, bottom: 8, right: 8 }} />
           )}
         </div>
       );
@@ -769,79 +850,89 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   return (
     <div ref={calendarRef} className="space-y-4 relative">
       {/* Toolbar */}
-      <div className="flex items-center justify-between">
+      <div style={{ background: '#ffffff', border: '1px solid #edf0f4', borderRadius: 16, overflow: 'hidden' }}>
+      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid #edf0f4' }}>
         <div className="flex items-center gap-2">
-          <button onClick={prevMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
+          <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <span className="text-[16px] font-semibold text-[#111827] min-w-[120px] text-center">{monthName} {year}</span>
-          <button onClick={nextMonth} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F3F4F6] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
+          <button
+            ref={yearPickerButtonRef}
+            type="button"
+            onClick={() => setYearPickerOpen(current => !current)}
+            className="flex items-center gap-2 rounded-[10px] border border-[#e5e7eb] bg-white px-[12px] py-[7px] text-left"
+            style={{ transition: 'all 150ms ease' }}
+          >
+            <span className="text-[15px] font-semibold text-[#1f2937]">{monthTitle}</span>
+            <ChevronDown className={`h-[14px] w-[14px] text-[#6b7280] transition-transform ${yearPickerOpen ? 'rotate-180' : ''}`} />
+          </button>
+          <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
             <ChevronRight className="w-4 h-4" />
           </button>
           <button onClick={() => setCurrentDate(new Date())}
-            className="ml-1 bg-white border border-[#E5E7EB] rounded-[8px] text-[13px] font-medium text-[#6B7280] hover:bg-[#F9FAFB]"
-            style={{ padding: '6px 10px', transition: 'all 150ms ease' }}>
+            className="ml-2 bg-white border border-[#E5E7EB] rounded-[10px] text-[13px] font-medium text-[#4b5563] hover:bg-[#F9FAFB]"
+            style={{ padding: '7px 14px', transition: 'all 150ms ease' }}>
             {cal.thisMonth || 'This month'}
           </button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          <span className="text-[13px] font-semibold text-[#111827]">{cal.monthlyStats || 'Monthly:'}</span>
+          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${monthStats.totalPnl >= 0 ? 'bg-[#dff7e8] text-[#15824d]' : 'bg-[#fde5e5] text-[#ea3d3d]'}`}
+            style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {monthStats.totalPnl >= 0 ? '+' : '\u2212'}${Math.abs(monthStats.totalPnl).toFixed(2)}
+          </span>
+          <span className="inline-flex items-center rounded-full bg-[#f1ecfb] px-3 py-1 text-[13px] font-medium text-[#5f5d70]">
+            {monthStats.tradingDays} {cal.tradingDays || 'days'}
+          </span>
           <button
             onClick={handleCapture}
             disabled={isCapturing}
             title={cal.weekSuffix ? '分享日历' : 'Share calendar'}
-            className="screenshot-ignore w-8 h-8 flex items-center justify-center rounded-[8px] transition-all"
-            style={{ flexShrink: 0, background: 'transparent', border: '1px solid #E2E8F0', color: '#64748B', cursor: 'pointer' }}
+            className="screenshot-ignore w-8 h-8 flex items-center justify-center rounded-[10px] transition-all"
+            style={{ flexShrink: 0, background: '#fff', border: '1px solid #e5e7eb', color: '#64748B', cursor: 'pointer' }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; (e.currentTarget as HTMLButtonElement).style.color = '#0F172A'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#64748B'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = '#64748B'; }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
               <circle cx="12" cy="13" r="3"/>
             </svg>
           </button>
-          <span className="text-[12px] text-[#9CA3AF] font-medium">{cal.monthlyStats || 'Monthly:'}</span>
-          <span className={`inline-flex items-center px-3 py-1 rounded-full text-[13px] font-bold ${monthStats.totalPnl >= 0 ? 'bg-[#D4F4DD] text-[#15803D]' : 'bg-[#FEE2E2] text-[#DC2626]'}`}
-            style={{ fontVariantNumeric: 'tabular-nums' }}>
-            {monthStats.totalPnl >= 0 ? '+' : '\u2212'}${Math.abs(monthStats.totalPnl).toFixed(2)}
-          </span>
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-[13px] font-medium bg-[#F3F4F6] text-[#374151]">
-            {monthStats.tradingDays} {cal.tradingDays || 'days'}
-          </span>
         </div>
       </div>
 
       {/* Calendar Grid + Weekly Sidebar */}
-      <div className="flex flex-col lg:flex-row gap-4">
+      <div className="flex flex-col lg:flex-row gap-4" style={{ padding: '18px 14px 18px' }}>
         <div className="flex-1 min-w-0">
-          <div className="grid grid-cols-7 mb-1.5 border-b border-[#F3F4F6] pb-2">
+          <div className="grid grid-cols-7 gap-[6px] mb-[8px]">
             {t.calendar.weekdays.map(day => (
-              <div key={day} className="flex items-center justify-center">
-                <span className="text-[13px] font-medium text-[#6B7280]">{day}</span>
+              <div key={day} className="flex items-center justify-center rounded-[10px]" style={{ height: 34, border: '1px solid #e7eaee', background: '#ffffff' }}>
+                <span className="text-[13px] font-semibold text-[#2f3640]">{day}</span>
               </div>
             ))}
           </div>
-          <div className="grid grid-cols-7" style={{ gap: 6 }}>
+          <div className="grid grid-cols-7" style={{ gap: 4 }}>
             {renderPrevMonthBlanks()}
             {renderCurrentMonthDays()}
             {renderNextMonthBlanks()}
           </div>
         </div>
-        <div className="lg:w-[220px] flex flex-col gap-[6px]">
-          <div style={{ height: 33 }} />
+        <div className="lg:w-[150px] flex flex-col gap-[8px]">
+          <div style={{ height: 34 }} />
           {weeklyStats.map((week, i) => {
             const isPositive = week.pnl >= 0;
             const weekLabel = cal.weekSuffix ? `${cal.week}${i + 1}${cal.weekSuffix}` : `${cal.week} ${i + 1}`;
             return (
-              <div key={i} className="rounded-[8px] border border-[#E5E7EB] flex-1 flex flex-col justify-center"
-                style={{ minHeight: 130, padding: '12px 16px', background: week.isCurrent ? '#FAFAFA' : '#ffffff', transition: 'all 150ms ease' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#F9FAFB'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = week.isCurrent ? '#FAFAFA' : '#ffffff'; }}>
-                <span className="text-[12px] font-medium text-[#9CA3AF] mb-1">{weekLabel}</span>
-                <span className={`text-[18px] font-bold mb-2 ${week.count === 0 ? 'text-[#111827]' : isPositive ? 'text-[#15803D]' : 'text-[#DC2626]'}`}
+              <div key={i} className="rounded-[14px] border border-[#e4e8ed] flex-1 flex flex-col justify-center"
+                style={{ minHeight: 128, padding: '16px 14px', background: '#ffffff', transition: 'all 150ms ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#fafbfc'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '#ffffff'; }}>
+                <span className="text-[12px] font-medium text-[#8f96a3] mb-1.5">{weekLabel}</span>
+                <span className={`text-[15px] font-bold mb-2 ${week.count === 0 ? 'text-[#111827]' : isPositive ? 'text-[#15824d]' : 'text-[#ea3d3d]'}`}
                   style={{ fontVariantNumeric: 'tabular-nums' }}>
-                  {week.count === 0 ? '$0.00' : `${isPositive ? '+' : '\u2212'}$${Math.abs(week.pnl).toFixed(2)}`}
+                  {week.count === 0 ? '$0' : `${isPositive ? '+' : '\u2212'}$${Math.abs(week.pnl).toFixed(2)}`}
                 </span>
-                <span className="inline-flex items-center self-start px-2 py-0.5 rounded-full text-[11px] font-medium bg-[#F3F4F6] text-[#6B7280]">
+                <span className="inline-flex items-center self-start rounded-full bg-[#f1ecfb] px-2.5 py-0.5 text-[11px] font-medium text-[#5f5d70]">
                   {week.tradingDays} {cal.tradingDays || 'days'}
                 </span>
               </div>
@@ -849,6 +940,72 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           })}
         </div>
       </div>
+      </div>
+
+      {yearPickerOpen && yearPickerPos && (
+        <div
+          ref={yearPickerPanelRef}
+          style={{
+            position: 'absolute',
+            top: yearPickerPos.top,
+            left: yearPickerPos.left,
+            zIndex: 40,
+            width: 320,
+            background: '#ffffff',
+            border: '1px solid #e6e9ef',
+            borderRadius: 16,
+            boxShadow: '0 18px 48px rgba(15,23,42,0.12)',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px 14px', borderBottom: '1px solid #eef1f5' }}>
+            <span className="text-[16px] font-semibold text-[#1f2937]">{monthTitle}</span>
+            <button
+              type="button"
+              onClick={() => setYearPickerOpen(false)}
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f6f7f9] text-[#4b5563]"
+            >
+              <ChevronDown className="h-4 w-4 rotate-180" />
+            </button>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 12, padding: '18px' }}>
+            {yearOptions.map(option => {
+              const selected = option === year;
+              return (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => {
+                    setCurrentDate(new Date(option, currentDate.getMonth(), 1));
+                    setYearPickerOpen(false);
+                  }}
+                  style={{
+                    height: 38,
+                    borderRadius: 999,
+                    border: selected ? 'none' : '1px solid transparent',
+                    background: selected ? '#463c96' : 'transparent',
+                    color: selected ? '#ffffff' : '#1f2937',
+                    fontSize: 14,
+                    fontWeight: selected ? 600 : 500,
+                    transition: 'all 150ms ease',
+                  }}
+                >
+                  {option}
+                </button>
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 18px', borderTop: '1px solid #eef1f5' }}>
+            <button
+              type="button"
+              onClick={() => setYearPickerOpen(false)}
+              style={{ fontSize: 14, fontWeight: 600, color: '#6c5ce7', background: 'transparent', border: 'none' }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modal Portal */}
       {selectedDay && createPortal(
