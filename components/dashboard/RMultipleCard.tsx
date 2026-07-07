@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Trade } from '../../types';
+import EmptyChartState from '../common/EmptyChartState';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -222,15 +223,13 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
           </span>
           <span style={{ fontSize: 11, color: '#94A3B8' }}>近 {stats.totalTrades} 笔</span>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 160 }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
-            <path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 4-4"/>
-          </svg>
-          <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>交易数据不足</p>
-          <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 200, lineHeight: 1.5 }}>
-            至少需要 10 笔已平仓交易才能生成分布图
-          </p>
-        </div>
+        <EmptyChartState
+          variant="cards"
+          compact
+          minHeight={160}
+          title="交易数据不足"
+          subtitle="至少需要 10 笔已平仓交易才能生成分布图"
+        />
       </div>
     );
   }

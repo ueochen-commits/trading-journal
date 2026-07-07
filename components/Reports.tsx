@@ -8,6 +8,7 @@ import {
 } from 'recharts';
 import { Calendar as CalendarIcon, Clock, Calculator, Activity, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Hourglass, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search, Check } from 'lucide-react';
 import FeatureGate from './FeatureGate';
+import EmptyChartState from './common/EmptyChartState';
 import { generatePeriodicReport } from '../services/geminiService';
 import { userDataService } from '../services/userDataService';
 import { supabase, saveReport, fetchReports, deleteReport } from '../supabaseClient';
@@ -4729,9 +4730,12 @@ const Reports: React.FC<ReportsProps> = ({
   const leftChartContent = useMemo(() => {
       if (!isDataLoading && leftChartData.length === 0) {
           return (
-              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
-                  {language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
-              </div>
+              <EmptyChartState
+                  variant="cards"
+                  compact
+                  minHeight="100%"
+                  title={language === 'cn' ? '暂无交易数据' : 'No trade data yet'}
+              />
           );
       }
 
@@ -4747,9 +4751,12 @@ const Reports: React.FC<ReportsProps> = ({
   const rightChartContent = useMemo(() => {
       if (!isDataLoading && rightChartData.length === 0) {
           return (
-              <div className="flex h-full items-center justify-center rounded-md border border-dashed border-slate-200 bg-slate-50/70 text-sm font-medium text-slate-400 dark:border-slate-800 dark:bg-slate-950/40 dark:text-slate-500">
-                  {language === 'cn' ? '暂无可计算的数据' : 'No chartable data yet'}
-              </div>
+              <EmptyChartState
+                  variant="cloud"
+                  compact
+                  minHeight="100%"
+                  title={language === 'cn' ? '暂无可计算的数据' : 'No chartable data yet'}
+              />
           );
       }
 

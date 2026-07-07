@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Trade } from '../../types';
+import EmptyChartState from '../common/EmptyChartState';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -235,15 +236,13 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
           </span>
           <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天 · UTC</span>
         </div>
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
-            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9" y1="4" x2="9" y2="22"/>
-          </svg>
-          <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>交易数据不足</p>
-          <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 220, lineHeight: 1.5 }}>
-            至少需要近 90 天内 10 笔以上交易才能生成热力图
-          </p>
-        </div>
+        <EmptyChartState
+          variant="cards"
+          compact
+          minHeight={220}
+          title="交易数据不足"
+          subtitle="至少需要近 90 天内 10 笔以上交易才能生成热力图"
+        />
       </div>
     );
   }

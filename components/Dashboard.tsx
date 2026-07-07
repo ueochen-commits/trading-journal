@@ -14,6 +14,7 @@ import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
 import MentorWidget from './MentorWidget';
 import TradeGrailDailyCard from './TradeGrailDailyCard';
+import EmptyChartState from './common/EmptyChartState';
 import SymbolMatrixCard from './dashboard/SymbolMatrixCard';
 import TimeHeatmapCard from './dashboard/TimeHeatmapCard';
 import RMultipleCard from './dashboard/RMultipleCard';
@@ -458,15 +459,13 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
   if (totalCount === 0) return (
     <div style={cardStyle}>
       <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: 14 }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 210, gap: 8 }}>
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>
-        </svg>
-        <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</p>
-        <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 260, lineHeight: 1.5 }}>
-          {language === 'cn' ? '导入或添加交易记录后即可生成分析' : 'Import or add trades to generate this chart'}
-        </p>
-      </div>
+      <EmptyChartState
+        variant="cloud"
+        compact
+        minHeight={210}
+        title={language === 'cn' ? '暂无交易数据' : 'No trade data'}
+        subtitle={language === 'cn' ? '导入或添加交易记录后即可生成分析' : 'Import or add trades to generate this chart'}
+      />
     </div>
   );
 
@@ -476,15 +475,13 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
         <span style={{ fontSize: 10, color: '#94a3b8' }}>{language === 'cn' ? '每笔交易一个点' : 'One dot per trade'}</span>
       </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 210, gap: 8 }}>
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
-          <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
-        </svg>
-        <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>{language === 'cn' ? '仓位情绪分析待解锁' : 'Unlock Position Analysis'}</p>
-        <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 260, lineHeight: 1.5 }}>
-          {language === 'cn' ? `在交易记录中补充"止损金额"即可启用（0 / ${totalCount} 笔）` : `Add Risk Amount to your trades to enable (0 / ${totalCount})`}
-        </p>
-      </div>
+      <EmptyChartState
+        variant="cloud"
+        compact
+        minHeight={210}
+        title={language === 'cn' ? '仓位情绪分析待解锁' : 'Unlock Position Analysis'}
+        subtitle={language === 'cn' ? `在交易记录中补充"止损金额"即可启用（0 / ${totalCount} 笔）` : `Add Risk Amount to your trades to enable (0 / ${totalCount})`}
+      />
     </div>
   );
 
@@ -639,7 +636,12 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         {ttData.length === 0 ? (
-          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
+          <EmptyChartState
+            variant="cards"
+            compact
+            minHeight="100%"
+            title={language === 'cn' ? '暂无交易数据' : 'No trade data'}
+          />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -721,7 +723,12 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
         {tdData.length === 0 ? (
-          <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>
+          <EmptyChartState
+            variant="cards"
+            compact
+            minHeight="100%"
+            title={language === 'cn' ? '暂无交易数据' : 'No trade data'}
+          />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
@@ -2570,7 +2577,14 @@ const Dashboard: React.FC<DashboardProps> = ({
                       const dayMap: Record<string, number> = {};
                       trades.forEach(t => { const k = fmt(t.entryDate); dayMap[k] = (dayMap[k] || 0) + t.pnl; });
                       const data = Object.entries(dayMap).sort(([a],[b]) => new Date(a).getTime() - new Date(b).getTime()).map(([date, pnl]) => ({ date, pnl: parseFloat(pnl.toFixed(2)) }));
-                      if (!data.length) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b3c6', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>;
+                      if (!data.length) return (
+                        <EmptyChartState
+                          variant="cards"
+                          compact
+                          minHeight="100%"
+                          title={language === 'cn' ? '暂无交易数据' : 'No trade data'}
+                        />
+                      );
                       const pnlValues = data.map(entry => entry.pnl);
                       const rawMin = Math.min(...pnlValues, 0);
                       const rawMax = Math.max(...pnlValues, 0);

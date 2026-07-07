@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import { Trade } from '../../types';
+import EmptyChartState from '../common/EmptyChartState';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -264,13 +265,13 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
           <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天</span>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 260, gap: 8 }}>
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
-            <circle cx="12" cy="12" r="10"/><path d="M8 12h8"/>
-          </svg>
-          <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>品种交易数据不足</p>
-          <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 260, lineHeight: 1.5 }}>
-            至少需要 3 个交易过 5 次以上的品种才能生成分析
-          </p>
+          <EmptyChartState
+            variant="cards"
+            compact
+            minHeight={260}
+            title="品种交易数据不足"
+            subtitle="至少需要 3 个交易过 5 次以上的品种才能生成分析"
+          />
         </div>
       </div>
     );
