@@ -26,6 +26,8 @@ interface TooltipState {
 
 const MIN_R = 8;
 const MAX_R = 28;
+const COMPACT_POINT_R = 6;
+const MIN_LABEL_FONT = 10;
 
 function calcRadius(pnl: number, maxAbs: number): number {
   if (maxAbs === 0) return MIN_R;
@@ -36,6 +38,13 @@ function calcFontSize(r: number): number {
   const d = r * 2;
   if (d <= 20) return 0;
   return Math.floor(d * 0.28);
+}
+
+function canRenderInlineLabel(shortCode: string, radius: number): boolean {
+  const fontSize = calcFontSize(radius);
+  if (fontSize < MIN_LABEL_FONT) return false;
+  const estimatedWidth = shortCode.length * fontSize * 0.58 + 4;
+  return estimatedWidth <= radius * 2 - 8;
 }
 
 function computeSymbolData(trades: Trade[]): SymbolData[] {
@@ -86,11 +95,15 @@ function computeSymbolData(trades: Trade[]): SymbolData[] {
 
 const BubbleShape = (props: any) => {
   const { cx, cy, payload, maxAbsPnL, onHover, onLeave } = props;
-  const r = calcRadius(payload.totalPnL, maxAbsPnL);
-  const fs = calcFontSize(r);
+  const fullRadius = calcRadius(payload.totalPnL, maxAbsPnL);
+  const showInlineLabel = canRenderInlineLabel(payload.shortCode, fullRadius);
+  const r = showInlineLabel ? fullRadius : Math.min(fullRadius, COMPACT_POINT_R);
+  const fs = showInlineLabel ? calcFontSize(fullRadius) : 0;
   const isPos = payload.totalPnL >= 0;
   const fill = isPos ? '#D1FAE5' : '#FEE2E2';
   const textColor = isPos ? '#047857' : '#B91C1C';
+  const stroke = isPos ? 'rgba(5,150,105,0.18)' : 'rgba(220,38,38,0.18)';
+  const compactFill = isPos ? '#86EFAC' : '#FCA5A5';
 
   return (
     <g
@@ -98,13 +111,19 @@ const BubbleShape = (props: any) => {
       onMouseLeave={onLeave}
       style={{ cursor: 'default' }}
     >
-      <circle cx={cx} cy={cy} r={r} fill={fill}
-        stroke={isPos ? 'rgba(5,150,105,0.18)' : 'rgba(220,38,38,0.18)'}
-        strokeWidth={1} />
-      {fs > 0 && (
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill={showInlineLabel ? fill : compactFill}
+        fillOpacity={showInlineLabel ? 1 : 0.72}
+        stroke={stroke}
+        strokeWidth={showInlineLabel ? 1 : 1.15}
+      />
+      {showInlineLabel && fs > 0 && (
         <text x={cx} y={cy} textAnchor="middle" dominantBaseline="central"
           fill={textColor} fontSize={fs} fontWeight={500} fontFamily="Inter, sans-serif"
-          letterSpacing="0.06em">
+          letterSpacing="0.02em">
           {payload.shortCode}
         </text>
       )}
@@ -172,6 +191,28 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
 
   const symbols = useMemo(() => computeSymbolData(trades), [trades]);
   const maxAbsPnL = useMemo(() => Math.max(...symbols.map(s => Math.abs(s.totalPnL)), 1), [symbols]);
+  const scatterBounds = useMemo(() => {
+    if (symbols.length === 0) {
+      return {
+        xDomain: [0, 1] as [number, number],
+        yDomain: [-1, 1] as [number, number],
+      };
+    }
+
+    const xValues = symbols.map(s => s.tradeCount);
+    const yValues = symbols.map(s => s.expectancyR);
+    const xMin = Math.min(...xValues);
+    const xMax = Math.max(...xValues);
+    const yMin = Math.min(...yValues);
+    const yMax = Math.max(...yValues);
+    const xSpread = Math.max(1, xMax - xMin);
+    const ySpread = Math.max(1, yMax - yMin);
+
+    return {
+      xDomain: [Math.max(0, xMin - Math.max(0.85, xSpread * 0.16)), xMax + Math.max(0.85, xSpread * 0.18)] as [number, number],
+      yDomain: [yMin - Math.max(0.7, ySpread * 0.16), yMax + Math.max(0.75, ySpread * 0.18)] as [number, number],
+    };
+  }, [symbols]);
 
   const stats = useMemo(() => {
     if (symbols.length === 0) return null;
@@ -248,16 +289,18 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
         {/* Chart */}
         <div style={{ flex: 1, minHeight: 0 }}>
           <ResponsiveContainer width="100%" height={260}>
-            <ScatterChart margin={{ top: 16, right: 16, bottom: 8, left: 0 }}>
+            <ScatterChart margin={{ top: 18, right: 28, bottom: 8, left: 10 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.2)" vertical={false} />
               <XAxis
                 type="number" dataKey="x" name="交易频次"
+                domain={scatterBounds.xDomain}
                 axisLine={false} tickLine={false}
                 tick={{ fontSize: 9, fill: '#94A3B8', fontFamily: '"SF Mono", monospace' }}
                 label={{ value: '交易频次 (笔)', position: 'insideBottom', offset: -2, fontSize: 10, fill: '#94A3B8' }}
               />
               <YAxis
                 type="number" dataKey="y" name="期望收益 R"
+                domain={scatterBounds.yDomain}
                 axisLine={false} tickLine={false} width={36}
                 tick={{ fontSize: 9, fill: '#94A3B8', fontFamily: '"SF Mono", monospace' }}
                 tickFormatter={(v: number) => v > 0 ? `+${v.toFixed(1)}R` : `${v.toFixed(1)}R`}
