@@ -21,7 +21,7 @@ const EmptyChartState: React.FC<EmptyChartStateProps> = ({
     ? '/report-empty-state-preview-cloud-v2.svg'
     : '/report-empty-state-preview-cards-v2.svg';
 
-  const imageWidth = compact ? 78 : 92;
+  const imageWidth = compact ? 104 : 122;
   const titleSize = compact ? 13 : 14;
   const subtitleSize = compact ? 11 : 12;
 
