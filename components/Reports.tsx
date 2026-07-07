@@ -348,6 +348,7 @@ const loadLocalReportPreferences = (): ReportPreferences | null => {
       const saved = localStorage.getItem(REPORT_PREFERENCES_STORAGE_KEY);
       return saved ? normalizeReportPreferences(JSON.parse(saved)) : null;
   } catch {
+      localStorage.removeItem(REPORT_PREFERENCES_STORAGE_KEY);
       return null;
   }
 };
@@ -355,6 +356,57 @@ const loadLocalReportPreferences = (): ReportPreferences | null => {
 const saveLocalReportPreferences = (preferences: ReportPreferences) => {
   localStorage.setItem(REPORT_PREFERENCES_STORAGE_KEY, JSON.stringify(preferences));
 };
+
+const getSafeReportHtml = (report: Partial<Report> | null | undefined) => {
+    const html = report?.content?.html;
+    return typeof html === 'string' ? html : '';
+};
+
+class ReportsErrorBoundary extends React.Component<
+    { children: React.ReactNode; language: 'cn' | 'en' },
+    { hasError: boolean }
+> {
+    state = { hasError: false };
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+        console.error('[Reports] Render crash intercepted:', error, errorInfo);
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="flex min-h-[420px] items-center justify-center px-6 py-16">
+                    <div className="w-full max-w-xl rounded-[16px] border border-[#e5e9f0] bg-white px-8 py-10 text-center shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
+                        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500 dark:bg-rose-950/30 dark:text-rose-300">
+                            <AlertTriangle className="h-5 w-5" />
+                        </div>
+                        <h2 className="text-[18px] font-semibold text-slate-800 dark:text-slate-100">
+                            {this.props.language === 'cn' ? '报表页面加载失败' : 'Reports page failed to load'}
+                        </h2>
+                        <p className="mt-2 text-[14px] leading-6 text-slate-500 dark:text-slate-400">
+                            {this.props.language === 'cn'
+                                ? '我们已经拦截了这次异常。请刷新页面重试；如果问题持续存在，我会继续沿着这条报错链修掉。'
+                                : 'We intercepted a render error. Refresh and try again; if it persists, we should keep tracing this crash path.'}
+                        </p>
+                        <button
+                            type="button"
+                            onClick={() => window.location.reload()}
+                            className="mt-5 inline-flex h-[40px] items-center justify-center rounded-[10px] bg-[#5f47c9] px-5 text-[14px] font-semibold text-white transition hover:bg-[#533bbd]"
+                        >
+                            {this.props.language === 'cn' ? '刷新页面' : 'Refresh page'}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        return this.props.children;
+    }
+}
 
 const getNiceNumber = (range: number, round: boolean) => {
   const exponent = Math.floor(Math.log10(range));
@@ -499,6 +551,7 @@ const Reports: React.FC<ReportsProps> = ({
           const saved = localStorage.getItem(SUMMARY_LAYOUT_STORAGE_KEY);
           return saved ? normalizeSummaryLayout(JSON.parse(saved)) : getDefaultSummaryLayout();
       } catch {
+          localStorage.removeItem(SUMMARY_LAYOUT_STORAGE_KEY);
           return getDefaultSummaryLayout();
       }
   })());
@@ -1080,7 +1133,7 @@ const Reports: React.FC<ReportsProps> = ({
           if (!background && !reportResult && reports.length > 0) {
               const latestCompleted = reports.find(r => r.status === 'completed');
               if (latestCompleted) {
-                  setReportResult(latestCompleted.content.html);
+                  setReportResult(getSafeReportHtml(latestCompleted));
                   setViewingReport(latestCompleted);
               }
           }
@@ -2896,7 +2949,7 @@ const Reports: React.FC<ReportsProps> = ({
 
   const handleViewReport = (report: Report) => {
       setViewingReport(report);
-      setReportResult(report.content.html);
+      setReportResult(getSafeReportHtml(report));
   };
 
   const handleDeleteReport = async (reportId: string) => {
@@ -2985,7 +3038,7 @@ const Reports: React.FC<ReportsProps> = ({
                               </button>
                               <button
                                   onClick={() => {
-                                      setReportResult(report.content.html);
+                                      setReportResult(getSafeReportHtml(report));
                                       setTimeout(handleDownloadPdf, 100);
                                   }}
                                   className="p-2 text-slate-600 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg transition-colors"
@@ -11175,4 +11228,14 @@ const Reports: React.FC<ReportsProps> = ({
   );
 };
 
-export default Reports;
+const ReportsWithBoundary: React.FC<ReportsProps> = (props) => {
+  const { language } = useLanguage();
+
+  return (
+      <ReportsErrorBoundary language={language}>
+          <Reports {...props} />
+      </ReportsErrorBoundary>
+  );
+};
+
+export default ReportsWithBoundary;
