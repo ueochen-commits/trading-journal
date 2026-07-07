@@ -397,6 +397,16 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
   );
 };
 
+const formatDashboardAxisCurrency = (value: number, currencySymbol: string) => {
+  const abs = Math.abs(value);
+  const sign = value < 0 ? '-' : '';
+  if (abs >= 1000) {
+    const digits = abs >= 10000 ? 0 : 1;
+    return `${sign}${currencySymbol}${(abs / 1000).toFixed(digits)}k`;
+  }
+  return `${sign}${currencySymbol}${abs % 1 === 0 ? abs.toFixed(0) : abs.toFixed(2)}`;
+};
+
 // ── Position Heat Card ────────────────────────────────────────────────────────
 const VW = 560; const VH = 216;
 const PL = 38; const PR = 16; const PT = 8; const PB = 20;
@@ -2516,6 +2526,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                       trades.forEach(t => { const k = fmt(t.entryDate); dayMap[k] = (dayMap[k] || 0) + t.pnl; });
                       const data = Object.entries(dayMap).sort(([a],[b]) => new Date(a).getTime() - new Date(b).getTime()).map(([date, pnl]) => ({ date, pnl: parseFloat(pnl.toFixed(2)) }));
                       if (!data.length) return <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#b0b3c6', fontSize: 13 }}>{language === 'cn' ? '暂无交易数据' : 'No trade data'}</div>;
+                      const pnlValues = data.map(entry => entry.pnl);
+                      const rawMin = Math.min(...pnlValues, 0);
+                      const rawMax = Math.max(...pnlValues, 0);
+                      const range = rawMax - rawMin || 1;
+                      const yPadding = Math.max(range * 0.14, 80);
+                      const domainMin = Math.floor((rawMin - yPadding) / 50) * 50;
+                      const domainMax = Math.ceil((rawMax + yPadding) / 50) * 50;
                       return (
                         <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={data} margin={{ top: 10, right: 8, left: 0, bottom: 0 }} barCategoryGap="35%"
@@ -2529,13 +2546,28 @@ const Dashboard: React.FC<DashboardProps> = ({
                               if (!isNaN(d.getTime())) setChartClickDay(d);
                             }}
                           >
-                            <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.05)" vertical={false} />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} interval="preserveStartEnd" />
-                            <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#b0b3c6' }} width={52}
-                              tickFormatter={(v: number) => Math.abs(v) >= 1000 ? `${(v/1000).toFixed(0)}k` : `${v}`} />
+                            <CartesianGrid strokeDasharray="3 4" stroke="rgba(141,153,174,0.22)" vertical={false} />
+                            <ReferenceLine y={0} stroke="rgba(168,176,188,0.55)" strokeWidth={1} />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#9aa3b2' }} interval="preserveStartEnd" minTickGap={26} />
+                            <YAxis
+                              tickLine={false}
+                              axisLine={false}
+                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              width={60}
+                              domain={[domainMin, domainMax]}
+                              tickCount={7}
+                              tickFormatter={(v: number) => formatDashboardAxisCurrency(v, currencySymbol)}
+                            />
                             <Tooltip content={<DailyPnlTooltip />} cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
-                            <Bar dataKey="pnl" radius={[3,3,0,0]} maxBarSize={32}>
-                              {data.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? '#00c896' : '#ff4d6a'} fillOpacity={0.9} />)}
+                            <Bar dataKey="pnl" maxBarSize={30}>
+                              {data.map((entry, i) => (
+                                <Cell
+                                  key={i}
+                                  fill={entry.pnl >= 0 ? '#2fd4a7' : '#f35f63'}
+                                  fillOpacity={0.96}
+                                  radius={entry.pnl >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4]}
+                                />
+                              ))}
                             </Bar>
                           </BarChart>
                         </ResponsiveContainer>
