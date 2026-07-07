@@ -1373,57 +1373,6 @@ const Reports: React.FC<ReportsProps> = ({
       { name: language === 'cn' ? '亏损' : 'losers', value: calendarMonthViewData.summary.losingTrades, color: '#f45f63' },
   ]), [calendarMonthViewData, language]);
 
-  const calendarStatisticsColumns = useMemo(() => {
-      const leftColumn = [
-          [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(calendarMonthViewData.summary.totalPnl)],
-          [language === 'cn' ? '平均每日成交额' : 'Average daily volume', calendarMonthViewData.summary.activeDays > 0 ? (calendarMonthViewData.summary.totalVolume / calendarMonthViewData.summary.activeDays).toFixed(2) : '0.00'],
-          [language === 'cn' ? '平均盈利交易' : 'Average winning trade', stats.winCount > 0 ? formatSignedMoney(stats.avgWin) : '--'],
-          [language === 'cn' ? '平均亏损交易' : 'Average losing trade', stats.lossCount > 0 ? formatSignedMoney(stats.avgLoss) : '--'],
-          [language === 'cn' ? '总交易数' : 'Total number of trades', String(calendarMonthViewData.summary.totalTrades)],
-          [language === 'cn' ? '盈利交易数' : 'Number of winning trades', String(calendarMonthViewData.summary.winningTrades)],
-          [language === 'cn' ? '亏损交易数' : 'Number of losing trades', String(calendarMonthViewData.summary.losingTrades)],
-          [language === 'cn' ? '打平交易数' : 'Number of break even trades', String(calendarMonthViewData.summary.breakevenTrades)],
-          [language === 'cn' ? '最大连续盈利' : 'Max consecutive wins', String(stats.maxConWins)],
-          [language === 'cn' ? '最大连续亏损' : 'Max consecutive losses', String(stats.maxConLoss)],
-          [language === 'cn' ? '总佣金' : 'Total commissions', formatSignedMoney(0)],
-          [language === 'cn' ? '总费用' : 'Total fees', formatSignedMoney(calendarMonthViewData.summary.totalFees)],
-          [language === 'cn' ? '总隔夜费' : 'Total swap', formatSignedMoney(0)],
-          [language === 'cn' ? '最大盈利' : 'Largest profit', formatSignedMoney(stats.largestProfit)],
-          [language === 'cn' ? '最大亏损' : 'Largest loss', formatSignedMoney(stats.largestLoss)],
-          [language === 'cn' ? '平均持仓时间（全部交易）' : 'Average hold time (All trades)', formatDuration(stats.avgHoldAll)],
-          [language === 'cn' ? '平均持仓时间（盈利交易）' : 'Average hold time (Winning trades)', formatDuration(stats.avgHoldWin)],
-          [language === 'cn' ? '平均持仓时间（亏损交易）' : 'Average hold time (Losing trades)', formatDuration(stats.avgHoldLoss)],
-          [language === 'cn' ? '平均持仓时间（打平交易）' : 'Average hold time (Scratch trades)', formatDuration(stats.avgHoldScratch)],
-          [language === 'cn' ? '平均单笔盈亏' : 'Average trade P&L', formatSignedMoney(stats.avgTradePnl)],
-          [language === 'cn' ? '盈利因子' : 'Profit factor', stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2)],
-      ];
-
-      const rightColumn = [
-          [language === 'cn' ? '未平仓交易' : 'Open trades', String(calendarMonthViewData.summary.openTrades)],
-          [language === 'cn' ? '总交易日数' : 'Total trading days', String(calendarMonthViewData.summary.activeDays)],
-          [language === 'cn' ? '盈利天数' : 'Winning days', String(calendarMonthViewData.summary.winningDays)],
-          [language === 'cn' ? '亏损天数' : 'Losing days', String(calendarMonthViewData.summary.losingDays)],
-          [language === 'cn' ? '打平天数' : 'Breakeven days', String(calendarMonthViewData.summary.breakevenDays)],
-          [language === 'cn' ? '记录天数' : 'Logged days', String(calendarMonthViewData.summary.activeDays)],
-          [language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', String(stats.maxConWinDays)],
-          [language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', String(stats.maxConLossDays)],
-          [language === 'cn' ? '平均每日盈亏' : 'Average daily P&L', formatSignedMoney(stats.avgDailyPnl)],
-          [language === 'cn' ? '平均盈利日盈亏' : 'Average winning day P&L', calendarMonthViewData.summary.winningDays > 0 ? formatSignedMoney(calendarMonthViewData.summary.avgWinningDayPnl) : '--'],
-          [language === 'cn' ? '平均亏损日盈亏' : 'Average losing day P&L', calendarMonthViewData.summary.losingDays > 0 ? formatSignedMoney(calendarMonthViewData.summary.avgLosingDayPnl) : '--'],
-          [language === 'cn' ? '最大盈利日（盈利）' : 'Largest profitable day (Profits)', calendarMonthViewData.summary.largestWinningDay ? formatSignedMoney(calendarMonthViewData.summary.largestWinningDay.pnl) : '--'],
-          [language === 'cn' ? '最大亏损日（亏损）' : 'Largest losing day (Losses)', calendarMonthViewData.summary.largestLosingDay ? formatSignedMoney(calendarMonthViewData.summary.largestLosingDay.pnl) : '--'],
-          [language === 'cn' ? '平均计划 R 倍数' : 'Average planned R-Multiple', performanceSummary.avgPlannedR === null ? '0R' : `${performanceSummary.avgPlannedR.toFixed(0)}R`],
-          [language === 'cn' ? '平均实现 R 倍数' : 'Average realized R-Multiple', `${stats.avgRealizedR.toFixed(0)}R`],
-          [language === 'cn' ? '交易期望值' : 'Trade expectancy', formatSignedMoney(stats.expectancy)],
-          [language === 'cn' ? '最大回撤' : 'Max drawdown', formatSignedMoney(calendarMonthViewData.summary.maxDrawdown)],
-          [language === 'cn' ? '最大回撤，%' : 'Max drawdown, %', '0'],
-          [language === 'cn' ? '平均回撤' : 'Average drawdown', formatSignedMoney(performanceSummary.avgDailyNetDrawdown)],
-          [language === 'cn' ? '平均回撤，%' : 'Average drawdown, %', '0'],
-      ];
-
-      return [leftColumn, rightColumn];
-  }, [calendarMonthViewData, language, performanceSummary, stats]);
-
   // --- 3. Duration Statistics (For Detailed View - TRADE DURATION) ---
   const durationStats = useMemo(() => {
       // Define Buckets (ms)
@@ -3153,6 +3102,57 @@ const Reports: React.FC<ReportsProps> = ({
       if (hours > 0) return `${hours}h${minutes % 60}m`;
       return `${minutes}m`;
   };
+
+  const calendarStatisticsColumns = useMemo(() => {
+      const leftColumn = [
+          [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(calendarMonthViewData.summary.totalPnl)],
+          [language === 'cn' ? '平均每日成交额' : 'Average daily volume', calendarMonthViewData.summary.activeDays > 0 ? (calendarMonthViewData.summary.totalVolume / calendarMonthViewData.summary.activeDays).toFixed(2) : '0.00'],
+          [language === 'cn' ? '平均盈利交易' : 'Average winning trade', stats.winCount > 0 ? formatSignedMoney(stats.avgWin) : '--'],
+          [language === 'cn' ? '平均亏损交易' : 'Average losing trade', stats.lossCount > 0 ? formatSignedMoney(stats.avgLoss) : '--'],
+          [language === 'cn' ? '总交易数' : 'Total number of trades', String(calendarMonthViewData.summary.totalTrades)],
+          [language === 'cn' ? '盈利交易数' : 'Number of winning trades', String(calendarMonthViewData.summary.winningTrades)],
+          [language === 'cn' ? '亏损交易数' : 'Number of losing trades', String(calendarMonthViewData.summary.losingTrades)],
+          [language === 'cn' ? '打平交易数' : 'Number of break even trades', String(calendarMonthViewData.summary.breakevenTrades)],
+          [language === 'cn' ? '最大连续盈利' : 'Max consecutive wins', String(stats.maxConWins)],
+          [language === 'cn' ? '最大连续亏损' : 'Max consecutive losses', String(stats.maxConLoss)],
+          [language === 'cn' ? '总佣金' : 'Total commissions', formatSignedMoney(0)],
+          [language === 'cn' ? '总费用' : 'Total fees', formatSignedMoney(calendarMonthViewData.summary.totalFees)],
+          [language === 'cn' ? '总隔夜费' : 'Total swap', formatSignedMoney(0)],
+          [language === 'cn' ? '最大盈利' : 'Largest profit', formatSignedMoney(stats.largestProfit)],
+          [language === 'cn' ? '最大亏损' : 'Largest loss', formatSignedMoney(stats.largestLoss)],
+          [language === 'cn' ? '平均持仓时间（全部交易）' : 'Average hold time (All trades)', formatDuration(stats.avgHoldAll)],
+          [language === 'cn' ? '平均持仓时间（盈利交易）' : 'Average hold time (Winning trades)', formatDuration(stats.avgHoldWin)],
+          [language === 'cn' ? '平均持仓时间（亏损交易）' : 'Average hold time (Losing trades)', formatDuration(stats.avgHoldLoss)],
+          [language === 'cn' ? '平均持仓时间（打平交易）' : 'Average hold time (Scratch trades)', formatDuration(stats.avgHoldScratch)],
+          [language === 'cn' ? '平均单笔盈亏' : 'Average trade P&L', formatSignedMoney(stats.avgTradePnl)],
+          [language === 'cn' ? '盈利因子' : 'Profit factor', stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2)],
+      ];
+
+      const rightColumn = [
+          [language === 'cn' ? '未平仓交易' : 'Open trades', String(calendarMonthViewData.summary.openTrades)],
+          [language === 'cn' ? '总交易日数' : 'Total trading days', String(calendarMonthViewData.summary.activeDays)],
+          [language === 'cn' ? '盈利天数' : 'Winning days', String(calendarMonthViewData.summary.winningDays)],
+          [language === 'cn' ? '亏损天数' : 'Losing days', String(calendarMonthViewData.summary.losingDays)],
+          [language === 'cn' ? '打平天数' : 'Breakeven days', String(calendarMonthViewData.summary.breakevenDays)],
+          [language === 'cn' ? '记录天数' : 'Logged days', String(calendarMonthViewData.summary.activeDays)],
+          [language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', String(stats.maxConWinDays)],
+          [language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', String(stats.maxConLossDays)],
+          [language === 'cn' ? '平均每日盈亏' : 'Average daily P&L', formatSignedMoney(stats.avgDailyPnl)],
+          [language === 'cn' ? '平均盈利日盈亏' : 'Average winning day P&L', calendarMonthViewData.summary.winningDays > 0 ? formatSignedMoney(calendarMonthViewData.summary.avgWinningDayPnl) : '--'],
+          [language === 'cn' ? '平均亏损日盈亏' : 'Average losing day P&L', calendarMonthViewData.summary.losingDays > 0 ? formatSignedMoney(calendarMonthViewData.summary.avgLosingDayPnl) : '--'],
+          [language === 'cn' ? '最大盈利日（盈利）' : 'Largest profitable day (Profits)', calendarMonthViewData.summary.largestWinningDay ? formatSignedMoney(calendarMonthViewData.summary.largestWinningDay.pnl) : '--'],
+          [language === 'cn' ? '最大亏损日（亏损）' : 'Largest losing day (Losses)', calendarMonthViewData.summary.largestLosingDay ? formatSignedMoney(calendarMonthViewData.summary.largestLosingDay.pnl) : '--'],
+          [language === 'cn' ? '平均计划 R 倍数' : 'Average planned R-Multiple', performanceSummary.avgPlannedR === null ? '0R' : `${performanceSummary.avgPlannedR.toFixed(0)}R`],
+          [language === 'cn' ? '平均实现 R 倍数' : 'Average realized R-Multiple', `${stats.avgRealizedR.toFixed(0)}R`],
+          [language === 'cn' ? '交易期望值' : 'Trade expectancy', formatSignedMoney(stats.expectancy)],
+          [language === 'cn' ? '最大回撤' : 'Max drawdown', formatSignedMoney(calendarMonthViewData.summary.maxDrawdown)],
+          [language === 'cn' ? '最大回撤，%' : 'Max drawdown, %', '0'],
+          [language === 'cn' ? '平均回撤' : 'Average drawdown', formatSignedMoney(performanceSummary.avgDailyNetDrawdown)],
+          [language === 'cn' ? '平均回撤，%' : 'Average drawdown, %', '0'],
+      ];
+
+      return [leftColumn, rightColumn];
+  }, [calendarMonthViewData, language, performanceSummary, stats]);
 
   const getCompactDurationLabelLines = (ms: number) => {
       if (isNaN(ms) || ms === 0) return ['N/A'];
