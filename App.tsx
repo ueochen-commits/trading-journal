@@ -1203,6 +1203,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           tradingAccounts={tradingAccounts}
                           selectedAccountId={selectedAccountId}
                           onAccountChange={setSelectedAccountId}
+                          onOpenTradeReview={(tradeId: string) => { setJournalReviewTradeId(tradeId); handleSetActiveTab('journal'); }}
                       />
                   </PageContainer>
               );

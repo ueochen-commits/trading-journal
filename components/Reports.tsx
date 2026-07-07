@@ -2,6 +2,7 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report, TradingAccount, Strategy, TagCategoryDefinition } from '../types';
 import { useLanguage } from '../LanguageContext';
+import CalendarView from './CalendarView';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart, PieChart, Pie
 } from 'recharts';
@@ -25,6 +26,7 @@ interface ReportsProps {
   tradingAccounts?: TradingAccount[];
   selectedAccountId?: string;
   onAccountChange?: (accountId: string) => void;
+  onOpenTradeReview?: (tradeId: string) => void;
 }
 
 const SUMMARY_LAYOUT_STORAGE_KEY = 'tg_reports_summary_metric_layout_v1';
@@ -499,6 +501,7 @@ const Reports: React.FC<ReportsProps> = ({
   tradingAccounts = [],
   selectedAccountId: externalAccountId = 'all',
   onAccountChange,
+  onOpenTradeReview,
 }) => {
   const { t, language } = useLanguage();
   const initialLocalReportPreferences = loadLocalReportPreferences() || DEFAULT_REPORT_PREFERENCES;
@@ -675,6 +678,7 @@ const Reports: React.FC<ReportsProps> = ({
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
   const [calendarMonthDate, setCalendarMonthDate] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const [reportCalendarSelectedDay, setReportCalendarSelectedDay] = useState<Date | null>(null);
 
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportResult, setReportResult] = useState<string | null>(null);
@@ -6567,7 +6571,20 @@ const Reports: React.FC<ReportsProps> = ({
           days.push(
               <div
                   key={`${monthIndex}-${d}`}
-                  className={`group relative flex h-[27px] items-center justify-center rounded-[7px] text-[11px] font-semibold ${cellClass}`}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => {
+                      setCalendarMonthDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1));
+                      setReportCalendarSelectedDay(new Date(currentDate));
+                  }}
+                  onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          setCalendarMonthDate(new Date(currentDate.getFullYear(), currentDate.getMonth(), 1));
+                          setReportCalendarSelectedDay(new Date(currentDate));
+                      }
+                  }}
+                  className={`group relative flex h-[27px] cursor-pointer items-center justify-center rounded-[7px] text-[11px] font-semibold transition-transform hover:scale-[1.03] ${cellClass}`}
               >
                   <span
                       className={`relative z-[1] inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-[3px] leading-none ${
@@ -10449,7 +10466,16 @@ const Reports: React.FC<ReportsProps> = ({
                                   return (
                                       <div
                                           key={cell.dateKey}
-                                          className={`relative flex min-h-[118px] flex-col rounded-[4px] border p-[8px] ${cellTone} ${borderTone} transition-colors xl:min-h-[122px]`}
+                                          role="button"
+                                          tabIndex={0}
+                                          onClick={() => setReportCalendarSelectedDay(new Date(cell.date))}
+                                          onKeyDown={(event) => {
+                                              if (event.key === 'Enter' || event.key === ' ') {
+                                                  event.preventDefault();
+                                                  setReportCalendarSelectedDay(new Date(cell.date));
+                                              }
+                                          }}
+                                          className={`relative flex min-h-[118px] cursor-pointer flex-col rounded-[4px] border p-[8px] transition-[transform,colors,box-shadow] duration-200 hover:scale-[1.01] hover:shadow-[0_10px_24px_rgba(15,23,42,0.08)] xl:min-h-[122px] ${cellTone} ${borderTone}`}
                                       >
                                           <div className="flex items-start justify-between text-[12px] font-medium">
                                               <span
@@ -11296,6 +11322,17 @@ const Reports: React.FC<ReportsProps> = ({
                <p className="text-sm mt-2 opacity-60">We are building this feature.</p>
            </div>
        )}
+
+      <div className="hidden" aria-hidden="true">
+          <CalendarView
+              trades={trades}
+              plans={plans}
+              onSavePlan={onSavePlan}
+              externalSelectedDay={reportCalendarSelectedDay}
+              onExternalClose={() => setReportCalendarSelectedDay(null)}
+              onOpenTradeReview={onOpenTradeReview}
+          />
+      </div>
     </div>
   );
 };
