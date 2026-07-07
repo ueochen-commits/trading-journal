@@ -407,6 +407,13 @@ const formatDashboardAxisCurrency = (value: number, currencySymbol: string) => {
   return `${sign}${currencySymbol}${abs % 1 === 0 ? abs.toFixed(0) : abs.toFixed(2)}`;
 };
 
+const formatShortDashboardDate = (value: string) => {
+  const normalized = value.replace(/\//g, '-');
+  const date = new Date(`${normalized}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return value;
+  return `${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}/${String(date.getFullYear()).slice(2)}`;
+};
+
 // ── Position Heat Card ────────────────────────────────────────────────────────
 const VW = 560; const VH = 216;
 const PL = 38; const PR = 16; const PT = 8; const PB = 20;
@@ -2414,7 +2421,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               {/* Win Rate · Avg Win · Avg Loss chart */}
               {(() => {
-                const fmtDate = (d: string) => { const dt = new Date(d); return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}`; };
+                const fmtDate = (d: string) => { const dt = new Date(d); return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`; };
                 const sorted = [...trades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
                 // Group by date
                 const grouped: Record<string, typeof trades> = {};
@@ -2437,61 +2444,99 @@ const Dashboard: React.FC<DashboardProps> = ({
                 const amtMax = allAmts.length ? Math.max(...allAmts) : 20;
                 const amtRange = amtMax - amtMin || 1;
                 const stepSize = amtRange < 50 ? 5 : amtRange < 200 ? 20 : 50;
-                const yAmtMin = Math.floor(amtMin / stepSize) * stepSize - stepSize;
-                const yAmtMax = Math.ceil(amtMax / stepSize) * stepSize + stepSize;
-                const tickCount = Math.round((yAmtMax - yAmtMin) / stepSize) + 1;
-                const legendItems = [{ color: '#4A6CF7', label: 'Win %' }, { color: '#1D9E75', label: 'Avg win' }, { color: '#E24B4A', label: 'Avg loss' }];
+                const yAmtMin = Math.floor(amtMin / stepSize) * stepSize;
+                const yAmtMax = Math.ceil(amtMax / stepSize) * stepSize;
+                const safeAmtMin = yAmtMin === yAmtMax ? yAmtMin - stepSize : yAmtMin;
+                const safeAmtMax = yAmtMin === yAmtMax ? yAmtMax + stepSize : yAmtMax;
+                const legendItems = [
+                  { color: '#3563f6', label: language === 'cn' ? '胜率' : 'Win %' },
+                  { color: '#5cc4a7', label: language === 'cn' ? '平均胜场' : 'Avg win' },
+                  { color: '#f16363', label: language === 'cn' ? '平均负场' : 'Avg loss' },
+                ];
 	                return (
-	                  <div style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', display: 'flex', flexDirection: 'column', height: 420 }} className="dark:bg-slate-900 dark:border-slate-800">
+	                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 392, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
 	                    <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
-	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
-                      <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
+	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '16px 20px 14px', borderBottom: '1px solid #edf0f4', flexShrink: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
                       <TZInfoIcon infoKey="winRateTrend" />
                     </div>
-                    <div style={{ flex: 1, minHeight: 0 }}>
+                    <div style={{ flex: 1, minHeight: 0, padding: '14px 16px 0 12px' }}>
                       <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={winRateData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
+                        <ComposedChart data={winRateData} margin={{ top: 10, right: 18, left: 2, bottom: 18 }}
                           style={{ cursor: 'pointer' }}
                           onClick={(data: any) => {
                             const label = data?.activeLabel;
                             if (!label) return;
-                            const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
+                            const d = new Date(`${label}T00:00:00`);
                             if (!isNaN(d.getTime())) setChartClickDay(d);
                           }}
                         >
-                          <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} yAxisId="pct" />
-                          <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
-                          <YAxis yAxisId="pct" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={38}
-                            domain={[0, 100]} tickCount={6} tickFormatter={(v: number) => `${v}%`} />
-                          <YAxis yAxisId="amt" orientation="right" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={42}
-                            domain={[yAmtMin, yAmtMax]} tickCount={6} tickFormatter={(v: number) => `$${v}`} />
+                          <CartesianGrid strokeDasharray="3 4" stroke="rgba(141,153,174,0.2)" vertical={false} yAxisId="pct" />
+                          <ReferenceLine y={0} yAxisId="amt" stroke="rgba(168,176,188,0.5)" strokeWidth={1} />
+                          <XAxis
+                            dataKey="date"
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                            interval="preserveStartEnd"
+                            minTickGap={28}
+                            tickFormatter={formatShortDashboardDate}
+                            dy={8}
+                          />
+                          <YAxis
+                            yAxisId="pct"
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                            width={42}
+                            domain={[0, 60]}
+                            tickCount={7}
+                            tickFormatter={(v: number) => `${v}%`}
+                          />
+                          <YAxis
+                            yAxisId="amt"
+                            orientation="right"
+                            tickLine={false}
+                            axisLine={false}
+                            tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                            width={48}
+                            domain={[safeAmtMin, safeAmtMax]}
+                            tickCount={7}
+                            tickFormatter={(v: number) => `${v > 0 ? currencySymbol : `${v < 0 ? '-' : ''}${currencySymbol}`}${Math.abs(v)}`}
+                          />
                           <Tooltip
                             mode="index"
                             content={({ active, payload, label }: any) => {
                               if (!active || !payload?.length) return null;
                               return (
                                 <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
-                                  <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
+                                  <div style={{ fontWeight: 600, marginBottom: 6 }}>{formatShortDashboardDate(label)}</div>
                                   {payload.map((p: any) => (
                                     <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                                       <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
-                                      <span>{p.dataKey === 'winPct' ? `Win %: ${p.value}%` : p.dataKey === 'avgWin' ? `Avg win: $${p.value}` : `Avg loss: $${p.value}`}</span>
+                                      <span>
+                                        {p.dataKey === 'winPct'
+                                          ? `${language === 'cn' ? '胜率' : 'Win %'}: ${p.value}%`
+                                          : p.dataKey === 'avgWin'
+                                            ? `${language === 'cn' ? '平均胜场' : 'Avg win'}: ${currencySymbol}${p.value}`
+                                            : `${language === 'cn' ? '平均负场' : 'Avg loss'}: ${p.value < 0 ? '-' : ''}${currencySymbol}${Math.abs(p.value)}`}
+                                      </span>
                                     </div>
                                   ))}
                                 </div>
                               );
                             }}
                           />
-                          <Line yAxisId="pct" type="monotone" dataKey="winPct" stroke="#4A6CF7" strokeWidth={2} dot={{ r: 3, fill: '#4A6CF7', stroke: '#fff', strokeWidth: 1.5 }} activeDot={{ r: 5 }} />
-                          <Line yAxisId="amt" type="monotone" dataKey="avgWin" stroke="#1D9E75" strokeWidth={2} dot={{ r: 3, fill: '#1D9E75', stroke: '#fff', strokeWidth: 1.5 }} activeDot={{ r: 5 }} />
-                          <Line yAxisId="amt" type="monotone" dataKey="avgLoss" stroke="#E24B4A" strokeWidth={2} dot={{ r: 3, fill: '#E24B4A', stroke: '#fff', strokeWidth: 1.5 }} activeDot={{ r: 5 }} />
+                          <Line yAxisId="pct" type="monotone" dataKey="winPct" stroke="#3563f6" strokeWidth={2.1} dot={{ r: 2.6, fill: '#3563f6', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                          <Line yAxisId="amt" type="monotone" dataKey="avgWin" stroke="#5cc4a7" strokeWidth={2.1} dot={{ r: 2.6, fill: '#5cc4a7', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                          <Line yAxisId="amt" type="monotone" dataKey="avgLoss" stroke="#f16363" strokeWidth={2.1} dot={{ r: 2.6, fill: '#f16363', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
                         </ComposedChart>
                       </ResponsiveContainer>
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 20, marginTop: 10 }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10, padding: '0 20px' }}>
                       {legendItems.map(item => (
-                        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, color: '#6b7280' }}>
-                          <span style={{ width: 10, height: 10, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
+                        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7f8793' }}>
+                          <span style={{ width: 11, height: 11, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
                           {item.label}
                         </div>
                       ))}
