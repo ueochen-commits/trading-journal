@@ -216,6 +216,11 @@ const createDefaultCompareGroupFilters = (): CompareGroupFilters => ({
   endDate: '',
 });
 
+const isSameCalendarDay = (left: Date, right: Date) =>
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate();
+
 const DEFAULT_REPORT_PREFERENCES: ReportPreferences = {
   summaryMetricIds: getDefaultSummaryLayout(),
   pnlDisplayMode: 'net',
@@ -6535,36 +6540,44 @@ const Reports: React.FC<ReportsProps> = ({
       const year = calendarYear;
       const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
       const firstDay = new Date(year, monthIndex, 1).getDay();
+      const today = new Date();
       const days = [];
 
       for (let i = 0; i < firstDay; i++) {
-          days.push(<div key={`empty-${monthIndex}-${i}`} className="h-[27px] rounded-[4px] border border-[#edf1f5] bg-white/60" />);
+          days.push(<div key={`empty-${monthIndex}-${i}`} className="h-[27px] rounded-[7px] bg-transparent" />);
       }
 
       for (let d = 1; d <= daysInMonth; d++) {
+          const currentDate = new Date(year, monthIndex, d);
           const dateKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const dayData = calendarData.dailyMap[dateKey];
-          const isCurrentMonth = calendarMonthStart.getFullYear() === year && calendarMonthStart.getMonth() === monthIndex;
-          const isSelectedMonth = isCurrentMonth;
-          const isTodayMonth = new Date().getFullYear() === year && new Date().getMonth() === monthIndex;
+          const isToday = isSameCalendarDay(currentDate, today);
 
-          let cellClass = 'border border-[#edf1f5] bg-[#f4f5f7] text-[#64707d]';
+          let cellClass = 'border border-transparent bg-[#f4f5f7] text-[#7d8793]';
           if (dayData) {
               if (dayData.pnl > 0) {
-                  cellClass = 'border border-[#6dd4b0] bg-[#dff2e7] text-[#2f4858]';
+                  cellClass = 'border border-[#d6ecdf] bg-[#e8f6ee] text-[#2d3945]';
               } else if (dayData.pnl < 0) {
-                  cellClass = 'border border-[#ff8d8d] bg-[#ffe2e2] text-[#364152]';
+                  cellClass = 'border border-[#f5d8da] bg-[#fee8e8] text-[#2d3945]';
               } else {
-                  cellClass = 'border border-[#d8dee7] bg-[#eef1f5] text-[#596574]';
+                  cellClass = 'border border-[#e3e7ed] bg-[#eef2f5] text-[#66717e]';
               }
           }
 
           days.push(
               <div
                   key={`${monthIndex}-${d}`}
-                  className={`group relative flex h-[27px] items-center justify-center rounded-[4px] text-[12px] font-semibold ${cellClass}`}
+                  className={`group relative flex h-[27px] items-center justify-center rounded-[7px] text-[11px] font-semibold ${cellClass}`}
               >
-                  {d}
+                  <span
+                      className={`relative z-[1] inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-[3px] leading-none ${
+                          isToday
+                              ? 'border border-[#6d5cd5] bg-white text-[#4f3dc1] shadow-[0_1px_2px_rgba(109,92,213,0.18)]'
+                              : ''
+                      }`}
+                  >
+                      {d}
+                  </span>
                   {dayData && (
                       <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-[6px] border border-[#dfe4ec] bg-white px-[8px] py-[6px] text-[11px] shadow-[0_10px_24px_rgba(15,23,42,0.12)] group-hover:block">
                           <div className={`font-semibold tabular-nums ${dayData.pnl >= 0 ? 'text-[#3baa86]' : 'text-[#f15f63]'}`}>
@@ -6574,12 +6587,6 @@ const Reports: React.FC<ReportsProps> = ({
                               {dayData.count} {language === 'cn' ? '笔交易' : 'trades'}
                           </div>
                       </div>
-                  )}
-                  {isSelectedMonth && d === 1 && (
-                      <span className="pointer-events-none absolute inset-[-6px] rounded-[8px] border border-[#6d5cd5]" />
-                  )}
-                  {!dayData && isTodayMonth && d === new Date().getDate() && (
-                      <span className="pointer-events-none absolute inset-[-2px] rounded-[6px] border border-[#dfe4ec]" />
                   )}
               </div>
           );
@@ -10352,9 +10359,9 @@ const Reports: React.FC<ReportsProps> = ({
                                   key={monthIndex}
                                   type="button"
                                   onClick={() => setCalendarMonthDate(new Date(calendarYear, monthIndex, 1))}
-                                  className={`rounded-[10px] border bg-white px-[6px] py-[8px] text-left transition-colors ${
+                                  className={`rounded-[12px] border-[1.5px] bg-white px-[8px] py-[10px] text-left transition-[border-color,box-shadow,transform] duration-200 ${
                                       calendarMonthStart.getFullYear() === calendarYear && calendarMonthStart.getMonth() === monthIndex
-                                          ? 'border-[#6d5cd5]'
+                                          ? 'border-[#6d5cd5] shadow-[0_0_0_1px_rgba(109,92,213,0.06)]'
                                           : 'border-transparent hover:border-[#e7ebf1]'
                                   }`}
                               >
@@ -10363,7 +10370,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   </div>
                                   <div className="grid grid-cols-7 gap-[4px]">
                                       {calendarWeekdayHeaders.map(label => (
-                                          <div key={`${monthIndex}-${label}`} className="flex h-[20px] items-center justify-center rounded-[4px] border border-[#edf1f5] bg-white text-[10px] font-medium text-[#9aa3af]">
+                                          <div key={`${monthIndex}-${label}`} className="flex h-[20px] items-center justify-center rounded-[6px] bg-white text-[10px] font-medium text-[#a2aab6]">
                                               {language === 'cn' ? label.replace('周', '') : label}
                                           </div>
                                       ))}
@@ -10421,6 +10428,7 @@ const Reports: React.FC<ReportsProps> = ({
                               {calendarMonthViewData.cells.map(cell => {
                                   const summary = cell.summary;
                                   const dayPnl = summary?.pnl || 0;
+                                  const isToday = isSameCalendarDay(cell.date, new Date());
                                   const cellTone = !cell.inMonth
                                       ? 'bg-white text-[#c3cad3]'
                                       : !summary
@@ -10444,7 +10452,15 @@ const Reports: React.FC<ReportsProps> = ({
                                           className={`relative flex min-h-[118px] flex-col rounded-[4px] border p-[8px] ${cellTone} ${borderTone} transition-colors xl:min-h-[122px]`}
                                       >
                                           <div className="flex items-start justify-between text-[12px] font-medium">
-                                              <span>{cell.date.getDate()}</span>
+                                              <span
+                                                  className={`inline-flex h-[24px] min-w-[24px] items-center justify-center rounded-full px-[6px] leading-none ${
+                                                      isToday
+                                                          ? 'border border-[#6d5cd5] bg-white text-[#4f3dc1] shadow-[0_2px_6px_rgba(109,92,213,0.14)]'
+                                                          : ''
+                                                  }`}
+                                              >
+                                                  {cell.date.getDate()}
+                                              </span>
                                           </div>
                                           {summary && cell.inMonth && (
                                               <div className="mt-auto flex flex-col items-end text-right">
