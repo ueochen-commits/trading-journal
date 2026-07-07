@@ -18,7 +18,7 @@ import {
   ChevronLeft, ChevronRight, X, Edit3, CheckCircle2, ArrowLeft, Save,
   Undo2, Redo2, Mic, MicOff, Bold, Italic, Underline as UnderlineIcon, Code2,
   Link as LinkIcon, Eraser, Type, Paintbrush, Plus, ChevronDown,
-  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive, Paperclip
+  AlignLeft, AlignCenter, AlignRight, AlignJustify, Minus, ListTodo, CaseSensitive, Paperclip, Settings, Info
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -884,18 +884,38 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             {monthStats.tradingDays} {cal.tradingDays || 'days'}
           </span>
           <button
+            type="button"
+            title={cal.weekSuffix ? '设置' : 'Settings'}
+            className="screenshot-ignore flex h-7 w-7 items-center justify-center text-[#7d8794] transition-all"
+            style={{ flexShrink: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#111827'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#7d8794'; }}
+          >
+            <Settings className="h-[14px] w-[14px]" strokeWidth={1.9} />
+          </button>
+          <button
             onClick={handleCapture}
             disabled={isCapturing}
             title={cal.weekSuffix ? '分享日历' : 'Share calendar'}
-            className="screenshot-ignore w-8 h-8 flex items-center justify-center rounded-[10px] transition-all"
-            style={{ flexShrink: 0, background: '#fff', border: '1px solid #e5e7eb', color: '#64748B', cursor: 'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; (e.currentTarget as HTMLButtonElement).style.color = '#0F172A'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#fff'; (e.currentTarget as HTMLButtonElement).style.color = '#64748B'; }}
+            className="screenshot-ignore flex h-7 w-7 items-center justify-center transition-all"
+            style={{ flexShrink: 0, background: 'transparent', border: 'none', color: '#6f54d9', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#5b46c7'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6f54d9'; }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
               <circle cx="12" cy="13" r="3"/>
             </svg>
+          </button>
+          <button
+            type="button"
+            title={cal.weekSuffix ? '说明' : 'Info'}
+            className="screenshot-ignore flex h-7 w-7 items-center justify-center text-[#7d8794] transition-all"
+            style={{ flexShrink: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#111827'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#7d8794'; }}
+          >
+            <Info className="h-[14px] w-[14px]" strokeWidth={1.9} />
           </button>
         </div>
       </div>
