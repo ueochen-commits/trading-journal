@@ -1719,9 +1719,65 @@ const Reports: React.FC<ReportsProps> = ({
       }));
   }, [trades]);
 
+  const emptyStats = {
+      totalTrades: 0,
+      closedCount: 0,
+      openCount: 0,
+      netPnl: 0,
+      grossProfit: 0,
+      grossLoss: 0,
+      totalFees: 0,
+      avgWin: 0,
+      avgLoss: 0,
+      avgTradePnl: 0,
+      profitFactor: 0,
+      winRate: 0,
+      expectancy: 0,
+      winCount: 0,
+      lossCount: 0,
+      beCount: 0,
+      maxConWins: 0,
+      maxConLoss: 0,
+      avgHoldAll: 0,
+      avgHoldWin: 0,
+      avgHoldLoss: 0,
+      avgHoldScratch: 0,
+      longestTradeDuration: 0,
+      totalDays: 0,
+      winningDays: 0,
+      losingDays: 0,
+      beDays: 0,
+      avgDailyPnl: 0,
+      largestProfit: 0,
+      largestLoss: 0,
+      largestLosingDay: 0,
+      maxConWinDays: 0,
+      maxConLossDays: 0,
+      maxTradingDaysDuration: 0,
+      avgRealizedR: 0,
+      bestMonth: 0,
+      lowestMonth: 0,
+      avgMonth: 0,
+      totalVolume: 0,
+      longTradesCount: 0,
+      shortTradesCount: 0,
+      longWinningTrades: 0,
+      longLosingTrades: 0,
+      longBreakevenTrades: 0,
+      longOpenTrades: 0,
+      shortWinningTrades: 0,
+      shortLosingTrades: 0,
+      shortBreakevenTrades: 0,
+      shortOpenTrades: 0,
+      longWinRate: 0,
+      shortWinRate: 0,
+      sharpeRatio: 0,
+      sortinoRatio: 0,
+  };
+
   // --- 6. Advanced Statistics Calculation ---
-  const stats = useMemo(() => {
-      if (trades.length === 0) return null;
+  const stats = useMemo<typeof emptyStats>(() => {
+      if (trades.length === 0) return emptyStats;
 
       // Basic Filters
       const closedTrades = trades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
