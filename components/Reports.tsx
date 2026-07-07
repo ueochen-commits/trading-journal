@@ -130,6 +130,7 @@ type RiskReportView = 'VOLUMES' | 'POSITION SIZES' | 'R_MULTIPLES';
 type DayTimeMetricId = SummaryMetricId;
 type DayTimeCrossMetric = 'winRate' | 'pnl' | 'trades';
 type DayTimeSymbolLimit = 5 | 10 | 20 | 'all';
+type DetailedReportPreferenceKey = 'DAYS' | 'SYMBOLS' | 'RISK' | 'SETUPS' | 'TAGS' | 'WINS_LOSSES';
 type ChartStyleSettings = Record<ChartSide, {
   primary?: {
     visual?: ChartMetricVisual;
@@ -152,6 +153,13 @@ type PersistedChartMetricSelection<TMetricId extends string> = {
   secondary: TMetricId | null;
   tertiary: TMetricId | null;
 };
+type DetailedChartPreference = {
+  charts: Record<ChartSide, PersistedChartMetricSelection<DayTimeMetricId>>;
+  chartStyleSettings: ChartStyleSettings;
+  crossMetric: DayTimeCrossMetric;
+  symbolLimit: DayTimeSymbolLimit;
+};
+type DetailedChartPreferencesMap = Record<DetailedReportPreferenceKey, DetailedChartPreference>;
 type ReportPreferences = {
   summaryMetricIds: SummaryMetricId[];
   pnlDisplayMode: PnlDisplayMode;
@@ -161,6 +169,7 @@ type ReportPreferences = {
   dayTimeReportView: DayTimeReportView;
   symbolReportView: SymbolReportView;
   riskReportView: RiskReportView;
+  detailedChartPreferences: DetailedChartPreferencesMap;
   dayTimeCharts: Record<ChartSide, PersistedChartMetricSelection<DayTimeMetricId>>;
   dayTimeChartStyleSettings: ChartStyleSettings;
   dayTimeCrossMetric: DayTimeCrossMetric;
@@ -223,6 +232,27 @@ const isSameCalendarDay = (left: Date, right: Date) =>
   left.getMonth() === right.getMonth() &&
   left.getDate() === right.getDate();
 
+const DETAILED_REPORT_PREFERENCE_KEYS: DetailedReportPreferenceKey[] = ['DAYS', 'SYMBOLS', 'RISK', 'SETUPS', 'TAGS', 'WINS_LOSSES'];
+
+const createDefaultDetailedChartPreference = (): DetailedChartPreference => ({
+  charts: {
+      left: { primary: 'netPnl', secondary: 'tradeCount', tertiary: null },
+      right: { primary: 'winPct', secondary: 'tradeCount', tertiary: null },
+  },
+  chartStyleSettings: { left: {}, right: {} },
+  crossMetric: 'pnl',
+  symbolLimit: 10,
+});
+
+const createDefaultDetailedChartPreferencesMap = (): DetailedChartPreferencesMap => ({
+  DAYS: createDefaultDetailedChartPreference(),
+  SYMBOLS: createDefaultDetailedChartPreference(),
+  RISK: createDefaultDetailedChartPreference(),
+  SETUPS: createDefaultDetailedChartPreference(),
+  TAGS: createDefaultDetailedChartPreference(),
+  WINS_LOSSES: createDefaultDetailedChartPreference(),
+});
+
 const DEFAULT_REPORT_PREFERENCES: ReportPreferences = {
   summaryMetricIds: getDefaultSummaryLayout(),
   pnlDisplayMode: 'net',
@@ -235,13 +265,11 @@ const DEFAULT_REPORT_PREFERENCES: ReportPreferences = {
   dayTimeReportView: 'DAYS',
   symbolReportView: 'SYMBOLS',
   riskReportView: 'VOLUMES',
-  dayTimeCharts: {
-      left: { primary: 'netPnl', secondary: 'tradeCount', tertiary: null },
-      right: { primary: 'winPct', secondary: 'tradeCount', tertiary: null },
-  },
-  dayTimeChartStyleSettings: { left: {}, right: {} },
-  dayTimeCrossMetric: 'pnl',
-  dayTimeSymbolLimit: 10,
+  detailedChartPreferences: createDefaultDetailedChartPreferencesMap(),
+  dayTimeCharts: createDefaultDetailedChartPreference().charts,
+  dayTimeChartStyleSettings: createDefaultDetailedChartPreference().chartStyleSettings,
+  dayTimeCrossMetric: createDefaultDetailedChartPreference().crossMetric,
+  dayTimeSymbolLimit: createDefaultDetailedChartPreference().symbolLimit,
   tagReportCategoryId: 'mistakes',
 };
 
@@ -319,8 +347,50 @@ const normalizeChartStyleSettings = (value: unknown): ChartStyleSettings => {
   return normalized;
 };
 
+const normalizeDetailedChartPreference = (
+  value: unknown,
+  fallback: DetailedChartPreference
+): DetailedChartPreference => {
+  const source = value && typeof value === 'object' ? value as Partial<Record<keyof DetailedChartPreference, unknown>> : {};
+
+  return {
+      charts: {
+          left: normalizeMetricSelection(source.charts && (source.charts as any).left, fallback.charts.left),
+          right: normalizeMetricSelection(source.charts && (source.charts as any).right, fallback.charts.right),
+      },
+      chartStyleSettings: normalizeChartStyleSettings(source.chartStyleSettings),
+      crossMetric: normalizeEnumValue(source.crossMetric, DAY_TIME_CROSS_METRIC_VALUES, fallback.crossMetric),
+      symbolLimit: normalizeEnumValue(source.symbolLimit, DAY_TIME_SYMBOL_LIMIT_VALUES, fallback.symbolLimit),
+  };
+};
+
+const normalizeDetailedChartPreferencesMap = (value: unknown): DetailedChartPreferencesMap => {
+  const source = value && typeof value === 'object' ? value as Partial<Record<DetailedReportPreferenceKey, unknown>> : {};
+  const defaults = createDefaultDetailedChartPreferencesMap();
+  const normalized = {} as DetailedChartPreferencesMap;
+
+  DETAILED_REPORT_PREFERENCE_KEYS.forEach(key => {
+      normalized[key] = normalizeDetailedChartPreference(source[key], defaults[key]);
+  });
+
+  return normalized;
+};
+
 const normalizeReportPreferences = (value: unknown): ReportPreferences => {
   const source = value && typeof value === 'object' ? value as Partial<Record<keyof ReportPreferences, unknown>> : {};
+  const normalizedDetailedChartPreferences = normalizeDetailedChartPreferencesMap(source.detailedChartPreferences);
+  const legacyDetailedChartPreference = normalizeDetailedChartPreference({
+      charts: source.dayTimeCharts,
+      chartStyleSettings: source.dayTimeChartStyleSettings,
+      crossMetric: source.dayTimeCrossMetric,
+      symbolLimit: source.dayTimeSymbolLimit,
+  }, DEFAULT_REPORT_PREFERENCES.detailedChartPreferences.DAYS);
+  const effectiveDetailedChartPreferences = source.detailedChartPreferences
+      ? normalizedDetailedChartPreferences
+      : {
+          ...normalizedDetailedChartPreferences,
+          DAYS: legacyDetailedChartPreference,
+      };
 
   return {
       summaryMetricIds: normalizeSummaryLayout(source.summaryMetricIds),
@@ -337,13 +407,11 @@ const normalizeReportPreferences = (value: unknown): ReportPreferences => {
       dayTimeReportView: normalizeEnumValue(source.dayTimeReportView, DAY_TIME_REPORT_VIEW_VALUES, DEFAULT_REPORT_PREFERENCES.dayTimeReportView),
       symbolReportView: normalizeEnumValue(source.symbolReportView, SYMBOL_REPORT_VIEW_VALUES, DEFAULT_REPORT_PREFERENCES.symbolReportView),
       riskReportView: normalizeEnumValue(source.riskReportView, RISK_REPORT_VIEW_VALUES, DEFAULT_REPORT_PREFERENCES.riskReportView),
-      dayTimeCharts: {
-          left: normalizeMetricSelection(source.dayTimeCharts && (source.dayTimeCharts as any).left, DEFAULT_REPORT_PREFERENCES.dayTimeCharts.left),
-          right: normalizeMetricSelection(source.dayTimeCharts && (source.dayTimeCharts as any).right, DEFAULT_REPORT_PREFERENCES.dayTimeCharts.right),
-      },
-      dayTimeChartStyleSettings: normalizeChartStyleSettings(source.dayTimeChartStyleSettings),
-      dayTimeCrossMetric: normalizeEnumValue(source.dayTimeCrossMetric, DAY_TIME_CROSS_METRIC_VALUES, DEFAULT_REPORT_PREFERENCES.dayTimeCrossMetric),
-      dayTimeSymbolLimit: normalizeEnumValue(source.dayTimeSymbolLimit, DAY_TIME_SYMBOL_LIMIT_VALUES, DEFAULT_REPORT_PREFERENCES.dayTimeSymbolLimit),
+      detailedChartPreferences: effectiveDetailedChartPreferences,
+      dayTimeCharts: effectiveDetailedChartPreferences.DAYS.charts,
+      dayTimeChartStyleSettings: effectiveDetailedChartPreferences.DAYS.chartStyleSettings,
+      dayTimeCrossMetric: effectiveDetailedChartPreferences.DAYS.crossMetric,
+      dayTimeSymbolLimit: effectiveDetailedChartPreferences.DAYS.symbolLimit,
       tagReportCategoryId: typeof source.tagReportCategoryId === 'string' && source.tagReportCategoryId.trim().length > 0
           ? source.tagReportCategoryId
           : DEFAULT_REPORT_PREFERENCES.tagReportCategoryId,
@@ -531,14 +599,7 @@ const Reports: React.FC<ReportsProps> = ({
   const [dayTimeReportView, setDayTimeReportView] = useState<DayTimeReportView>(initialLocalReportPreferences.dayTimeReportView);
   const [symbolReportView, setSymbolReportView] = useState<SymbolReportView>(initialLocalReportPreferences.symbolReportView);
   const [riskReportView, setRiskReportView] = useState<RiskReportView>(initialLocalReportPreferences.riskReportView);
-  const [dayTimeLeftPrimaryMetric, setDayTimeLeftPrimaryMetric] = useState<DayTimeMetricId>(initialLocalReportPreferences.dayTimeCharts.left.primary);
-  const [dayTimeLeftSecondaryMetric, setDayTimeLeftSecondaryMetric] = useState<DayTimeMetricId | null>(initialLocalReportPreferences.dayTimeCharts.left.secondary);
-  const [dayTimeLeftTertiaryMetric, setDayTimeLeftTertiaryMetric] = useState<DayTimeMetricId | null>(initialLocalReportPreferences.dayTimeCharts.left.tertiary);
-  const [dayTimeRightPrimaryMetric, setDayTimeRightPrimaryMetric] = useState<DayTimeMetricId>(initialLocalReportPreferences.dayTimeCharts.right.primary);
-  const [dayTimeRightSecondaryMetric, setDayTimeRightSecondaryMetric] = useState<DayTimeMetricId | null>(initialLocalReportPreferences.dayTimeCharts.right.secondary);
-  const [dayTimeRightTertiaryMetric, setDayTimeRightTertiaryMetric] = useState<DayTimeMetricId | null>(initialLocalReportPreferences.dayTimeCharts.right.tertiary);
-  const [dayTimeCrossMetric, setDayTimeCrossMetric] = useState<DayTimeCrossMetric>(initialLocalReportPreferences.dayTimeCrossMetric);
-  const [dayTimeSymbolLimit, setDayTimeSymbolLimit] = useState<DayTimeSymbolLimit>(initialLocalReportPreferences.dayTimeSymbolLimit);
+  const [detailedChartPreferences, setDetailedChartPreferences] = useState<DetailedChartPreferencesMap>(initialLocalReportPreferences.detailedChartPreferences);
   const [tagReportCategoryId, setTagReportCategoryId] = useState<string>(initialLocalReportPreferences.tagReportCategoryId);
   const [isDayTimeSymbolLimitOpen, setIsDayTimeSymbolLimitOpen] = useState(false);
   const [isReportMenuOpen, setIsReportMenuOpen] = useState(false);
@@ -587,7 +648,6 @@ const Reports: React.FC<ReportsProps> = ({
   const [pnlDisplayMode, setPnlDisplayMode] = useState<PnlDisplayMode>(initialLocalReportPreferences.pnlDisplayMode);
   const [chartTimeframes, setChartTimeframes] = useState<Record<ChartSide, ChartTimeframe>>(initialLocalReportPreferences.chartTimeframes);
   const [chartStyleSettings, setChartStyleSettings] = useState<ChartStyleSettings>(initialLocalReportPreferences.chartStyleSettings);
-  const [dayTimeChartStyleSettings, setDayTimeChartStyleSettings] = useState<ChartStyleSettings>(initialLocalReportPreferences.dayTimeChartStyleSettings);
   const [chartMetricPickerSearch, setChartMetricPickerSearch] = useState('');
   const [expandedChartMetricCategory, setExpandedChartMetricCategory] = useState<string | null>('profitability');
   const [openDayTimeMetricPicker, setOpenDayTimeMetricPicker] = useState<{ side: ChartSide; slot: ChartMetricSlot } | null>(null);
@@ -615,6 +675,86 @@ const Reports: React.FC<ReportsProps> = ({
       left: new Date(),
       right: new Date(),
   });
+
+  const getActiveDetailedPreferenceKey = (filter: string | null): DetailedReportPreferenceKey => {
+      if (filter === 'SYMBOLS' || filter === 'RISK' || filter === 'SETUPS' || filter === 'TAGS' || filter === 'WINS_LOSSES') {
+          return filter;
+      }
+      return 'DAYS';
+  };
+
+  const activeDetailedPreferenceKey = getActiveDetailedPreferenceKey(detailedFilter);
+  const activeDetailedChartPreference = detailedChartPreferences[activeDetailedPreferenceKey] || DEFAULT_REPORT_PREFERENCES.detailedChartPreferences[activeDetailedPreferenceKey];
+  const dayTimeLeftPrimaryMetric = activeDetailedChartPreference.charts.left.primary;
+  const dayTimeLeftSecondaryMetric = activeDetailedChartPreference.charts.left.secondary;
+  const dayTimeLeftTertiaryMetric = activeDetailedChartPreference.charts.left.tertiary;
+  const dayTimeRightPrimaryMetric = activeDetailedChartPreference.charts.right.primary;
+  const dayTimeRightSecondaryMetric = activeDetailedChartPreference.charts.right.secondary;
+  const dayTimeRightTertiaryMetric = activeDetailedChartPreference.charts.right.tertiary;
+  const dayTimeChartStyleSettings = activeDetailedChartPreference.chartStyleSettings;
+  const dayTimeCrossMetric = activeDetailedChartPreference.crossMetric;
+  const dayTimeSymbolLimit = activeDetailedChartPreference.symbolLimit;
+
+  const updateActiveDetailedChartPreference = (
+      updater: (current: DetailedChartPreference) => DetailedChartPreference
+  ) => {
+      setDetailedChartPreferences(current => {
+          const currentPreference = current[activeDetailedPreferenceKey] || DEFAULT_REPORT_PREFERENCES.detailedChartPreferences[activeDetailedPreferenceKey];
+          return {
+              ...current,
+              [activeDetailedPreferenceKey]: updater(currentPreference),
+          };
+      });
+  };
+
+  const setDayTimeChartStyleSettings = (
+      value: ChartStyleSettings | ((current: ChartStyleSettings) => ChartStyleSettings)
+  ) => {
+      updateActiveDetailedChartPreference(current => ({
+          ...current,
+          chartStyleSettings: typeof value === 'function' ? value(current.chartStyleSettings) : value,
+      }));
+  };
+
+  const setDayTimeCrossMetric = (
+      value: DayTimeCrossMetric | ((current: DayTimeCrossMetric) => DayTimeCrossMetric)
+  ) => {
+      updateActiveDetailedChartPreference(current => ({
+          ...current,
+          crossMetric: typeof value === 'function' ? value(current.crossMetric) : value,
+      }));
+  };
+
+  const setDayTimeSymbolLimit = (
+      value: DayTimeSymbolLimit | ((current: DayTimeSymbolLimit) => DayTimeSymbolLimit)
+  ) => {
+      updateActiveDetailedChartPreference(current => ({
+          ...current,
+          symbolLimit: typeof value === 'function' ? value(current.symbolLimit) : value,
+      }));
+  };
+
+  const setDayTimeMetricSelection = (
+      side: ChartSide,
+      updater: (
+          current: PersistedChartMetricSelection<DayTimeMetricId>
+      ) => PersistedChartMetricSelection<DayTimeMetricId>
+  ) => {
+      updateActiveDetailedChartPreference(current => ({
+          ...current,
+          charts: {
+              ...current.charts,
+              [side]: updater(current.charts[side]),
+          },
+      }));
+  };
+
+  const setDayTimeLeftPrimaryMetric = (metricId: DayTimeMetricId) => setDayTimeMetricSelection('left', current => ({ ...current, primary: metricId }));
+  const setDayTimeLeftSecondaryMetric = (metricId: DayTimeMetricId | null) => setDayTimeMetricSelection('left', current => ({ ...current, secondary: metricId }));
+  const setDayTimeLeftTertiaryMetric = (metricId: DayTimeMetricId | null) => setDayTimeMetricSelection('left', current => ({ ...current, tertiary: metricId }));
+  const setDayTimeRightPrimaryMetric = (metricId: DayTimeMetricId) => setDayTimeMetricSelection('right', current => ({ ...current, primary: metricId }));
+  const setDayTimeRightSecondaryMetric = (metricId: DayTimeMetricId | null) => setDayTimeMetricSelection('right', current => ({ ...current, secondary: metricId }));
+  const setDayTimeRightTertiaryMetric = (metricId: DayTimeMetricId | null) => setDayTimeMetricSelection('right', current => ({ ...current, tertiary: metricId }));
 
   const getDisplayPnl = (trade: Trade) => {
       const grossPnl = Number(trade.pnl) || 0;
@@ -834,15 +974,7 @@ const Reports: React.FC<ReportsProps> = ({
           setDayTimeReportView(preferences.dayTimeReportView);
           setSymbolReportView(preferences.symbolReportView);
           setRiskReportView(preferences.riskReportView);
-          setDayTimeLeftPrimaryMetric(preferences.dayTimeCharts.left.primary);
-          setDayTimeLeftSecondaryMetric(preferences.dayTimeCharts.left.secondary);
-          setDayTimeLeftTertiaryMetric(preferences.dayTimeCharts.left.tertiary);
-          setDayTimeRightPrimaryMetric(preferences.dayTimeCharts.right.primary);
-          setDayTimeRightSecondaryMetric(preferences.dayTimeCharts.right.secondary);
-          setDayTimeRightTertiaryMetric(preferences.dayTimeCharts.right.tertiary);
-          setDayTimeChartStyleSettings(preferences.dayTimeChartStyleSettings);
-          setDayTimeCrossMetric(preferences.dayTimeCrossMetric);
-          setDayTimeSymbolLimit(preferences.dayTimeSymbolLimit);
+          setDetailedChartPreferences(preferences.detailedChartPreferences);
           setTagReportCategoryId(preferences.tagReportCategoryId);
       };
 
@@ -924,21 +1056,11 @@ const Reports: React.FC<ReportsProps> = ({
       dayTimeReportView,
       symbolReportView,
       riskReportView,
-      dayTimeCharts: {
-          left: {
-              primary: dayTimeLeftPrimaryMetric,
-              secondary: dayTimeLeftSecondaryMetric,
-              tertiary: dayTimeLeftTertiaryMetric,
-          },
-          right: {
-              primary: dayTimeRightPrimaryMetric,
-              secondary: dayTimeRightSecondaryMetric,
-              tertiary: dayTimeRightTertiaryMetric,
-          },
-      },
-      dayTimeChartStyleSettings,
-      dayTimeCrossMetric,
-      dayTimeSymbolLimit,
+      detailedChartPreferences,
+      dayTimeCharts: detailedChartPreferences.DAYS.charts,
+      dayTimeChartStyleSettings: detailedChartPreferences.DAYS.chartStyleSettings,
+      dayTimeCrossMetric: detailedChartPreferences.DAYS.crossMetric,
+      dayTimeSymbolLimit: detailedChartPreferences.DAYS.symbolLimit,
       tagReportCategoryId,
   }), [
       summaryMetricIds,
@@ -954,15 +1076,7 @@ const Reports: React.FC<ReportsProps> = ({
       dayTimeReportView,
       symbolReportView,
       riskReportView,
-      dayTimeLeftPrimaryMetric,
-      dayTimeLeftSecondaryMetric,
-      dayTimeLeftTertiaryMetric,
-      dayTimeRightPrimaryMetric,
-      dayTimeRightSecondaryMetric,
-      dayTimeRightTertiaryMetric,
-      dayTimeChartStyleSettings,
-      dayTimeCrossMetric,
-      dayTimeSymbolLimit,
+      detailedChartPreferences,
       tagReportCategoryId,
   ]);
 
