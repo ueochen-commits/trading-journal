@@ -2682,9 +2682,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                       {/* Rows */}
                       <div style={{ flex: 1, overflowY: 'auto' }} className="custom-scrollbar">
                         {recent.length === 0 ? (
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120, color: '#c0c3d4', fontSize: 13 }}>
-                            {language === 'cn' ? '暂无交易记录' : 'No trades yet'}
-                          </div>
+                          <EmptyChartState
+                            variant="cloud"
+                            compact
+                            minHeight={220}
+                            title={language === 'cn' ? '暂无交易记录' : 'No trades yet'}
+                            subtitle={language === 'cn' ? '导入或添加交易后会显示在这里' : 'Import or add trades to see them here'}
+                          />
                         ) : recent.map((trade, idx) => {
                           const netPnl = trade.pnl;
                           return (

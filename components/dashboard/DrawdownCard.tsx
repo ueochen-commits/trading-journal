@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Trade } from '../../types';
+import EmptyChartState from '../common/EmptyChartState';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -313,15 +314,13 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, langua
 
       {/* Chart */}
       {stats.points.length < 2 ? (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#CBD5E1" strokeWidth="1.5">
-            <path d="M3 3v18h18"/><path d="M7 14l4-4 4 4 4-4"/>
-          </svg>
-          <p style={{ fontSize: 13, color: '#64748B', fontWeight: 500, margin: 0 }}>数据积累中</p>
-          <p style={{ fontSize: 11, color: '#94A3B8', margin: 0, textAlign: 'center', maxWidth: 200, lineHeight: 1.5 }}>
-            至少需要 7 天交易数据才能生成回撤分析
-          </p>
-        </div>
+        <EmptyChartState
+          variant="cloud"
+          compact
+          minHeight={180}
+          title="数据积累中"
+          subtitle="至少需要 7 天交易数据才能生成回撤分析"
+        />
       ) : (
         <div ref={svgContainerRef} style={{ height: 180, flexShrink: 0, position: 'relative' }}>
           <DrawdownSVG stats={stats} hoverIdx={hoverIdx} onMouseMove={handleMouseMove} onMouseLeave={handleMouseLeave} />
