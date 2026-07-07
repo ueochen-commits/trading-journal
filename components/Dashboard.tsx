@@ -1804,6 +1804,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   const currentTotalEquity = mergedEquityData[mergedEquityData.length - 1]?.equity || riskSettings.accountSize;
   const currentTotalReturnPct = mergedEquityData[mergedEquityData.length - 1]?.returnPct || 0;
+  const hasEquityChartData = mergedEquityData.length > 1;
 
   const setupPerformance = useMemo(() => {
     const setups: Record<string, number> = {};
@@ -2352,72 +2353,80 @@ const Dashboard: React.FC<DashboardProps> = ({
                 </div>
                 {/* Chart */}
                 <div style={{ flex: 1, minHeight: 0 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
-                      style={{ cursor: 'pointer' }}
-                      onClick={(data: any) => {
-                        const label = data?.activeLabel;
-                        if (!label || label === 'Start') return;
-                        const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
-                        if (!isNaN(d.getTime())) setChartClickDay(d);
-                      }}
-                    >
-                      <defs>
-                        {(() => {
-                          // Compute y=0 as % from top so gradient transitions exactly at zero
-                          const vals = mergedEquityData.map((d: any) => d.cumulativePnl ?? 0);
-                          const maxV = Math.max(...vals, 0);
-                          const minV = Math.min(...vals, 0);
-                          const range = maxV - minV;
-                          const zeroPct = range > 0 ? `${((maxV / range) * 100).toFixed(2)}%` : '50%';
-                          return (
-                            <linearGradient id="eqCombinedGrad" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="#34D399" stopOpacity={0.35} />
-                              <stop offset={zeroPct} stopColor="#34D399" stopOpacity={0.02} />
-                              <stop offset={zeroPct} stopColor="#FB7185" stopOpacity={0.02} />
-                              <stop offset="100%" stopColor="#FB7185" stopOpacity={0.35} />
-                            </linearGradient>
-                          );
-                        })()}
-                      </defs>
-                      <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
-                      <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
-                      <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={55}
-                        tickFormatter={(v: number) => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : v <= -1000 ? `-$${(Math.abs(v)/1000).toFixed(0)}k` : `$${v}`}
-                        domain={['auto', 'auto']}
-                      />
-                      <Tooltip
-                        cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '4 4' }}
-                        content={({ active, payload, label }: any) => {
-                          if (!active || !payload?.length) return null;
-                          const val = payload.find((p: any) => p.dataKey === 'cumulativePnl')?.value ?? payload[0]?.value ?? 0;
-                          const sign = val >= 0 ? '+' : '';
-                          return (
-                            <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
-                              <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span style={{ width: 10, height: 10, background: val >= 0 ? '#34D399' : '#FB7185', borderRadius: 2, display: 'inline-block' }} />
-                                <span>{sign}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
-                              </div>
-                            </div>
-                          );
+                  {!hasEquityChartData ? (
+                    <EmptyChartState
+                      variant="cards"
+                      compact
+                      minHeight="100%"
+                      title={language === 'cn' ? '暂无累计净盈亏数据' : 'No cumulative net P&L to show here'}
+                      subtitle={language === 'cn' ? '尝试选择不同的筛选条件' : 'Try selecting different filters'}
+                    />
+                  ) : (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={mergedEquityData} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}
+                        style={{ cursor: 'pointer' }}
+                        onClick={(data: any) => {
+                          const label = data?.activeLabel;
+                          if (!label || label === 'Start') return;
+                          const d = new Date(label.replace(/\//g, '-') + 'T00:00:00');
+                          if (!isNaN(d.getTime())) setChartClickDay(d);
                         }}
-                      />
-                      {/* Single Area: line + fill from same path — no gap possible */}
-                      <Area type="monotone" dataKey="cumulativePnl"
-                        stroke="#6366F1" strokeWidth={1.2}
-                        fill="url(#eqCombinedGrad)" fillOpacity={1}
-                        dot={false}
-                        activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }}
-                        isAnimationActive={false}
-                      />
-                      {selectedFriends.map(friendId => {
-                        const friend = friends.find(f => f.id === friendId);
-                        if (!friend) return null;
-                        return <Line key={friend.id} type="monotone" dataKey={friendId} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" />;
-                      })}
-                    </AreaChart>
-                  </ResponsiveContainer>
+                      >
+                        <defs>
+                          {(() => {
+                            const vals = mergedEquityData.map((d: any) => d.cumulativePnl ?? 0);
+                            const maxV = Math.max(...vals, 0);
+                            const minV = Math.min(...vals, 0);
+                            const range = maxV - minV;
+                            const zeroPct = range > 0 ? `${((maxV / range) * 100).toFixed(2)}%` : '50%';
+                            return (
+                              <linearGradient id="eqCombinedGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor="#34D399" stopOpacity={0.35} />
+                                <stop offset={zeroPct} stopColor="#34D399" stopOpacity={0.02} />
+                                <stop offset={zeroPct} stopColor="#FB7185" stopOpacity={0.02} />
+                                <stop offset="100%" stopColor="#FB7185" stopOpacity={0.35} />
+                              </linearGradient>
+                            );
+                          })()}
+                        </defs>
+                        <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
+                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={55}
+                          tickFormatter={(v: number) => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : v <= -1000 ? `-$${(Math.abs(v)/1000).toFixed(0)}k` : `$${v}`}
+                          domain={['auto', 'auto']}
+                        />
+                        <Tooltip
+                          cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                          content={({ active, payload, label }: any) => {
+                            if (!active || !payload?.length) return null;
+                            const val = payload.find((p: any) => p.dataKey === 'cumulativePnl')?.value ?? payload[0]?.value ?? 0;
+                            const sign = val >= 0 ? '+' : '';
+                            return (
+                              <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
+                                <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                  <span style={{ width: 10, height: 10, background: val >= 0 ? '#34D399' : '#FB7185', borderRadius: 2, display: 'inline-block' }} />
+                                  <span>{sign}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+                                </div>
+                              </div>
+                            );
+                          }}
+                        />
+                        <Area type="monotone" dataKey="cumulativePnl"
+                          stroke="#6366F1" strokeWidth={1.2}
+                          fill="url(#eqCombinedGrad)" fillOpacity={1}
+                          dot={false}
+                          activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }}
+                          isAnimationActive={false}
+                        />
+                        {selectedFriends.map(friendId => {
+                          const friend = friends.find(f => f.id === friendId);
+                          if (!friend) return null;
+                          return <Line key={friend.id} type="monotone" dataKey={friendId} name={friend.name} stroke={friend.color} strokeWidth={1.5} dot={false} strokeDasharray="4 4" />;
+                        })}
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  )}
                 </div>
               </div>
 
@@ -2460,6 +2469,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                   { color: '#5cc4a7', label: language === 'cn' ? '平均胜场' : 'Avg win' },
                   { color: '#f16363', label: language === 'cn' ? '平均负场' : 'Avg loss' },
                 ];
+                const hasWinRateTrendData = winRateData.length > 0;
 	                return (
 	                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 420, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
 	                    <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
@@ -2468,86 +2478,98 @@ const Dashboard: React.FC<DashboardProps> = ({
                       <TZInfoIcon infoKey="winRateTrend" />
                     </div>
                     <div style={{ flex: 1, minHeight: 0, padding: '14px 16px 0 12px' }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <ComposedChart data={winRateData} margin={{ top: 10, right: 18, left: 2, bottom: 18 }}
-                          style={{ cursor: 'pointer' }}
-                          onClick={(data: any) => {
-                            const label = data?.activeLabel;
-                            if (!label) return;
-                            const d = new Date(`${label}T00:00:00`);
-                            if (!isNaN(d.getTime())) setChartClickDay(d);
-                          }}
-                        >
-                          <CartesianGrid strokeDasharray="3 4" stroke="rgba(141,153,174,0.2)" vertical={false} yAxisId="pct" />
-                          <ReferenceLine y={0} yAxisId="amt" stroke="rgba(168,176,188,0.5)" strokeWidth={1} />
-                          <XAxis
-                            dataKey="date"
-                            tickLine={false}
-                            axisLine={false}
-                            tick={{ fontSize: 11, fill: '#9aa3b2' }}
-                            interval="preserveStartEnd"
-                            minTickGap={28}
-                            tickFormatter={formatShortDashboardDate}
-                            dy={8}
-                          />
-                          <YAxis
-                            yAxisId="pct"
-                            tickLine={false}
-                            axisLine={false}
-                            tick={{ fontSize: 11, fill: '#9aa3b2' }}
-                            width={42}
-                            domain={[0, 60]}
-                            tickCount={7}
-                            tickFormatter={(v: number) => `${v}%`}
-                          />
-                          <YAxis
-                            yAxisId="amt"
-                            orientation="right"
-                            tickLine={false}
-                            axisLine={false}
-                            tick={{ fontSize: 11, fill: '#9aa3b2' }}
-                            width={48}
-                            domain={[safeAmtMin, safeAmtMax]}
-                            tickCount={7}
-                            tickFormatter={(v: number) => `${v > 0 ? currencySymbol : `${v < 0 ? '-' : ''}${currencySymbol}`}${Math.abs(v)}`}
-                          />
-                          <Tooltip
-                            mode="index"
-                            content={({ active, payload, label }: any) => {
-                              if (!active || !payload?.length) return null;
-                              return (
-                                <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
-                                  <div style={{ fontWeight: 600, marginBottom: 6 }}>{formatShortDashboardDate(label)}</div>
-                                  {payload.map((p: any) => (
-                                    <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
-                                      <span>
-                                        {p.dataKey === 'winPct'
-                                          ? `${language === 'cn' ? '胜率' : 'Win %'}: ${p.value}%`
-                                          : p.dataKey === 'avgWin'
-                                            ? `${language === 'cn' ? '平均胜场' : 'Avg win'}: ${currencySymbol}${p.value}`
-                                            : `${language === 'cn' ? '平均负场' : 'Avg loss'}: ${p.value < 0 ? '-' : ''}${currencySymbol}${Math.abs(p.value)}`}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              );
+                      {!hasWinRateTrendData ? (
+                        <EmptyChartState
+                          variant="cards"
+                          compact
+                          minHeight="100%"
+                          title={language === 'cn' ? '暂无胜率与盈亏趋势数据' : 'No win-rate trend data to show here'}
+                          subtitle={language === 'cn' ? '尝试选择不同的筛选条件' : 'Try selecting different filters'}
+                        />
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          <ComposedChart data={winRateData} margin={{ top: 10, right: 18, left: 2, bottom: 18 }}
+                            style={{ cursor: 'pointer' }}
+                            onClick={(data: any) => {
+                              const label = data?.activeLabel;
+                              if (!label) return;
+                              const d = new Date(`${label}T00:00:00`);
+                              if (!isNaN(d.getTime())) setChartClickDay(d);
                             }}
-                          />
-                          <Line yAxisId="pct" type="monotone" dataKey="winPct" stroke="#3563f6" strokeWidth={2.1} dot={{ r: 2.6, fill: '#3563f6', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
-                          <Line yAxisId="amt" type="monotone" dataKey="avgWin" stroke="#5cc4a7" strokeWidth={2.1} dot={{ r: 2.6, fill: '#5cc4a7', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
-                          <Line yAxisId="amt" type="monotone" dataKey="avgLoss" stroke="#f16363" strokeWidth={2.1} dot={{ r: 2.6, fill: '#f16363', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
-                        </ComposedChart>
-                      </ResponsiveContainer>
+                          >
+                            <CartesianGrid strokeDasharray="3 4" stroke="rgba(141,153,174,0.2)" vertical={false} yAxisId="pct" />
+                            <ReferenceLine y={0} yAxisId="amt" stroke="rgba(168,176,188,0.5)" strokeWidth={1} />
+                            <XAxis
+                              dataKey="date"
+                              tickLine={false}
+                              axisLine={false}
+                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              interval="preserveStartEnd"
+                              minTickGap={28}
+                              tickFormatter={formatShortDashboardDate}
+                              dy={8}
+                            />
+                            <YAxis
+                              yAxisId="pct"
+                              tickLine={false}
+                              axisLine={false}
+                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              width={42}
+                              domain={[0, 60]}
+                              tickCount={7}
+                              tickFormatter={(v: number) => `${v}%`}
+                            />
+                            <YAxis
+                              yAxisId="amt"
+                              orientation="right"
+                              tickLine={false}
+                              axisLine={false}
+                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              width={48}
+                              domain={[safeAmtMin, safeAmtMax]}
+                              tickCount={7}
+                              tickFormatter={(v: number) => `${v > 0 ? currencySymbol : `${v < 0 ? '-' : ''}${currencySymbol}`}${Math.abs(v)}`}
+                            />
+                            <Tooltip
+                              mode="index"
+                              content={({ active, payload, label }: any) => {
+                                if (!active || !payload?.length) return null;
+                                return (
+                                  <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
+                                    <div style={{ fontWeight: 600, marginBottom: 6 }}>{formatShortDashboardDate(label)}</div>
+                                    {payload.map((p: any) => (
+                                      <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: p.color, display: 'inline-block' }} />
+                                        <span>
+                                          {p.dataKey === 'winPct'
+                                            ? `${language === 'cn' ? '胜率' : 'Win %'}: ${p.value}%`
+                                            : p.dataKey === 'avgWin'
+                                              ? `${language === 'cn' ? '平均胜场' : 'Avg win'}: ${currencySymbol}${p.value}`
+                                              : `${language === 'cn' ? '平均负场' : 'Avg loss'}: ${p.value < 0 ? '-' : ''}${currencySymbol}${Math.abs(p.value)}`}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                );
+                              }}
+                            />
+                            <Line yAxisId="pct" type="monotone" dataKey="winPct" stroke="#3563f6" strokeWidth={2.1} dot={{ r: 2.6, fill: '#3563f6', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                            <Line yAxisId="amt" type="monotone" dataKey="avgWin" stroke="#5cc4a7" strokeWidth={2.1} dot={{ r: 2.6, fill: '#5cc4a7', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                            <Line yAxisId="amt" type="monotone" dataKey="avgLoss" stroke="#f16363" strokeWidth={2.1} dot={{ r: 2.6, fill: '#f16363', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                          </ComposedChart>
+                        </ResponsiveContainer>
+                      )}
                     </div>
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10, padding: '0 20px' }}>
-                      {legendItems.map(item => (
-                        <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7f8793' }}>
-                          <span style={{ width: 11, height: 11, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
-                          {item.label}
-                        </div>
-                      ))}
-                    </div>
+                    {hasWinRateTrendData && (
+                      <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10, padding: '0 20px' }}>
+                        {legendItems.map(item => (
+                          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7f8793' }}>
+                            <span style={{ width: 11, height: 11, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
+                            {item.label}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 );
               })()}
