@@ -3,7 +3,7 @@ import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report, TradingAccount, Strategy, TagCategoryDefinition } from '../types';
 import { useLanguage } from '../LanguageContext';
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, ComposedChart, Line, ReferenceLine, Legend, LineChart, PieChart, Pie
 } from 'recharts';
 import { Calendar as CalendarIcon, Clock, Calculator, Activity, AlertTriangle, Lightbulb, CheckCircle2, XCircle, ArrowUpRight, ArrowDownRight, Sparkles, FileText, Loader2, Bot, Lock, CalendarCheck, Hourglass, Star, Info, ChevronDown, ChevronLeft, ChevronRight, Download, Trash2, Eye, History, MoreVertical, Settings, GripVertical, X, Search, Check } from 'lucide-react';
 import FeatureGate from './FeatureGate';
@@ -616,6 +616,7 @@ const Reports: React.FC<ReportsProps> = ({
   
   // Calendar Report State
   const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+  const [calendarMonthDate, setCalendarMonthDate] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
 
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportResult, setReportResult] = useState<string | null>(null);
@@ -1117,27 +1118,53 @@ const Reports: React.FC<ReportsProps> = ({
 
   // --- Calendar Data Preparation ---
   const calendarData = useMemo(() => {
-      const data: Record<string, { pnl: number, count: number, wins: number }> = {};
-      const yearTrades = trades.filter(t => new Date(t.entryDate).getFullYear() === calendarYear);
-      
-      yearTrades.forEach(t => {
-          const date = new Date(t.entryDate).toLocaleDateString('en-CA'); // YYYY-MM-DD
-          if (!data[date]) data[date] = { pnl: 0, count: 0, wins: 0 };
-          const net = t.pnl - t.fees;
-          data[date].pnl += net;
-          data[date].count += 1;
-          if (net > 0) data[date].wins += 1;
-      });
-      
-      // Calculate Year Stats
-      const totalPnl = yearTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
-      const totalCount = yearTrades.length;
-      const wins = yearTrades.filter(t => t.pnl > 0).length;
-      const winRate = totalCount > 0 ? (wins / totalCount) * 100 : 0;
-      const activeDays = Object.keys(data).length;
+      type CalendarDaySummary = {
+          pnl: number;
+          count: number;
+          wins: number;
+          losses: number;
+          closedCount: number;
+      };
 
-      return { dailyMap: data, stats: { totalPnl, totalCount, winRate, activeDays } };
-  }, [trades, calendarYear]);
+      const dailyMap: Record<string, CalendarDaySummary> = {};
+      const yearTrades = trades.filter(t => new Date(t.entryDate).getFullYear() === calendarYear);
+
+      yearTrades.forEach(trade => {
+          const date = new Date(trade.entryDate).toLocaleDateString('en-CA');
+          if (!dailyMap[date]) {
+              dailyMap[date] = { pnl: 0, count: 0, wins: 0, losses: 0, closedCount: 0 };
+          }
+          const day = dailyMap[date];
+          const displayPnl = getDisplayPnl(trade);
+          day.pnl += displayPnl;
+          day.count += 1;
+          if (trade.status !== TradeStatus.OPEN && trade.exitDate) {
+              day.closedCount += 1;
+          }
+          if (displayPnl > 0) day.wins += 1;
+          if (displayPnl < 0) day.losses += 1;
+      });
+
+      const yearClosedTrades = yearTrades.filter(t => t.status !== TradeStatus.OPEN && t.exitDate);
+      const totalPnl = yearClosedTrades.reduce((acc, trade) => acc + getDisplayPnl(trade), 0);
+      const totalCount = yearClosedTrades.length;
+      const wins = yearClosedTrades.filter(trade => getDisplayPnl(trade) > 0).length;
+      const losses = yearClosedTrades.filter(trade => getDisplayPnl(trade) < 0).length;
+      const winRate = totalCount > 0 ? (wins / totalCount) * 100 : 0;
+      const activeDays = Object.values(dailyMap).filter(day => day.count > 0).length;
+
+      return {
+          dailyMap,
+          stats: {
+              totalPnl,
+              totalCount,
+              winRate,
+              activeDays,
+              wins,
+              losses,
+          },
+      };
+  }, [trades, calendarYear, pnlDisplayMode]);
 
   // --- 2. Day of Week Statistics (For Detailed View - DAYS) ---
   const dayOfWeekStats = useMemo(() => {
@@ -1177,6 +1204,225 @@ const Reports: React.FC<ReportsProps> = ({
           winRate: s.count > 0 ? (s.wins / s.count) * 100 : 0
       }));
   }, [trades, language]);
+
+  const calendarMonthStart = useMemo(() => new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth(), 1), [calendarMonthDate]);
+  const calendarMonthEnd = useMemo(() => new Date(calendarMonthDate.getFullYear(), calendarMonthDate.getMonth() + 1, 0), [calendarMonthDate]);
+
+  useEffect(() => {
+      if (calendarMonthDate.getFullYear() !== calendarYear) {
+          setCalendarYear(calendarMonthDate.getFullYear());
+      }
+  }, [calendarMonthDate, calendarYear]);
+
+  const calendarMonthLabel = useMemo(() => {
+      return calendarMonthStart.toLocaleDateString(language === 'cn' ? 'zh-CN' : 'en-US', {
+          year: 'numeric',
+          month: language === 'cn' ? 'long' : 'long',
+      });
+  }, [calendarMonthStart, language]);
+
+  const calendarRangeLabel = useMemo(() => {
+      const locale = language === 'cn' ? 'zh-CN' : 'en-US';
+      const startLabel = calendarMonthStart.toLocaleDateString(locale, { month: 'short', day: '2-digit', year: 'numeric' });
+      const endLabel = calendarMonthEnd.toLocaleDateString(locale, { month: 'short', day: '2-digit', year: 'numeric' });
+      return language === 'cn'
+          ? `（${startLabel} 至 ${endLabel}）`
+          : `(FROM ${startLabel.toUpperCase()} TO ${endLabel.toUpperCase()})`;
+  }, [calendarMonthStart, calendarMonthEnd, language]);
+
+  const calendarWeekdayHeaders = useMemo(() => {
+      return language === 'cn'
+          ? ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+          : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  }, [language]);
+
+  const calendarMonthViewData = useMemo(() => {
+      const monthTrades = trades.filter(trade => {
+          const entry = new Date(trade.entryDate);
+          return entry.getFullYear() === calendarMonthStart.getFullYear() && entry.getMonth() === calendarMonthStart.getMonth();
+      });
+
+      const dayMap = new Map<string, {
+          dateKey: string;
+          date: Date;
+          pnl: number;
+          count: number;
+          wins: number;
+          losses: number;
+          hasOpenTrade: boolean;
+      }>();
+
+      monthTrades.forEach(trade => {
+          const entry = new Date(trade.entryDate);
+          if (Number.isNaN(entry.getTime())) return;
+          const dateKey = entry.toLocaleDateString('en-CA');
+          const existing = dayMap.get(dateKey) || {
+              dateKey,
+              date: new Date(entry.getFullYear(), entry.getMonth(), entry.getDate()),
+              pnl: 0,
+              count: 0,
+              wins: 0,
+              losses: 0,
+              hasOpenTrade: false,
+          };
+          const displayPnl = getDisplayPnl(trade);
+          existing.pnl += displayPnl;
+          existing.count += 1;
+          if (displayPnl > 0) existing.wins += 1;
+          if (displayPnl < 0) existing.losses += 1;
+          if (trade.status === TradeStatus.OPEN || !trade.exitDate) existing.hasOpenTrade = true;
+          dayMap.set(dateKey, existing);
+      });
+
+      const startOffset = calendarMonthStart.getDay();
+      const gridStart = new Date(calendarMonthStart);
+      gridStart.setDate(calendarMonthStart.getDate() - startOffset);
+      const totalCells = Math.ceil((startOffset + calendarMonthEnd.getDate()) / 7) * 7;
+      const cells = Array.from({ length: totalCells }, (_, index) => {
+          const date = new Date(gridStart);
+          date.setDate(gridStart.getDate() + index);
+          const dateKey = date.toLocaleDateString('en-CA');
+          const summary = dayMap.get(dateKey);
+          return {
+              date,
+              dateKey,
+              inMonth: date.getMonth() === calendarMonthStart.getMonth(),
+              summary: summary || null,
+          };
+      });
+
+      const weeks = Array.from({ length: 5 }, (_, weekIndex) => {
+          const slice = cells.slice(weekIndex * 7, weekIndex * 7 + 7);
+          const weekPnl = slice.reduce((total, cell) => total + (cell.summary?.pnl || 0), 0);
+          return {
+              index: weekIndex + 1,
+              pnl: weekPnl,
+              cells: slice,
+          };
+      });
+
+      const sortedMonthDays = Array.from(dayMap.values()).sort((a, b) => a.date.getTime() - b.date.getTime());
+      let cumulativePnl = 0;
+      const cumulativeChartData = sortedMonthDays.map(day => {
+          cumulativePnl += day.pnl;
+          return {
+              date: day.dateKey,
+              label: formatChartDateLabel(day.dateKey),
+              cumulativePnl,
+          };
+      });
+
+      const winningDays = sortedMonthDays.filter(day => day.pnl > 0).length;
+      const losingDays = sortedMonthDays.filter(day => day.pnl < 0).length;
+      const breakevenDays = sortedMonthDays.filter(day => day.pnl === 0).length;
+      const avgWinningDayPnl = winningDays > 0
+          ? sortedMonthDays.filter(day => day.pnl > 0).reduce((sum, day) => sum + day.pnl, 0) / winningDays
+          : 0;
+      const avgLosingDayPnl = losingDays > 0
+          ? sortedMonthDays.filter(day => day.pnl < 0).reduce((sum, day) => sum + day.pnl, 0) / losingDays
+          : 0;
+      const largestWinningDay = sortedMonthDays.reduce((best, day) => day.pnl > (best?.pnl ?? Number.NEGATIVE_INFINITY) ? day : best, null as typeof sortedMonthDays[number] | null);
+      const largestLosingDay = sortedMonthDays.reduce((worst, day) => day.pnl < (worst?.pnl ?? Number.POSITIVE_INFINITY) ? day : worst, null as typeof sortedMonthDays[number] | null);
+      let peak = 0;
+      let maxDrawdown = 0;
+      cumulativeChartData.forEach(point => {
+          peak = Math.max(peak, point.cumulativePnl);
+          maxDrawdown = Math.min(maxDrawdown, point.cumulativePnl - peak);
+      });
+
+      return {
+          weeks,
+          cells,
+          sortedMonthDays,
+          cumulativeChartData,
+          summary: {
+              totalTrades: monthTrades.length,
+              closedTrades: monthTrades.filter(trade => trade.status !== TradeStatus.OPEN && trade.exitDate).length,
+              openTrades: monthTrades.filter(trade => trade.status === TradeStatus.OPEN || !trade.exitDate).length,
+              winningTrades: monthTrades.filter(trade => getDisplayPnl(trade) > 0).length,
+              losingTrades: monthTrades.filter(trade => getDisplayPnl(trade) < 0).length,
+              breakevenTrades: monthTrades.filter(trade => getDisplayPnl(trade) === 0).length,
+              totalPnl: monthTrades.reduce((acc, trade) => acc + getDisplayPnl(trade), 0),
+              totalFees: monthTrades.reduce((acc, trade) => acc + (Number(trade.fees) || 0), 0),
+              totalVolume: monthTrades.reduce((acc, trade) => acc + getTradeVolume(trade), 0),
+              activeDays: sortedMonthDays.length,
+              winningDays,
+              losingDays,
+              breakevenDays,
+              avgWinningDayPnl,
+              avgLosingDayPnl,
+              largestWinningDay,
+              largestLosingDay,
+              maxDrawdown,
+          },
+      };
+  }, [trades, calendarMonthStart, calendarMonthEnd, pnlDisplayMode, language]);
+
+  const calendarCumulativeTicks = useMemo(() => {
+      const indexes = getEvenlySpacedIndexes(calendarMonthViewData.cumulativeChartData.length, 4);
+      return indexes.map(index => calendarMonthViewData.cumulativeChartData[index]?.label).filter(Boolean);
+  }, [calendarMonthViewData]);
+
+  const calendarWinRate = useMemo(() => {
+      const closed = calendarMonthViewData.summary.closedTrades;
+      return closed > 0 ? (calendarMonthViewData.summary.winningTrades / closed) * 100 : 0;
+  }, [calendarMonthViewData]);
+
+  const calendarDonutData = useMemo(() => ([
+      { name: language === 'cn' ? '盈利' : 'winners', value: calendarMonthViewData.summary.winningTrades, color: '#55c39e' },
+      { name: language === 'cn' ? '亏损' : 'losers', value: calendarMonthViewData.summary.losingTrades, color: '#f45f63' },
+  ]), [calendarMonthViewData, language]);
+
+  const calendarStatisticsColumns = useMemo(() => {
+      const leftColumn = [
+          [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(calendarMonthViewData.summary.totalPnl)],
+          [language === 'cn' ? '平均每日成交额' : 'Average daily volume', calendarMonthViewData.summary.activeDays > 0 ? (calendarMonthViewData.summary.totalVolume / calendarMonthViewData.summary.activeDays).toFixed(2) : '0.00'],
+          [language === 'cn' ? '平均盈利交易' : 'Average winning trade', stats.winCount > 0 ? formatSignedMoney(stats.avgWin) : '--'],
+          [language === 'cn' ? '平均亏损交易' : 'Average losing trade', stats.lossCount > 0 ? formatSignedMoney(stats.avgLoss) : '--'],
+          [language === 'cn' ? '总交易数' : 'Total number of trades', String(calendarMonthViewData.summary.totalTrades)],
+          [language === 'cn' ? '盈利交易数' : 'Number of winning trades', String(calendarMonthViewData.summary.winningTrades)],
+          [language === 'cn' ? '亏损交易数' : 'Number of losing trades', String(calendarMonthViewData.summary.losingTrades)],
+          [language === 'cn' ? '打平交易数' : 'Number of break even trades', String(calendarMonthViewData.summary.breakevenTrades)],
+          [language === 'cn' ? '最大连续盈利' : 'Max consecutive wins', String(stats.maxConWins)],
+          [language === 'cn' ? '最大连续亏损' : 'Max consecutive losses', String(stats.maxConLoss)],
+          [language === 'cn' ? '总佣金' : 'Total commissions', formatSignedMoney(0)],
+          [language === 'cn' ? '总费用' : 'Total fees', formatSignedMoney(calendarMonthViewData.summary.totalFees)],
+          [language === 'cn' ? '总隔夜费' : 'Total swap', formatSignedMoney(0)],
+          [language === 'cn' ? '最大盈利' : 'Largest profit', formatSignedMoney(stats.largestProfit)],
+          [language === 'cn' ? '最大亏损' : 'Largest loss', formatSignedMoney(stats.largestLoss)],
+          [language === 'cn' ? '平均持仓时间（全部交易）' : 'Average hold time (All trades)', formatDuration(stats.avgHoldAll)],
+          [language === 'cn' ? '平均持仓时间（盈利交易）' : 'Average hold time (Winning trades)', formatDuration(stats.avgHoldWin)],
+          [language === 'cn' ? '平均持仓时间（亏损交易）' : 'Average hold time (Losing trades)', formatDuration(stats.avgHoldLoss)],
+          [language === 'cn' ? '平均持仓时间（打平交易）' : 'Average hold time (Scratch trades)', formatDuration(stats.avgHoldScratch)],
+          [language === 'cn' ? '平均单笔盈亏' : 'Average trade P&L', formatSignedMoney(stats.avgTradePnl)],
+          [language === 'cn' ? '盈利因子' : 'Profit factor', stats.profitFactor >= 999 ? '999+' : stats.profitFactor.toFixed(2)],
+      ];
+
+      const rightColumn = [
+          [language === 'cn' ? '未平仓交易' : 'Open trades', String(calendarMonthViewData.summary.openTrades)],
+          [language === 'cn' ? '总交易日数' : 'Total trading days', String(calendarMonthViewData.summary.activeDays)],
+          [language === 'cn' ? '盈利天数' : 'Winning days', String(calendarMonthViewData.summary.winningDays)],
+          [language === 'cn' ? '亏损天数' : 'Losing days', String(calendarMonthViewData.summary.losingDays)],
+          [language === 'cn' ? '打平天数' : 'Breakeven days', String(calendarMonthViewData.summary.breakevenDays)],
+          [language === 'cn' ? '记录天数' : 'Logged days', String(calendarMonthViewData.summary.activeDays)],
+          [language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', String(stats.maxConWinDays)],
+          [language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', String(stats.maxConLossDays)],
+          [language === 'cn' ? '平均每日盈亏' : 'Average daily P&L', formatSignedMoney(stats.avgDailyPnl)],
+          [language === 'cn' ? '平均盈利日盈亏' : 'Average winning day P&L', calendarMonthViewData.summary.winningDays > 0 ? formatSignedMoney(calendarMonthViewData.summary.avgWinningDayPnl) : '--'],
+          [language === 'cn' ? '平均亏损日盈亏' : 'Average losing day P&L', calendarMonthViewData.summary.losingDays > 0 ? formatSignedMoney(calendarMonthViewData.summary.avgLosingDayPnl) : '--'],
+          [language === 'cn' ? '最大盈利日（盈利）' : 'Largest profitable day (Profits)', calendarMonthViewData.summary.largestWinningDay ? formatSignedMoney(calendarMonthViewData.summary.largestWinningDay.pnl) : '--'],
+          [language === 'cn' ? '最大亏损日（亏损）' : 'Largest losing day (Losses)', calendarMonthViewData.summary.largestLosingDay ? formatSignedMoney(calendarMonthViewData.summary.largestLosingDay.pnl) : '--'],
+          [language === 'cn' ? '平均计划 R 倍数' : 'Average planned R-Multiple', performanceSummary.avgPlannedR === null ? '0R' : `${performanceSummary.avgPlannedR.toFixed(0)}R`],
+          [language === 'cn' ? '平均实现 R 倍数' : 'Average realized R-Multiple', `${stats.avgRealizedR.toFixed(0)}R`],
+          [language === 'cn' ? '交易期望值' : 'Trade expectancy', formatSignedMoney(stats.expectancy)],
+          [language === 'cn' ? '最大回撤' : 'Max drawdown', formatSignedMoney(calendarMonthViewData.summary.maxDrawdown)],
+          [language === 'cn' ? '最大回撤，%' : 'Max drawdown, %', '0'],
+          [language === 'cn' ? '平均回撤' : 'Average drawdown', formatSignedMoney(performanceSummary.avgDailyNetDrawdown)],
+          [language === 'cn' ? '平均回撤，%' : 'Average drawdown, %', '0'],
+      ];
+
+      return [leftColumn, rightColumn];
+  }, [calendarMonthViewData, language, performanceSummary, stats]);
 
   // --- 3. Duration Statistics (For Detailed View - TRADE DURATION) ---
   const durationStats = useMemo(() => {
@@ -6179,53 +6425,57 @@ const Reports: React.FC<ReportsProps> = ({
   const renderMonthGrid = (monthIndex: number) => {
       const year = calendarYear;
       const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-      const firstDay = new Date(year, monthIndex, 1).getDay(); // 0 = Sun
-      
+      const firstDay = new Date(year, monthIndex, 1).getDay();
       const days = [];
-      // Empty cells for offset
-      for(let i=0; i<firstDay; i++) {
-          days.push(<div key={`empty-${i}`} className="aspect-square"></div>);
+
+      for (let i = 0; i < firstDay; i++) {
+          days.push(<div key={`empty-${monthIndex}-${i}`} className="h-[27px] rounded-[4px] border border-[#edf1f5] bg-white/60" />);
       }
-      // Days
-      for(let d=1; d<=daysInMonth; d++) {
+
+      for (let d = 1; d <= daysInMonth; d++) {
           const dateKey = `${year}-${String(monthIndex + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
           const dayData = calendarData.dailyMap[dateKey];
-          
-          let bgColor = 'bg-slate-100 dark:bg-slate-800/50';
-          let textColor = 'text-slate-400 dark:text-slate-500';
-          
+          const isCurrentMonth = calendarMonthStart.getFullYear() === year && calendarMonthStart.getMonth() === monthIndex;
+          const isSelectedMonth = isCurrentMonth;
+          const isTodayMonth = new Date().getFullYear() === year && new Date().getMonth() === monthIndex;
+
+          let cellClass = 'border border-[#edf1f5] bg-[#f4f5f7] text-[#64707d]';
           if (dayData) {
               if (dayData.pnl > 0) {
-                  bgColor = 'bg-emerald-500 text-white shadow-sm';
-                  textColor = 'text-white';
+                  cellClass = 'border border-[#6dd4b0] bg-[#dff2e7] text-[#2f4858]';
               } else if (dayData.pnl < 0) {
-                  bgColor = 'bg-rose-500 text-white shadow-sm';
-                  textColor = 'text-white';
+                  cellClass = 'border border-[#ff8d8d] bg-[#ffe2e2] text-[#364152]';
               } else {
-                  // Break even or trade exists but 0 pnl
-                  bgColor = 'bg-slate-400 dark:bg-slate-600 text-white';
-                  textColor = 'text-white';
+                  cellClass = 'border border-[#d8dee7] bg-[#eef1f5] text-[#596574]';
               }
           }
 
           days.push(
-              <div 
-                key={d} 
-                className={`aspect-square rounded-[3px] flex items-center justify-center text-[9px] font-bold cursor-default group relative ${bgColor} ${textColor}`}
+              <div
+                  key={`${monthIndex}-${d}`}
+                  className={`group relative flex h-[27px] items-center justify-center rounded-[4px] text-[12px] font-semibold ${cellClass}`}
               >
                   {d}
-                  {/* Tooltip */}
                   {dayData && (
-                      <div className="absolute bottom-full mb-1 left-1/2 -translate-x-1/2 hidden group-hover:block z-20 whitespace-nowrap bg-slate-900 text-white text-xs px-2 py-1 rounded shadow-lg">
-                          <div className={`font-mono ${dayData.pnl >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                              {dayData.pnl >= 0 ? '+' : ''}${dayData.pnl.toFixed(2)}
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-[6px] border border-[#dfe4ec] bg-white px-[8px] py-[6px] text-[11px] shadow-[0_10px_24px_rgba(15,23,42,0.12)] group-hover:block">
+                          <div className={`font-semibold tabular-nums ${dayData.pnl >= 0 ? 'text-[#3baa86]' : 'text-[#f15f63]'}`}>
+                              {formatSignedMoney(dayData.pnl)}
                           </div>
-                          <div className="text-[10px] text-slate-400">{dayData.count} trades</div>
+                          <div className="mt-[2px] text-[#7b828c]">
+                              {dayData.count} {language === 'cn' ? '笔交易' : 'trades'}
+                          </div>
                       </div>
+                  )}
+                  {isSelectedMonth && d === 1 && (
+                      <span className="pointer-events-none absolute inset-[-6px] rounded-[8px] border border-[#6d5cd5]" />
+                  )}
+                  {!dayData && isTodayMonth && d === new Date().getDate() && (
+                      <span className="pointer-events-none absolute inset-[-2px] rounded-[6px] border border-[#dfe4ec]" />
                   )}
               </div>
           );
       }
+
       return days;
   };
 
@@ -9916,61 +10166,346 @@ const Reports: React.FC<ReportsProps> = ({
 
       {/* --- CALENDAR TAB --- */}
       {activeTab === 'calendar' && (
-          <div className="space-y-6 animate-fade-in">
-              {/* Header Controls */}
-              <div className="flex items-center justify-between bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                  <div className="flex items-center gap-4">
-                      <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-xl p-1 border border-slate-200 dark:border-slate-700">
-                          <button onClick={() => setCalendarYear(y => y - 1)} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm">
-                              <ChevronLeft className="w-4 h-4 text-slate-500" />
-                          </button>
-                          <span className="px-4 font-bold text-slate-900 dark:text-white text-lg">{calendarYear}</span>
-                          <button onClick={() => setCalendarYear(y => y + 1)} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors shadow-sm">
-                              <ChevronRight className="w-4 h-4 text-slate-500" />
-                          </button>
+          <div className="space-y-[16px] animate-fade-in">
+              <div className="flex flex-wrap items-start justify-between gap-[12px]">
+                  <div className="relative" data-pnl-display-menu>
+                      <div className="mb-[6px] text-[12px] font-bold uppercase tracking-[0.02em] text-[#6f7e8e]">
+                          {language === 'cn' ? '盈亏显示' : 'P&L showing'}
                       </div>
-                      
-                      <div className="h-8 w-px bg-slate-200 dark:border-slate-700"></div>
-
-                      <div className="flex gap-6 text-sm">
-                          <div>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{t.reports.calendar.totalPnl}</p>
-                              <p className={`font-mono font-bold ${calendarData.stats.totalPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                  {calendarData.stats.totalPnl >= 0 ? '+' : ''}${calendarData.stats.totalPnl.toFixed(2)}
-                              </p>
-                          </div>
-                          <div>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{t.reports.calendar.winRate}</p>
-                              <p className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                                  {calendarData.stats.winRate.toFixed(1)}%
-                              </p>
-                          </div>
-                          <div>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-0.5">{t.reports.calendar.activeDays}</p>
-                              <p className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                                  {calendarData.stats.activeDays}
-                              </p>
-                          </div>
+                      <button
+                          type="button"
+                          onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
+                          className="inline-flex h-[32px] items-center gap-[8px] rounded-[8px] border border-[#dde3ea] bg-white px-[12px] text-[14px] font-medium text-[#2c3138]"
+                      >
+                          <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
+                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                      </button>
+                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-[136px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                          isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
+                      }`}>
+                          {([
+                              { id: 'net', label: language === 'cn' ? '净盈亏' : 'NET P&L' },
+                              { id: 'gross', label: language === 'cn' ? '总盈亏' : 'GROSS P&L' },
+                          ] as Array<{ id: PnlDisplayMode; label: string }>).map(option => {
+                              const selected = option.id === pnlDisplayMode;
+                              return (
+                                  <button
+                                      key={option.id}
+                                      type="button"
+                                      onClick={() => {
+                                          setPnlDisplayMode(option.id);
+                                          setIsPnlDisplayMenuOpen(false);
+                                      }}
+                                      className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium transition-colors ${
+                                          selected ? 'bg-[#e8e4f4] text-[#2f255f]' : 'text-[#303844] hover:bg-[#f1f2f4]'
+                                      }`}
+                                  >
+                                      {option.label}
+                                  </button>
+                              );
+                          })}
                       </div>
                   </div>
               </div>
 
-              {/* Year Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                  {Array.from({ length: 12 }, (_, i) => i).map(monthIndex => (
-                      <div key={monthIndex} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors">
-                          <h3 className="font-bold text-slate-700 dark:text-slate-200 mb-3 text-sm uppercase tracking-wider border-b border-slate-100 dark:border-slate-800 pb-2">
-                              {new Date(calendarYear, monthIndex).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long' })}
-                          </h3>
-                          <div className="grid grid-cols-7 gap-1">
-                              {t.reports.calendar.weekdays.map(d => (
-                                  <div key={d} className="text-[9px] text-center text-slate-400 font-bold py-1">{d.slice(0, 3)}</div> // Slice for shorter headers if needed
+              <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
+                  <div className="border-b border-[#edf1f5] px-[22px] py-[16px]">
+                      <h2 className="text-[18px] font-bold tracking-[-0.01em] text-[#2d3139]">{language === 'cn' ? '年度' : 'YEAR'}</h2>
+                  </div>
+                  <div className="px-[24px] pb-[22px] pt-[26px]">
+                      <div className="mx-auto flex max-w-[860px] items-center justify-between pb-[22px]">
+                          <button
+                              type="button"
+                              onClick={() => {
+                                  setCalendarYear(current => current - 1);
+                                  setCalendarMonthDate(current => new Date(current.getFullYear() - 1, current.getMonth(), 1));
+                              }}
+                              className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#6d7b89] transition-colors hover:bg-[#f2f4f7]"
+                          >
+                              <ChevronLeft className="h-[22px] w-[22px]" />
+                          </button>
+                          <div className="text-[32px] font-semibold tracking-[-0.02em] text-[#2c3138]">{calendarYear}</div>
+                          <button
+                              type="button"
+                              onClick={() => {
+                                  setCalendarYear(current => current + 1);
+                                  setCalendarMonthDate(current => new Date(current.getFullYear() + 1, current.getMonth(), 1));
+                              }}
+                              className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#6d7b89] transition-colors hover:bg-[#f2f4f7]"
+                          >
+                              <ChevronRight className="h-[22px] w-[22px]" />
+                          </button>
+                      </div>
+
+                      <div className="mx-auto grid max-w-[1080px] grid-cols-1 gap-x-[34px] gap-y-[28px] md:grid-cols-2 xl:grid-cols-4">
+                          {Array.from({ length: 12 }, (_, monthIndex) => (
+                              <button
+                                  key={monthIndex}
+                                  type="button"
+                                  onClick={() => setCalendarMonthDate(new Date(calendarYear, monthIndex, 1))}
+                                  className={`rounded-[10px] border bg-white px-[6px] py-[8px] text-left transition-colors ${
+                                      calendarMonthStart.getFullYear() === calendarYear && calendarMonthStart.getMonth() === monthIndex
+                                          ? 'border-[#6d5cd5]'
+                                          : 'border-transparent hover:border-[#e7ebf1]'
+                                  }`}
+                              >
+                                  <div className="pb-[10px] text-center text-[16px] font-semibold text-[#303844]">
+                                      {new Date(calendarYear, monthIndex).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long' })}
+                                  </div>
+                                  <div className="grid grid-cols-7 gap-[4px]">
+                                      {calendarWeekdayHeaders.map(label => (
+                                          <div key={`${monthIndex}-${label}`} className="flex h-[20px] items-center justify-center rounded-[4px] border border-[#edf1f5] bg-white text-[10px] font-medium text-[#9aa3af]">
+                                              {language === 'cn' ? label.replace('周', '') : label}
+                                          </div>
+                                      ))}
+                                      {renderMonthGrid(monthIndex)}
+                                  </div>
+                              </button>
+                          ))}
+                      </div>
+                  </div>
+              </section>
+
+              <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
+                  <div className="flex flex-wrap items-center justify-between gap-[12px] border-b border-[#edf1f5] px-[12px] py-[12px] sm:px-[18px]">
+                      <div className="flex flex-wrap items-center gap-[10px]">
+                          <button
+                              type="button"
+                              onClick={() => setCalendarMonthDate(current => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
+                              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#6f7c89] hover:bg-[#f3f5f8]"
+                          >
+                              <ChevronLeft className="h-[16px] w-[16px]" />
+                          </button>
+                          <div className="text-[15px] font-bold text-[#2d3139]">{calendarMonthLabel}</div>
+                          <button
+                              type="button"
+                              onClick={() => setCalendarMonthDate(current => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
+                              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#6f7c89] hover:bg-[#f3f5f8]"
+                          >
+                              <ChevronRight className="h-[16px] w-[16px]" />
+                          </button>
+                          <button
+                              type="button"
+                              onClick={() => setCalendarMonthDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
+                              className="ml-[6px] inline-flex h-[30px] items-center rounded-[8px] border border-[#dfe4ec] px-[14px] text-[14px] font-medium text-[#303844]"
+                          >
+                              {language === 'cn' ? '本月' : 'This month'}
+                          </button>
+                      </div>
+                      <div className="flex items-center gap-[10px] px-[6px] text-[#7e8895]">
+                          <CalendarIcon className="h-[15px] w-[15px] text-[#7b68d9]" />
+                          <Info className="h-[15px] w-[15px]" />
+                      </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-0 xl:grid-cols-[minmax(0,1fr)_340px]">
+                      <div className="px-[12px] pb-[18px] pt-[16px] sm:px-[18px]">
+                          <div className="grid grid-cols-7 gap-[4px]">
+                              {calendarWeekdayHeaders.map(label => (
+                                  <div
+                                      key={label}
+                                      className="flex h-[32px] items-center justify-center rounded-[10px] border border-[#e8edf2] bg-white text-[14px] font-semibold text-[#20232a]"
+                                  >
+                                      {language === 'cn' ? label : label}
+                                  </div>
                               ))}
-                              {renderMonthGrid(monthIndex)}
+                              {calendarMonthViewData.cells.map(cell => {
+                                  const summary = cell.summary;
+                                  const dayPnl = summary?.pnl || 0;
+                                  const cellTone = !cell.inMonth
+                                      ? 'bg-white text-[#c3cad3]'
+                                      : !summary
+                                          ? 'bg-[#f1f3f5] text-[#535f6d]'
+                                          : dayPnl > 0
+                                              ? 'bg-[#dff2e7] text-[#26303b]'
+                                              : dayPnl < 0
+                                                  ? 'bg-[#ffe1e1] text-[#26303b]'
+                                                  : 'bg-[#eef1f4] text-[#26303b]';
+                                  const borderTone = !summary
+                                      ? 'border-[#e9edf2]'
+                                      : dayPnl > 0
+                                          ? 'border-[#55c39e]'
+                                          : dayPnl < 0
+                                              ? 'border-[#ff7d7d]'
+                                              : 'border-[#d9e0e8]';
+
+                                  return (
+                                      <div
+                                          key={cell.dateKey}
+                                          className={`relative flex min-h-[118px] flex-col rounded-[4px] border p-[8px] ${cellTone} ${borderTone} transition-colors xl:min-h-[122px]`}
+                                      >
+                                          <div className="flex items-start justify-between text-[12px] font-medium">
+                                              <span>{cell.date.getDate()}</span>
+                                          </div>
+                                          {summary && cell.inMonth && (
+                                              <div className="mt-auto flex flex-col items-end text-right">
+                                                  <div className={`text-[14px] font-bold leading-none tabular-nums ${dayPnl > 0 ? 'text-[#26303b]' : dayPnl < 0 ? 'text-[#26303b]' : 'text-[#46515c]'}`}>
+                                                      {formatSignedMoney(dayPnl)}
+                                                  </div>
+                                                  <div className="mt-[5px] text-[12px] font-medium text-[#7f8995]">
+                                                      {summary.count} {language === 'cn' ? '笔交易' : summary.count === 1 ? 'trade' : 'trades'}
+                                                  </div>
+                                              </div>
+                                          )}
+                                          {summary?.hasOpenTrade && cell.inMonth && (
+                                              <span className="absolute bottom-[8px] left-[8px] inline-flex h-[18px] w-[18px] items-center justify-center rounded-[6px] border border-current text-[#38414a]">
+                                                  <CalendarCheck className="h-[11px] w-[11px]" />
+                                              </span>
+                                          )}
+                                      </div>
+                                  );
+                              })}
                           </div>
                       </div>
-                  ))}
+
+                      <aside className="border-t border-[#edf1f5] px-[24px] pb-[20px] pt-[28px] xl:border-l xl:border-t-0">
+                          <div className="text-center text-[16px] font-bold uppercase tracking-[0.01em] text-[#39424f]">
+                              {language === 'cn' ? '每周盈亏' : 'P&L PER WEEK'}
+                          </div>
+                          <div className="mt-[26px] space-y-[18px]">
+                              {calendarMonthViewData.weeks.map(week => (
+                                  <div key={`calendar-week-${week.index}`} className="text-center">
+                                      <div className={`text-[20px] font-bold tabular-nums ${week.pnl > 0 ? 'text-[#55c39e]' : week.pnl < 0 ? 'text-[#f15f63]' : 'text-[#2f3943]'}`}>
+                                          {week.pnl === 0 ? '$0' : formatSignedMoney(week.pnl)}
+                                      </div>
+                                      <div className="mt-[2px] text-[12px] font-bold uppercase tracking-[0.03em] text-[#7b8794]">
+                                          {language === 'cn' ? `第 ${week.index} 周` : `WEEK ${week.index}`}
+                                      </div>
+                                      {week.index !== calendarMonthViewData.weeks.length && (
+                                          <div className="mx-auto mt-[16px] h-px w-[112px] bg-[#edf1f5]" />
+                                      )}
+                                  </div>
+                              ))}
+                          </div>
+                      </aside>
+                  </div>
+              </section>
+
+              <div className="grid grid-cols-1 gap-[12px] xl:grid-cols-[1fr_1fr]">
+                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
+                      <div className="flex items-center justify-between border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px]">
+                          <div className="flex items-baseline gap-[10px]">
+                              <h3 className="text-[15px] font-bold uppercase text-[#20232a]">
+                                  {language === 'cn' ? '每日累计净盈亏' : 'DAILY NET CUMULATIVE P&L'}
+                              </h3>
+                              <span className="text-[13px] font-bold uppercase text-[#7b828c]">{calendarRangeLabel}</span>
+                          </div>
+                          <OverviewInfoBadge />
+                      </div>
+                      <div className="h-[338px] px-[18px] pb-[18px] pt-[18px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={calendarMonthViewData.cumulativeChartData} margin={{ top: 8, right: 18, left: 10, bottom: 24 }}>
+                                  <defs>
+                                      <linearGradient id="calendarCumulativeFill" x1="0" y1="0" x2="0" y2="1">
+                                          <stop offset="0%" stopColor={calendarMonthViewData.summary.totalPnl < 0 ? '#ff7d7d' : '#7b68d9'} stopOpacity={0.28} />
+                                          <stop offset="65%" stopColor={calendarMonthViewData.summary.totalPnl < 0 ? '#ff7d7d' : '#7b68d9'} stopOpacity={0.1} />
+                                          <stop offset="100%" stopColor={calendarMonthViewData.summary.totalPnl < 0 ? '#ff7d7d' : '#7b68d9'} stopOpacity={0.02} />
+                                      </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5eb" strokeOpacity={0.82} />
+                                  <XAxis dataKey="label" ticks={calendarCumulativeTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} dy={16} />
+                                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
+                                  <Tooltip content={<PnlTooltip />} cursor={{ stroke: '#9aa3ae', strokeDasharray: '3 3' }} />
+                                  <ReferenceLine y={0} stroke="#dfe5eb" strokeDasharray="3 3" />
+                                  <Area
+                                      type="monotone"
+                                      dataKey="cumulativePnl"
+                                      stroke="#7b68d9"
+                                      strokeWidth={1.8}
+                                      fill="url(#calendarCumulativeFill)"
+                                      dot={false}
+                                      isAnimationActive={shouldAnimateWinLossesCharts}
+                                      animationDuration={760}
+                                      activeDot={{ r: 4, fill: '#fff', stroke: '#7b68d9', strokeWidth: 2 }}
+                                  />
+                              </AreaChart>
+                          </ResponsiveContainer>
+                      </div>
+                  </section>
+
+                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
+                      <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px]">
+                          <div className="flex items-baseline gap-[10px]">
+                              <h3 className="text-[15px] font-bold uppercase text-[#20232a]">
+                                  {language === 'cn' ? '整体评估' : 'OVERALL EVALUATION'}
+                              </h3>
+                              <span className="text-[13px] font-bold uppercase text-[#7b828c]">{calendarRangeLabel}</span>
+                          </div>
+                      </div>
+                      <div className="grid h-[338px] grid-cols-1 items-center gap-[24px] px-[22px] py-[22px] md:grid-cols-[1fr_240px]">
+                          <div className="flex items-center justify-center">
+                              <div className="relative h-[200px] w-[200px]">
+                                  <ResponsiveContainer width="100%" height="100%">
+                                      <PieChart>
+                                          <Pie
+                                              data={calendarDonutData}
+                                              dataKey="value"
+                                              nameKey="name"
+                                              innerRadius={72}
+                                              outerRadius={92}
+                                              stroke="none"
+                                              startAngle={90}
+                                              endAngle={-270}
+                                              isAnimationActive={shouldAnimateWinLossesCharts}
+                                              animationDuration={760}
+                                          >
+                                              {calendarDonutData.map(entry => (
+                                                  <Cell key={entry.name} fill={entry.color} />
+                                              ))}
+                                          </Pie>
+                                      </PieChart>
+                                  </ResponsiveContainer>
+                                  <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+                                      <div className="flex items-start gap-[4px] text-[#55c39e]">
+                                          <span className="text-[46px] font-bold leading-none">{Math.round(calendarWinRate)}</span>
+                                          <span className="pt-[7px] text-[20px] font-bold">%</span>
+                                      </div>
+                                      <div className="mt-[8px] text-[13px] font-bold uppercase tracking-[0.04em] text-[#55c39e]">
+                                          {language === 'cn' ? '胜率' : 'WINRATE'}
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div className="space-y-[20px]">
+                              {calendarDonutData.map(entry => (
+                                  <div key={`calendar-donut-legend-${entry.name}`} className="flex items-start gap-[12px]">
+                                      <span className="mt-[3px] inline-flex h-[22px] w-[22px] rounded-[4px]" style={{ backgroundColor: entry.color }} />
+                                      <div>
+                                          <div className="text-[20px] font-bold leading-none text-[#2d3139]">{entry.value}</div>
+                                          <div className="mt-[4px] text-[13px] font-medium text-[#7c8591]">{entry.name}</div>
+                                      </div>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+                  </section>
               </div>
+
+              <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
+                  <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px]">
+                      <div className="flex items-baseline gap-[10px]">
+                          <h3 className="text-[15px] font-bold uppercase text-[#20232a]">
+                              {language === 'cn' ? '统计' : 'STATISTICS'}
+                          </h3>
+                          <span className="text-[13px] font-bold uppercase text-[#7b828c]">{calendarRangeLabel}</span>
+                      </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-0 px-[14px] pb-[18px] pt-[18px] lg:grid-cols-2 lg:gap-[28px] lg:px-[18px]">
+                      {calendarStatisticsColumns.map((column, columnIndex) => (
+                          <div key={`calendar-stats-column-${columnIndex}`} className="space-y-0">
+                              {column.map(([label, value]) => (
+                                  <div
+                                      key={`${columnIndex}-${String(label)}`}
+                                      className="flex min-h-[30px] items-center justify-between border-b border-[#e6e8ec] px-[8px] text-[13px] font-semibold leading-none last:border-b-0"
+                                  >
+                                      <span className="pr-[16px] text-[#737a83]">{label}</span>
+                                      <span className="text-right text-[#737a83] tabular-nums">{value}</span>
+                                  </div>
+                              ))}
+                          </div>
+                      ))}
+                  </div>
+              </section>
           </div>
       )}
 
