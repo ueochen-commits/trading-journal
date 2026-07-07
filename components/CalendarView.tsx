@@ -856,16 +856,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button
+          <div
             ref={yearPickerButtonRef}
-            type="button"
             onClick={() => setYearPickerOpen(current => !current)}
-            className="flex items-center gap-2 rounded-[10px] border border-[#e5e7eb] bg-white px-[12px] py-[7px] text-left"
+            className="flex cursor-pointer items-center gap-1 px-[6px] py-[2px] text-left"
             style={{ transition: 'all 150ms ease' }}
           >
             <span className="text-[15px] font-semibold text-[#1f2937]">{monthTitle}</span>
-            <ChevronDown className={`h-[14px] w-[14px] text-[#6b7280] transition-transform ${yearPickerOpen ? 'rotate-180' : ''}`} />
-          </button>
+            <ChevronDown className={`h-[14px] w-[14px] text-[#9aa3b2] transition-transform ${yearPickerOpen ? 'rotate-180' : ''}`} />
+          </div>
           <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
             <ChevronRight className="w-4 h-4" />
           </button>
