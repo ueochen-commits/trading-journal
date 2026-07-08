@@ -1383,19 +1383,31 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
     }, [activeStrategies, language]);
 
     const collectionTabs = [
-        { id: 'mine' as const, label: `${language === 'cn' ? '我的策略' : 'My Strategies'} (${strategies.length}/${strategies.length})` },
-        { id: 'shared' as const, label: language === 'cn' ? '共享给我' : 'Shared with me' },
-        { id: 'templates' as const, label: language === 'cn' ? '模板' : 'Templates' },
+        {
+            id: 'mine' as const,
+            label: `${language === 'cn' ? '我的策略' : 'My Strategies'} (${strategies.length}/${strategies.length})`,
+            icon: <BookMarked className="h-3.5 w-3.5" />,
+        },
+        {
+            id: 'shared' as const,
+            label: language === 'cn' ? '共享给我' : 'Shared with me',
+            icon: <Lock className="h-3.5 w-3.5" />,
+        },
+        {
+            id: 'templates' as const,
+            label: language === 'cn' ? '模板' : 'Templates',
+            icon: <Layout className="h-3.5 w-3.5" />,
+        },
     ];
 
     const iconTile = (color?: string) => (
         <div
-            className="flex h-8 w-8 items-end gap-[3px] rounded-[10px] border border-slate-200/80 bg-white px-[5px] py-[5px] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
+            className="flex h-7 w-7 items-end gap-[2.5px] rounded-[8px] border border-slate-200/80 bg-white px-[4px] py-[4px] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
             style={{ borderColor: `${color || '#8b5cf6'}22` }}
         >
-            <span className="w-1.5 rounded-full bg-emerald-500/90" style={{ height: '70%' }} />
-            <span className="w-1.5 rounded-full bg-indigo-500/90" style={{ height: '95%' }} />
-            <span className="w-1.5 rounded-full bg-rose-500/90" style={{ height: '58%' }} />
+            <span className="w-1.5 rounded-full bg-emerald-500/90" style={{ height: '72%' }} />
+            <span className="w-1.5 rounded-full bg-indigo-500/90" style={{ height: '100%' }} />
+            <span className="w-1.5 rounded-full bg-rose-500/90" style={{ height: '56%' }} />
         </div>
     );
 
@@ -1458,7 +1470,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
     }
 
     return (
-        <div className="flex h-full w-full flex-col overflow-hidden bg-[#f6f5f3] dark:bg-slate-950">
+        <div className="flex h-full w-full flex-col overflow-hidden bg-[#f6f5f1] dark:bg-slate-950">
             <CreatePlaybookModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSave={handleSaveStrategy} initialData={editStrategy} />
             {isColumnModalOpen && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/30 px-4 backdrop-blur-[2px]">
@@ -1529,29 +1541,26 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 </div>
             )}
 
-            <div className="shrink-0 border-b border-slate-200/80 bg-white/90 dark:border-slate-800 dark:bg-slate-900">
-                <div className="flex flex-col gap-4 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="shrink-0 border-b border-slate-200/80 bg-[#faf9f7] dark:border-slate-800 dark:bg-slate-900">
+                <div className="px-5 pb-0 pt-6 lg:px-8">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <h2 className="text-[20px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">
                         {language === 'cn' ? '策略手册' : 'Strategies'}
                     </h2>
                     <div className="flex flex-wrap items-center gap-2">
-                        <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                            <div className="rounded-md bg-violet-100 p-1 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">
-                                <Activity className="h-3.5 w-3.5" />
-                            </div>
+                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                            <Activity className="h-3.5 w-3.5 text-violet-500" />
                             <span>{selectedTimeLabel}</span>
                             <ChevronDown className="h-4 w-4 text-slate-400" />
                         </button>
-                        <button className="flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
-                            <div className="rounded-md bg-violet-100 p-1 text-violet-600 dark:bg-violet-900/30 dark:text-violet-300">
-                                <BookMarked className="h-3.5 w-3.5" />
-                            </div>
+                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                            <BookMarked className="h-3.5 w-3.5 text-violet-500" />
                             <span>{selectedAccountLabel}</span>
                             <ChevronDown className="h-4 w-4 text-slate-400" />
                         </button>
                     </div>
                 </div>
-                <div className="flex gap-6 overflow-x-auto border-t border-slate-100 px-6 pt-3 dark:border-slate-800">
+                <div className="mt-4 flex gap-8 overflow-x-auto border-t border-slate-200/80 dark:border-slate-800">
                     {collectionTabs.map(tab => {
                         const active = activeCollection === tab.id;
                         return (
@@ -1562,18 +1571,21 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                     active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
                             >
-                                <span className={`h-4 w-4 rounded-full border ${active ? 'border-violet-400 bg-violet-50' : 'border-slate-300 bg-white dark:border-slate-600 dark:bg-slate-900'}`} />
+                                <span className={active ? 'text-violet-500' : 'text-slate-400'}>
+                                    {tab.icon}
+                                </span>
                                 <span>{tab.label}</span>
                                 {active && <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-violet-600" />}
                             </button>
                         );
                     })}
                 </div>
+                </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-5 py-5 custom-scrollbar lg:px-8">
                 {activeCollection !== 'mine' ? (
-                    <div className="rounded-[24px] border border-slate-200 bg-white px-10 py-20 text-center shadow-[0_8px_30px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
+                    <div className="rounded-[18px] border border-slate-200 bg-white px-10 py-20 text-center shadow-[0_8px_24px_rgba(15,23,42,0.035)] dark:border-slate-800 dark:bg-slate-900">
                         <h3 className="text-[18px] font-semibold text-slate-900 dark:text-white">
                             {activeCollection === 'shared'
                                 ? (language === 'cn' ? '共享策略即将上线' : 'Shared strategies coming soon')
@@ -1591,7 +1603,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                             <button
                                 id="playbook-create-btn"
                                 onClick={handleCreatePlaybook}
-                                className="inline-flex h-10 items-center gap-2 rounded-xl bg-violet-600 px-4 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(109,90,220,0.24)] transition-colors hover:bg-violet-700"
+                                className="inline-flex h-10 items-center gap-2 rounded-[10px] bg-violet-600 px-4 text-[14px] font-semibold text-white shadow-[0_10px_20px_rgba(109,90,220,0.18)] transition-colors hover:bg-violet-700"
                             >
                                 <Plus className="h-4 w-4" />
                                 <span>{language === 'cn' ? '创建策略' : 'Create strategy'}</span>
@@ -1602,16 +1614,16 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                             {summaryCards.map(card => (
                                 <div
                                     key={card.id}
-                                    className="rounded-[20px] border border-slate-200/90 bg-white px-4 py-4 shadow-[0_8px_24px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900"
+                                    className="min-h-[116px] rounded-[18px] border border-slate-200/90 bg-white px-4 py-4 shadow-[0_6px_18px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900"
                                 >
-                                    <div className="flex items-center gap-2 text-[13px] font-medium text-slate-500 dark:text-slate-400">
+                                    <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
                                         {card.icon}
                                         <span>{card.title}</span>
                                     </div>
-                                    <div className="mt-4 flex items-center gap-3">
+                                    <div className="mt-3.5 flex items-center gap-2.5">
                                         {iconTile(card.strategy.color)}
                                         <div className="min-w-0">
-                                            <div className="truncate text-[16px] font-semibold text-slate-800 dark:text-white">
+                                            <div className="truncate text-[15px] font-semibold leading-6 text-slate-700 dark:text-white">
                                                 {card.strategy.name}
                                             </div>
                                         </div>
@@ -1619,7 +1631,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                     <div className="mt-3 flex items-center gap-2 text-[13px] font-medium text-slate-700 dark:text-slate-300">
                                         <span>{card.footer}</span>
                                         {card.value && (
-                                            <span className={`rounded-md px-2 py-0.5 text-[12px] font-semibold ${card.chipClass}`}>
+                                            <span className={`rounded-[8px] px-2 py-0.5 text-[12px] font-semibold ${card.chipClass}`}>
                                                 {card.value}
                                             </span>
                                         )}
@@ -1628,8 +1640,8 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                             ))}
                         </div>
 
-                        <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_8px_28px_rgba(15,23,42,0.04)] dark:border-slate-800 dark:bg-slate-900">
-                            <div className="flex items-center justify-end gap-2 px-5 py-4">
+                        <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)] dark:border-slate-800 dark:bg-slate-900">
+                            <div className="flex min-h-[56px] items-center justify-end gap-2 border-b border-slate-200/80 px-5 py-3 dark:border-slate-800">
                                 {([
                                     { id: 'grid', icon: <LayoutGrid className="h-5 w-5" /> },
                                     { id: 'table', icon: <ListIcon className="h-5 w-5" /> },
@@ -1644,7 +1656,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             }`}
                                         >
                                             {item.icon}
-                                            {active && <span className="absolute inset-x-1 -bottom-[11px] h-0.5 rounded-full bg-violet-600" />}
+                                            {active && <span className="absolute inset-x-1 -bottom-[13px] h-0.5 rounded-full bg-violet-600" />}
                                         </button>
                                     );
                                 })}
@@ -1655,8 +1667,8 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                     <Settings className="h-5 w-5" />
                                 </button>
                             </div>
-                            <div className="border-t border-slate-200/80 px-3 py-4 dark:border-slate-800">
-                                <div className="inline-flex rounded-2xl bg-slate-100 p-1 dark:bg-slate-800">
+                            <div className="px-3 py-4">
+                                <div className="inline-flex rounded-[14px] bg-slate-100 p-1 dark:bg-slate-800">
                                     {([
                                         { id: 'active', label: language === 'cn' ? '进行中' : 'Active' },
                                         { id: 'archived', label: language === 'cn' ? '已归档' : 'Archived' },
@@ -1666,7 +1678,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             <button
                                                 key={item.id}
                                                 onClick={() => setLifecycleTab(item.id)}
-                                                className={`rounded-[14px] px-4 py-2 text-[14px] font-medium transition-all ${
+                                                className={`rounded-[11px] px-4 py-2 text-[14px] font-medium transition-all ${
                                                     active
                                                         ? 'bg-white text-slate-900 shadow-[0_2px_6px_rgba(15,23,42,0.08)] dark:bg-slate-700 dark:text-white'
                                                         : 'text-slate-600 dark:text-slate-400'
@@ -1693,13 +1705,13 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             <article
                                                 key={strategy.id}
                                                 onClick={() => setDetailedStrategyId(strategy.id)}
-                                                className="group cursor-pointer rounded-[20px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_18px_rgba(15,23,42,0.035)] transition-all hover:border-slate-300 hover:shadow-[0_10px_28px_rgba(15,23,42,0.07)] dark:border-slate-800 dark:bg-slate-900"
+                                                className="group cursor-pointer rounded-[18px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] transition-all hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
                                             >
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-3">
                                                             {iconTile(strategy.color)}
-                                                            <h3 className="truncate text-[17px] font-semibold tracking-[-0.01em] text-slate-800 dark:text-white">
+                                                            <h3 className="truncate text-[16px] font-semibold tracking-[-0.01em] text-slate-700 dark:text-white">
                                                                 {strategy.name}
                                                             </h3>
                                                         </div>
@@ -1708,7 +1720,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                 {strategy.tags.map(tag => (
                                                                     <span
                                                                         key={tag}
-                                                                        className="rounded-full bg-slate-100 px-2.5 py-1 text-[12px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
+                                                                        className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600 dark:bg-slate-800 dark:text-slate-300"
                                                                     >
                                                                         {tag}
                                                                     </span>
@@ -1893,7 +1905,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                         </tbody>
                                     </table>
                                     <div className="flex justify-center px-6 py-7">
-                                        <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-6 py-3 text-[14px] text-slate-600 shadow-[0_4px_16px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                        <div className="flex items-center gap-3 rounded-[16px] border border-slate-200 bg-white px-6 py-3 text-[14px] text-slate-600 shadow-[0_4px_16px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
                                             <span className="font-semibold">
                                                 {language === 'cn'
                                                     ? `结果：1 - ${visibleStrategies.length} / 共 ${visibleStrategies.length} 个策略`
