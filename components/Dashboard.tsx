@@ -585,12 +585,12 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   const [mode, setMode] = React.useState<'entry'|'exit'>('entry');
   const [isConfigOpen, setIsConfigOpen] = React.useState(false);
   const configRef = React.useRef<HTMLDivElement>(null);
-  const positiveDotColor = '#67c8b0';
-  const negativeDotColor = '#ef7d83';
-  const neutralText = '#7c8698';
-  const axisText = '#6b7280';
-  const gridColor = '#d9dfe8';
-  const referenceLineColor = '#c8ced8';
+  const positiveDotColor = '#59b89f';
+  const negativeDotColor = '#ea7272';
+  const neutralText = '#70798b';
+  const axisText = '#616978';
+  const gridColor = '#d8dde6';
+  const referenceLineColor = '#d2d8e2';
   const timeToHour = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? null : d.getHours() + d.getMinutes() / 60; };
   const ttData = useMemo(() => trades.filter(t => {
     const f = mode === 'entry' ? t.entryDate : t.exitDate;
@@ -634,17 +634,22 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   return (
     <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8ecf3'}`, borderRadius: 16, padding: '0 0 18px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 10px rgba(15, 23, 42, 0.02)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 16px', flexShrink: 0 }}>
-        <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#f8fafc' : '#202634', letterSpacing: '-0.015em' }}>
-          {language === 'cn' ? '交易时间表现' : 'Trade time performance'}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#f8fafc' : '#1f2430', letterSpacing: '-0.015em' }}>
+            {language === 'cn' ? '交易时间表现' : 'Trade time performance'}
+          </span>
+          <div style={{ transform: 'scale(1.02)' }}>
+            <TZInfoIcon infoKey="tradeTiming" />
+          </div>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div ref={configRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setIsConfigOpen(current => !current)}
-              style={{ border: 'none', background: 'transparent', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#cbd5e1' : '#5b6474', cursor: 'pointer' }}
+              style={{ border: 'none', background: 'transparent', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#cbd5e1' : '#5c6574', cursor: 'pointer' }}
               aria-label={language === 'cn' ? '图表设置' : 'Chart settings'}
             >
-              <Settings className="h-[17px] w-[17px]" strokeWidth={1.8} />
+              <Settings className="h-[16px] w-[16px]" strokeWidth={1.85} />
             </button>
             {isConfigOpen && (
               <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 132, background: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1f2937' : '#e5e7eb'}`, borderRadius: 12, boxShadow: '0 18px 36px rgba(15, 23, 42, 0.12)', padding: 6, zIndex: 20 }}>
@@ -694,11 +699,11 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
         ) : (
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 8, right: 18, left: 14, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="2 3" vertical={false} stroke={gridColor} />
-              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,2,4,6,8,10,12,14,16,18,20,22,24]} tickFormatter={(h: number) => h === 24 ? '0:00' : `${String(h)}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: axisText }} />
-              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} ticks={Array.from({ length: Math.round((yMax - yMin) / 100) + 1 }, (_, index) => yMin + index * 100)} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: axisText }} width={58}
+              <CartesianGrid strokeDasharray="2 4" vertical={false} stroke={gridColor} />
+              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,2,4,6,8,10,12,14,16,18,20,22,24]} tickFormatter={(h: number) => h === 24 ? '0:00' : `${String(h)}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} />
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} ticks={Array.from({ length: Math.round((yMax - yMin) / 100) + 1 }, (_, index) => yMin + index * 100)} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} width={58}
                 tickFormatter={ttTickFormatter} />
-              <ReferenceLine y={0} stroke={referenceLineColor} strokeWidth={1} />
+              <ReferenceLine y={0} stroke={referenceLineColor} strokeWidth={1} strokeDasharray="2 4" />
               <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
                 content={({ active, payload }: any) => {
                   if (!active || !payload?.length) return null;
@@ -722,13 +727,13 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
                   <circle
                     cx={cx}
                     cy={cy}
-                    r={3.7}
+                    r={3.9}
                     fill={isUp ? positiveDotColor : negativeDotColor}
-                    fillOpacity={0.76}
+                    fillOpacity={0.82}
                   />
                 );
               }}>
-                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.76} />)}
+                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.82} />)}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
