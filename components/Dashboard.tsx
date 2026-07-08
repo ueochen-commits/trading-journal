@@ -583,6 +583,11 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
 const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
   const { currencySymbol } = useUser();
   const [mode, setMode] = React.useState<'entry'|'exit'>('entry');
+  const positiveDotColor = '#43c59e';
+  const negativeDotColor = '#ef6a70';
+  const neutralText = '#8f96a8';
+  const axisText = '#9ca3b7';
+  const gridColor = 'rgba(148, 163, 184, 0.18)';
   const timeToHour = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? null : d.getHours() + d.getMinutes() / 60; };
   const ttData = useMemo(() => trades.filter(t => {
     const f = mode === 'entry' ? t.entryDate : t.exitDate;
@@ -620,20 +625,21 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时间表现' : 'Trade Time Performance'}</span>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e9ebf2'}`, borderRadius: 12, padding: '18px 18px 14px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 8px rgba(15, 23, 42, 0.02)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#f8fafc' : '#1f2937', letterSpacing: '-0.01em' }}>{language === 'cn' ? '交易时间表现' : 'Trade Time Performance'}</span>
           <TZInfoIcon infoKey="tradeTiming" />
         </div>
-        <div style={{ display: 'flex', background: isDark ? '#1e293b' : '#f5f5fa', borderRadius: 7, padding: 3, gap: 2 }}>
+        <div style={{ display: 'flex', background: isDark ? '#1e293b' : '#f4f5fa', borderRadius: 8, padding: 3, gap: 2, boxShadow: isDark ? 'none' : 'inset 0 0 0 1px rgba(226,232,240,0.75)' }}>
           {(['entry', 'exit'] as const).map(key => (
-            <button key={key} onClick={() => setMode(key)} style={{ padding: '5px 12px', borderRadius: 5, border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s', background: mode === key ? (isDark ? '#334155' : '#fff') : 'transparent', color: mode === key ? (isDark ? '#f8fafc' : '#1a1d2e') : '#9396aa', boxShadow: mode === key ? '0 1px 4px rgba(0,0,0,0.08)' : 'none' }}>
+            <button key={key} onClick={() => setMode(key)} style={{ padding: '6px 13px', borderRadius: 6, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', background: mode === key ? (isDark ? '#334155' : '#fff') : 'transparent', color: mode === key ? (isDark ? '#f8fafc' : '#30384a') : '#9aa1b2', boxShadow: mode === key ? '0 1px 4px rgba(15,23,42,0.08)' : 'none' }}>
               {key === 'entry' ? (language === 'cn' ? '入场' : 'Entry') : (language === 'cn' ? '出场' : 'Exit')}
             </button>
           ))}
         </div>
       </div>
+      <div style={{ height: 1, background: isDark ? '#1e293b' : '#eef0f5', margin: '0 -18px 12px', flexShrink: 0 }} />
       <div style={{ flex: 1, minHeight: 0 }}>
         {ttData.length === 0 ? (
           <EmptyChartState
@@ -644,12 +650,12 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
           />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" />
-              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,4,8,12,16,20,24]} tickFormatter={(h: number) => `${String(h).padStart(2,'0')}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} />
-              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={52}
+            <ScatterChart margin={{ top: 8, right: 14, left: 6, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="2 4" vertical={false} stroke={gridColor} />
+              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,4,8,12,16,20,24]} tickFormatter={(h: number) => `${String(h).padStart(2,'0')}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} />
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} width={56}
                 tickFormatter={ttTickFormatter} />
-              <ReferenceLine y={0} stroke="rgba(0,0,0,0.12)" strokeWidth={1} />
+              <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.22)" strokeWidth={1} />
               <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
                 content={({ active, payload }: any) => {
                   if (!active || !payload?.length) return null;
@@ -659,23 +665,35 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
                     <div style={ttTooltipStyle}>
                       <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e', marginBottom: 6 }}>{d.symbol}</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '时间' : 'Time'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{d.timeLabel}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? '#00c896' : '#ff4d6a' }}>{isUp ? '+' : ''}{currencySymbol}{Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: '#4a4d6a' }}>{d.date}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>{language === 'cn' ? '时间' : 'Time'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{d.timeLabel}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? positiveDotColor : negativeDotColor }}>{isUp ? '+' : ''}{currencySymbol}{Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: '#4a4d6a' }}>{d.date}</span></div>
                       </div>
                     </div>
                   );
                 }} />
-              <Scatter data={ttData}>
-                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? '#00c896' : '#ff4d6a'} fillOpacity={0.75} />)}
+              <Scatter data={ttData} shape={(props: any) => {
+                const { cx, cy, payload } = props;
+                const isUp = payload.pnl >= 0;
+                return (
+                  <circle
+                    cx={cx}
+                    cy={cy}
+                    r={4.2}
+                    fill={isUp ? positiveDotColor : negativeDotColor}
+                    fillOpacity={0.86}
+                  />
+                );
+              }}>
+                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.86} />)}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         )}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00c896', display: 'inline-block' }}/><span style={{ fontSize: 11, color: '#9396aa' }}>{language === 'cn' ? '盈利' : 'Profit'}</span></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d6a', display: 'inline-block' }}/><span style={{ fontSize: 11, color: '#9396aa' }}>{language === 'cn' ? '亏损' : 'Loss'}</span></div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, paddingLeft: 4, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: positiveDotColor, display: 'inline-block', opacity: 0.86 }}/><span style={{ fontSize: 11, color: neutralText }}>{language === 'cn' ? '盈利' : 'Profit'}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: negativeDotColor, display: 'inline-block', opacity: 0.86 }}/><span style={{ fontSize: 11, color: neutralText }}>{language === 'cn' ? '亏损' : 'Loss'}</span></div>
       </div>
     </div>
   );
