@@ -585,8 +585,8 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   const [mode, setMode] = React.useState<'entry'|'exit'>('entry');
   const [isConfigOpen, setIsConfigOpen] = React.useState(false);
   const configRef = React.useRef<HTMLDivElement>(null);
-  const positiveDotColor = '#43c59e';
-  const negativeDotColor = '#ef6a70';
+  const positiveDotColor = '#67c8b0';
+  const negativeDotColor = '#ef7d83';
   const neutralText = '#7c8698';
   const axisText = '#6b7280';
   const gridColor = '#d9dfe8';
@@ -722,13 +722,13 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
                   <circle
                     cx={cx}
                     cy={cy}
-                    r={4}
+                    r={3.7}
                     fill={isUp ? positiveDotColor : negativeDotColor}
-                    fillOpacity={0.88}
+                    fillOpacity={0.76}
                   />
                 );
               }}>
-                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.88} />)}
+                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.76} />)}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
