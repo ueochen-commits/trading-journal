@@ -583,11 +583,14 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
 const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
   const { currencySymbol } = useUser();
   const [mode, setMode] = React.useState<'entry'|'exit'>('entry');
+  const [isConfigOpen, setIsConfigOpen] = React.useState(false);
+  const configRef = React.useRef<HTMLDivElement>(null);
   const positiveDotColor = '#43c59e';
   const negativeDotColor = '#ef6a70';
-  const neutralText = '#8f96a8';
-  const axisText = '#9ca3b7';
-  const gridColor = 'rgba(148, 163, 184, 0.18)';
+  const neutralText = '#7c8698';
+  const axisText = '#6b7280';
+  const gridColor = '#d9dfe8';
+  const referenceLineColor = '#c8ced8';
   const timeToHour = (s: string) => { const d = new Date(s); return isNaN(d.getTime()) ? null : d.getHours() + d.getMinutes() / 60; };
   const ttData = useMemo(() => trades.filter(t => {
     const f = mode === 'entry' ? t.entryDate : t.exitDate;
@@ -600,24 +603,28 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
     return { x: parseFloat(hour.toFixed(4)), pnl: parseFloat(t.pnl.toFixed(2)), symbol: t.symbol, timeLabel: `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`, date: d.toLocaleDateString() };
   }).filter(Boolean) as { x: number; pnl: number; symbol: string; timeLabel: string; date: string }[], [trades, mode]);
 
+  React.useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      if (configRef.current && !configRef.current.contains(event.target as Node)) {
+        setIsConfigOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    return () => document.removeEventListener('mousedown', handlePointerDown);
+  }, []);
+
   const pnlVals = ttData.map(d => d.pnl);
   const maxP = pnlVals.length ? Math.max(...pnlVals) : 10;
   const minP = pnlVals.length ? Math.min(...pnlVals) : -10;
-  const absMax = Math.max(Math.abs(maxP), Math.abs(minP)) || 10;
-  const pad = absMax * 0.25;
-  const rawMax = maxP + pad;
-  const rawMin = minP - pad;
-  const range = rawMax - rawMin || 1;
-  const magnitude = Math.pow(10, Math.floor(Math.log10(range / 4)));
-  const niceStep = [1, 2, 2.5, 5, 10].map(f => f * magnitude).find(s => range / s <= 6) || magnitude * 10;
-  const yMax = Math.ceil(rawMax / niceStep) * niceStep;
-  const yMin = Math.floor(rawMin / niceStep) * niceStep;
+  const yMax = Math.max(100, Math.ceil((maxP + 12) / 100) * 100);
+  const yMin = Math.min(-100, Math.floor((minP - 24) / 100) * 100);
   const ttTickFormatter = (v: number) => {
     const abs = Math.abs(v);
     const sign = v < 0 ? '-' : '';
     if (abs >= 1000000) return `${sign}$${(abs / 1000000).toFixed(1)}M`;
     if (abs >= 1000) return `${sign}$${(abs / 1000).toFixed(abs >= 10000 ? 0 : 1)}k`;
-    if (abs >= 1) return `${sign}$${abs % 1 === 0 ? abs : abs.toFixed(1)}`;
+    if (abs >= 1) return `${sign}$${abs % 1 === 0 ? abs : abs.toFixed(0)}`;
     return `${sign}$${abs.toFixed(2)}`;
   };
 
@@ -625,22 +632,58 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e9ebf2'}`, borderRadius: 12, padding: '18px 18px 14px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 8px rgba(15, 23, 42, 0.02)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: isDark ? '#f8fafc' : '#1f2937', letterSpacing: '-0.01em' }}>{language === 'cn' ? '交易时间表现' : 'Trade Time Performance'}</span>
-          <TZInfoIcon infoKey="tradeTiming" />
-        </div>
-        <div style={{ display: 'flex', background: isDark ? '#1e293b' : '#f4f5fa', borderRadius: 8, padding: 3, gap: 2, boxShadow: isDark ? 'none' : 'inset 0 0 0 1px rgba(226,232,240,0.75)' }}>
-          {(['entry', 'exit'] as const).map(key => (
-            <button key={key} onClick={() => setMode(key)} style={{ padding: '6px 13px', borderRadius: 6, border: 'none', fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s', background: mode === key ? (isDark ? '#334155' : '#fff') : 'transparent', color: mode === key ? (isDark ? '#f8fafc' : '#30384a') : '#9aa1b2', boxShadow: mode === key ? '0 1px 4px rgba(15,23,42,0.08)' : 'none' }}>
-              {key === 'entry' ? (language === 'cn' ? '入场' : 'Entry') : (language === 'cn' ? '出场' : 'Exit')}
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8ecf3'}`, borderRadius: 16, padding: '0 0 18px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 10px rgba(15, 23, 42, 0.02)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 16px', flexShrink: 0 }}>
+        <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#f8fafc' : '#202634', letterSpacing: '-0.015em' }}>
+          {language === 'cn' ? '交易时间表现' : 'Trade time performance'}
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div ref={configRef} style={{ position: 'relative' }}>
+            <button
+              onClick={() => setIsConfigOpen(current => !current)}
+              style={{ border: 'none', background: 'transparent', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#cbd5e1' : '#5b6474', cursor: 'pointer' }}
+              aria-label={language === 'cn' ? '图表设置' : 'Chart settings'}
+            >
+              <Settings className="h-[17px] w-[17px]" strokeWidth={1.8} />
             </button>
-          ))}
+            {isConfigOpen && (
+              <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 132, background: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1f2937' : '#e5e7eb'}`, borderRadius: 12, boxShadow: '0 18px 36px rgba(15, 23, 42, 0.12)', padding: 6, zIndex: 20 }}>
+                {(['entry', 'exit'] as const).map(key => {
+                  const active = mode === key;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => {
+                        setMode(key);
+                        setIsConfigOpen(false);
+                      }}
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        background: active ? (isDark ? '#1f2937' : '#f5f7fb') : 'transparent',
+                        color: active ? (isDark ? '#f8fafc' : '#202634') : (isDark ? '#cbd5e1' : '#5b6474'),
+                        borderRadius: 8,
+                        padding: '8px 10px',
+                        textAlign: 'left',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {key === 'entry' ? (language === 'cn' ? '入场' : 'Entry') : (language === 'cn' ? '出场' : 'Exit')}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div style={{ transform: 'scale(1.02)' }}>
+            <TZInfoIcon infoKey="tradeTiming" />
+          </div>
         </div>
       </div>
-      <div style={{ height: 1, background: isDark ? '#1e293b' : '#eef0f5', margin: '0 -18px 12px', flexShrink: 0 }} />
-      <div style={{ flex: 1, minHeight: 0 }}>
+      <div style={{ height: 1, background: isDark ? '#1e293b' : '#e9edf4', flexShrink: 0 }} />
+      <div style={{ flex: 1, minHeight: 0, padding: '14px 16px 0 10px' }}>
         {ttData.length === 0 ? (
           <EmptyChartState
             variant="cards"
@@ -650,12 +693,12 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
           />
         ) : (
           <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 8, right: 14, left: 6, bottom: 8 }}>
-              <CartesianGrid strokeDasharray="2 4" vertical={false} stroke={gridColor} />
-              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,4,8,12,16,20,24]} tickFormatter={(h: number) => `${String(h).padStart(2,'0')}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} />
-              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} width={56}
+            <ScatterChart margin={{ top: 8, right: 18, left: 14, bottom: 8 }}>
+              <CartesianGrid strokeDasharray="2 3" vertical={false} stroke={gridColor} />
+              <XAxis type="number" dataKey="x" domain={[0, 24]} ticks={[0,2,4,6,8,10,12,14,16,18,20,22,24]} tickFormatter={(h: number) => h === 24 ? '0:00' : `${String(h)}:00`} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: axisText }} />
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} ticks={Array.from({ length: Math.round((yMax - yMin) / 100) + 1 }, (_, index) => yMin + index * 100)} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: axisText }} width={58}
                 tickFormatter={ttTickFormatter} />
-              <ReferenceLine y={0} stroke="rgba(148, 163, 184, 0.22)" strokeWidth={1} />
+              <ReferenceLine y={0} stroke={referenceLineColor} strokeWidth={1} />
               <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
                 content={({ active, payload }: any) => {
                   if (!active || !payload?.length) return null;
@@ -679,21 +722,17 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
                   <circle
                     cx={cx}
                     cy={cy}
-                    r={4.2}
+                    r={4}
                     fill={isUp ? positiveDotColor : negativeDotColor}
-                    fillOpacity={0.86}
+                    fillOpacity={0.88}
                   />
                 );
               }}>
-                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.86} />)}
+                {ttData.map((entry, i) => <Cell key={i} fill={entry.pnl >= 0 ? positiveDotColor : negativeDotColor} fillOpacity={0.88} />)}
               </Scatter>
             </ScatterChart>
           </ResponsiveContainer>
         )}
-      </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, paddingLeft: 4, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: positiveDotColor, display: 'inline-block', opacity: 0.86 }}/><span style={{ fontSize: 11, color: neutralText }}>{language === 'cn' ? '盈利' : 'Profit'}</span></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: negativeDotColor, display: 'inline-block', opacity: 0.86 }}/><span style={{ fontSize: 11, color: neutralText }}>{language === 'cn' ? '亏损' : 'Loss'}</span></div>
       </div>
     </div>
   );
