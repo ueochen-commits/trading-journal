@@ -50,3 +50,13 @@ Sources checked 2026-10-25:
 ## Publication
 
 Implementation only; main and production have not changed. A review preview will be recorded after deployment. Earlier onboarding stash remains preserved as historical recovery material; its audited and completed implementation is now on this branch.
+
+
+## Ready review deployment
+
+- Runtime commit: 4f6c1793f50d56145e5868025a86a3dccbb880f5; onboarding commit a1e2e78.
+- Preview: https://trading-journal-jbdfiifsj-chenzhixuns-projects.vercel.app
+- Vercel deployment: dpl_J15YKAHWdSUQ6UgKZdHacRm6qo7v, Ready, target preview.
+- Deployment protection remains enabled; Vercel owner authentication is required. Authenticated CLI verification loads the application HTML and built JS.
+- Production HTTP 200 still serves /assets/index-D-P4QlzY.js. main and origin/main remain fdd2fd9d6870d01e3327785fb327b70b10742222.
+- No main push, production alias update, schema migration or persisted production test data.
