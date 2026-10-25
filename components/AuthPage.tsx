@@ -34,6 +34,8 @@ const AuthPage: React.FC = () => {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
+    const callbackError = new URLSearchParams(window.location.hash.slice(1)).get('error_description') || params.get('error_description');
+    if (callbackError) setError(language === 'cn' ? '验证链接已失效或登录未完成。请重新登录；邮箱未验证时可重新发送确认邮件。' : 'The verification link expired or sign-in failed. Please sign in again to resend confirmation.');
     const authMode = params.get('auth') || params.get('mode');
     if (authMode === 'signup') {
       setIsSignUp(true);
@@ -69,6 +71,7 @@ const AuthPage: React.FC = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isLoading) return;
     setIsLoading(true);
     setError(null);
     setUnconfirmedEmail(null);
@@ -93,21 +96,21 @@ const AuthPage: React.FC = () => {
 
     try {
       if (isSignUp) {
-        const { error } = await supabase.auth.signUp({
-          email,
+        const { data, error } = await supabase.auth.signUp({
+          email: email.trim(),
           password,
           options: {
-            data: { username },
+            data: { username: username.trim() },
             emailRedirectTo: window.location.origin,
           },
         });
         if (error) throw error;
-        setEmailConfirmSent(true);
+        if (!data.session) setEmailConfirmSent(true);
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) {
           if (error.message === 'Email not confirmed') {
-            setUnconfirmedEmail(email);
+            setUnconfirmedEmail(email.trim());
             return;
           }
           throw error;
@@ -314,7 +317,7 @@ const AuthPage: React.FC = () => {
                   <label className="block text-[11px] font-bold uppercase tracking-wider text-white/40 ml-1">
                     {isSignUp
                       ? (language === 'cn' ? '邮箱' : 'Email')
-                      : (language === 'cn' ? '邮箱或用户名' : 'Email')}
+                      : (language === 'cn' ? '邮箱' : 'Email')}
                   </label>
                   <input
                     type="email"

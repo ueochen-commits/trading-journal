@@ -62,6 +62,7 @@ interface Props {
   exchangeBrandColor?: string;
   onBack?: () => void;
   onClose?: () => void;
+  accountSelector?: React.ReactNode;
   onImportComplete?: (trades: Trade[]) => void | Promise<void>;
 }
 
@@ -587,6 +588,7 @@ const CsvImportPage: React.FC<Props> = ({
   exchangeBrandColor = '#f5a500',
   onBack,
   onClose,
+  accountSelector,
   onImportComplete,
 }) => {
   const [step, setStep] = useState<Step>('upload');
@@ -851,6 +853,7 @@ const CsvImportPage: React.FC<Props> = ({
   if (step === 'upload') return (
     <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
       {navChrome()}
+      {accountSelector}
       {importError && <p role="alert" className="mx-auto my-4 max-w-xl rounded-xl bg-rose-50 p-4 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{importError}</p>}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', '上传文件')}
@@ -1175,6 +1178,7 @@ const CsvImportPage: React.FC<Props> = ({
     return (
       <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
         {navChrome()}
+      {accountSelector}
         <div style={{ width: '100%', maxWidth: 880, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {pageTitle('添加交易', '预览并确认')}
 

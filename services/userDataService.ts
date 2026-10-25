@@ -180,6 +180,11 @@ export const userDataService = {
       supabase.from('user_rule_settings').select('net_max_loss_per_day_enabled, net_max_loss_per_day_value').eq('user_id', userId).maybeSingle(),
     ]);
 
+    // A failed read must not look like an empty new account or reset quotas.
+    for (const result of [tradesRes, strategiesRes, checklistRes, trackerRulesRes, plansRes, notificationsRes, disciplineRulesRes, disciplineHistoryRes, settingsRes, profilesRes, accountsRes, connectionsRes, ruleSettingsRes]) {
+      if (result.error) throw new Error(result.error.message || '加载用户数据失败');
+    }
+
     // 过滤软删除的笔记（在应用层处理，避免依赖 DB 列）
     const activePlans = (plansRes.data || []).filter((p: any) => !p.is_deleted);
 
@@ -192,6 +197,7 @@ export const userDataService = {
       notifications: (notificationsRes.data || []).map(dbToNotification),
       disciplineRules: (disciplineRulesRes.data || []).map(dbToDisciplineRule),
       disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
+      defaultTradingAccountId: settingsRes.data?.settings?.defaultTradingAccountId || '',
       weeklyGoal: settingsRes.data?.settings?.weeklyGoal || null,
       tagCategories: normalizeTagCategories(settingsRes.data?.settings?.tagCategories),
       riskSettings: (() => {
@@ -441,6 +447,24 @@ export const userDataService = {
     }, { onConflict: 'user_id' });
 
     return { error };
+  },
+
+  async saveDefaultTradingAccount(defaultTradingAccountId: string) {
+    const userId = await getCurrentUserId();
+    if (!userId) throw new Error('登录状态已过期，请重新登录');
+    if (defaultTradingAccountId) {
+      const { data, error } = await supabase.from('trading_accounts').select('id').eq('id', defaultTradingAccountId).eq('user_id', userId).single();
+      if (error || !data) throw new Error('请选择自己的有效交易账户');
+    }
+    const existing = await getExistingUserSettings(userId);
+    if (existing.error) throw existing.error;
+    const { error } = await supabase.from('user_settings').upsert({
+      user_id: userId,
+      settings: { ...(existing.data?.settings || {}), defaultTradingAccountId },
+      risk_settings: existing.data?.risk_settings || null,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' }).select('user_id').single();
+    if (error) throw error;
   },
 
   // 保存风险设置
@@ -772,9 +796,9 @@ export const userDataService = {
     const userId = await getCurrentUserId();
     if (!userId) return [];
 
-    const { data } = await supabase.from('trading_accounts')
+    const { data, error } = await supabase.from('trading_accounts')
       .select('*').eq('user_id', userId).order('created_at', { ascending: false });
-
+    if (error) throw new Error(error.message || '加载交易账户失败');
     return (data || []).map(dbToTradingAccount);
   },
 

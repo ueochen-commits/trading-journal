@@ -57,6 +57,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const [skipSpot, setSkipSpot] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [connectError, setConnectError] = useState('');
   const [backHovered, setBackHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const [btnHovered, setBtnHovered] = useState(false);
@@ -66,7 +67,6 @@ const BrokerSyncPage: React.FC<Props> = ({
 
   const ACCOUNT_OPTIONS = [
     { value: 'main', label: '主账户' },
-    { value: 'demo', label: '演示 Account' },
   ];
 
   const WEEKDAYS = ['日', '一', '二', '三', '四', '五', '六'];
@@ -533,14 +533,18 @@ const BrokerSyncPage: React.FC<Props> = ({
               </span>
             </div>
 
+            {connectError && <p role="alert" style={{ color: 'var(--tg-negative, #e11d48)', fontSize: 13, marginBottom: 12 }}>{connectError}</p>}
             {/* Connect button */}
             <button
               disabled={!canConnect || isConnecting}
               onClick={async () => {
                 if (!canConnect || isConnecting) return;
+                setConnectError('');
                 setIsConnecting(true);
                 try {
                   await onConnect?.({ accountType, apiKey, apiSecret, skipSpot, startDate });
+                } catch (error) {
+                  setConnectError(error instanceof Error ? error.message : '连接失败，请检查 API 权限后重试。');
                 } finally {
                   setIsConnecting(false);
                 }

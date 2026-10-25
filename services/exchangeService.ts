@@ -55,6 +55,7 @@ export const fetchTradesFromExchange = async (
     onLog?: (msg: string) => void,
     accountId?: string,
     startDate?: string,
+    skipSpot = false,
 ): Promise<{ trades: Trade[]; balance: number; currency: string }> => {
 
     if (!apiKey || !apiSecret) {
@@ -70,7 +71,7 @@ export const fetchTradesFromExchange = async (
     const response = await fetch('/api/binance-sync', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey, apiSecret, startDate, skipSpot: false }),
+        body: JSON.stringify({ apiKey, apiSecret, startDate, skipSpot }),
     });
 
     if (!response.ok) {

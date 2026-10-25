@@ -363,11 +363,11 @@ const ProfilePage: React.FC<{ user: any; updateProfile: (p: any) => void; showTo
 };
 
 // ─── Account page ─────────────────────────────────────────────────────────────
-const AccountPage: React.FC<{ showToast: (m?: string) => void }> = ({ showToast }) => {
+const AccountPage: React.FC<{ showToast: (m?: string) => void; accounts: TradingAccount[]; defaultAccountId: string; onSaveDefaultAccount?: (id: string) => Promise<void> }> = ({ showToast, accounts, defaultAccountId, onSaveDefaultAccount }) => {
   const [enableChecklist, setEnableChecklist] = useState(() => localStorage.getItem('tg_enable_checklist') !== 'false');
-  const [defaultAccount, setDefaultAccount] = useState('main');
-  const [currency, setCurrency] = useState('USD');
-  const [timezone, setTimezone] = useState('Asia/Shanghai');
+  const [preferenceError, setPreferenceError] = useState('');
+  const [savingDefault, setSavingDefault] = useState(false);
+  const { userCurrency, userTimezone } = useUser();
 
   const handleToggleChecklist = (v: boolean) => {
     setEnableChecklist(v);
@@ -380,13 +380,23 @@ const AccountPage: React.FC<{ showToast: (m?: string) => void }> = ({ showToast 
       <div style={{ marginTop: 4, marginBottom: 40 }}>
         <SectionLabel>账户偏好</SectionLabel>
         <FieldRow label="默认账户" desc="新交易记录默认归属的账户">
-          <Select value={defaultAccount} onChange={setDefaultAccount} options={[{ value: 'main', label: '主账户' }, { value: 'demo', label: '演示账户' }]} width={180} />
+          <select aria-label="默认交易账户" disabled={savingDefault || !onSaveDefaultAccount} value={accounts.some(a => a.id === defaultAccountId) ? defaultAccountId : ''}
+            onChange={async event => {
+              setPreferenceError(''); setSavingDefault(true);
+              try { await onSaveDefaultAccount?.(event.target.value); showToast('默认账户已保存'); }
+              catch { setPreferenceError('默认账户未能保存，请重试。'); }
+              finally { setSavingDefault(false); }
+            }} style={{ background: 'var(--tg-input, #fff)', color: T.textPrimary, border: `1px solid ${T.border}`, borderRadius: 8, padding: 8, width: 220 }}>
+            <option value="">自动选择唯一的个人账户</option>
+            {accounts.map(account => <option key={account.id} value={account.id}>{account.name}{account.type === 'demo' ? '（演示练习）' : ''}</option>)}
+          </select>
         </FieldRow>
-        <FieldRow label="账户货币" desc="用于计算盈亏的基础货币">
-          <Select value={currency} onChange={setCurrency} options={[{ value: 'USD', label: 'USD 美元' }, { value: 'CNY', label: 'CNY 人民币' }, { value: 'USDT', label: 'USDT' }]} width={180} />
+        {preferenceError && <p role="alert" style={{ color: 'var(--tg-negative, #e11d48)', fontSize: 13 }}>{preferenceError}</p>}
+        <FieldRow label="货币显示偏好" desc="每个交易账户的实际币种可在「经纪商账户」中编辑；这里不进行汇率换算。">
+          <span style={{ fontSize: 13, color: T.textPrimary }}>{userCurrency}</span>
         </FieldRow>
         <FieldRow label="账户时区" desc="交易时间戳使用的时区" last>
-          <Select value={timezone} onChange={setTimezone} options={[{ value: 'Asia/Shanghai', label: '中国标准时间 (UTC+8)' }, { value: 'UTC', label: 'UTC' }, { value: 'America/New_York', label: '美东时间 (UTC-5)' }]} width={220} />
+          <span style={{ fontSize: 13, color: T.textPrimary }}>{userTimezone}</span>
         </FieldRow>
       </div>
 
@@ -694,6 +704,8 @@ interface SettingsPageProps {
   onSyncAccount?: (id: string) => void;
   onUpdateAccount?: (id: string, updates: { name?: string; currency?: string; manualBalance?: number | null; balance?: number }) => void | Promise<void>;
   onClearTrades?: (accountId: string) => void;
+  defaultAccountId?: string;
+  onSaveDefaultAccount?: (id: string) => Promise<void>;
   initialSection?: string;
   riskSettings?: RiskSettings;
   onSaveRiskSettings?: (s: RiskSettings) => void;
@@ -709,6 +721,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onSyncAccount,
   onUpdateAccount,
   onClearTrades,
+  defaultAccountId = '',
+  onSaveDefaultAccount,
   initialSection,
   riskSettings,
   onSaveRiskSettings,
@@ -735,7 +749,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   const renderContent = () => {
     switch (activeSection) {
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
-      case 'account': return <AccountPage showToast={showToast} />;
+      case 'account': return <AccountPage showToast={showToast} accounts={tradingAccounts || []} defaultAccountId={defaultAccountId} onSaveDefaultAccount={onSaveDefaultAccount} />;
       case 'brokers': return <BrokersPage userPlan={user.tier} accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} onUpdateAccount={onUpdateAccount} onClearTrades={onClearTrades} />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} riskSettings={riskSettings} onSaveRiskSettings={onSaveRiskSettings} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;

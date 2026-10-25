@@ -33,3 +33,18 @@ test('signed-out initialization creates no account',async()=>{
   const service=await loadService({auth:{getUser:async()=>({data:{user:null}})},rpc:()=>assert.fail('No RPC expected')});
   assert.equal(await service.ensureDefaultAccount(),null);
 });
+
+test('account read failure is visible rather than an empty list',async()=>{
+ const service=await loadService({auth,from:()=>({select(){return this},eq(){return this},order:async()=>({data:null,error:{message:'network down'}})})});
+ await assert.rejects(service.loadTradingAccounts(),/network down/);
+});
+test('one failed table read rejects the complete user load, not empty first-user state',async()=>{
+ const service=await loadService({auth,from:name=>{const q={select(){return q},eq(){return q},order(){return q},maybeSingle(){return q},then(resolve,reject){return Promise.resolve(name==='trading_accounts'?{error:{message:'accounts unavailable'}}:{data:[],error:null}).then(resolve,reject)}};return q;}});
+ await assert.rejects(service.loadUserData(),/accounts unavailable/);
+});
+test('default account save checks ownership and preserves settings and risk settings',async()=>{
+ let payload;
+ const service=await loadService({auth,from:name=>{const q={select(){return q},eq(){return q},upsert(value){payload=value;return q},single:async()=>({data:name==='trading_accounts'?{id:'own'}:{user_id:'user-qa'},error:null}),maybeSingle:async()=>({data:{settings:{weeklyGoal:{value:3}},risk_settings:{maxDailyLoss:500}},error:null})};return q;}});
+ await service.saveDefaultTradingAccount('own');
+ assert.deepEqual(payload.settings,{weeklyGoal:{value:3},defaultTradingAccountId:'own'});assert.deepEqual(payload.risk_settings,{maxDailyLoss:500});assert.equal(payload.user_id,'user-qa');
+});

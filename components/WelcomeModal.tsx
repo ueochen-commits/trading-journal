@@ -239,10 +239,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
 
     const validate = () => {
         const errs: Record<string, string> = {};
-        if (!form.firstName.trim()) errs.firstName = '请输入名字';
-        if (!form.lastName.trim()) errs.lastName = '请输入姓氏';
-        if (!form.username.trim()) errs.username = '请输入用户名';
-        else if (form.username.trim().length < 3) errs.username = '用户名至少3个字符';
+
         return errs;
     };
 
@@ -250,18 +247,19 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
         const errs = validate();
         if (Object.keys(errs).length > 0) { setErrors(errs); return; }
         setSaving(true);
+        setErrors({});
         try {
-            const { error } = await supabase.from('profiles').upsert({
+            const { data, error } = await supabase.from('profiles').upsert({
                 id: userId,
                 first_name: form.firstName.trim(),
                 last_name: form.lastName.trim(),
-                username: form.username.trim(),
+                username: form.username.trim() || userMetaUsername || userEmail?.split('@')[0] || 'Trader',
                 currency: form.currency,
                 timezone: form.timezone,
                 onboarding_completed: true,
                 updated_at: new Date().toISOString(),
-            }, { onConflict: 'id' });
-            if (error) throw error;
+            }, { onConflict: 'id' }).select('id').single();
+            if (error || !data) throw error || new Error('Profile was not saved');
             updateUserPreferences(form.currency, form.timezone);
             // markOnboardingComplete is called when user closes Step2, not here
             setSavedUserName(form.firstName);
@@ -269,6 +267,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
             setSaving(false);
         } catch (err) {
             console.error('保存失败:', err);
+            setErrors({ submit: '偏好设置未能保存，请重试。也可以稍后设置，先开始记录交易。' });
             setSaving(false);
         }
     };
@@ -291,7 +290,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
             }}>
                 {/* Card — no overflow:hidden so dropdowns aren't clipped */}
                 <div style={{
-                    background: 'var(--tg-surface, #fff)', borderRadius: 20, width: '100%', maxWidth: 460,
+                    background: 'var(--tg-surface, #fff)', borderRadius: 20, width: '100%', maxWidth: 460, maxHeight: 'calc(100dvh - 40px)', overflowY: 'auto',
                     boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
                     animation: 'wm-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)', position: 'relative',
                 }}>
@@ -311,7 +310,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             {/* 名 + 姓 */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
-                                    <label style={labelStyle}>名 <span style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
+                                    <label style={labelStyle}>名（可选） <span hidden style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
                                     <input
                                         type="text" placeholder="First name" value={form.firstName}
                                         onChange={e => update('firstName', e.target.value)}
@@ -322,7 +321,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                                     {errors.firstName && <div style={errorStyle}>{errors.firstName}</div>}
                                 </div>
                                 <div>
-                                    <label style={labelStyle}>姓 <span style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
+                                    <label style={labelStyle}>姓（可选） <span hidden style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
                                     <input
                                         type="text" placeholder="Last name" value={form.lastName}
                                         onChange={e => update('lastName', e.target.value)}
@@ -336,7 +335,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
 
                             {/* 用户名 */}
                             <div>
-                                <label style={labelStyle}>用户名 <span style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
+                                <label style={labelStyle}>用户名（可选） <span hidden style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
                                 <input
                                     type="text" placeholder="username" value={form.username}
                                     onChange={e => update('username', e.target.value.toLowerCase().replace(/\s/g, ''))}
@@ -405,6 +404,11 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             </div>
                         </div>
 
+                        {errors.submit && <p role="alert" style={{ ...errorStyle, marginTop: 16 }}>{errors.submit}</p>}
+                        <button type="button" disabled={saving} onClick={() => { markOnboardingComplete(); onComplete(); }}
+                            style={{ marginTop: 16, color: 'var(--tg-muted, #9396aa)', background: 'transparent', border: 0, cursor: 'pointer', fontSize: 13 }}>
+                            稍后设置，先开始记录
+                        </button>
                         {/* Submit */}
                         <button
                             onClick={handleSubmit}

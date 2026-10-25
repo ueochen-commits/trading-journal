@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '../supabaseClient';
 import { ExchangeConnection } from '../types';
 
@@ -105,36 +105,38 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
         Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Asia/Shanghai'
     );
 
+    const activeUserId = useRef<string | null>(null);
+
     // Listen for Auth Changes
     // 只用 onAuthStateChange，避免与 getSession() 竞态（Chrome 兼容性问题）
     useEffect(() => {
         const timeout = setTimeout(() => setIsLoading(false), 5000);
 
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (event === 'INITIAL_SESSION') {
-                if (session) {
-                    // 立刻设置已登录和加载完成，不等待订阅查询
-                    setIsAuthenticated(true);
-                    clearTimeout(timeout);
-                    setIsLoading(false);
-                    // 在后台查询会员等级（不阻塞页面显示）
-                    syncUser(session.user).catch(e => console.error('Auth init error:', e));
-                } else {
-                    clearTimeout(timeout);
-                    setIsLoading(false);
-                }
-            } else if (session) {
-                setIsAuthenticated(true);
-                syncUser(session.user).catch(e => console.error('Sync user error:', e));
-            } else {
-                setIsAuthenticated(false);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            clearTimeout(timeout);
+            setIsLoading(false);
+            const nextId = session?.user.id ?? null;
+            const identityChanged = activeUserId.current !== nextId;
+            activeUserId.current = nextId;
+            if (identityChanged || !session) {
+                setOnboardingCompleted(null);
+                setUserCurrency('USD');
+                setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone ?? 'Asia/Shanghai');
+                setUser({ name: 'Trader', email: '', tier: 'free', exchangeConnections: [] });
+            }
+            setIsAuthenticated(Boolean(session));
+            if (session) {
+                // Do not await other Auth operations inside Supabase's auth callback.
+                syncUser(session.user, false, identityChanged || event === 'INITIAL_SESSION')
+                    .catch(e => console.error('Sync user error:', e));
             }
         });
 
-        return () => subscription.unsubscribe();
+        return () => { clearTimeout(timeout); activeUserId.current = null; subscription.unsubscribe(); };
     }, []);
 
-    const syncUser = async (supabaseUser: any, forceRefresh = false) => {
+    const syncUser = async (supabaseUser: any, forceRefresh = false, loadProfile = true) => {
+        if (activeUserId.current !== supabaseUser.id) return;
         // 先同步基本信息（包括注册时间）
         setUser(prev => ({
             ...prev,
@@ -145,18 +147,22 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             createdAt: supabaseUser.created_at,
         }));
 
-        // Fetch onboarding status + currency + timezone in one query
-        supabase
-            .from('profiles')
-            .select('onboarding_completed, currency, timezone')
-            .eq('id', supabaseUser.id)
-            .maybeSingle()
-            .then(({ data }) => {
-                setOnboardingCompleted(data?.onboarding_completed === true);
-                if (data?.currency) setUserCurrency(data.currency);
-                if (data?.timezone) setUserTimezone(data.timezone);
-            })
-            .catch(() => setOnboardingCompleted(false));
+        // Refreshing a token must not reopen onboarding or overwrite just-saved preferences.
+        if (loadProfile) {
+            (async () => {
+                try {
+                    const { data, error } = await supabase.from('profiles')
+                        .select('onboarding_completed, currency, timezone').eq('id', supabaseUser.id).maybeSingle();
+                    if (activeUserId.current !== supabaseUser.id) return;
+                    if (error) throw error;
+                    setOnboardingCompleted(data?.onboarding_completed === true);
+                    if (data?.currency) setUserCurrency(data.currency);
+                    if (data?.timezone) setUserTimezone(data.timezone);
+                } catch {
+                    if (activeUserId.current === supabaseUser.id) setOnboardingCompleted(false);
+                }
+            })();
+        }
 
         // 优先读缓存，命中则跳过数据库查询
         if (!forceRefresh) {
@@ -192,9 +198,11 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                 subscriptionEnd = validSubs[0].current_period_end;
             }
 
+            if (activeUserId.current !== supabaseUser.id) return;
             setCachedTier(supabaseUser.id, tier, subscriptionEnd);
             setUser(prev => ({ ...prev, tier, subscriptionEnd }));
         } catch {
+            if (activeUserId.current !== supabaseUser.id) return;
             setUser(prev => ({ ...prev, tier: 'free' }));
         }
 
@@ -210,6 +218,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             supabase.from('trading_journals').select('id', { count: 'exact', head: true }).eq('user_id', userId)
         ]);
 
+        if (activeUserId.current !== userId) return;
         setUser(prev => ({
             ...prev,
             aiUsageToday: usageResult.data?.count ?? 0,
