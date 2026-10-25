@@ -1,3 +1,4 @@
+import { tradePnlPercent, type FeeTemplate } from './utils/tradeCalculation';
 import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 
 import { persistTradeScreenshots, readTradeScreenshots, validateScreenshotCount } from './utils/tradeScreenshots';
@@ -189,6 +190,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [dataLoadError, setDataLoadError] = useState('');
   const [dataLoadAttempt, setDataLoadAttempt] = useState(0);
+  const [feeTemplates, setFeeTemplates] = useState<FeeTemplate[]>([]);
   const [defaultTradingAccountId, setDefaultTradingAccountId] = useState('');
   // const [showOnboarding, setShowOnboarding] = useState(false); // TEMPORARILY DISABLED
   // showWelcome: derived from context but controlled by local state so Step2 can stay open
@@ -313,6 +315,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
         setTagCategories(normalizeTagCategories((result as any).tagCategories));
         setTradingAccounts(result.tradingAccounts);
         setDefaultTradingAccountId(result.defaultTradingAccountId || '');
+        setFeeTemplates(result.feeTemplates || []);
       } catch (error) {
         if (!cancelled) {
           console.error('Error loading user data:', error);
@@ -404,7 +407,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const handleAddTrade = async (trade: Trade) => {
     // 获取当前用户
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) {
+    if (!authUser || authUser.id !== user.id) {
       throw new Error('登录状态已过期，请重新登录');
     }
 
@@ -424,7 +427,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     validateScreenshotCount(user.tier, trade.images?.length || 0);
 
     // 计算 pnl_percent
-    const pnlPercent = trade.entryPrice > 0 && trade.quantity > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
+    const pnlPercent = tradePnlPercent(trade);
 
     console.log('Saving trade for user:', authUser.id);
     console.log('Trade direction:', trade.direction);
@@ -475,9 +478,9 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     const previousImages = trades.find(trade => trade.id === updated.id)?.images || [];
     if (JSON.stringify(updated.images || []) !== JSON.stringify(previousImages)) validateScreenshotCount(user.tier, updated.images?.length || 0);
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) throw new Error('登录状态已过期，请重新登录');
+    if (!authUser || authUser.id !== user.id) throw new Error('登录状态已过期，请重新登录');
 
-    const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
+    const pnlPercent = tradePnlPercent(updated);
 
     // Direction enum 转换为字符串
     const direction = updated.direction === '做多' || (updated.direction as any) === 'long'
@@ -560,17 +563,17 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
   // 导入交易到 Supabase
   const handleImportTrades = async (imported: Trade[]) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('登录状态已过期，请重新登录后导入');
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (!authUser || authUser.id !== user.id) throw new Error('登录状态已过期，请重新登录后导入');
 
     const data = imported.map(trade => {
-      const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
+      const pnlPercent = tradePnlPercent(trade);
       // Direction enum 是 '做多'/'做空'，需要转换为 'long'/'short'
       const direction = trade.direction === '做多' || (trade.direction as any) === 'long'
         ? 'long'
         : 'short';
       return {
-        user_id: user.id,
+        user_id: authUser.id,
         account_id: trade.accountId || null,
         date: trade.entryDate,
         exit_date: trade.exitDate || null,
@@ -656,7 +659,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   };
 
   const handleSavePlan = async (plan: DailyPlan) => {
-      const { data, error } = await userDataService.savePlan(plan);
+      const { data, error } = await userDataService.savePlan(plan, user.id);
       if (error || !data) throw new Error('笔记未能保存，请重试');
       const savedPlan = { ...plan, id: data.id };
       setPlans(prev => prev.some(p => p.id === plan.id) ? prev.map(p => p.id === plan.id ? savedPlan : p) : [savedPlan, ...prev]);
@@ -674,7 +677,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           // 软删除
           const softDeleted = { ...plan, isDeleted: true };
           setPlans(prev => prev.map(p => p.id === id ? softDeleted : p));
-          await userDataService.savePlan(softDeleted);
+          await userDataService.savePlan(softDeleted, user.id);
       }
   };
 
@@ -765,7 +768,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     const { data: connData, error: connError } = await userDataService.saveExchangeConnection({
       exchange: connectingExchange.name, apiKey: data.apiKey.trim(), apiSecret: data.apiSecret.trim(),
       label: connectingExchange.name, accountType: 'main', skipSpot: data.skipSpot, startDate: data.startDate,
-    });
+    }, user.id);
     if (connError || !connData) throw new Error('API 已验证，但连接未能保存，请重试。');
 
     const accountName = generateAccountName(connectingExchange.name);
@@ -773,7 +776,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       name: accountName, exchange: connectingExchange.name,
       brokerLogoUrl: connectingExchange.logoUrl, brokerBrandColor: connectingExchange.brandColor,
       balance, currency, profitMethod: 'FIFO', accountType: 'auto_sync', syncStatus: 'syncing', exchangeConnectionId: connData.id,
-    });
+    }, user.id);
     if (accountError || !accountData) {
       await userDataService.deleteExchangeConnection(connData.id);
       throw new Error('账户未能创建，未占用账户名额，请重试。');
@@ -788,7 +791,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     let syncError = false;
     try {
       if (importedTrades.length) {
-        const result = await userDataService.importTradesWithAccount(importedTrades.map(t => ({ ...t, date: t.entryDate })), accountData.id);
+        const result = await userDataService.importTradesWithAccount(importedTrades.map(t => ({ ...t, date: t.entryDate })), accountData.id, user.id);
         if (result.error) throw result.error;
         setTrades(previous => [...(result.data || []).map(formatTradeFromDB), ...previous]);
       }
@@ -983,6 +986,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onImportTrades={handleImportTrades}
                           onShare={(t) => handleShare({ type: 'trade', data: t })}
                           riskSettings={riskSettings}
+                          feeTemplates={feeTemplates}
                           defaultAccountId={defaultTradingAccountId}
                           onCreateAccount={() => { setConnectingExchange(null); setShowManualAccount(true); }}
                           isDataLoading={isDataLoading}
@@ -1153,10 +1157,16 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 initialSection={settingsInitialSection}
                 tagCategories={tagCategories}
                 onSaveTagCategories={handleSaveTagCategories}
+                feeTemplates={feeTemplates}
+                onSaveFeeTemplates={async templates => {
+                  if (isDataLoading || dataLoadError) throw new Error(dataLoadError || '账户数据仍在加载');
+                  await userDataService.saveFeeTemplates(templates, user.id);
+                  setFeeTemplates(templates);
+                }}
                 defaultAccountId={defaultTradingAccountId}
                 onSaveDefaultAccount={async id => {
                   if (isDataLoading || dataLoadError) throw new Error(dataLoadError || '账户数据仍在加载');
-                  await userDataService.saveDefaultTradingAccount(id);
+                  await userDataService.saveDefaultTradingAccount(id, user.id);
                   setDefaultTradingAccountId(id);
                 }}
                 onAddAccount={() => setShowConnectExchange(true)}
@@ -1206,7 +1216,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           fees: t.fees, pnl: t.pnl, setup: t.setup, notes: t.notes,
                           reviewNotes: t.reviewNotes, mistakes: t.mistakes,
                         })),
-                        id,
+                        id, user.id
                       );
                       if (result.error) throw result.error;
                       if (result.data) {
@@ -1420,7 +1430,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   brokerLogoUrl: sameBroker ? connectingExchange?.logoUrl : undefined,
                   brokerBrandColor: sameBroker ? connectingExchange?.brandColor : undefined,
                   accountType: 'manual', profitMethod: 'FIFO', syncStatus: 'synced',
-                });
+                }, user.id);
                 if (error || !data) throw new Error('创建账户失败，请重试');
                 // The insert already succeeded. Do not retry it just because a later list read fails.
                 setTradingAccounts(previous => [...previous, { id: data.id, name: details.name, balance: details.balance, currency: details.currency, exchange: details.broker || undefined, type: 'manual', isReal: true, profitMethod: 'FIFO', syncStatus: 'synced' }]);
@@ -1464,7 +1474,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       name: accountName, exchange: connectingExchange.name,
                       brokerLogoUrl: connectingExchange.logoUrl, brokerBrandColor: connectingExchange.brandColor,
                       balance: 0, currency: 'USD', profitMethod: 'FIFO', accountType: 'manual', syncStatus: 'synced',
-                    });
+                    }, user.id);
                     if (error || !data) throw new Error('创建导入账户失败，请重试');
                     accountId = data.id;
                     csvCreatedAccountId.current = accountId;

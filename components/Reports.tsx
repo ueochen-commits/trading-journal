@@ -1,3 +1,4 @@
+import { tradeNotional } from '../utils/tradeCalculation';
 import { displayTradePnl } from '../utils/tradePnl';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -1914,7 +1915,7 @@ const Reports: React.FC<ReportsProps> = ({
       const grossLoss = losses.reduce((acc, t) => acc + getDisplayPnl(t), 0); // Negative number
       const totalFees = trades.reduce((acc, t) => acc + t.fees, 0);
       const netPnl = grossProfit + grossLoss;
-      const totalVolume = trades.reduce((acc, t) => acc + (t.quantity * t.entryPrice), 0); 
+      const totalVolume = trades.reduce((acc, t) => acc + tradeNotional(t), 0);
 
       // Averages
       const avgWin = wins.length > 0 ? grossProfit / wins.length : 0;

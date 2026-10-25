@@ -1,13 +1,15 @@
 import { supabase } from '../supabaseClient';
 import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, DisciplineRule, DailyDisciplineRecord, WeeklyGoal, RiskSettings, TradingAccount, ExchangeConnection, TagCategoryDefinition } from '../types';
 import { normalizeTagCategories } from '../utils/tagCategories';
+import type { FeeTemplate } from '../utils/tradeCalculation';
 import { MOCK_TRADES } from '../constants';
 
 const defaultAccountRequests = new Map<string, Promise<{ account: TradingAccount; isNew: boolean } | null>>();
 
 // 获取当前用户ID
-async function getCurrentUserId(): Promise<string | null> {
+async function getCurrentUserId(expectedUserId?: string): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser();
+  if (expectedUserId && user?.id !== expectedUserId) throw new Error('登录用户已变化，请在当前账号重新操作。');
   return user?.id || null;
 }
 
@@ -197,6 +199,7 @@ export const userDataService = {
       notifications: (notificationsRes.data || []).map(dbToNotification),
       disciplineRules: (disciplineRulesRes.data || []).map(dbToDisciplineRule),
       disciplineHistory: (disciplineHistoryRes.data || []).map(dbToDisciplineRecord),
+      feeTemplates: (settingsRes.data?.settings?.feeTemplates || []) as FeeTemplate[],
       defaultTradingAccountId: settingsRes.data?.settings?.defaultTradingAccountId || '',
       weeklyGoal: settingsRes.data?.settings?.weeklyGoal || null,
       tagCategories: normalizeTagCategories(settingsRes.data?.settings?.tagCategories),
@@ -449,8 +452,20 @@ export const userDataService = {
     return { error };
   },
 
-  async saveDefaultTradingAccount(defaultTradingAccountId: string) {
-    const userId = await getCurrentUserId();
+  async saveFeeTemplates(feeTemplates: FeeTemplate[], expectedUserId?: string) {
+    const userId = await getCurrentUserId(expectedUserId);
+    if (!userId) throw new Error('登录状态已过期，请重新登录');
+    const existing = await getExistingUserSettings(userId);
+    if (existing.error) throw existing.error;
+    const { data: saved, error } = await supabase.from('user_settings').upsert({
+      user_id: userId, settings: { ...(existing.data?.settings || {}), feeTemplates },
+      risk_settings: existing.data?.risk_settings || null, updated_at: new Date().toISOString(),
+    }, { onConflict: 'user_id' }).select('user_id').single();
+    if (error) throw error;
+  },
+
+  async saveDefaultTradingAccount(defaultTradingAccountId: string, expectedUserId?: string) {
+    const userId = await getCurrentUserId(expectedUserId);
     if (!userId) throw new Error('登录状态已过期，请重新登录');
     if (defaultTradingAccountId) {
       const { data, error } = await supabase.from('trading_accounts').select('id').eq('id', defaultTradingAccountId).eq('user_id', userId).single();
@@ -458,7 +473,7 @@ export const userDataService = {
     }
     const existing = await getExistingUserSettings(userId);
     if (existing.error) throw existing.error;
-    const { error } = await supabase.from('user_settings').upsert({
+    const { data: saved, error } = await supabase.from('user_settings').upsert({
       user_id: userId,
       settings: { ...(existing.data?.settings || {}), defaultTradingAccountId },
       risk_settings: existing.data?.risk_settings || null,
@@ -549,8 +564,8 @@ export const userDataService = {
   },
 
   // 保存每日计划/笔记
-  async savePlan(plan: DailyPlan) {
-    const userId = await getCurrentUserId();
+  async savePlan(plan: DailyPlan, expectedUserId?: string) {
+    const userId = await getCurrentUserId(expectedUserId);
     if (!userId) return { data: null, error: 'Not authenticated' };
 
     // 判断 id 是否为合法 uuid（Supabase 表的 id 列是 uuid 类型）
@@ -721,8 +736,8 @@ export const userDataService = {
     accountType?: string;
     skipSpot?: boolean;
     startDate?: string;
-  }) {
-    const userId = await getCurrentUserId();
+  }, expectedUserId?: string) {
+    const userId = await getCurrentUserId(expectedUserId);
     if (!userId) return { data: null, error: 'Not authenticated' };
 
     const { data, error } = await supabase.from('exchange_connections').insert({
@@ -771,8 +786,8 @@ export const userDataService = {
     accountType?: string;
     syncStatus?: string;
     exchangeConnectionId?: string;
-  }) {
-    const userId = await getCurrentUserId();
+  }, expectedUserId?: string) {
+    const userId = await getCurrentUserId(expectedUserId);
     if (!userId) return { data: null, error: 'Not authenticated' };
 
     const { data, error } = await supabase.from('trading_accounts').insert({
@@ -866,8 +881,8 @@ export const userDataService = {
   },
 
   // 批量导入交易（带 account_id）
-  async importTradesWithAccount(trades: any[], accountId: string) {
-    const userId = await getCurrentUserId();
+  async importTradesWithAccount(trades: any[], accountId: string, expectedUserId?: string) {
+    const userId = await getCurrentUserId(expectedUserId);
     if (!userId) return { error: 'Not authenticated' };
 
     const data = trades.map(trade => {

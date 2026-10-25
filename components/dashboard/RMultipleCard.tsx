@@ -1,3 +1,4 @@
+import { tradeNotional } from '../../utils/tradeCalculation';
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Trade } from '../../types';
 import EmptyChartState from '../common/EmptyChartState';
@@ -73,7 +74,7 @@ function computeRMultiple(trades: Trade[]): { bins: BinData[]; stats: Stats } {
     const pnl = t.pnl;
     const risk = t.riskAmount && t.riskAmount > 0
       ? t.riskAmount
-      : Math.abs(t.entryPrice * t.quantity * 0.01) || 1;
+      : Math.abs(tradeNotional(t) * 0.01) || 1;
     const r = pnl / risk;
     rValues.push(r);
     const center = binR(r);

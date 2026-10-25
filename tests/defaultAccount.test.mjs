@@ -48,3 +48,12 @@ test('default account save checks ownership and preserves settings and risk sett
  await service.saveDefaultTradingAccount('own');
  assert.deepEqual(payload.settings,{weeklyGoal:{value:3},defaultTradingAccountId:'own'});assert.deepEqual(payload.risk_settings,{maxDailyLoss:500});assert.equal(payload.user_id,'user-qa');
 });
+
+test('writes started by a previous identity cannot save into the newly signed-in user',async()=>{
+ const service=await loadService({auth,from:()=>assert.fail('A stale identity must never reach persistence')});
+ await assert.rejects(service.saveTradingAccount({name:'stale'},'previous-user'),/登录用户已变化/);
+ await assert.rejects(service.saveExchangeConnection({exchange:'Binance',apiKey:'qa',apiSecret:'qa'},'previous-user'),/登录用户已变化/);
+ await assert.rejects(service.importTradesWithAccount([],'previous-account','previous-user'),/登录用户已变化/);
+ await assert.rejects(service.savePlan({id:'stale'},'previous-user'),/登录用户已变化/);
+ await assert.rejects(service.saveFeeTemplates([],'previous-user'),/登录用户已变化/);
+});

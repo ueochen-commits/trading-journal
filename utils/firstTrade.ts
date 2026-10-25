@@ -11,8 +11,8 @@ export function defaultJournalAccount(accounts: TradingAccount[], selectedId = '
 export function validateFirstTrade(form: Record<string, any>, accounts: TradingAccount[]): string | null {
   if (!accounts.some(account => account.id === form.accountId)) return '请选择交易归属账户；也可以先创建自己的账户。';
   if (!form.symbol?.trim()) return '请填写交易品种。';
-  if (!form.entryDate || !Number.isFinite(new Date(form.entryDate).getTime())) return '请填写有效的开仓时间。';
-  if (form.exitDate && (!Number.isFinite(new Date(form.exitDate).getTime()) || new Date(form.exitDate) < new Date(form.entryDate))) return '平仓时间必须有效，且不能早于开仓时间。';
+  if (!form.entryDate || !Number.isFinite(new Date(String(form.entryDate).replace(' ', 'T')).getTime())) return '请填写有效的开仓时间。';
+  if (form.exitDate && (!Number.isFinite(new Date(String(form.exitDate).replace(' ', 'T')).getTime()) || new Date(String(form.exitDate).replace(' ', 'T')) < new Date(String(form.entryDate).replace(' ', 'T')))) return '平仓时间必须有效，且不能早于开仓时间。';
   if (form.entryPrice === '' || form.entryPrice == null || !Number.isFinite(Number(form.entryPrice)) || Number(form.entryPrice) <= 0) return '请填写大于 0 的开仓价格。';
   for (const field of ['quantity', 'leverage']) {
     if (form[field] !== '' && form[field] != null && (!Number.isFinite(Number(form[field])) || Number(form[field]) <= 0)) return '仓位数量和杠杆需大于 0；不填写时默认为 1。';

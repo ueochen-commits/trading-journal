@@ -159,7 +159,7 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
                     if (data?.currency) setUserCurrency(data.currency);
                     if (data?.timezone) setUserTimezone(data.timezone);
                 } catch {
-                    if (activeUserId.current === supabaseUser.id) setOnboardingCompleted(false);
+                    if (activeUserId.current === supabaseUser.id) setOnboardingCompleted(null);
                 }
             })();
         }

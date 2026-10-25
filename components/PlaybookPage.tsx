@@ -1,3 +1,4 @@
+import { tradeNotional } from '../utils/tradeCalculation';
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Strategy, Trade, ChecklistItem, TradeStatus, Direction, DailyPlan, StrategyNote } from '../types';
@@ -1080,7 +1081,7 @@ const StrategyDetailView = ({
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                                     {filteredTrades.map(t => {
                                         const isWin = t.pnl >= 0;
-                                        const exposure = t.entryPrice * t.quantity;
+                                        const exposure = tradeNotional(t);
                                         const roi = exposure > 0 ? ((t.pnl) / exposure) * 100 : 0;
                                         const accountName = MOCK_ACCOUNTS.find(a => a.id === t.accountId)?.name || 'Default Account';
 

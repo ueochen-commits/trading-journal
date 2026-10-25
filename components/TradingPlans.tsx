@@ -1,3 +1,4 @@
+import { tradeNotional } from '../utils/tradeCalculation';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { DailyPlan, Trade, TradeStatus, Direction, Strategy } from '../types';
 import {
@@ -202,7 +203,7 @@ const TradeSummaryCard = ({ trades, onViewDetails }: { trades: Trade[], onViewDe
     const commissions = trades.reduce((acc, t) => acc + t.fees, 0);
     const volume = trades.reduce((acc, t) => acc + t.quantity, 0);
     const totalTrades = trades.length;
-    const totalExposure = trades.reduce((acc, t) => acc + (t.entryPrice * t.quantity), 0);
+    const totalExposure = trades.reduce((acc, t) => acc + (tradeNotional(t)), 0);
     const netRoi = totalExposure > 0 ? (netPnl / totalExposure) * 100 : 0;
     return (
         <div className="tg-module bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl p-5 mb-6 shadow-sm relative group">
@@ -1206,7 +1207,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                         date: activePlan.date,
                         dateFormatted: new Date(activePlan.date + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
                         direction: activePlanTrades[0].direction,
-                        pnlPercent: `${activePlanTrades[0].pnl >= 0 ? '+' : ''}${((activePlanTrades[0].pnl / (activePlanTrades[0].entryPrice * activePlanTrades[0].quantity || 1)) * 100).toFixed(2)}%`,
+                        pnlPercent: `${activePlanTrades[0].pnl >= 0 ? '+' : ''}${((activePlanTrades[0].pnl / (tradeNotional(activePlanTrades[0]) || 1)) * 100).toFixed(2)}%`,
                         account: activePlanTrades[0].accountId,
                         entryPrice: `$${activePlanTrades[0].entryPrice}`,
                         exitPrice: activePlanTrades[0].exitPrice ? `$${activePlanTrades[0].exitPrice}` : undefined,

@@ -1,3 +1,4 @@
+import { tradeNotional } from '../../utils/tradeCalculation';
 import React, { useMemo, useRef, useState, useCallback } from 'react';
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell } from 'recharts';
 import { Trade } from '../../types';
@@ -70,7 +71,7 @@ function computeSymbolData(trades: Trade[]): SymbolData[] {
       const rValues = ts.map(t => {
         const risk = t.riskAmount && t.riskAmount > 0
           ? t.riskAmount
-          : t.entryPrice * t.quantity * 0.01;
+          : tradeNotional(t) * 0.01;
         return (t.pnl) / risk;
       });
       const avgR = rValues.reduce((s, r) => s + r, 0) / rValues.length;

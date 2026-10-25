@@ -1,3 +1,4 @@
+import { tradeNotional, futuresSpec } from '../utils/tradeCalculation';
 import ScreenshotViewer from './common/ScreenshotViewer';
 import { resolveChartSymbol, hasRestrictedFuturesFeed, tradingViewChartUrl } from '../utils/chartSymbols';
 import { displayTradePnl } from '../utils/tradePnl';
@@ -1542,10 +1543,10 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     const realizedR = riskAmount > 0 ? (currentTrade.pnl / riskAmount).toFixed(2) + 'R' : 'N/A';
 
     // Net ROI %
-    const adjustedCost = currentTrade.entryPrice * currentTrade.quantity;
+    const adjustedCost = tradeNotional(currentTrade);
     const netRoi = adjustedCost > 0 ? (currentTrade.pnl / adjustedCost) * 100 : 0;
     const leverage = currentTrade.leverage ?? 1;
-    const margin = leverage > 1 ? adjustedCost / leverage : (currentTrade.riskAmount || null);
+    const margin = futuresSpec(currentTrade.symbol) ? null : leverage > 1 ? adjustedCost / leverage : (currentTrade.riskAmount || null);
 
     // Duration
     const durationStr = (() => {
@@ -1566,10 +1567,10 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
 
     // Risk & Reward calculations (based on user-input profitTarget / stopLoss)
     const tradeRisk = currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity
-        ? Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity
+        ? Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity * (futuresSpec(currentTrade.symbol)?.multiplier || 1)
         : null;
     const initialTarget = currentTrade.profitTarget && currentTrade.entryPrice && currentTrade.quantity
-        ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) * currentTrade.quantity
+        ? Math.abs(currentTrade.profitTarget - currentTrade.entryPrice) * currentTrade.quantity * (futuresSpec(currentTrade.symbol)?.multiplier || 1)
         : null;
     const plannedR = tradeRisk && tradeRisk > 0 && initialTarget != null
         ? (initialTarget / tradeRisk).toFixed(2) + 'R'
@@ -1581,7 +1582,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     // Calculate Implied Stop Loss Price based on risk amount
     let impliedStopLoss = '--';
     if (currentTrade.entryPrice && currentTrade.quantity && riskAmount) {
-        const riskPerUnit = riskAmount / currentTrade.quantity;
+        const riskPerUnit = riskAmount / (currentTrade.quantity * (futuresSpec(currentTrade.symbol)?.multiplier || 1));
         const slPrice = currentTrade.direction === Direction.LONG
             ? currentTrade.entryPrice - riskPerUnit
             : currentTrade.entryPrice + riskPerUnit;
@@ -1608,7 +1609,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         if (totalAsset == null || totalAsset <= 0) return null;
         let riskAmount = currentTrade.riskAmount ?? 0;
         if (riskAmount <= 0 && currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity) {
-            riskAmount = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity;
+            riskAmount = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity * (futuresSpec(currentTrade.symbol)?.multiplier || 1);
         }
         if (riskAmount <= 0) return null;
         const riskAmountRatio = (riskAmount / totalAsset) * 100;
@@ -1625,7 +1626,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         // compute metrics
         let riskAmt = currentTrade.riskAmount ?? 0;
         if (riskAmt <= 0 && currentTrade.stopLoss && currentTrade.entryPrice && currentTrade.quantity) {
-            riskAmt = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity;
+            riskAmt = Math.abs(currentTrade.entryPrice - currentTrade.stopLoss) * currentTrade.quantity * (futuresSpec(currentTrade.symbol)?.multiplier || 1);
         }
         const positionRatio = totalAsset && adjustedCost > 0 ? (adjustedCost / totalAsset) * 100 : null;
         const stopLossPercent = currentTrade.stopLoss && currentTrade.entryPrice
@@ -1713,7 +1714,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         },
         stats: {
             netPnl: language === 'cn' ? '净盈亏' : 'Net P&L',
-            netRoi: language === 'cn' ? '净收益率' : 'Net ROI',
+            netRoi: futuresSpec(currentTrade.symbol) ? (language === 'cn' ? '净盈亏 / 合约名义价值' : 'Net P&L / Notional') : (language === 'cn' ? '净收益率' : 'Net ROI'),
             account: language === 'cn' ? '账户' : 'Account',
             strategy: language === 'cn' ? '策略' : 'Strategy',
             side: language === 'cn' ? '方向' : 'Side',
@@ -2409,7 +2410,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                             date: currentTrade.entryDate?.slice(0, 10) || '',
                             dateFormatted: new Date(currentTrade.entryDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }),
                             direction: currentTrade.direction,
-                            pnlPercent: `${currentTrade.pnl >= 0 ? '+' : ''}${((currentTrade.pnl / (currentTrade.entryPrice * currentTrade.quantity || 1)) * 100).toFixed(2)}%`,
+                            pnlPercent: `${currentTrade.pnl >= 0 ? '+' : ''}${((currentTrade.pnl / (tradeNotional(currentTrade) || 1)) * 100).toFixed(2)}%`,
                             account: currentTrade.accountId,
                             entryPrice: `$${currentTrade.entryPrice}`,
                             exitPrice: currentTrade.exitPrice ? `$${currentTrade.exitPrice}` : undefined,

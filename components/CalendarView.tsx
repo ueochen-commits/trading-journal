@@ -1,3 +1,4 @@
+import { tradeNotional } from '../utils/tradeCalculation';
 
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -679,7 +680,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const profitFactor = grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0;
     const totalFees = selectedDayTrades.reduce((acc, tr) => acc + tr.fees, 0);
     const grossPnl = selectedDayTrades.reduce((acc, tr) => acc + tr.pnl + tr.fees, 0);
-    const volume = selectedDayTrades.reduce((acc, tr) => acc + (tr.entryPrice * tr.quantity), 0);
+    const volume = selectedDayTrades.reduce((acc, tr) => acc + (tradeNotional(tr)), 0);
     return { profitFactor, totalFees, grossPnl, volume, grossWins, grossLosses };
   }, [selectedDayStats, selectedDayTrades]);
 
@@ -1182,7 +1183,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                         <tbody>
                           {selectedDayTrades.map(trade => {
                             const netPnl = trade.pnl;
-                            const costBasis = trade.entryPrice * trade.quantity;
+                            const costBasis = tradeNotional(trade);
                             const roi = costBasis > 0 ? (netPnl / costBasis) * 100 : null;
                             return (
                               <tr key={trade.id}

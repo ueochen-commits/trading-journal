@@ -1,3 +1,5 @@
+import FeeTemplateSettings from './FeeTemplateSettings';
+import type { FeeTemplate } from '../utils/tradeCalculation';
 import React, { useState, useRef, useEffect } from 'react';
 import { useUser } from './UserContext';
 import { Trade, TradingAccount, RiskSettings, TagCategoryDefinition } from '../types';
@@ -221,7 +223,7 @@ const NAV_GROUPS = [
   { label: '交易设置', items: [
     { id: 'tradeSettings', label: '交易参数' },
     { id: 'ptsl', label: '止盈止损' },
-    { id: 'commissions', label: '手续费设置' },
+    { id: 'commissions', label: '手续费模板' },
     { id: 'tags', label: '标签管理' },
   ]},
   { label: '通知', items: [
@@ -704,6 +706,8 @@ interface SettingsPageProps {
   onSyncAccount?: (id: string) => void;
   onUpdateAccount?: (id: string, updates: { name?: string; currency?: string; manualBalance?: number | null; balance?: number }) => void | Promise<void>;
   onClearTrades?: (accountId: string) => void;
+  feeTemplates?: FeeTemplate[];
+  onSaveFeeTemplates?: (templates: FeeTemplate[]) => Promise<void>;
   defaultAccountId?: string;
   onSaveDefaultAccount?: (id: string) => Promise<void>;
   initialSection?: string;
@@ -721,6 +725,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   onSyncAccount,
   onUpdateAccount,
   onClearTrades,
+  feeTemplates = [],
+  onSaveFeeTemplates,
   defaultAccountId = '',
   onSaveDefaultAccount,
   initialSection,
@@ -751,6 +757,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
       case 'profile': return <ProfilePage user={user} updateProfile={updateProfile} showToast={showToast} />;
       case 'account': return <AccountPage showToast={showToast} accounts={tradingAccounts || []} defaultAccountId={defaultAccountId} onSaveDefaultAccount={onSaveDefaultAccount} />;
       case 'brokers': return <BrokersPage userPlan={user.tier} accounts={tradingAccounts} onAddAccount={onAddAccount} onDeleteAccount={onDeleteAccount} onSyncAccount={onSyncAccount} onUpdateAccount={onUpdateAccount} onClearTrades={onClearTrades} />;
+      case 'commissions': return <FeeTemplateSettings accounts={tradingAccounts || []} templates={feeTemplates} onSave={async templates => { if (!onSaveFeeTemplates) throw new Error('暂时无法保存，请重试'); await onSaveFeeTemplates(templates); }} />;
       case 'tradeSettings': return <TradeSettingsPage showToast={showToast} riskSettings={riskSettings} onSaveRiskSettings={onSaveRiskSettings} />;
       case 'notifications': return <NotificationsPage showToast={showToast} />;
       case 'tags': return <TagsPage tagCategories={tagCategories} onSaveTagCategories={onSaveTagCategories} />;
@@ -759,10 +766,16 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: 'var(--tg-surface, #ffffff)', overflow: 'hidden' }}>
+    <div className="flex-col md:flex-row" style={{ display: 'flex', height: '100%', background: 'var(--tg-surface, #ffffff)', overflow: 'hidden' }}>
 
+      <div className="shrink-0 border-b border-slate-200 p-4 md:hidden dark:border-[var(--tg-border)]">
+        <label className="mb-2 block text-xs text-slate-500 dark:text-slate-400" htmlFor="settings-mobile-section">设置页面</label>
+        <select id="settings-mobile-section" value={activeSection} onChange={event => setActiveSection(event.target.value)} className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-800 dark:border-[var(--tg-border)] dark:bg-slate-800 dark:text-slate-100">
+          {NAV_GROUPS.map(group => <optgroup key={group.label} label={group.label}>{group.items.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}</optgroup>)}
+        </select>
+      </div>
       {/* Left nav */}
-      <div style={{ width: 192, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: 'var(--tg-surface, #ffffff)', padding: '24px 0', overflowY: 'auto' }}>
+      <div className="hidden md:block" style={{ width: 192, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: 'var(--tg-surface, #ffffff)', padding: '24px 0', overflowY: 'auto' }}>
         {NAV_GROUPS.map(group => (
           <div key={group.label}>
             <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--tg-muted, #c4bfda)', letterSpacing: '0.09em', textTransform: 'uppercase', padding: '18px 20px 6px' }}>
@@ -797,7 +810,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
         {/* Tab bar */}
         {currentTabs.length > 0 && (
-          <div style={{ height: 52, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', padding: '0 48px', background: 'var(--tg-surface, #ffffff)', flexShrink: 0 }}>
+          <div className="px-4 md:px-12" style={{ height: 52, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', background: 'var(--tg-surface, #ffffff)', flexShrink: 0 }}>
             {currentTabs.map(tab => {
               const isActive = activeSection === tab.id;
               return (
@@ -821,7 +834,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         )}
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: activeSection === 'brokers' ? 0 : '36px 48px', background: 'var(--tg-surface, #ffffff)' }}>
+        <div className={activeSection === 'brokers' ? '' : 'p-4 md:px-12 md:py-9'} style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: 'var(--tg-surface, #ffffff)' }}>
           {renderContent()}
         </div>
       </div>

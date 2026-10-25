@@ -1,3 +1,4 @@
+import { tradeNotional } from '../../utils/tradeCalculation';
 import React, { useMemo, useState, useRef, useCallback } from 'react';
 import { Trade } from '../../types';
 import EmptyChartState from '../common/EmptyChartState';
@@ -98,7 +99,7 @@ function computeHeatmap(trades: Trade[]): CellData[] {
     const rValues = ts.map(t => {
       const risk = t.riskAmount && t.riskAmount > 0
         ? t.riskAmount
-        : Math.abs(t.entryPrice * t.quantity * 0.01) || 1;
+        : Math.abs(tradeNotional(t) * 0.01) || 1;
       return (t.pnl) / risk;
     });
     const avgWinR = wins.length > 0

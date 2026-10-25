@@ -1,3 +1,4 @@
+import { tradeNotional } from '../utils/tradeCalculation';
 import React, { useState, useRef } from 'react';
 import { X, Copy, Download, Share2, QrCode, Instagram, Twitter, Send, Check, Link as LinkIcon, ExternalLink, RefreshCw } from 'lucide-react';
 import { Trade, Direction, TradeStatus } from '../types';
@@ -23,7 +24,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
     const shareUrl = `https://tradegrail.com/share/${trade.id}`;
 
     // ROI Calculation (Estimated based on risk or position size)
-    const exposure = trade.entryPrice * trade.quantity;
+    const exposure = tradeNotional(trade);
     const roi = exposure > 0 ? ((trade.pnl) / exposure) * 100 : 0;
 
     const handleCopyLink = () => {
