@@ -170,7 +170,7 @@ const TourOverlay = () => {
                             {getTourText(currentStep.titleKey)}
                         </h3>
                     </div>
-                    <button onClick={closeTour} className="text-slate-400 hover:text-slate-600 dark:hover:text-white">
+                    <button onClick={closeTour} className="text-slate-400 hover:text-slate-600 dark:hover:text-white dark:text-slate-400">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -182,7 +182,7 @@ const TourOverlay = () => {
                 <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
                     <button
                         onClick={closeTour}
-                        className="text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                        className="text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-400"
                     >
                         {getTourText('skip')}
                     </button>
@@ -190,7 +190,7 @@ const TourOverlay = () => {
                         <button
                             onClick={prevStep}
                             disabled={currentStepIndex === 0}
-                            className="text-sm text-slate-500 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1"
+                            className="text-sm text-slate-500 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 dark:text-slate-400 dark:hover:text-indigo-300"
                         >
                             <ChevronLeft className="w-4 h-4" /> {getTourText('back')}
                         </button>

@@ -40,7 +40,7 @@ const ChatWindow: React.FC = () => {
             <div className="p-3 px-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-indigo-600 rounded-t-2xl text-white cursor-pointer" onClick={() => {}}>
                 <div className="flex items-center gap-3">
                     <div className="relative">
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-white text-indigo-600 border border-indigo-400">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-white text-indigo-600 border border-indigo-400 dark:bg-slate-900 dark:text-indigo-300">
                             {friend.initials}
                         </div>
                         {friend.status === 'online' && <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-400 rounded-full border border-indigo-600"></div>}
@@ -60,7 +60,7 @@ const ChatWindow: React.FC = () => {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto p-4 bg-slate-50 dark:bg-slate-950 space-y-3">
                 {messages.length === 0 && (
-                    <div className="text-center py-10 text-slate-400 text-xs">
+                    <div className="text-center py-10 text-slate-400 text-xs dark:text-slate-400">
                         {t.social.noMessages}
                     </div>
                 )}

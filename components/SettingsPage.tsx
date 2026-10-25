@@ -25,23 +25,23 @@ const compressImage = (file: File): Promise<string> =>
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const T = {
-  border: '#f0edf8',
-  borderField: '#e4e0f4',
-  borderHover: '#b8b0e0',
+  border: 'var(--tg-border, #f0edf8)',
+  borderField: 'var(--tg-border, #e4e0f4)',
+  borderHover: 'var(--tg-border, #b8b0e0)',
   primary: '#5050c8',
   primaryHover: '#3e3eb6',
   primaryLight: 'rgba(91,91,214,0.07)',
-  textPrimary: '#1a1a2e',
-  textSecondary: '#2a2a40',
-  textMuted: '#b0aac8',
-  textTertiary: '#b0b0c8',
-  navActive: '#4040b8',
-  navActiveBg: '#eeedfb',
-  navHoverBg: '#f7f5fd',
-  navHoverText: '#3a3a70',
-  navText: '#7878a0',
-  danger: '#b84040',
-  dangerHover: '#fff0f0',
+  textPrimary: 'var(--tg-text, #1a1a2e)',
+  textSecondary: 'var(--tg-text, #2a2a40)',
+  textMuted: 'var(--tg-muted, #b0aac8)',
+  textTertiary: 'var(--tg-muted, #b0b0c8)',
+  navActive: 'var(--tg-accent, #4040b8)',
+  navActiveBg: 'var(--tg-accent-soft, #eeedfb)',
+  navHoverBg: 'var(--tg-accent-soft, #f7f5fd)',
+  navHoverText: 'var(--tg-secondary, #3a3a70)',
+  navText: 'var(--tg-secondary, #7878a0)',
+  danger: 'var(--tg-negative, #b84040)',
+  dangerHover: 'var(--tg-negative-soft, #fff0f0)',
 };
 
 // ─── Shared small components ──────────────────────────────────────────────────
@@ -57,10 +57,10 @@ const FieldInput: React.FC<{
       placeholder={placeholder}
       onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
       style={{
-        height: 33, borderRadius: 7, fontSize: 13, color: readOnly ? '#9898b8' : T.textPrimary,
+        height: 33, borderRadius: 7, fontSize: 13, color: readOnly ? 'var(--tg-muted, #9898b8)' : T.textPrimary,
         padding: '0 10px', outline: 'none', boxSizing: 'border-box', width,
         border: `1px solid ${focused ? '#6060d0' : T.borderField}`,
-        background: readOnly ? '#f5f3fb' : (focused ? '#fff' : '#fafafe'),
+        background: readOnly ? 'var(--tg-accent-soft, #f5f3fb)' : (focused ? 'var(--tg-surface, #fff)' : 'var(--tg-surface, #fafafe)'),
         boxShadow: focused ? `0 0 0 3px ${T.primaryLight}` : 'none',
         cursor: readOnly ? 'default' : 'text',
         transition: 'border-color 0.14s, box-shadow 0.14s, background 0.14s',
@@ -81,8 +81,8 @@ const SmallBtn: React.FC<{
         height: 30, padding: '0 12px', borderRadius: 7, fontSize: 12, fontWeight: 500,
         cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.12s',
         border: danger ? 'none' : `1px solid ${hov ? T.borderHover : T.borderField}`,
-        background: danger ? 'transparent' : (hov ? '#f5f2fc' : 'transparent'),
-        color: danger ? (hov ? T.danger : T.danger) : (hov ? T.navActive : '#5050a0'),
+        background: danger ? 'transparent' : (hov ? 'var(--tg-accent-soft, #f5f2fc)' : 'transparent'),
+        color: danger ? (hov ? T.danger : T.danger) : (hov ? T.navActive : 'var(--tg-secondary, #5050a0)'),
         ...(danger && hov ? { background: T.dangerHover } : {}),
         ...style,
       }}>
@@ -94,7 +94,7 @@ const SmallBtn: React.FC<{
 const Toggle: React.FC<{ value: boolean; onChange: (v: boolean) => void }> = ({ value, onChange }) => (
   <div onClick={() => onChange(!value)} style={{
     width: 38, height: 21, borderRadius: 11, cursor: 'pointer',
-    background: value ? T.primary : '#d8d4ee',
+    background: value ? T.primary : 'var(--tg-accent-soft, #d8d4ee)',
     position: 'relative', transition: 'background 0.2s', flexShrink: 0,
   }}>
     <div style={{
@@ -123,7 +123,7 @@ const Select: React.FC<{
         height: 33, borderRadius: open ? '7px 7px 0 0' : 7, fontSize: 13,
         color: T.textPrimary, padding: '0 10px', boxSizing: 'border-box',
         border: `1px solid ${open ? '#6060d0' : T.borderField}`,
-        background: '#fafafe', cursor: 'pointer',
+        background: 'var(--tg-surface, #fafafe)', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6,
       }}>
         <span>{label}</span>
@@ -135,20 +135,20 @@ const Select: React.FC<{
       {open && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-          background: '#fff', border: `1px solid #e0dcf4`, borderTop: 'none',
+          background: 'var(--tg-surface, #fff)', border: `1px solid var(--tg-border, #e0dcf4)`, borderTop: 'none',
           borderRadius: '0 0 7px 7px', boxShadow: '0 6px 20px rgba(0,0,0,0.08)', overflow: 'hidden',
         }}>
           {options.map(opt => (
             <div key={opt.value} onClick={() => { onChange(opt.value); setOpen(false); }}
               style={{
                 padding: '9px 10px', fontSize: 13, cursor: 'pointer',
-                color: opt.value === value ? T.primary : T.textPrimary,
-                background: opt.value === value ? '#f0eeff' : 'transparent',
+                color: opt.value === value ? T.navActive : T.textPrimary,
+                background: opt.value === value ? 'var(--tg-accent-soft, #f0eeff)' : 'transparent',
                 fontWeight: opt.value === value ? 500 : 400,
                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               }}
-              onMouseEnter={e => { if (opt.value !== value) e.currentTarget.style.background = '#f8f6ff'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = opt.value === value ? '#f0eeff' : 'transparent'; }}
+              onMouseEnter={e => { if (opt.value !== value) e.currentTarget.style.background = 'var(--tg-accent-soft, #f8f6ff)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = opt.value === value ? 'var(--tg-accent-soft, #f0eeff)' : 'transparent'; }}
             >
               {opt.label}
               {opt.value === value && (
@@ -169,7 +169,7 @@ const FieldRow: React.FC<{
 }> = ({ label, desc, last, children }) => (
   <div style={{
     display: 'flex', alignItems: 'center', padding: '14px 0', gap: 24,
-    borderBottom: last ? 'none' : `1px solid #f5f2fc`,
+    borderBottom: last ? 'none' : `1px solid var(--tg-border, #f5f2fc)`,
   }}>
     <div style={{ flex: 1, minWidth: 0 }}>
       <div style={{ fontSize: 13, fontWeight: 500, color: T.textSecondary, marginBottom: desc ? 1 : 0 }}>{label}</div>
@@ -183,7 +183,7 @@ const FieldRow: React.FC<{
 
 const SectionLabel: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{
-    fontSize: 11, fontWeight: 600, color: '#b0aac8',
+    fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #b0aac8)',
     letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 20,
   }}>
     {children}
@@ -320,7 +320,7 @@ const ProfilePage: React.FC<{ user: any; updateProfile: (p: any) => void; showTo
         </FieldRow>
         <FieldRow label="邮箱地址" desc="登录邮箱，无法直接修改" last>
           <FieldInput value={user.email ?? 'user@example.com'} readOnly width={180} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: '#1a7a42', background: '#eaf6f0', border: '1px solid #bbf7d0', padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>已验证</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--tg-positive, #1a7a42)', background: 'var(--tg-positive-soft, #eaf6f0)', border: '1px solid var(--tg-border, #bbf7d0)', padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>已验证</span>
         </FieldRow>
       </div>
 
@@ -350,8 +350,8 @@ const ProfilePage: React.FC<{ user: any; updateProfile: (p: any) => void; showTo
           style={{
             height: 34, padding: '0 18px', borderRadius: 8, fontSize: 13, fontWeight: 600,
             border: 'none', cursor: isDirty ? 'pointer' : 'not-allowed', transition: 'all 0.14s',
-            background: isDirty ? (saveBtnHov ? T.primaryHover : T.primary) : '#d8d4f0',
-            color: isDirty ? '#fff' : '#a8a8c8',
+            background: isDirty ? (saveBtnHov ? T.primaryHover : T.primary) : 'var(--tg-accent-soft, #d8d4f0)',
+            color: isDirty ? '#fff' : 'var(--tg-muted, #a8a8c8)',
             boxShadow: isDirty && saveBtnHov ? '0 2px 10px rgba(80,80,200,0.22)' : 'none',
           }}
         >
@@ -558,7 +558,7 @@ const TagsPage: React.FC<{
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '340px minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
-        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, overflow: 'hidden', background: '#fff' }}>
+        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, overflow: 'hidden', background: 'var(--tg-surface, #fff)' }}>
           <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 600, color: T.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             分类列表
           </div>
@@ -572,7 +572,7 @@ const TagsPage: React.FC<{
                   padding: '14px 18px',
                   borderBottom: `1px solid ${T.border}`,
                   cursor: 'pointer',
-                  background: active ? '#f7f5fd' : '#fff',
+                  background: active ? 'var(--tg-accent-soft, #f7f5fd)' : 'var(--tg-surface, #fff)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
@@ -582,7 +582,7 @@ const TagsPage: React.FC<{
                 <div style={{ minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: category.color, flexShrink: 0 }} />
-                    <div style={{ fontSize: 13, fontWeight: 600, color: active ? T.primary : T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{category.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: active ? T.navActive : T.textPrimary, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{category.label}</div>
                   </div>
                   <div style={{ fontSize: 11, color: T.textTertiary, marginTop: 4 }}>{category.type === 'single' ? '单选' : '多选'} · {category.options.length} 个标签</div>
                 </div>
@@ -592,7 +592,7 @@ const TagsPage: React.FC<{
           })}
         </div>
 
-        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, background: '#fff', padding: 22 }}>
+        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, background: 'var(--tg-surface, #fff)', padding: 22 }}>
           {selectedCategory ? (
             <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>
@@ -643,7 +643,7 @@ const TagsPage: React.FC<{
                       padding: '8px 10px',
                       borderRadius: 999,
                       border: `1px solid ${T.borderField}`,
-                      background: '#fafafe',
+                      background: 'var(--tg-surface, #fafafe)',
                     }}
                   >
                     <span style={{ fontSize: 12, color: T.textPrimary }}>{option}</span>
@@ -692,7 +692,7 @@ interface SettingsPageProps {
   onAddAccount?: () => void;
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
-  onUpdateAccount?: (id: string, updates: { manualBalance?: number | null; balance?: number }) => void;
+  onUpdateAccount?: (id: string, updates: { name?: string; currency?: string; manualBalance?: number | null; balance?: number }) => void | Promise<void>;
   onClearTrades?: (accountId: string) => void;
   initialSection?: string;
   riskSettings?: RiskSettings;
@@ -745,13 +745,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', background: '#ffffff', overflow: 'hidden' }}>
+    <div style={{ display: 'flex', height: '100%', background: 'var(--tg-surface, #ffffff)', overflow: 'hidden' }}>
 
       {/* Left nav */}
-      <div style={{ width: 192, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: '#ffffff', padding: '24px 0', overflowY: 'auto' }}>
+      <div style={{ width: 192, flexShrink: 0, borderRight: `1px solid ${T.border}`, background: 'var(--tg-surface, #ffffff)', padding: '24px 0', overflowY: 'auto' }}>
         {NAV_GROUPS.map(group => (
           <div key={group.label}>
-            <div style={{ fontSize: 10, fontWeight: 600, color: '#c4bfda', letterSpacing: '0.09em', textTransform: 'uppercase', padding: '18px 20px 6px' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: 'var(--tg-muted, #c4bfda)', letterSpacing: '0.09em', textTransform: 'uppercase', padding: '18px 20px 6px' }}>
               {group.label}
             </div>
             {group.items.map(item => {
@@ -783,7 +783,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
 
         {/* Tab bar */}
         {currentTabs.length > 0 && (
-          <div style={{ height: 52, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', padding: '0 48px', background: '#ffffff', flexShrink: 0 }}>
+          <div style={{ height: 52, borderBottom: `1px solid ${T.border}`, display: 'flex', alignItems: 'center', padding: '0 48px', background: 'var(--tg-surface, #ffffff)', flexShrink: 0 }}>
             {currentTabs.map(tab => {
               const isActive = activeSection === tab.id;
               return (
@@ -792,12 +792,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
                     fontSize: 13, marginRight: 28, height: 52,
                     display: 'flex', alignItems: 'center', cursor: 'pointer',
                     borderBottom: isActive ? `2px solid #5050cc` : '2px solid transparent',
-                    color: isActive ? '#4040b8' : '#9090b8',
+                    color: isActive ? 'var(--tg-accent, #4040b8)' : 'var(--tg-muted, #9090b8)',
                     fontWeight: isActive ? 600 : 400,
                     transition: 'all 0.12s',
                   }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#3a3a70'; }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#9090b8'; }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'var(--tg-secondary, #3a3a70)'; }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'var(--tg-muted, #9090b8)'; }}
                 >
                   {tab.label}
                 </div>
@@ -807,7 +807,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({
         )}
 
         {/* Content */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: activeSection === 'brokers' ? 0 : '36px 48px', background: '#ffffff' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: activeSection === 'brokers' ? 0 : '36px 48px', background: 'var(--tg-surface, #ffffff)' }}>
           {renderContent()}
         </div>
       </div>

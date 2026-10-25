@@ -169,7 +169,7 @@ const ColorPicker = ({
         <button
           type="button"
           onClick={onCustom}
-          className="w-full text-xs text-center py-1 text-[#6b7280] hover:text-[#1a1a1a] dark:hover:text-[#ededed] transition-colors"
+          className="w-full text-xs text-center py-1 text-[#6b7280] hover:text-[#1a1a1a] dark:hover:text-[#ededed] transition-colors dark:text-[var(--tg-secondary)]"
         >
           自定义颜色...
         </button>
@@ -215,7 +215,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         horizontalRule: false,
-        dropcursor: { color: '#6366F1', width: 2 },
+        dropcursor: { color: 'var(--tg-accent, #6366F1)', width: 2 },
       }),
       Underline,
       Link.configure({ openOnClick: false, autolink: true }),
@@ -728,7 +728,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setDeleteConfirmOpen(false)}
-                className="px-4 py-2 text-[13px] text-[#6b7280] hover:text-[#1a1a1a] dark:hover:text-[#ededed] transition-colors rounded-[6px]"
+                className="px-4 py-2 text-[13px] text-[#6b7280] hover:text-[#1a1a1a] dark:hover:text-[#ededed] transition-colors rounded-[6px] dark:text-[var(--tg-secondary)]"
               >
                 取消
               </button>
@@ -751,12 +751,12 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
             <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]">
               <span className="text-[14px] font-medium text-[#1a1a1a] dark:text-[#ededed]">选择模板</span>
               <button type="button" onClick={() => setTemplateModalOpen(false)} aria-label="关闭">
-                <X className="w-4 h-4 text-[#9ca3af] hover:text-[#1a1a1a] dark:hover:text-[#ededed] transition-colors" />
+                <X className="w-4 h-4 text-[#9ca3af] hover:text-[#1a1a1a] dark:hover:text-[#ededed] transition-colors dark:text-[var(--tg-muted)]" />
               </button>
             </div>
             <div className="p-4 max-h-[300px] overflow-y-auto space-y-1">
               {templates.length === 0 && (
-                <p className="text-[13px] text-[#9ca3af] text-center py-6">暂无模板</p>
+                <p className="text-[13px] text-[#9ca3af] text-center py-6 dark:text-[var(--tg-muted)]">暂无模板</p>
               )}
               {templates.map((tpl) => (
                 <button
@@ -782,7 +782,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
         <button
           type="button"
           onClick={() => setIsFullscreen(false)}
-          className="fixed top-4 right-4 z-[210] px-3 py-1.5 bg-[#f3f4f6] dark:bg-[#1a1a1a] text-[12px] text-[#6b7280] rounded-[6px] hover:bg-[#e5e7eb] dark:hover:bg-[#2a2a2a] transition-colors border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]"
+          className="fixed top-4 right-4 z-[210] px-3 py-1.5 bg-[#f3f4f6] dark:bg-[#1a1a1a] text-[12px] text-[#6b7280] rounded-[6px] hover:bg-[#e5e7eb] dark:hover:bg-[#2a2a2a] transition-colors border border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)] dark:text-[var(--tg-secondary)]"
           aria-label="退出全屏"
         >
           退出全屏 (Esc)

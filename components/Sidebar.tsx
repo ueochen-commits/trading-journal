@@ -226,7 +226,7 @@ const Sidebar = ({
           }} />
         )}
         {/* Icon */}
-        <span style={{ color: isActive ? '#9B8FF8' : 'rgba(255,255,255,0.38)', flexShrink: 0, display: 'flex' }}>
+        <span style={{ color: isActive ? 'var(--tg-muted, #9B8FF8)' : 'rgba(255,255,255,0.38)', flexShrink: 0, display: 'flex' }}>
           <Icon />
         </span>
         {/* Label */}
@@ -242,7 +242,7 @@ const Sidebar = ({
         {/* PRO tag */}
         {pro && !isCollapsed && (
           <span style={{
-            fontSize: 9.5, fontWeight: 700, color: '#8B7CF6',
+            fontSize: 9.5, fontWeight: 700, color: 'var(--tg-accent, #8B7CF6)',
             background: 'rgba(139,124,246,0.18)', border: '0.5px solid rgba(139,124,246,0.35)',
             padding: '2px 6px', borderRadius: 4, marginLeft: 'auto', flexShrink: 0,
           }}>PRO</span>
@@ -315,7 +315,7 @@ const Sidebar = ({
                   width: 36, height: 36, borderRadius: 8, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   background: isActive ? 'rgba(88,80,220,0.3)' : 'transparent',
-                  color: isActive ? '#9B8FF8' : 'rgba(255,255,255,0.35)',
+                  color: isActive ? 'var(--tg-muted, #9B8FF8)' : 'rgba(255,255,255,0.35)',
                   position: 'relative', transition: 'background 0.15s',
                 }}
                 onMouseEnter={e => { if (!isActive) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.07)'; }}
@@ -544,7 +544,7 @@ const Sidebar = ({
           }}>
             <div style={{ padding: 4 }}>
               <button onClick={() => { setIsProfileMenuOpen(false); openPricing(); }}
-                style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: '#8B7CF6', borderRadius: 7 }}
+                style={{ width: '100%', textAlign: 'left', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, fontWeight: 600, color: 'var(--tg-accent, #8B7CF6)', borderRadius: 7 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}>
                 {language === 'cn' ? '探索我们的方案' : 'Explore plans'}
@@ -566,11 +566,11 @@ const Sidebar = ({
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Icons.Gift />{language === 'cn' ? '推荐朋友' : 'Refer a friend'}</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: '#4ade80' }}>$15</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--tg-positive, #4ade80)' }}>$15</span>
               </button>
               <div style={{ height: 0.5, background: 'rgba(255,255,255,0.07)', margin: '4px 8px' }} />
               <button onClick={logout}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: '#f87171', borderRadius: 7 }}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'var(--tg-negative, #f87171)', borderRadius: 7 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}>
                 <Icons.LogOut />{language === 'cn' ? '退出' : 'Sign out'}

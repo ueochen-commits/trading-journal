@@ -226,7 +226,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                                                     {msg.tradeDetails.direction}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between text-xs text-slate-500 pb-2 border-b border-emerald-100 dark:border-emerald-500/20 mb-2">
+                                            <div className="flex justify-between text-xs text-slate-500 pb-2 border-b border-emerald-100 dark:border-emerald-500/20 mb-2 dark:text-slate-400">
                                                 <span>Price: {msg.tradeDetails.entryPrice}</span>
                                                 <span>Qty: {msg.tradeDetails.quantity}</span>
                                             </div>
@@ -244,7 +244,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                                         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                                             <button 
                                                 onClick={() => handleSave(msg.content)}
-                                                className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors uppercase font-bold tracking-wider"
+                                                className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors uppercase font-bold tracking-wider dark:text-slate-400"
                                                 title="Save to Notebook"
                                             >
                                                 <Save className="w-3 h-3" /> Save Note
@@ -256,7 +256,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                         ))}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700 flex items-center gap-2 text-slate-500">
+                                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700 flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                     <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
                                     <span className="text-xs">Thinking...</span>
                                 </div>
@@ -270,7 +270,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                         {/* Image Preview */}
                         {selectedImage && (
                             <div className="relative inline-block mb-3">
-                                <img src={selectedImage} alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-indigo-200" />
+                                <img src={selectedImage} alt="Preview" className="h-16 w-16 object-cover rounded-lg border border-indigo-200 dark:border-indigo-500/30" />
                                 <button 
                                     onClick={() => setSelectedImage(null)}
                                     className="absolute -top-2 -right-2 bg-slate-900 text-white rounded-full p-0.5 hover:bg-rose-500"
@@ -297,7 +297,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                                 />
                                 <div className="flex justify-between items-center">
                                     <div className="flex gap-1">
-                                        <label className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg cursor-pointer transition-colors">
+                                        <label className="p-1.5 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg cursor-pointer transition-colors dark:text-slate-400">
                                             <ImageIcon className="w-4 h-4" />
                                             <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                                         </label>
@@ -306,14 +306,14 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                                             className={`p-1.5 rounded-lg transition-all ${
                                                 isRecording 
                                                 ? 'text-rose-500 bg-rose-50 dark:bg-rose-900/20 animate-pulse ring-2 ring-rose-500/50' 
-                                                : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                                                : 'text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 dark:text-slate-400'
                                             }`}
                                             title="Voice Command"
                                         >
                                             <Mic className="w-4 h-4" />
                                         </button>
                                     </div>
-                                    <span className="text-[10px] text-slate-300 dark:text-slate-600 font-bold tracking-wide">Gemini 2.5 Flash</span>
+                                    <span className="text-[10px] text-slate-300 dark:text-slate-400 font-bold tracking-wide">Gemini 2.5 Flash</span>
                                 </div>
                             </div>
                             <button 

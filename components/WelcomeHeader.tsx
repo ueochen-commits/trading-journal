@@ -29,7 +29,7 @@ const WelcomeHeader: React.FC<WelcomeHeaderProps> = ({ title, subtitle }) => (
         {/* Floating logo — bottom: -34 = half of 68px logo */}
         <div style={{
             position: 'absolute', bottom: -34, left: '50%', transform: 'translateX(-50%)',
-            width: 68, height: 68, borderRadius: '50%', background: '#fff',
+            width: 68, height: 68, borderRadius: '50%', background: 'var(--tg-surface, #fff)',
             boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             zIndex: 2, border: '3px solid rgba(255,255,255,0.9)',

@@ -65,7 +65,7 @@ const EmptyChartState: React.FC<EmptyChartStateProps> = ({
             fontSize: titleSize,
             lineHeight: compact ? '18px' : '20px',
             fontWeight: 500,
-            color: '#2f3742',
+            color: 'var(--tg-text, #2f3742)',
           }}
         >
           {title}
@@ -77,7 +77,7 @@ const EmptyChartState: React.FC<EmptyChartStateProps> = ({
               fontSize: subtitleSize,
               lineHeight: compact ? '17px' : '18px',
               fontWeight: 400,
-              color: '#9aa4b2',
+              color: 'var(--tg-muted, #9aa4b2)',
             }}
           >
             {subtitle}

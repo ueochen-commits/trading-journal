@@ -82,7 +82,7 @@ const PositionCalculator: React.FC = () => {
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">{t.calculator.balance}</label>
+                                <label className="block text-xs font-medium text-slate-500 mb-1 dark:text-slate-400">{t.calculator.balance}</label>
                                 <input 
                                     type="number" 
                                     value={accountSize}
@@ -91,7 +91,7 @@ const PositionCalculator: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">{t.calculator.risk}</label>
+                                <label className="block text-xs font-medium text-slate-500 mb-1 dark:text-slate-400">{t.calculator.risk}</label>
                                 <input 
                                     type="number" 
                                     step="0.1"
@@ -104,7 +104,7 @@ const PositionCalculator: React.FC = () => {
 
                         <div className="grid grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">{t.calculator.entry}</label>
+                                <label className="block text-xs font-medium text-slate-500 mb-1 dark:text-slate-400">{t.calculator.entry}</label>
                                 <input 
                                     type="number" 
                                     value={entry}
@@ -113,7 +113,7 @@ const PositionCalculator: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">{t.calculator.stopLoss}</label>
+                                <label className="block text-xs font-medium text-slate-500 mb-1 dark:text-slate-400">{t.calculator.stopLoss}</label>
                                 <input 
                                     type="number" 
                                     value={stopLoss}
@@ -122,7 +122,7 @@ const PositionCalculator: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <label className="block text-xs font-medium text-slate-500 mb-1">{t.calculator.target}</label>
+                                <label className="block text-xs font-medium text-slate-500 mb-1 dark:text-slate-400">{t.calculator.target}</label>
                                 <input 
                                     type="number" 
                                     value={target}
@@ -136,7 +136,7 @@ const PositionCalculator: React.FC = () => {
                     {/* Results Display */}
                     {results && (
                         <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
-                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">{t.calculator.results}</h4>
+                            <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 dark:text-slate-400">{t.calculator.results}</h4>
                             
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="p-4 bg-cyan-50 dark:bg-cyan-900/10 rounded-xl border border-cyan-100 dark:border-cyan-800/30">
@@ -177,7 +177,7 @@ const PositionCalculator: React.FC = () => {
                         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         {t.calculator.fiveStep}
                     </h3>
-                    <p className="text-slate-400 text-xs mb-6">Complete this before placing any order.</p>
+                    <p className="text-slate-400 text-xs mb-6 dark:text-slate-400">Complete this before placing any order.</p>
 
                     <div className="flex-1 space-y-4">
                         {[
@@ -198,16 +198,16 @@ const PositionCalculator: React.FC = () => {
                             >
                                 {checklist[item.key as keyof typeof checklist] 
                                     ? <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                                    : <Circle className="w-6 h-6 text-slate-500" />
+                                    : <Circle className="w-6 h-6 text-slate-500 dark:text-slate-400" />
                                 }
-                                <span className={`font-bold ${checklist[item.key as keyof typeof checklist] ? 'text-white' : 'text-slate-400'}`}>
+                                <span className={`font-bold ${checklist[item.key as keyof typeof checklist] ? 'text-white' : 'text-slate-400 dark:text-slate-400'}`}>
                                     {item.label}
                                 </span>
                             </div>
                         ))}
                     </div>
 
-                    <div className={`mt-6 p-4 rounded-xl text-center font-bold transition-all ${isChecklistComplete ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 scale-105' : 'bg-slate-800 text-slate-500'}`}>
+                    <div className={`mt-6 p-4 rounded-xl text-center font-bold transition-all ${isChecklistComplete ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-500/30 scale-105' : 'bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                         {isChecklistComplete ? "READY TO EXECUTE" : "COMPLETE CHECKLIST FIRST"}
                     </div>
                 </div>

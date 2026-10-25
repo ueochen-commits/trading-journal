@@ -97,7 +97,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
             <div className="flex items-center gap-4">
                 <button 
                     onClick={onBack}
-                    className="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 dark:hover:text-white transition-colors"
+                    className="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 dark:hover:text-white transition-colors dark:text-slate-400"
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -132,7 +132,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                         <h3 className="text-3xl font-bold text-emerald-500 font-mono">
                             {currentGoal.type === 'amount' ? unit : ''}{stats.bestWeek?.actual}{currentGoal.type !== 'amount' ? unit : ''}
                         </h3>
-                        <p className="text-xs text-slate-400 mt-1">{stats.bestWeek?.weekLabel}</p>
+                        <p className="text-xs text-slate-400 mt-1 dark:text-slate-400">{stats.bestWeek?.weekLabel}</p>
                     </div>
                     <div className="absolute right-4 top-4 text-emerald-100 dark:text-emerald-900/20">
                         <Trophy className="w-16 h-16" />
@@ -170,7 +170,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                             <Tooltip 
                                 contentStyle={{ backgroundColor: '#0f172a', border: 'none', borderRadius: '8px', color: '#fff' }}
                                 itemStyle={{ color: '#fff' }}
-                                labelStyle={{ color: '#94a3b8', marginBottom: '0.5rem' }}
+                                labelStyle={{ color: 'var(--tg-muted, #94a3b8)', marginBottom: '0.5rem' }}
                             />
                             <Bar dataKey="actual" name={t.goalsPage.actual} barSize={20} radius={[4, 4, 0, 0]}>
                                 {historicalData.map((entry, index) => (
@@ -199,7 +199,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                             {historicalData.map((week, idx) => (
                                 <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4 flex items-center gap-3">
-                                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500">
+                                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400">
                                             <Calendar className="w-4 h-4" />
                                         </div>
                                         <span>{week.fullDate}</span>

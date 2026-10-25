@@ -26,13 +26,13 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
     const getIcon = (type: string) => {
         switch(type) {
             case 'system': return <div className="p-2 bg-indigo-500 rounded-full text-white"><Zap className="w-4 h-4" /></div>;
-            case 'invite': return <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs">1</div>; // Mimic screenshot
+            case 'invite': return <div className="w-8 h-8 rounded-full bg-emerald-700 text-white flex items-center justify-center font-bold text-xs">1</div>; // Mimic screenshot
             case 'upgrade': return <div className="p-2 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full text-white"><Sparkles className="w-4 h-4" /></div>;
             case 'removal': 
-                return <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center"><Trash2 className="w-4 h-4" /></div>;
+                return <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center dark:bg-rose-950/40"><Trash2 className="w-4 h-4" /></div>;
             case 'alert':
                 return <div className="p-2 bg-amber-500 rounded-full text-white"><AlertTriangle className="w-4 h-4" /></div>;
-            default: return <div className="p-2 bg-slate-200 rounded-full text-slate-500"><Bell className="w-4 h-4" /></div>;
+            default: return <div className="p-2 bg-slate-200 rounded-full text-slate-500 dark:bg-slate-800 dark:text-slate-400"><Bell className="w-4 h-4" /></div>;
         }
     };
 
@@ -51,13 +51,13 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
                 <div className="flex gap-8">
                     <button 
                         onClick={() => setActiveTab('pending')}
-                        className={`pb-4 px-2 text-sm font-bold transition-all border-b-2 ${activeTab === 'pending' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'}`}
+                        className={`pb-4 px-2 text-sm font-bold transition-all border-b-2 ${activeTab === 'pending' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
                     >
                         {t.notifications.pending}({notifications.filter(n => !n.isRead).length})
                     </button>
                     <button 
                         onClick={() => setActiveTab('processed')}
-                        className={`pb-4 px-2 text-sm font-bold transition-all border-b-2 ${activeTab === 'processed' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400'}`}
+                        className={`pb-4 px-2 text-sm font-bold transition-all border-b-2 ${activeTab === 'processed' ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
                     >
                         {t.notifications.processed}({notifications.filter(n => n.isRead).length})
                     </button>
@@ -66,7 +66,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
                 {activeTab === 'pending' && (
                     <button 
                         onClick={onMarkAllRead}
-                        className="mb-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-2"
+                        className="mb-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors flex items-center gap-2 dark:hover:bg-indigo-950/40"
                     >
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         {t.notifications.markAllRead}
@@ -81,14 +81,14 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
                         <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
                             <Bell className="w-8 h-8" />
                         </div>
-                        <p className="text-slate-400 text-sm font-medium">{t.notifications.empty}</p>
+                        <p className="text-slate-400 text-sm font-medium dark:text-slate-400">{t.notifications.empty}</p>
                     </div>
                 ) : (
                     filteredNotifications.map(notification => (
                         <div 
                             key={notification.id} 
                             onClick={() => !notification.isRead && onMarkOneRead(notification.id)}
-                            className={`group relative flex items-start gap-4 p-5 bg-white dark:bg-slate-900 border rounded-2xl transition-all hover:shadow-md ${notification.isRead ? 'border-slate-100 dark:border-slate-800 opacity-80' : 'border-indigo-100 dark:border-indigo-900/50 shadow-sm bg-indigo-50/10'}`}
+                            className={`group relative flex items-start gap-4 p-5 bg-white dark:bg-slate-900 border rounded-2xl transition-all hover:shadow-md ${notification.isRead ? 'border-slate-100 dark:border-slate-800 opacity-80' : 'border-indigo-100 dark:border-indigo-900/50 shadow-sm bg-indigo-50/10 dark:bg-indigo-950/40'}`}
                         >
                             {/* Icon Column */}
                             <div className="flex-shrink-0 pt-1">
@@ -123,10 +123,10 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
 
                             {/* Date / Action Column */}
                             <div className="flex flex-col items-end justify-between self-stretch">
-                                <div className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-slate-400 hover:text-indigo-500">
+                                <div className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-slate-400 hover:text-indigo-500 dark:text-slate-400">
                                     <Bell className="w-4 h-4" />
                                 </div>
-                                <span className="text-xs text-slate-400 font-medium whitespace-nowrap mt-auto">
+                                <span className="text-xs text-slate-400 font-medium whitespace-nowrap mt-auto dark:text-slate-400">
                                     {notification.timestamp}
                                 </span>
                             </div>

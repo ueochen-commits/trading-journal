@@ -20,7 +20,7 @@ interface RiskManagementProps {
 
 const InfoTooltip = ({ text }: { text: string }) => (
     <div className="group relative ml-1.5 inline-flex">
-        <HelpCircle className="w-3 h-3 text-slate-400 cursor-help hover:text-indigo-500 transition-colors" />
+        <HelpCircle className="w-3 h-3 text-slate-400 cursor-help hover:text-indigo-500 transition-colors dark:text-slate-400" />
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 pointer-events-none text-center leading-snug">
             {text}
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
@@ -166,7 +166,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                       <h4 className="font-bold text-slate-900 dark:text-white text-lg">确认重置风控设置？</h4>
                   </div>
                   <p className="text-sm text-slate-500 dark:text-slate-400 mb-5">
-                      重置后您可以重新编辑风控金额。下次重置需等待 <span className="font-bold text-amber-600">7 天</span>冷却期。
+                      重置后您可以重新编辑风控金额。下次重置需等待 <span className="font-bold text-amber-600 dark:text-amber-300">7 天</span>冷却期。
                   </p>
                   <div className="flex gap-3">
                       <button
@@ -221,7 +221,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold transition-colors ${
                                 canReset
                                     ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                                    : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-400 cursor-not-allowed'
                             }`}
                         >
                             <RotateCcw className="w-3 h-3" />
@@ -246,7 +246,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             {t.risk.accountSize} <InfoTooltip text={t.risk.tooltips.accountSize} />
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">$</span>
                             <input
                                 type="number"
                                 value={localSettings.accountSize}
@@ -265,7 +265,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             {t.risk.maxDailyLoss} <InfoTooltip text={t.risk.tooltips.maxDailyLoss} />
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">$</span>
                             <input
                                 type="number"
                                 value={localSettings.maxDailyLoss}
@@ -283,7 +283,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             {t.risk.maxTradeRisk} <InfoTooltip text={t.risk.tooltips.maxTradeRisk} />
                         </label>
                         <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">$</span>
                             <input
                                 type="number"
                                 value={localSettings.maxTradeRisk}
@@ -311,7 +311,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
 
                 {/* New Risk Factors Section */}
                 <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
-                    <p className="text-xs text-slate-400 font-bold uppercase mb-3">Additional Constraints</p>
+                    <p className="text-xs text-slate-400 font-bold uppercase mb-3 dark:text-slate-400">Additional Constraints</p>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-1 gap-1">
@@ -331,7 +331,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                                 <Target className="w-3 h-3" /> Daily Profit Target <InfoTooltip text={t.risk.tooltips.dailyProfitTarget} />
                             </label>
                             <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">$</span>
+                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400">$</span>
                                 <input
                                     type="number"
                                     value={localSettings.dailyProfitTarget || ''}
@@ -368,7 +368,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         <Clock className="w-5 h-5 text-blue-500" />
                         <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200">{t.risk.dailyReview}</p>
-                            <p className="text-xs text-slate-500">{t.risk.dailyDesc}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t.risk.dailyDesc}</p>
                         </div>
                     </div>
                     <button 
@@ -385,7 +385,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         <CalendarCheck className="w-5 h-5 text-purple-500" />
                         <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200">{t.risk.weeklyReview}</p>
-                            <p className="text-xs text-slate-500">{t.risk.weeklyDesc}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t.risk.weeklyDesc}</p>
                         </div>
                     </div>
                     <button 
@@ -401,7 +401,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         <Shield className="w-5 h-5 text-orange-500" />
                         <div>
                             <p className="font-bold text-slate-800 dark:text-slate-200">{t.risk.monthlyReview}</p>
-                            <p className="text-xs text-slate-500">{t.risk.monthlyDesc}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t.risk.monthlyDesc}</p>
                         </div>
                     </div>
                     <button 
@@ -433,13 +433,13 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             : <div className="w-5 h-5 rounded-full border-2 border-slate-400 dark:border-slate-600" />
                         }
                     </button>
-                    <span className={`flex-1 text-slate-700 dark:text-slate-200 ${!rule.isActive && 'text-slate-400 dark:text-slate-500 line-through'}`}>{rule.text}</span>
-                    <button onClick={() => onDeleteRule(rule.id)} className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-all">
+                    <span className={`flex-1 text-slate-700 dark:text-slate-200 ${!rule.isActive && 'text-slate-400 dark:text-slate-400 line-through'}`}>{rule.text}</span>
+                    <button onClick={() => onDeleteRule(rule.id)} className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-rose-500 transition-all dark:text-slate-400">
                         ✕
                     </button>
                 </div>
             ))}
-            {rules.length === 0 && <p className="text-slate-500 text-center py-8">{t.risk.noRules}</p>}
+            {rules.length === 0 && <p className="text-slate-500 text-center py-8 dark:text-slate-400">{t.risk.noRules}</p>}
         </div>
 
         <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
@@ -482,7 +482,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Controls */}
               <div className="space-y-5 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
-                  <div className="flex items-center gap-2 text-slate-400 text-xs uppercase font-bold tracking-wider mb-2">
+                  <div className="flex items-center gap-2 text-slate-400 text-xs uppercase font-bold tracking-wider mb-2 dark:text-slate-400">
                       <Sliders className="w-4 h-4" /> Parameters
                   </div>
                   

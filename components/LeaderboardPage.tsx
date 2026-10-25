@@ -28,8 +28,8 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
     const getRankIcon = (rank: number) => {
         if (rank === 1) return <Trophy className="w-5 h-5 text-amber-400" fill="currentColor" />;
         if (rank === 2) return <Medal className="w-5 h-5 text-slate-300" fill="currentColor" />;
-        if (rank === 3) return <Medal className="w-5 h-5 text-amber-700" fill="currentColor" />;
-        return <span className="font-mono font-bold text-slate-400">{rank}</span>;
+        if (rank === 3) return <Medal className="w-5 h-5 text-amber-700 dark:text-amber-300" fill="currentColor" />;
+        return <span className="font-mono font-bold text-slate-400 dark:text-slate-400">{rank}</span>;
     };
 
     return (
@@ -41,7 +41,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
             {/* Back Button */}
             <button 
                 onClick={onBack}
-                className="absolute top-6 left-6 z-50 p-2 bg-slate-900/50 backdrop-blur-md rounded-full text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all"
+                className="absolute top-6 left-6 z-50 p-2 bg-slate-900/50 backdrop-blur-md rounded-full text-slate-400 hover:text-white border border-white/10 hover:border-white/20 transition-all dark:text-slate-400"
             >
                 <ArrowLeft className="w-5 h-5" />
             </button>
@@ -61,7 +61,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                     </h1>
                     
                     <div className="flex justify-center gap-4 text-sm font-medium mb-12">
-                        <span className="text-slate-400">Event Period: 2025-12-01 00:00 ~ 2026-01-01 00:00</span>
+                        <span className="text-slate-400 dark:text-slate-400">Event Period: 2025-12-01 00:00 ~ 2026-01-01 00:00</span>
                         <div className="flex gap-4">
                             <button className="text-white hover:text-amber-400 transition-colors border border-white/20 px-4 py-1 rounded-full hover:bg-white/5">{t.leaderboard.invite}</button>
                             <button className="bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-1 rounded-full transition-colors shadow-lg shadow-indigo-500/20">{t.leaderboard.register}</button>
@@ -71,7 +71,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                     {/* Prize Pool Progress */}
                     <div className="max-w-3xl mx-auto mb-16">
                         <h3 className="text-xl font-bold mb-8">{t.leaderboard.prizePool}</h3>
-                        <div className="flex justify-between text-sm text-slate-400 mb-2">
+                        <div className="flex justify-between text-sm text-slate-400 mb-2 dark:text-slate-400">
                             <div className="text-left">
                                 <p className="text-xs mb-1">{t.leaderboard.registeredUsers}</p>
                                 <p className="text-2xl font-bold text-white">19,106</p>
@@ -91,7 +91,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                                 <div key={pct} className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-slate-900 border-2 border-amber-500 rounded-full" style={{ left: `${pct}%` }}></div>
                             ))}
                         </div>
-                        <div className="flex justify-between text-[10px] text-slate-500 mt-2 font-mono">
+                        <div className="flex justify-between text-[10px] text-slate-500 mt-2 font-mono dark:text-slate-400">
                             <span>0</span>
                             <span>5,000</span>
                             <span>10,000</span>
@@ -118,7 +118,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                                     className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
                                         activeTab === tab 
                                         ? 'bg-indigo-600 text-white shadow-lg' 
-                                        : 'text-slate-400 hover:text-white hover:bg-white/5'
+                                        : 'text-slate-400 hover:text-white hover:bg-white/5 dark:text-slate-400'
                                     }`}
                                 >
                                     {t.leaderboard[`${tab}Rank` as keyof typeof t.leaderboard]}
@@ -150,19 +150,19 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                         <div className="flex gap-1">
                             <button 
                                 onClick={() => setSubTab('pnl')}
-                                className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${subTab === 'pnl' ? 'border-amber-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                                className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${subTab === 'pnl' ? 'border-amber-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300 dark:text-slate-400'}`}
                             >
                                 {t.leaderboard.pnlRanking}
                             </button>
                             <button 
                                 onClick={() => setSubTab('volume')}
-                                className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${subTab === 'volume' ? 'border-amber-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+                                className={`px-4 py-2 text-sm font-bold border-b-2 transition-colors ${subTab === 'volume' ? 'border-amber-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300 dark:text-slate-400'}`}
                             >
                                 {t.leaderboard.volRanking}
                             </button>
                         </div>
                         <div className="text-right">
-                            <p className="text-slate-400 text-xs mb-1">{t.leaderboard.desc}</p>
+                            <p className="text-slate-400 text-xs mb-1 dark:text-slate-400">{t.leaderboard.desc}</p>
                             <p className="text-amber-500 text-xs font-mono font-bold flex items-center justify-end gap-2">
                                 <Clock className="w-3 h-3" />
                                 {t.leaderboard.countdown}: 16 D 01 H 47 m 45 s
@@ -174,7 +174,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
                             <thead>
-                                <tr className="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-800">
+                                <tr className="text-slate-500 text-xs uppercase tracking-wider border-b border-slate-800 dark:text-slate-400">
                                     <th className="py-4 px-6 text-center w-24">{t.leaderboard.table.rank}</th>
                                     <th className="py-4 px-6">{t.leaderboard.table.user}</th>
                                     <th className="py-4 px-6 text-right">{t.leaderboard.table.pnl}</th>
@@ -204,7 +204,7 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                                                 <button className="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded-full text-[10px] text-slate-300 transition-colors flex items-center gap-1 border border-slate-700">
                                                     <UserPlus className="w-3 h-3" /> {t.leaderboard.recommend}
                                                 </button>
-                                                <button className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-amber-500 transition-colors">
+                                                <button className="p-1.5 hover:bg-slate-800 rounded-full text-slate-500 hover:text-amber-500 transition-colors dark:text-slate-400">
                                                     <ThumbsUp className="w-3.5 h-3.5" />
                                                 </button>
                                             </div>

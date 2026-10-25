@@ -4,13 +4,13 @@ import { useLanguage } from '../LanguageContext';
 
 // ── Tokens ────────────────────────────────────────────────────────────────────
 const T = {
-  border: '#e8e8f0',
-  borderSec: '#d1d5db',
-  bgPrimary: '#ffffff',
-  bgSecondary: '#f7f7f9',
-  textPrimary: '#111827',
-  textSecondary: '#6b7280',
-  textTertiary: '#9ca3af',
+  border: 'var(--tg-border, #e8e8f0)',
+  borderSec: 'var(--tg-border, #d1d5db)',
+  bgPrimary: 'var(--tg-surface, #ffffff)',
+  bgSecondary: 'var(--tg-surface-muted, #f7f7f9)',
+  textPrimary: 'var(--tg-text, #111827)',
+  textSecondary: 'var(--tg-secondary, #6b7280)',
+  textTertiary: 'var(--tg-muted, #9ca3af)',
   primary: '#1a1a18',
 };
 
@@ -125,9 +125,9 @@ const Banner: React.FC<{ refLink: string }> = ({ refLink }) => {
           </div>
         </div>
       </div>
-      <div style={{ position: 'relative', background: '#fff', overflow: 'hidden', backgroundImage: 'radial-gradient(ellipse 220px 180px at 90% 25%, rgba(255,170,170,0.6) 0%, rgba(255,170,170,0) 100%), radial-gradient(ellipse 200px 160px at 115% 75%, rgba(255,215,120,0.55) 0%, rgba(255,215,120,0) 100%), radial-gradient(ellipse 240px 200px at 55% 90%, rgba(140,200,255,0.5) 0%, rgba(140,200,255,0) 100%), radial-gradient(ellipse 220px 180px at 25% 55%, rgba(170,240,200,0.5) 0%, rgba(170,240,200,0) 100%), radial-gradient(ellipse 200px 160px at 75% 15%, rgba(200,180,255,0.5) 0%, rgba(200,180,255,0) 100%), radial-gradient(ellipse 180px 140px at 45% 110%, rgba(255,195,160,0.45) 0%, rgba(255,195,160,0) 100%)' }}>
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 100, background: 'linear-gradient(to right, #fff 0%, rgba(255,255,255,0) 100%)' }} />
-        <div style={{ position: 'absolute', right: 40, top: '50%', transform: 'translateY(-50%)', width: 68, height: 68, borderRadius: '50%', background: '#fff', border: `0.5px solid ${T.border}`, boxShadow: '0 2px 16px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', overflow: 'hidden', backgroundImage: 'radial-gradient(ellipse 220px 180px at 90% 25%, rgba(255,170,170,0.6) 0%, rgba(255,170,170,0) 100%), radial-gradient(ellipse 200px 160px at 115% 75%, rgba(255,215,120,0.55) 0%, rgba(255,215,120,0) 100%), radial-gradient(ellipse 240px 200px at 55% 90%, rgba(140,200,255,0.5) 0%, rgba(140,200,255,0) 100%), radial-gradient(ellipse 220px 180px at 25% 55%, rgba(170,240,200,0.5) 0%, rgba(170,240,200,0) 100%), radial-gradient(ellipse 200px 160px at 75% 15%, rgba(200,180,255,0.5) 0%, rgba(200,180,255,0) 100%), radial-gradient(ellipse 180px 140px at 45% 110%, rgba(255,195,160,0.45) 0%, rgba(255,195,160,0) 100%)' }}>
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 100, background: 'linear-gradient(to right, var(--tg-surface, #fff) 0%, rgba(255,255,255,0) 100%)' }} />
+        <div style={{ position: 'absolute', right: 40, top: '50%', transform: 'translateY(-50%)', width: 68, height: 68, borderRadius: '50%', background: 'var(--tg-surface, #fff)', border: `0.5px solid ${T.border}`, boxShadow: '0 2px 16px rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Ico.Logo />
         </div>
         <div style={{ position: 'absolute', bottom: 10, right: 14, fontSize: 10, color: T.textTertiary }}>Powered by TradeGrail</div>
@@ -139,7 +139,7 @@ const Banner: React.FC<{ refLink: string }> = ({ refLink }) => {
 const TABS = ['快速开始', '任务中心', '收益记录', '我的链接', '排行榜', '常见问题', '推广素材'];
 
 const TabBar: React.FC<{ active: number; onChange: (i: number) => void }> = ({ active, onChange }) => (
-  <div style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: `0.5px solid ${T.border}`, background: '#fff', padding: '0 28px', display: 'flex', gap: 0 }} className="dark:bg-slate-900 dark:border-slate-700">
+  <div style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: `0.5px solid ${T.border}`, background: 'var(--tg-surface, #fff)', padding: '0 28px', display: 'flex', gap: 0 }} className="dark:bg-slate-900 dark:border-slate-700">
     {TABS.map((tab, i) => (
       <button key={tab} onClick={() => onChange(i)} style={{ padding: '9px 12px', fontSize: 12, fontWeight: active === i ? 500 : 400, color: active === i ? T.textPrimary : T.textTertiary, background: 'none', border: 'none', borderBottom: active === i ? `1.5px solid ${T.primary}` : '1.5px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
         {tab}{i === 1 && <span style={{ background: T.primary, color: '#fff', fontSize: 10, padding: '1px 6px', borderRadius: 20, fontVariantNumeric: 'tabular-nums' }}>{TASKS.length}</span>}
@@ -193,7 +193,7 @@ const TaskDetail: React.FC<{ task: typeof TASKS[0]; onBack: () => void }> = ({ t
             <div key={section.title} style={{ border: `0.5px solid ${T.border}`, borderRadius: 9, padding: '14px 16px', marginBottom: 10 }}>
               <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 10, color: T.textPrimary }}>{section.title}</div>
               {section.items.map((item, i) => (
-                <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 12, color: '#444', lineHeight: 1.7, ...(section.type === 'bar' ? { borderLeft: `1.5px solid ${T.borderSec}`, paddingLeft: 10 } : {}) }}>
+                <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 12, color: 'var(--tg-text, #444)', lineHeight: 1.7, ...(section.type === 'bar' ? { borderLeft: `1.5px solid ${T.borderSec}`, paddingLeft: 10 } : {}) }}>
                   {section.type === 'check' && <span style={{ color: T.textPrimary, flexShrink: 0 }}>✓</span>}
                   <span>{item.main}</span>
                 </div>
@@ -227,7 +227,7 @@ const TabTasks: React.FC = () => {
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.borderColor = T.border}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
               <div style={{ width: 30, height: 30, border: `0.5px solid ${T.border}`, borderRadius: 7, background: T.bgSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IcoComp /></div>
-              {task.tag && <span style={{ background: task.tagDark ? T.primary : 'rgba(0,0,0,0.06)', color: task.tagDark ? '#fff' : '#666', fontSize: 10, padding: '2px 7px', borderRadius: 3 }}>{task.tag}</span>}
+              {task.tag && <span style={{ background: task.tagDark ? T.primary : 'rgba(0,0,0,0.06)', color: task.tagDark ? '#fff' : 'var(--tg-secondary, #666)', fontSize: 10, padding: '2px 7px', borderRadius: 3 }}>{task.tag}</span>}
             </div>
             <div style={{ fontSize: 12, fontWeight: 500, lineHeight: 1.4, marginBottom: 4, color: T.textPrimary }}>{task.name}</div>
             <div style={{ fontSize: 11, color: T.textTertiary, marginBottom: 8 }}>截止：{task.deadline}</div>
@@ -269,7 +269,7 @@ const TabLeaderboard: React.FC = () => (
       <tbody>
         {LEADERBOARD.map(row => (
           <tr key={row.rank} style={{ borderBottom: `0.5px solid ${T.border}` }}>
-            <td style={{ padding: '10px 14px', fontVariantNumeric: 'tabular-nums', color: row.rank <= 3 ? '#BA7517' : T.textTertiary, fontWeight: row.rank <= 3 ? 500 : 400 }}>{row.rank}</td>
+            <td style={{ padding: '10px 14px', fontVariantNumeric: 'tabular-nums', color: row.rank <= 3 ? 'var(--tg-warning, #BA7517)' : T.textTertiary, fontWeight: row.rank <= 3 ? 500 : 400 }}>{row.rank}</td>
             <td style={{ padding: '10px 14px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: T.bgSecondary, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, color: T.textTertiary, flexShrink: 0 }}>{row.name[0]}</div>

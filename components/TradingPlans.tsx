@@ -221,23 +221,23 @@ const TradeSummaryCard = ({ trades, onViewDetails }: { trades: Trade[], onViewDe
             </div>
             <div className="grid grid-cols-5 gap-6 text-sm">
                 <div>
-                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1">{t.plans.summary.trades}</p>
+                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1 dark:text-slate-400">{t.plans.summary.trades}</p>
                     <p className="font-mono font-bold text-slate-700 dark:text-slate-200 text-lg">{totalTrades}</p>
                 </div>
                 <div>
-                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1">{t.plans.summary.volume}</p>
+                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1 dark:text-slate-400">{t.plans.summary.volume}</p>
                     <p className="font-mono font-bold text-slate-700 dark:text-slate-200 text-lg">{volume.toFixed(2)}</p>
                 </div>
                 <div>
-                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1">{t.plans.summary.commissions}</p>
+                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1 dark:text-slate-400">{t.plans.summary.commissions}</p>
                     <p className="font-mono font-bold text-slate-700 dark:text-slate-200 text-lg">${commissions.toFixed(2)}</p>
                 </div>
                 <div>
-                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1">Net ROI</p>
+                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1 dark:text-slate-400">Net ROI</p>
                     <p className={`font-mono font-bold text-lg ${netRoi >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>{netRoi.toFixed(2)}%</p>
                 </div>
                 <div>
-                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1">{t.plans.summary.grossPnl}</p>
+                    <p className="text-xs text-slate-400 uppercase font-bold tracking-wide mb-1 dark:text-slate-400">{t.plans.summary.grossPnl}</p>
                     <p className={`font-mono font-bold text-lg ${grossPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${grossPnl.toFixed(2)}</p>
                 </div>
             </div>
@@ -836,7 +836,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
               </button>
               <button
                 onClick={() => setIsCreatingRootFolder(true)}
-                className="flex items-center gap-1.5 text-[#9CA3AF] text-[12px] hover:text-[#6B7280] transition-colors px-[6px]"
+                className="flex items-center gap-1.5 text-[#9CA3AF] text-[12px] hover:text-[#6B7280] transition-colors px-[6px] dark:text-[var(--tg-muted)] dark:hover:text-[var(--tg-secondary)]"
               >
                   <Plus className="w-3 h-3" />
                   {language === 'cn' ? '添加文件夹' : 'Add Folder'}
@@ -854,10 +854,10 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                           <button key={item.id} onClick={() => setActiveFolder(item.id)}
                             className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${isActive ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
                           >
-                              <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
-                              <item.icon className={`w-[13px] h-[13px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
-                              <span className={`text-[13px] flex-1 truncate ${isActive ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{item.label}</span>
-                              <span className={`text-[11px] ml-auto ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`}>
+                              <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${isActive ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`} />
+                              <item.icon className={`w-[13px] h-[13px] flex-shrink-0 ${isActive ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#6B7280] dark:text-[var(--tg-secondary)]'}`} />
+                              <span className={`text-[13px] flex-1 truncate ${isActive ? 'text-[#6366F1] font-medium dark:text-[var(--tg-accent)]' : 'text-[#4B5563] dark:text-slate-400'}`}>{item.label}</span>
+                              <span className={`text-[11px] ml-auto ${isActive ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`}>
                                   {item.id === 'all' ? plans.filter(p => !p.isDeleted).length : plans.filter(p => !p.isDeleted && p.focusTickers?.includes('⭐')).length || ''}
                               </span>
                           </button>
@@ -881,10 +881,10 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                           <button key={item.id} onClick={() => setActiveFolder(item.id)}
                             className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${isActive ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
                           >
-                              <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
-                              <item.icon className={`w-[13px] h-[13px] flex-shrink-0 ${isActive ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
-                              <span className={`text-[13px] flex-1 truncate ${isActive ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{item.label}</span>
-                              {count > 0 && <span className={`text-[11px] ml-auto ${isActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`}>{count}</span>}
+                              <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${isActive ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`} />
+                              <item.icon className={`w-[13px] h-[13px] flex-shrink-0 ${isActive ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#6B7280] dark:text-[var(--tg-secondary)]'}`} />
+                              <span className={`text-[13px] flex-1 truncate ${isActive ? 'text-[#6366F1] font-medium dark:text-[var(--tg-accent)]' : 'text-[#4B5563] dark:text-slate-400'}`}>{item.label}</span>
+                              {count > 0 && <span className={`text-[11px] ml-auto ${isActive ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`}>{count}</span>}
                           </button>
                       );
                   })}
@@ -896,19 +896,19 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                   <button onClick={() => setActiveFolder('tags')}
                     className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${activeFolder === 'tags' ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
                   >
-                      <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${activeFolder === 'tags' ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
-                      <Tag className={`w-[13px] h-[13px] flex-shrink-0 ${activeFolder === 'tags' ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
-                      <span className={`text-[13px] flex-1 ${activeFolder === 'tags' ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{language === 'cn' ? '标签' : 'Tags'}</span>
+                      <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${activeFolder === 'tags' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`} />
+                      <Tag className={`w-[13px] h-[13px] flex-shrink-0 ${activeFolder === 'tags' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#6B7280] dark:text-[var(--tg-secondary)]'}`} />
+                      <span className={`text-[13px] flex-1 ${activeFolder === 'tags' ? 'text-[#6366F1] font-medium dark:text-[var(--tg-accent)]' : 'text-[#4B5563] dark:text-slate-400'}`}>{language === 'cn' ? '标签' : 'Tags'}</span>
                   </button>
 
                   {/* 回收站 */}
                   <button onClick={() => setActiveFolder('trash')}
                     className={`w-full flex items-center gap-2 px-2 py-[7px] rounded-[6px] transition-colors text-left ${activeFolder === 'trash' ? 'bg-[#EEF0FF] dark:bg-indigo-900/20' : 'hover:bg-[#F9FAFB] dark:hover:bg-slate-800/50'}`}
                   >
-                      <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${activeFolder === 'trash' ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
-                      <Trash2 className={`w-[13px] h-[13px] flex-shrink-0 ${activeFolder === 'trash' ? 'text-[#6366F1]' : 'text-[#6B7280]'}`} />
-                      <span className={`text-[13px] flex-1 ${activeFolder === 'trash' ? 'text-[#6366F1] font-medium' : 'text-[#4B5563] dark:text-slate-400'}`}>{language === 'cn' ? '回收站' : 'Trash'}</span>
-                      {trashCount > 0 && <span className={`text-[11px] ml-auto ${activeFolder === 'trash' ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`}>{trashCount}</span>}
+                      <ChevronRight className={`w-[9px] h-[9px] flex-shrink-0 ${activeFolder === 'trash' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`} />
+                      <Trash2 className={`w-[13px] h-[13px] flex-shrink-0 ${activeFolder === 'trash' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#6B7280] dark:text-[var(--tg-secondary)]'}`} />
+                      <span className={`text-[13px] flex-1 ${activeFolder === 'trash' ? 'text-[#6366F1] font-medium dark:text-[var(--tg-accent)]' : 'text-[#4B5563] dark:text-slate-400'}`}>{language === 'cn' ? '回收站' : 'Trash'}</span>
+                      {trashCount > 0 && <span className={`text-[11px] ml-auto ${activeFolder === 'trash' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#9CA3AF] dark:text-[var(--tg-muted)]'}`}>{trashCount}</span>}
                   </button>
 
                   {/* 自定义文件夹（保留功能） */}
@@ -918,7 +918,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                             onChange={(e) => setNewFolderName(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleCreateRootFolder()}
                             onBlur={() => handleCreateRootFolder()}
-                            className="w-full text-[13px] bg-[#F9FAFB] dark:bg-slate-800 border border-[#6366F1] rounded-[6px] px-2 py-1.5 outline-none text-[#1F2937] dark:text-slate-200 placeholder-[#9CA3AF]"
+                            className="w-full text-[13px] bg-[#F9FAFB] dark:bg-slate-800 border border-[#6366F1] rounded-[6px] px-2 py-1.5 outline-none text-[#1F2937] dark:text-slate-200 placeholder-[#9CA3AF] dark:border-[var(--tg-accent-border)]"
                             placeholder={language === 'cn' ? '文件夹名称...' : 'Folder name...'}
                           />
                       </div>
@@ -929,29 +929,29 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
       <div className="border-r border-[#E5E7EB] dark:border-slate-800 flex flex-col bg-white dark:bg-slate-900 flex-shrink-0" style={{ width: '280px' }}>
           <div className="p-3 border-b border-[#E5E7EB] dark:border-slate-800 bg-white dark:bg-slate-900 z-20">
               <div className="relative mb-2">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[13px] h-[13px] text-[#9CA3AF]" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-[13px] h-[13px] text-[#9CA3AF] dark:text-[var(--tg-muted)]" />
                   <input
                       ref={searchInputRef}
                       type="text"
                       placeholder={language === 'cn' ? "搜索笔记" : "Search notes"}
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] pl-8 pr-10 py-2 text-[12px] outline-none focus:border-[#6366F1] transition-colors placeholder-[#9CA3AF] text-[#1F2937] dark:text-slate-200"
+                      className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] pl-8 pr-10 py-2 text-[12px] outline-none focus:border-[#6366F1] transition-colors placeholder-[#9CA3AF] text-[#1F2937] dark:text-slate-200 dark:focus:border-[var(--tg-accent-border)]"
                   />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#9CA3AF] bg-white dark:bg-slate-700 border border-[#E5E7EB] dark:border-slate-600 rounded px-1 py-0.5">F6</span>
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-[#9CA3AF] bg-white dark:bg-slate-700 border border-[#E5E7EB] dark:border-slate-600 rounded px-1 py-0.5 dark:text-[var(--tg-muted)]">F6</span>
               </div>
               {activeFolder !== 'all' && activeFolder !== 'trash' && (
                   <div className="flex items-center gap-2 pb-1">
-                      <span className="px-[10px] py-[3px] bg-[#EEF0FF] text-[#6366F1] text-[11px] font-medium rounded-[10px]">{currentFolderName}</span>
+                      <span className="px-[10px] py-[3px] bg-[#EEF0FF] text-[#6366F1] text-[11px] font-medium rounded-[10px] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]">{currentFolderName}</span>
                   </div>
               )}
           </div>
           <div className="px-4 py-2 border-b border-[#E5E7EB] dark:border-slate-800 flex justify-between items-center">
-              <span className="text-[11px] text-[#9CA3AF]">{filteredPlans.length} {language === 'cn' ? '篇' : 'notes'}</span>
+              <span className="text-[11px] text-[#9CA3AF] dark:text-[var(--tg-muted)]">{filteredPlans.length} {language === 'cn' ? '篇' : 'notes'}</span>
               <div className="relative">
                   <button
                       onClick={() => setIsSortMenuOpen(!isSortMenuOpen)}
-                      className="flex items-center gap-1 text-[11px] text-[#6B7280] hover:text-[#1F2937] dark:hover:text-slate-200 transition-colors"
+                      className="flex items-center gap-1 text-[11px] text-[#6B7280] hover:text-[#1F2937] dark:hover:text-slate-200 transition-colors dark:text-[var(--tg-secondary)]"
                   >
                       {language === 'cn' ? '最新' : 'Latest'} <ChevronDown className="w-3 h-3" />
                   </button>
@@ -966,7 +966,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                                 className="w-full text-left px-3 py-2 text-[12px] flex items-center justify-between hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"
                               >
                                   {option.label}
-                                  {sortType === option.id && <Check className="w-3 h-3 text-[#6366F1]" />}
+                                  {sortType === option.id && <Check className="w-3 h-3 text-[#6366F1] dark:text-[var(--tg-accent)]" />}
                               </button>
                           ))}
                       </div>
@@ -975,7 +975,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar">
               {filteredPlans.length === 0 ? (
-                  <div className="p-8 text-center text-[#9CA3AF] text-[13px]">
+                  <div className="p-8 text-center text-[#9CA3AF] text-[13px] dark:text-[var(--tg-muted)]">
                       {activeFolder === 'trash' ? (language === 'cn' ? '回收站为空' : 'Trash is empty') : t.plans.noNotes}
                   </div>
               ) : (
@@ -1007,10 +1007,10 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                             className={`cursor-pointer transition-all group relative ${isMenuOpen ? 'z-[25]' : 'z-0'} ${plan.isDeleted ? 'opacity-70' : ''}`}
                             style={{
                                 padding: '12px 14px',
-                                borderBottom: '0.5px solid #F3F4F6',
-                                borderLeft: isSelected ? '2px solid #6366F1' : '2px solid transparent',
+                                borderBottom: '0.5px solid var(--tg-border, #F3F4F6)',
+                                borderLeft: isSelected ? '2px solid var(--tg-accent-border, #6366F1)' : '2px solid transparent',
                                 paddingLeft: isSelected ? '12px' : '14px',
-                                background: isSelected ? '#EEF0FF' : undefined,
+                                background: isSelected ? 'var(--tg-accent-soft, #EEF0FF)' : undefined,
                             }}
                         >
                             <div className="flex justify-between items-start mb-0.5">
@@ -1018,14 +1018,14 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                                     {plan.title || plan.date}
                                 </h4>
                                 {displayPnl !== null ? (
-                                    <span className={`text-[11px] font-medium flex-shrink-0 ${displayPnl >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>
+                                    <span className={`text-[11px] font-medium flex-shrink-0 ${displayPnl >= 0 ? 'text-[#10B981] dark:text-[var(--tg-positive)]' : 'text-[#EF4444] dark:text-[var(--tg-negative)]'}`}>
                                         {displayPnl >= 0 ? `+$${displayPnl.toFixed(0)}` : `-$${Math.abs(displayPnl).toFixed(0)}`}
                                     </span>
                                 ) : (
-                                    <span className="text-[11px] font-medium text-[#9CA3AF] flex-shrink-0">$0</span>
+                                    <span className="text-[11px] font-medium text-[#9CA3AF] flex-shrink-0 dark:text-[var(--tg-muted)]">$0</span>
                                 )}
                             </div>
-                            <p className="text-[11px] text-[#9CA3AF] mb-0.5">{dateLabel} · {relativeTime}</p>
+                            <p className="text-[11px] text-[#9CA3AF] mb-0.5 dark:text-[var(--tg-muted)]">{dateLabel} · {relativeTime}</p>
                             {previewText && (
                                 <p className="text-[12px] text-[#6B7280] dark:text-slate-400 overflow-hidden" style={{ lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                                     {previewText}
@@ -1033,11 +1033,11 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                             )}
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 {plan.isDeleted && (
-                                    <button onClick={(e) => handleRestore(e, plan)} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] hover:text-[#10B981] transition-colors" title="Restore"><Undo2 className="w-3.5 h-3.5" /></button>
+                                    <button onClick={(e) => handleRestore(e, plan)} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] hover:text-[#10B981] transition-colors dark:text-[var(--tg-muted)] dark:hover:text-[var(--tg-positive)]" title="Restore"><Undo2 className="w-3.5 h-3.5" /></button>
                                 )}
-                                <button onClick={(e) => handleSoftDelete(e, plan)} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] hover:text-[#EF4444] transition-colors" title={plan.isDeleted ? 'Delete' : 'Trash'}><Trash2 className="w-3.5 h-3.5" /></button>
+                                <button onClick={(e) => handleSoftDelete(e, plan)} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] hover:text-[#EF4444] transition-colors dark:text-[var(--tg-muted)] dark:hover:text-[var(--tg-negative)]" title={plan.isDeleted ? 'Delete' : 'Trash'}><Trash2 className="w-3.5 h-3.5" /></button>
                                 {!plan.isDeleted && (
-                                    <button onClick={(e) => { e.stopPropagation(); setNoteMenuOpenId(isMenuOpen ? null : plan.id); }} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] transition-colors"><MoreHorizontal className="w-4 h-4" /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); setNoteMenuOpenId(isMenuOpen ? null : plan.id); }} className="p-1 rounded-[4px] hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#9CA3AF] transition-colors dark:text-[var(--tg-muted)]"><MoreHorizontal className="w-4 h-4" /></button>
                                 )}
                             </div>
                             {isMenuOpen && !plan.isDeleted && (
@@ -1048,7 +1048,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                                     <div className="h-px bg-[#F3F4F6] dark:bg-slate-700 my-1"></div>
                                     <button onClick={(e) => { e.stopPropagation(); handleExport(plan, 'pdf'); }} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Printer className="w-3 h-3" /> Export PDF</button>
                                     <div className="h-px bg-[#F3F4F6] dark:bg-slate-700 my-1"></div>
-                                    <button onClick={(e) => handleSoftDelete(e, plan)} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-red-50 dark:hover:bg-rose-900/20 text-[#EF4444]"><Trash2 className="w-3 h-3" /> {language === 'cn' ? '移至回收站' : 'Move to Trash'}</button>
+                                    <button onClick={(e) => handleSoftDelete(e, plan)} className="w-full text-left px-3 py-2 text-[12px] flex items-center gap-2 hover:bg-red-50 dark:hover:bg-rose-900/20 text-[#EF4444] dark:text-[var(--tg-negative)]"><Trash2 className="w-3 h-3" /> {language === 'cn' ? '移至回收站' : 'Move to Trash'}</button>
                                 </div>
                             )}
                         </div>
@@ -1062,14 +1062,14 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
               <div className="flex flex-col h-full">
                 <div className="px-10 pt-7 pb-2 flex items-start justify-between relative">
                     <div className="flex-1">
-                        <input type="text" placeholder={t.plans.untitled} value={activePlan.title || ''} onChange={(e) => handleUpdateActivePlan({ title: e.target.value })} className="w-full bg-transparent border-none outline-none placeholder:text-[#9CA3AF] dark:placeholder:text-slate-700 mb-1" style={{ fontSize: '22px', fontWeight: 600, color: '#1F2937', lineHeight: '1.3' }} />
+                        <input type="text" placeholder={t.plans.untitled} value={activePlan.title || ''} onChange={(e) => handleUpdateActivePlan({ title: e.target.value })} className="w-full bg-transparent border-none outline-none placeholder:text-[#9CA3AF] dark:placeholder:text-slate-700 mb-1" style={{ fontSize: '22px', fontWeight: 600, color: 'var(--tg-text, #1F2937)', lineHeight: '1.3' }} />
                         {/* 元信息行 */}
-                        <div className="flex items-center gap-1.5 text-[11px] text-[#9CA3AF] mb-5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-[#9CA3AF] mb-5 dark:text-[var(--tg-muted)]">
                             <span>{language === 'cn' ? '创建' : 'Created'} {new Date(parseInt(activePlan.id) || Date.now()).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
                             <span>·</span>
                             <span>{language === 'cn' ? '最后更新' : 'Updated'} {new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
                             <span>·</span>
-                            <span className={`flex items-center gap-1 ${saveStatus === 'saving' ? 'text-[#6366F1]' : 'text-[#10B981]'}`}>
+                            <span className={`flex items-center gap-1 ${saveStatus === 'saving' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#10B981] dark:text-[var(--tg-positive)]'}`}>
                                 {saveStatus === 'saving' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                                 {saveStatus === 'saving' ? (language === 'cn' ? '保存中...' : 'Saving...') : (language === 'cn' ? '已自动保存' : 'Auto Saved')}
                             </span>
@@ -1079,16 +1079,16 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                         {activePlan.isDeleted && (
                             <button onClick={(e) => handleRestore(e, activePlan)} className="flex items-center gap-2 px-3 py-1.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-[8px] text-[13px] font-medium transition-colors"><Undo2 className="w-4 h-4" /> {language === 'cn' ? '恢复笔记' : 'Restore'}</button>
                         )}
-                        <button onClick={(e) => handleSoftDelete(e, activePlan)} className="w-[30px] h-[30px] flex items-center justify-center hover:bg-[#F9FAFB] dark:hover:bg-slate-800 text-[#6B7280] hover:text-[#EF4444] rounded-[6px] transition-colors" title={activePlan.isDeleted ? 'Delete' : t.plans.delete}><Trash2 className="w-4 h-4" /></button>
+                        <button onClick={(e) => handleSoftDelete(e, activePlan)} className="w-[30px] h-[30px] flex items-center justify-center hover:bg-[#F9FAFB] dark:hover:bg-slate-800 text-[#6B7280] hover:text-[#EF4444] rounded-[6px] transition-colors dark:text-[var(--tg-secondary)] dark:hover:text-[var(--tg-negative)]" title={activePlan.isDeleted ? 'Delete' : t.plans.delete}><Trash2 className="w-4 h-4" /></button>
                         {!activePlan.isDeleted && (
                             <div className="relative">
-                                <button onClick={() => setEditorMenuOpen(!editorMenuOpen)} className={`w-[30px] h-[30px] flex items-center justify-center hover:bg-[#F9FAFB] dark:hover:bg-slate-800 text-[#6B7280] rounded-[6px] transition-colors ${editorMenuOpen ? 'bg-[#F9FAFB] dark:bg-slate-800' : ''}`}><MoreHorizontal className="w-4 h-4" /></button>
+                                <button onClick={() => setEditorMenuOpen(!editorMenuOpen)} className={`w-[30px] h-[30px] flex items-center justify-center hover:bg-[#F9FAFB] dark:hover:bg-slate-800 text-[#6B7280] rounded-[6px] transition-colors  dark:text-[var(--tg-secondary)] ${editorMenuOpen ? 'bg-[#F9FAFB] dark:bg-slate-800' : ''}`}><MoreHorizontal className="w-4 h-4" /></button>
                                 {editorMenuOpen && (
                                     <div className="absolute right-0 top-9 w-44 bg-white dark:bg-slate-800 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-700 z-30 py-1">
-                                        <button onClick={() => handleDuplicatePlan(activePlan)} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Copy className="w-4 h-4 text-[#6B7280]" /> Duplicate</button>
-                                        <button onClick={() => showShareToast(activePlan.title || 'Note')} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Share2 className="w-4 h-4 text-[#6B7280]" /> Share</button>
+                                        <button onClick={() => handleDuplicatePlan(activePlan)} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Copy className="w-4 h-4 text-[#6B7280] dark:text-[var(--tg-secondary)]" /> Duplicate</button>
+                                        <button onClick={() => showShareToast(activePlan.title || 'Note')} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Share2 className="w-4 h-4 text-[#6B7280] dark:text-[var(--tg-secondary)]" /> Share</button>
                                         <div className="h-px bg-[#F3F4F6] dark:bg-slate-700 my-1"></div>
-                                        <button onClick={() => handleExport(activePlan, 'pdf')} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Printer className="w-4 h-4 text-[#6B7280]" /> Export PDF</button>
+                                        <button onClick={() => handleExport(activePlan, 'pdf')} className="w-full text-left px-3 py-2 text-[13px] flex items-center gap-3 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 text-[#4B5563] dark:text-slate-200"><Printer className="w-4 h-4 text-[#6B7280] dark:text-[var(--tg-secondary)]" /> Export PDF</button>
                                     </div>
                                 )}
                             </div>
@@ -1105,29 +1105,29 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                             <div className="mb-5 bg-[#F9FAFB] dark:bg-slate-800/50 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] px-4 py-3 flex items-center">
                                 <div className="flex items-center gap-6 flex-1">
                                     <div>
-                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5">{language === 'cn' ? '当日净盈亏' : 'Net P&L'}</p>
-                                        <p className={`text-[15px] font-semibold ${netPnl >= 0 ? 'text-[#10B981]' : 'text-[#EF4444]'}`}>{netPnl >= 0 ? '+' : ''}${netPnl.toFixed(2)}</p>
+                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5 dark:text-[var(--tg-muted)]">{language === 'cn' ? '当日净盈亏' : 'Net P&L'}</p>
+                                        <p className={`text-[15px] font-semibold ${netPnl >= 0 ? 'text-[#10B981] dark:text-[var(--tg-positive)]' : 'text-[#EF4444] dark:text-[var(--tg-negative)]'}`}>{netPnl >= 0 ? '+' : ''}${netPnl.toFixed(2)}</p>
                                     </div>
                                     <div className="w-px h-8 bg-[#E5E7EB] dark:bg-slate-700" />
                                     <div>
-                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5">{language === 'cn' ? '交易' : 'Trades'}</p>
+                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5 dark:text-[var(--tg-muted)]">{language === 'cn' ? '交易' : 'Trades'}</p>
                                         <p className="text-[13px] font-medium text-[#1F2937] dark:text-slate-200">{activePlanTrades.length}</p>
                                     </div>
                                     <div className="w-px h-8 bg-[#E5E7EB] dark:bg-slate-700" />
                                     <div>
-                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5">{language === 'cn' ? '胜率' : 'Win Rate'}</p>
+                                        <p className="text-[11px] text-[#9CA3AF] mb-0.5 dark:text-[var(--tg-muted)]">{language === 'cn' ? '胜率' : 'Win Rate'}</p>
                                         <p className="text-[13px] font-medium text-[#1F2937] dark:text-slate-200">{winRate}%</p>
                                     </div>
                                 </div>
-                                <button onClick={openLinkTradeModal} className="text-[11px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors flex-shrink-0">
+                                <button onClick={openLinkTradeModal} className="text-[11px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors flex-shrink-0 dark:text-[var(--tg-accent)] dark:hover:text-[var(--tg-accent)]">
                                     {language === 'cn' ? '查看交易 →' : 'View Trades →'}
                                 </button>
                             </div>
                         );
                     })() : (
                         <div className="mb-5 bg-[#F9FAFB] dark:bg-slate-800/50 border border-[#E5E7EB] dark:border-slate-700 rounded-[8px] px-4 py-3 flex items-center justify-between">
-                            <span className="text-[12px] text-[#9CA3AF]">{language === 'cn' ? '当日无交易记录' : 'No trades for this day'}</span>
-                            <button onClick={openLinkTradeModal} className="text-[11px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors">
+                            <span className="text-[12px] text-[#9CA3AF] dark:text-[var(--tg-muted)]">{language === 'cn' ? '当日无交易记录' : 'No trades for this day'}</span>
+                            <button onClick={openLinkTradeModal} className="text-[11px] font-medium text-[#6366F1] hover:text-[#4F46E5] transition-colors dark:text-[var(--tg-accent)] dark:hover:text-[var(--tg-accent)]">
                                 {language === 'cn' ? '添加一笔交易 →' : 'Link a trade →'}
                             </button>
                         </div>
@@ -1136,9 +1136,9 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                     <div className="flex items-center gap-2 mb-5 flex-wrap">
                         <div className="relative">
                             <button onClick={() => setFolderSelectorOpen(!folderSelectorOpen)} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
-                                <Folder className="w-3.5 h-3.5 text-[#6B7280]" />
+                                <Folder className="w-3.5 h-3.5 text-[#6B7280] dark:text-[var(--tg-secondary)]" />
                                 {activePlan.isDeleted ? (language === 'cn' ? '回收站' : 'Trash') : getFolderNameById(activePlan.folder)}
-                                <ChevronDown className="w-3 h-3 text-[#6B7280]" />
+                                <ChevronDown className="w-3 h-3 text-[#6B7280] dark:text-[var(--tg-secondary)]" />
                             </button>
                             {folderSelectorOpen && (
                                 <div className="absolute top-full left-0 mt-1 w-52 bg-white dark:bg-slate-900 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-800 z-20 p-1 max-h-60 overflow-y-auto">
@@ -1150,7 +1150,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                                         { id: 'chart-analysis', label: language === 'cn' ? '图表分析' : 'Chart Analysis' },
                                     ].map(f => (
                                         <button key={f.id} onClick={() => { handleUpdateActivePlan({ folder: f.id, isDeleted: false }); setFolderSelectorOpen(false); }}
-                                          className={`w-full text-left px-3 py-2 text-[13px] rounded-[6px] hover:bg-[#F9FAFB] dark:hover:bg-slate-800 transition-colors flex items-center gap-2 ${!activePlan.isDeleted && activePlan.folder === f.id ? 'text-[#6366F1] font-medium bg-[#EEF0FF] dark:bg-indigo-900/20' : 'text-[#4B5563] dark:text-slate-300'}`}>
+                                          className={`w-full text-left px-3 py-2 text-[13px] rounded-[6px] hover:bg-[#F9FAFB] dark:hover:bg-slate-800 transition-colors flex items-center gap-2 ${!activePlan.isDeleted && activePlan.folder === f.id ? 'text-[#6366F1] font-medium bg-[#EEF0FF] dark:bg-indigo-900/20 dark:text-[var(--tg-accent)]' : 'text-[#4B5563] dark:text-slate-300'}`}>
                                             <Folder className="w-3.5 h-3.5" />{f.label}
                                         </button>
                                     ))}
@@ -1159,26 +1159,26 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                         </div>
                         <div className="relative">
                             <button onClick={() => setIsTagPopoverOpen(!isTagPopoverOpen)} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
-                                <Tag className="w-3.5 h-3.5 text-[#6B7280]" />
+                                <Tag className="w-3.5 h-3.5 text-[#6B7280] dark:text-[var(--tg-secondary)]" />
                                 {language === 'cn' ? '添加标签' : 'Add Tag'}
                             </button>
                             {isTagPopoverOpen && (
                                 <div className="absolute top-full left-0 mt-1 w-60 bg-white dark:bg-slate-900 rounded-[8px] shadow-xl border border-[#E5E7EB] dark:border-slate-700 z-20 p-3">
-                                    <input type="text" autoFocus placeholder={language === 'cn' ? '输入标签...' : 'Tag name...'} className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[#6366F1] mb-2 text-[#1F2937] dark:text-white" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(newTagInput); }} />
+                                    <input type="text" autoFocus placeholder={language === 'cn' ? '输入标签...' : 'Tag name...'} className="w-full bg-[#F9FAFB] dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] px-3 py-2 text-[13px] outline-none focus:border-[#6366F1] mb-2 text-[#1F2937] dark:text-white dark:focus:border-[var(--tg-accent-border)]" value={newTagInput} onChange={(e) => setNewTagInput(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') handleAddTag(newTagInput); }} />
                                     <div className="flex flex-wrap gap-1.5">
                                         {commonTags.map(tag => (
-                                            <button key={tag} onClick={() => handleAddTag(tag)} className="px-2 py-1 bg-[#F3F4F6] dark:bg-slate-800 hover:bg-[#EEF0FF] text-[11px] rounded-[6px] text-[#4B5563] dark:text-slate-300 hover:text-[#6366F1] transition-colors">{tag}</button>
+                                            <button key={tag} onClick={() => handleAddTag(tag)} className="px-2 py-1 bg-[#F3F4F6] dark:bg-slate-800 hover:bg-[#EEF0FF] text-[11px] rounded-[6px] text-[#4B5563] dark:text-slate-300 hover:text-[#6366F1] transition-colors dark:hover:bg-[var(--tg-accent-soft)] dark:hover:text-[var(--tg-accent)]">{tag}</button>
                                         ))}
                                     </div>
                                 </div>
                             )}
                         </div>
                         <button onClick={() => setIsTemplateGridModalOpen(true)} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
-                            <Layout className="w-3.5 h-3.5 text-[#6B7280]" />
+                            <Layout className="w-3.5 h-3.5 text-[#6B7280] dark:text-[var(--tg-secondary)]" />
                             {language === 'cn' ? '选择模板' : 'Template'}
                         </button>
                         <button onClick={openSaveTemplateModal} className="flex items-center gap-1.5 px-[10px] py-[5px] bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-700 rounded-[6px] text-[12px] text-[#4B5563] dark:text-slate-300 hover:bg-[#F9FAFB] dark:hover:bg-slate-700 transition-colors">
-                            <BookMarked className="w-3.5 h-3.5 text-[#6B7280]" />
+                            <BookMarked className="w-3.5 h-3.5 text-[#6B7280] dark:text-[var(--tg-secondary)]" />
                             {language === 'cn' ? '保存为模板' : 'Save Template'}
                         </button>
                     </div>
@@ -1228,8 +1228,8 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                 </div>
               </div>
           ) : (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                  <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4"><BookOpen className="w-8 h-8 text-slate-400" /></div>
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 dark:text-slate-400">
+                  <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4"><BookOpen className="w-8 h-8 text-slate-400 dark:text-slate-400" /></div>
                   <p className="text-lg font-medium text-slate-600 dark:text-slate-300">{t.plans.selectNotePlaceholder}</p>
                   <p className="text-sm">{t.plans.selectNoteDesc}</p>
               </div>
@@ -1243,23 +1243,23 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                           <h3 className="text-2xl font-bold text-slate-900 dark:text-white">{language === 'cn' ? '选择模板' : 'Select Template'}</h3>
                           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{language === 'cn' ? '选择您预设的复盘或计划模板，快速填充笔记。' : 'Select your preferred review or planning template to fill your note.'}</p>
                       </div>
-                      <button onClick={() => setIsTemplateGridModalOpen(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"><X className="w-6 h-6 text-slate-400" /></button>
+                      <button onClick={() => setIsTemplateGridModalOpen(false)} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors"><X className="w-6 h-6 text-slate-400 dark:text-slate-400" /></button>
                   </div>
                   <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
                       <div className="mb-6">
-                          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">{language === 'cn' ? '推荐模板' : 'Recommended templates'}</h4>
+                          <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4 dark:text-slate-400">{language === 'cn' ? '推荐模板' : 'Recommended templates'}</h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                              <div onClick={() => handleOpenTemplateForm()} className="group flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/10 transition-all min-h-[180px]">
-                                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><Plus className="w-6 h-6 text-slate-400 group-hover:text-indigo-50" /></div>
+                              <div onClick={() => handleOpenTemplateForm()} className="group flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 hover:bg-indigo-50/10 transition-all min-h-[180px] dark:hover:bg-indigo-950/40">
+                                  <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform"><Plus className="w-6 h-6 text-slate-400 group-hover:text-indigo-50 dark:text-slate-400" /></div>
                                   <span className="font-bold text-slate-500 dark:text-slate-400 group-hover:text-indigo-500">{language === 'cn' ? '创建新模板' : 'Create Custom Template'}</span>
                               </div>
                               {allTemplates.map(template => {
                                   const isSelected = selectedTemplateInGrid === template.id;
                                   return (
-                                      <div key={template.id} onClick={() => setSelectedTemplateInGrid(template.id)} className={`group relative flex flex-col p-5 bg-white dark:bg-slate-800/50 border rounded-2xl cursor-pointer transition-all min-h-[180px] shadow-sm hover:shadow-md ${isSelected ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'}`}>
+                                      <div key={template.id} onClick={() => setSelectedTemplateInGrid(template.id)} className={`group relative flex flex-col p-5 bg-white dark:bg-slate-800/50 border rounded-2xl cursor-pointer transition-all min-h-[180px] shadow-sm hover:shadow-md ${isSelected ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/30'}`}>
                                           <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={(e) => { e.stopPropagation(); handleOpenTemplateForm(e, template); }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-indigo-500 transition-colors" title="Edit Template"><Edit2 className="w-3.5 h-3.5" /></button>
-                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(e, template.id); }} className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded text-slate-400 hover:text-rose-500 transition-colors" title="Delete Template"><Trash2 className="w-3.5 h-3.5" /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleOpenTemplateForm(e, template); }} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-slate-400 hover:text-indigo-500 transition-colors dark:text-slate-400" title="Edit Template"><Edit2 className="w-3.5 h-3.5" /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleDeleteTemplate(e, template.id); }} className="p-1.5 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded text-slate-400 hover:text-rose-500 transition-colors dark:text-slate-400" title="Delete Template"><Trash2 className="w-3.5 h-3.5" /></button>
                                           </div>
                                           <div className="flex items-center gap-3 mb-3">
                                               <div className="w-2 h-6 bg-indigo-500 rounded-full"></div>
@@ -1275,7 +1275,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                   </div>
                   <div className="px-8 py-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-950">
                       <button onClick={() => setIsTemplateGridModalOpen(false)} className="px-6 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors">{language === 'cn' ? '取消' : 'Cancel'}</button>
-                      <button onClick={handleApplyTemplateGrid} disabled={!selectedTemplateInGrid} className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"><CheckSquare className="w-4 h-4" />{language === 'cn' ? '应用模板' : '应用'}</button>
+                      <button onClick={handleApplyTemplateGrid} disabled={!selectedTemplateInGrid} className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-800 disabled:text-slate-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2 dark:disabled:text-slate-400"><CheckSquare className="w-4 h-4" />{language === 'cn' ? '应用模板' : '应用'}</button>
                   </div>
               </div>
               {isTemplateFormOpen && (
@@ -1283,7 +1283,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md shadow-2xl flex flex-col overflow-hidden animate-fade-in-up">
                         <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                             <h3 className="font-bold text-slate-900 dark:text-white">{editingTemplate ? (language === 'cn' ? '编辑模板' : 'Edit Template') : (language === 'cn' ? '创建新模板' : 'Create Template')}</h3>
-                            <button onClick={() => setIsTemplateFormOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600 dark:hover:text-white" /></button>
+                            <button onClick={() => setIsTemplateFormOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600 dark:hover:text-white dark:text-slate-400" /></button>
                         </div>
                         <div className="p-6 space-y-4 bg-white dark:bg-slate-900">
                             <div>
@@ -1295,8 +1295,8 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                                 <textarea value={formContent} onChange={e => setFormContent(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 h-48 resize-none" placeholder={language === 'cn' ? "输入复盘或计划结构..." : "Enter review or plan structure..."} />
                             </div>
                             <div className="flex gap-3 pt-2">
-                                <button onClick={() => setIsTemplateFormOpen(false)} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">{language === 'cn' ? '取消' : 'Cancel'}</button>
-                                <button onClick={handleSaveTemplateForm} disabled={!formName.trim()} className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-sm shadow-lg transition-all">{language === 'cn' ? '保存' : 'Save'}</button>
+                                <button onClick={() => setIsTemplateFormOpen(false)} className="flex-1 py-2.5 rounded-xl font-bold text-sm text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors dark:text-slate-400">{language === 'cn' ? '取消' : 'Cancel'}</button>
+                                <button onClick={handleSaveTemplateForm} disabled={!formName.trim()} className="flex-[2] py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-xl font-bold text-sm shadow-lg transition-all dark:disabled:bg-slate-700">{language === 'cn' ? '保存' : 'Save'}</button>
                             </div>
                         </div>
                     </div>
@@ -1310,7 +1310,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
               <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden animate-fade-in-up">
                   <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                       <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2"><Save className="w-4 h-4 text-indigo-500" />{language === 'cn' ? '保存为模板' : 'Save as Template'}</h3>
-                      <button onClick={() => setIsSaveTemplateModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-900 dark:hover:text-white" /></button>
+                      <button onClick={() => setIsSaveTemplateModalOpen(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400" /></button>
                   </div>
                   <div className="p-6 bg-white dark:bg-slate-900">
                       <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">{language === 'cn' ? '模板名称' : 'Template Name'}</label>
@@ -1325,22 +1325,22 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up overflow-hidden">
                     <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                         <h3 className="text-lg font-bold text-slate-900 dark:text-white">{t.plans.selectTrades}</h3>
-                        <div className="flex gap-3 items-center"><span className="text-xs text-slate-500">{tempLinkedTradeIds.length} selected</span><button onClick={() => setIsLinkTradeModalOpen(false)}><X className="w-5 h-5 text-slate-500" /></button></div>
+                        <div className="flex gap-3 items-center"><span className="text-xs text-slate-500 dark:text-slate-400">{tempLinkedTradeIds.length} selected</span><button onClick={() => setIsLinkTradeModalOpen(false)}><X className="w-5 h-5 text-slate-500 dark:text-slate-400" /></button></div>
                     </div>
                     <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50/50 dark:bg-slate-950/30">
-                        {trades.length === 0 && <p className="text-center text-slate-400 py-10">No trades recorded yet.</p>}
+                        {trades.length === 0 && <p className="text-center text-slate-400 py-10 dark:text-slate-400">No trades recorded yet.</p>}
                         {trades.sort((a,b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()).map(trade => {
                             const isSelected = tempLinkedTradeIds.includes(trade.id);
                             return (
-                                <div key={trade.id} onClick={() => toggleTempLinkedTrade(trade.id)} className={`p-3 border rounded-xl flex justify-between items-center cursor-pointer transition-all ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 shadow-md ring-1 ring-indigo-500' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-indigo-300'}`}>
+                                <div key={trade.id} onClick={() => toggleTempLinkedTrade(trade.id)} className={`p-3 border rounded-xl flex justify-between items-center cursor-pointer transition-all ${isSelected ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 shadow-md ring-1 ring-indigo-500' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-500/30'}`}>
                                     <div className="flex items-center gap-4">
                                         <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 dark:border-slate-600'}`}>{isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}</div>
                                         <div>
-                                            <div className="flex items-center gap-2"><p className="font-bold text-slate-900 dark:text-white">{trade.symbol}</p><span className={`text-[10px] px-1.5 rounded font-bold ${trade.direction === '做多' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>{trade.direction}</span></div>
-                                            <p className="text-xs text-slate-500">{new Date(trade.entryDate).toLocaleString()}</p>
+                                            <div className="flex items-center gap-2"><p className="font-bold text-slate-900 dark:text-white">{trade.symbol}</p><span className={`text-[10px] px-1.5 rounded font-bold ${trade.direction === '做多' ? 'bg-blue-100 text-blue-700 dark:text-blue-300 dark:bg-blue-950/40' : 'bg-orange-100 text-orange-700 dark:text-orange-300 dark:bg-orange-950/40'}`}>{trade.direction}</span></div>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(trade.entryDate).toLocaleString()}</p>
                                         </div>
                                     </div>
-                                    <div className="text-right"><p className={`font-mono font-bold ${trade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${trade.pnl.toFixed(2)}</p><p className="text-xs text-slate-400">{trade.setup}</p></div>
+                                    <div className="text-right"><p className={`font-mono font-bold ${trade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>${trade.pnl.toFixed(2)}</p><p className="text-xs text-slate-400 dark:text-slate-400">{trade.setup}</p></div>
                                 </div>
                             );
                         })}

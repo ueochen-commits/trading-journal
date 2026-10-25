@@ -62,12 +62,12 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                     </div>
 
                     <div className="hidden md:flex items-center gap-4">
-                        <button onClick={toggleLanguage} className="text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase">
+                        <button onClick={toggleLanguage} className="text-slate-400 hover:text-white transition-colors text-xs font-bold uppercase dark:text-slate-400">
                             {language === 'cn' ? 'EN' : 'CN'}
                         </button>
                         <button 
                             onClick={onEnterApp}
-                            className="px-5 py-2.5 bg-white text-slate-950 rounded-full font-bold text-sm hover:bg-indigo-50 transition-all hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                            className="px-5 py-2.5 bg-white text-slate-950 rounded-full font-bold text-sm hover:bg-indigo-50 transition-all hover:scale-105 shadow-[0_0_20px_rgba(255,255,255,0.3)] dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-indigo-950/40"
                         >
                             {language === 'cn' ? '进入应用' : 'Launch App'}
                         </button>
@@ -110,14 +110,14 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                         {t.landing.heroTitle}
                     </h1>
                     
-                    <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in-up delay-100 font-medium">
+                    <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in-up delay-100 font-medium dark:text-slate-400">
                         {t.landing.heroSubtitle}
                     </p>
                     
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-fade-in-up delay-200 mb-16">
                         <button 
                             onClick={onEnterApp}
-                            className="w-full sm:w-auto px-8 py-4 bg-white text-slate-950 hover:bg-indigo-50 rounded-full font-bold text-lg shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-4 bg-white text-slate-950 hover:bg-indigo-50 rounded-full font-bold text-lg shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all transform hover:scale-105 flex items-center justify-center gap-2 dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-indigo-950/40"
                         >
                             {t.landing.ctaStart} <ArrowRight className="w-5 h-5" />
                         </button>
@@ -128,7 +128,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
                     {/* Trust Ticker */}
                     <div className="border-t border-white/5 pt-8 animate-fade-in-up delay-300">
-                        <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mb-6">{t.landing.trustedBy}</p>
+                        <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mb-6 dark:text-slate-400">{t.landing.trustedBy}</p>
                         <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
                             {/* Simple text logos for demo */}
                             <span className="text-xl font-black">BINANCE</span>
@@ -168,15 +168,15 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                 <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-white/5">
                     <div>
                         <div className="text-3xl md:text-4xl font-black text-white mb-1">15k+</div>
-                        <div className="text-slate-500 text-sm font-medium uppercase tracking-wider">{t.landing.stats.users}</div>
+                        <div className="text-slate-500 text-sm font-medium uppercase tracking-wider dark:text-slate-400">{t.landing.stats.users}</div>
                     </div>
                     <div>
                         <div className="text-3xl md:text-4xl font-black text-white mb-1">2.5M+</div>
-                        <div className="text-slate-500 text-sm font-medium uppercase tracking-wider">{t.landing.stats.trades}</div>
+                        <div className="text-slate-500 text-sm font-medium uppercase tracking-wider dark:text-slate-400">{t.landing.stats.trades}</div>
                     </div>
                     <div>
-                        <div className="text-3xl md:text-4xl font-black text-white mb-1">4.9<span className="text-lg text-slate-500">/5</span></div>
-                        <div className="text-slate-500 text-sm font-medium uppercase tracking-wider flex items-center justify-center gap-1">
+                        <div className="text-3xl md:text-4xl font-black text-white mb-1">4.9<span className="text-lg text-slate-500 dark:text-slate-400">/5</span></div>
+                        <div className="text-slate-500 text-sm font-medium uppercase tracking-wider flex items-center justify-center gap-1 dark:text-slate-400">
                             {t.landing.stats.rating} <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
                         </div>
                     </div>
@@ -200,7 +200,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                                 <Database className="w-6 h-6" />
                             </div>
                             <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white">{t.landing.featureSections.importTitle}</h2>
-                            <p className="text-lg text-slate-400 leading-relaxed mb-8">
+                            <p className="text-lg text-slate-400 leading-relaxed mb-8 dark:text-slate-400">
                                 {t.landing.featureSections.importDesc}
                             </p>
                             <ul className="space-y-4">
@@ -223,13 +223,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                             <div className="mb-6">
                                 <Logo />
                             </div>
-                            <p className="text-slate-500 max-w-sm mb-8">
+                            <p className="text-slate-500 max-w-sm mb-8 dark:text-slate-400">
                                 The world's most advanced trading journal. Built by traders, for traders. Master your psychology and scale your edge.
                             </p>
                             <div className="flex gap-4">
                                 {/* Social Icons Mockup */}
                                 {[1,2,3,4].map(i => (
-                                    <div key={i} className="w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer">
+                                    <div key={i} className="w-8 h-8 bg-slate-900 rounded-full flex items-center justify-center text-slate-500 hover:bg-indigo-600 hover:text-white transition-colors cursor-pointer dark:text-slate-400">
                                         <Globe className="w-4 h-4" />
                                     </div>
                                 ))}
@@ -238,7 +238,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                         
                         <div>
                             <h4 className="font-bold text-white mb-6">{t.landing.footer.product}</h4>
-                            <ul className="space-y-4 text-sm text-slate-500">
+                            <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.features}</a></li>
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.pricing}</a></li>
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.changelog}</a></li>
@@ -248,7 +248,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
                         <div>
                             <h4 className="font-bold text-white mb-6">{t.landing.footer.resources}</h4>
-                            <ul className="space-y-4 text-sm text-slate-500">
+                            <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.blog}</a></li>
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.academy}</a></li>
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.help}</a></li>
@@ -258,7 +258,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
 
                         <div>
                             <h4 className="font-bold text-white mb-6">{t.landing.footer.company}</h4>
-                            <ul className="space-y-4 text-sm text-slate-500">
+                            <ul className="space-y-4 text-sm text-slate-500 dark:text-slate-400">
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.about}</a></li>
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.careers}</a></li>
                                 <li><a href="#" className="hover:text-indigo-400 transition-colors">{t.landing.footer.legal}</a></li>
@@ -267,8 +267,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                     </div>
 
                     <div className="border-t border-slate-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-slate-600 text-sm">&copy; 2024 TradeGrail Inc. {t.landing.footerRights}</p>
-                        <div className="flex gap-6 text-sm text-slate-600">
+                        <p className="text-slate-600 text-sm dark:text-slate-300">&copy; 2024 TradeGrail Inc. {t.landing.footerRights}</p>
+                        <div className="flex gap-6 text-sm text-slate-600 dark:text-slate-300">
                             <a href="#" className="hover:text-white transition-colors">{t.landing.footer.privacy}</a>
                             <a href="#" className="hover:text-white transition-colors">{t.landing.footer.terms}</a>
                         </div>

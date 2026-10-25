@@ -148,18 +148,18 @@ const HeatmapTooltip = ({ state, cardRef }: { state: TooltipState; cardRef: Reac
   return (
     <div style={{
       position: 'absolute', left, top,
-      background: '#fff', border: '1px solid rgba(148,163,184,0.25)',
+      background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
       borderRadius: 8, padding: '12px 14px', minWidth: 180,
       boxShadow: '0 4px 16px -4px rgba(15,23,42,0.12)',
       pointerEvents: 'none', zIndex: 100,
       fontFamily: 'inherit', fontSize: 12,
     }}>
       <div style={{ marginBottom: 6, paddingBottom: 8, borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#0F172A' }}>{dayLabel} · {c.timeSlot} UTC</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tg-text, #0F172A)' }}>{dayLabel} · {c.timeSlot} UTC</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, flexShrink: 0, display: 'inline-block' }} />
-        <span style={{ color: '#64748B', flex: 1 }}>累计盈亏</span>
+        <span style={{ color: 'var(--tg-secondary, #64748B)', flex: 1 }}>累计盈亏</span>
         <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: pnlColor }}>
           {isPos ? '+' : '−'}${Math.abs(c.totalPnL).toFixed(2)}
         </span>
@@ -167,12 +167,12 @@ const HeatmapTooltip = ({ state, cardRef }: { state: TooltipState; cardRef: Reac
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 16px', paddingTop: 10, borderTop: '1px solid rgba(148,163,184,0.1)' }}>
         {[
           { label: '期望 R', value: `${c.expectancy >= 0 ? '+' : ''}${c.expectancy.toFixed(2)}R`, color: expColor },
-          { label: '交易笔数', value: String(c.tradeCount), color: '#0F172A' },
-          { label: '胜率', value: `${(c.winRate * 100).toFixed(0)}%`, color: '#0F172A' },
-          { label: '平均 P/L', value: `${c.avgPnL >= 0 ? '+' : '−'}$${Math.abs(c.avgPnL).toFixed(2)}`, color: c.avgPnL >= 0 ? '#059669' : '#DC2626' },
+          { label: '交易笔数', value: String(c.tradeCount), color: 'var(--tg-text, #0F172A)' },
+          { label: '胜率', value: `${(c.winRate * 100).toFixed(0)}%`, color: 'var(--tg-text, #0F172A)' },
+          { label: '平均 P/L', value: `${c.avgPnL >= 0 ? '+' : '−'}$${Math.abs(c.avgPnL).toFixed(2)}`, color: c.avgPnL >= 0 ? 'var(--tg-positive, #059669)' : 'var(--tg-negative, #DC2626)' },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 10, color: '#94A3B8', letterSpacing: '0.02em' }}>{s.label}</span>
+            <span style={{ fontSize: 10, color: 'var(--tg-muted, #94A3B8)', letterSpacing: '0.02em' }}>{s.label}</span>
             <span style={{ fontSize: 12, fontWeight: 600, color: s.color, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums' }}>{s.value}</span>
           </div>
         ))}
@@ -228,13 +228,13 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
   // Empty state
   if (totalTrades < 10) {
     return (
-      <div style={{ position: 'relative', background: '#fff', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
+      <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14, flexShrink: 0 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '时段 × 星期' : 'Time × Day'}</span>
+            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '时段 × 星期' : 'Time × Day'}</span>
             {infoIcon}
           </span>
-          <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天 · UTC</span>
+          <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>近 90 天 · UTC</span>
         </div>
         <EmptyChartState
           variant="cards"
@@ -248,16 +248,16 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
   }
 
   return (
-    <div ref={cardRef} style={{ position: 'relative', background: '#fff', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
+    <div ref={cardRef} style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
       <HeatmapTooltip state={tooltip} cardRef={cardRef} />
 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14, flexShrink: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '时段 × 星期' : 'Time × Day'}</span>
+          <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '时段 × 星期' : 'Time × Day'}</span>
           {infoIcon}
         </span>
-        <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天 · UTC</span>
+        <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>近 90 天 · UTC</span>
       </div>
 
       {/* Grid */}
@@ -275,14 +275,14 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
           <div />
           {/* Day headers */}
           {WEEK_DAYS.map(d => (
-            <div key={d} style={{ fontSize: 10, fontWeight: 500, color: '#64748B', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</div>
+            <div key={d} style={{ fontSize: 10, fontWeight: 500, color: 'var(--tg-secondary, #64748B)', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{d}</div>
           ))}
 
           {/* Rows */}
           {TIME_SLOTS.map(slot => (
             <React.Fragment key={slot}>
               {/* Time label */}
-              <div style={{ fontSize: 9, color: '#94A3B8', fontFamily: '"SF Mono", Menlo, monospace', textAlign: 'right', paddingRight: 6, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', whiteSpace: 'nowrap' }}>
+              <div style={{ fontSize: 9, color: 'var(--tg-muted, #94A3B8)', fontFamily: '"SF Mono", Menlo, monospace', textAlign: 'right', paddingRight: 6, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', whiteSpace: 'nowrap' }}>
                 {slot}
               </div>
               {/* Cells */}
@@ -328,16 +328,16 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(148,163,184,0.12)', flexShrink: 0 }}>
         {/* Legend */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 10, color: '#94A3B8' }}>亏损</span>
-          <div style={{ width: 80, height: 6, borderRadius: 3, background: 'linear-gradient(to right, rgba(239,68,68,0.70) 0%, rgba(239,68,68,0.40) 30%, rgba(239,68,68,0.10) 45%, #F8FAFC 50%, rgba(16,185,129,0.10) 55%, rgba(16,185,129,0.40) 70%, rgba(16,185,129,0.70) 100%)' }} />
-          <span style={{ fontSize: 10, color: '#94A3B8' }}>盈利</span>
+          <span style={{ fontSize: 10, color: 'var(--tg-muted, #94A3B8)' }}>亏损</span>
+          <div style={{ width: 80, height: 6, borderRadius: 3, background: 'linear-gradient(to right, rgba(239,68,68,0.70) 0%, rgba(239,68,68,0.40) 30%, rgba(239,68,68,0.10) 45%, var(--tg-accent-soft, #F8FAFC) 50%, rgba(16,185,129,0.10) 55%, rgba(16,185,129,0.40) 70%, rgba(16,185,129,0.70) 100%)' }} />
+          <span style={{ fontSize: 10, color: 'var(--tg-muted, #94A3B8)' }}>盈利</span>
         </div>
         {/* Best / Worst */}
         {aggregates && (
-          <div style={{ fontSize: 10, color: '#64748B' }}>
-            最佳: <strong style={{ color: '#059669', fontFamily: '"Inter", sans-serif' }}>{WEEK_DAYS[aggregates.best.dayOfWeek - 1]} {aggregates.best.timeSlot}</strong>
-            <span style={{ margin: '0 5px', color: '#CBD5E1' }}>·</span>
-            最差: <strong style={{ color: '#DC2626', fontFamily: '"Inter", sans-serif' }}>{WEEK_DAYS[aggregates.worst.dayOfWeek - 1]} {aggregates.worst.timeSlot}</strong>
+          <div style={{ fontSize: 10, color: 'var(--tg-secondary, #64748B)' }}>
+            最佳: <strong style={{ color: 'var(--tg-positive, #059669)', fontFamily: '"Inter", sans-serif' }}>{WEEK_DAYS[aggregates.best.dayOfWeek - 1]} {aggregates.best.timeSlot}</strong>
+            <span style={{ margin: '0 5px', color: 'var(--tg-muted, #CBD5E1)' }}>·</span>
+            最差: <strong style={{ color: 'var(--tg-negative, #DC2626)', fontFamily: '"Inter", sans-serif' }}>{WEEK_DAYS[aggregates.worst.dayOfWeek - 1]} {aggregates.worst.timeSlot}</strong>
           </div>
         )}
       </div>

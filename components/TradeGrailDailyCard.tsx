@@ -49,11 +49,11 @@ function buildHeadlineParts(scenario: Scenario, yesterdayTrades: Trade[]): React
   const n = yesterdayTrades.length;
   const symbols = [...new Set(yesterdayTrades.map(t => t.symbol))].slice(0, 2).join('、');
 
-  const pos = (v: string) => <span style={{ color: '#86EFAC', fontWeight: 500 }}>{v}</span>;
-  const neg = (v: string) => <span style={{ color: '#FCA5A5', fontWeight: 500 }}>{v}</span>;
+  const pos = (v: string) => <span style={{ color: 'var(--tg-muted, #86EFAC)', fontWeight: 500 }}>{v}</span>;
+  const neg = (v: string) => <span style={{ color: 'var(--tg-muted, #FCA5A5)', fontWeight: 500 }}>{v}</span>;
   const emph = (v: string) => <span style={{ color: '#FFFFFF', fontWeight: 500 }}>{v}</span>;
   const actionPrefix = <span style={{ color: 'rgba(199,210,254,0.7)', fontWeight: 500 }}>建议：</span>;
-  const action = (v: string) => <span style={{ color: '#C7D2FE', fontWeight: 500 }}>{v}</span>;
+  const action = (v: string) => <span style={{ color: 'var(--tg-muted, #C7D2FE)', fontWeight: 500 }}>{v}</span>;
 
   if (scenario === 'profit') return <>昨日成交 {emph(`${n} 笔`)}，{symbols ? symbols + ' ' : ''}净收益 {pos(`+$${netPnl.toFixed(2)}`)}，盈亏比 {emph(pf)}，胜率 {emph(`${winRate}%`)}。{actionPrefix}{action('检视离场条件是否符合策略手册规则。')}</>;
   if (scenario === 'loss') return <>昨日成交 {emph(`${n} 笔`)}，净亏损 {neg(`-$${Math.abs(netPnl).toFixed(2)}`)}，胜率 {emph(`${winRate}%`)}，盈亏比 {emph(pf)}。{actionPrefix}{action('回看亏损笔交易并在策略手册中强化止损条款。')}</>;
@@ -115,7 +115,7 @@ const TradeGrailDailyCard: React.FC<TradeGrailDailyCardProps> = ({
       {banner && (
         <div style={{ position: 'absolute', top: 12, left: 24, right: 24, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', background: isMonthly ? 'rgba(99,102,241,0.3)' : 'rgba(167,139,250,0.15)', border: `1px solid ${isMonthly ? 'rgba(167,139,250,0.5)' : 'rgba(167,139,250,0.3)'}`, borderRadius: 5, zIndex: 3, backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#E0E7FF' }}>
-            <span style={{ width: 5, height: 5, borderRadius: '50%', background: isMonthly ? '#F8FAFC' : '#C7D2FE', boxShadow: `0 0 0 3px ${isMonthly ? 'rgba(248,250,252,0.25)' : 'rgba(199,210,254,0.2)'}`, flexShrink: 0 }} />
+            <span style={{ width: 5, height: 5, borderRadius: '50%', background: isMonthly ? 'var(--tg-accent-soft, #F8FAFC)' : 'var(--tg-accent-soft, #C7D2FE)', boxShadow: `0 0 0 3px ${isMonthly ? 'rgba(248,250,252,0.25)' : 'rgba(199,210,254,0.2)'}`, flexShrink: 0 }} />
             <span><span style={{ fontWeight: 600, color: '#FFFFFF' }}>{banner.title}</span>{banner.meta ? ` · ${banner.meta}` : ''}</span>
           </span>
           <button onClick={banner.onAction} style={{ fontSize: 11, color: isMonthly ? '#F8FAFC' : '#E0E7FF', background: isMonthly ? 'rgba(255,255,255,0.15)' : 'transparent', border: 'none', cursor: 'pointer', padding: '2px 8px', borderRadius: 4, fontWeight: 500, fontFamily: 'inherit', transition: 'background 0.15s ease' }}

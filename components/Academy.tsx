@@ -157,7 +157,7 @@ const Academy: React.FC = () => {
                         </button>
                         <div>
                             <h3 className="font-bold text-lg">{t.academy.exam.cfaTitle}</h3>
-                            <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">{q.topic}</p>
+                            <p className="text-xs text-slate-500 uppercase font-bold tracking-widest dark:text-slate-400">{q.topic}</p>
                         </div>
                     </div>
                     <div className="text-right">
@@ -173,7 +173,7 @@ const Academy: React.FC = () => {
                 {/* Question Body */}
                 <div className="flex-1 max-w-3xl mx-auto w-full py-8 space-y-10">
                     <div className="space-y-4">
-                        <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-[10px] font-bold text-slate-500">ID: #CFA-2025-{q.id}</span>
+                        <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-[10px] font-bold text-slate-500 dark:text-slate-400">ID: #CFA-2025-{q.id}</span>
                         <h2 className="text-2xl font-bold text-slate-800 dark:text-white leading-relaxed">
                             {q.text}
                         </h2>
@@ -191,7 +191,7 @@ const Academy: React.FC = () => {
                                 }`}
                             >
                                 <div className="flex items-center gap-4">
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${userAnswers[q.id] === idx ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}>
+                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${userAnswers[q.id] === idx ? 'bg-indigo-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                                         {String.fromCharCode(65 + idx)}
                                     </div>
                                     <span className={`font-medium ${userAnswers[q.id] === idx ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{opt}</span>
@@ -251,14 +251,14 @@ const Academy: React.FC = () => {
                         
                         <div className="flex justify-center gap-12 py-10">
                             <div>
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{t.academy.exam.scoreLabel}</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 dark:text-slate-400">{t.academy.exam.scoreLabel}</p>
                                 <p className={`text-6xl font-black font-mono ${getScoreColor(examScore)}`}>
-                                    {examScore}<span className="text-2xl text-slate-400">/50</span>
+                                    {examScore}<span className="text-2xl text-slate-400 dark:text-slate-400">/50</span>
                                 </p>
                             </div>
                             <div className="w-px h-24 bg-slate-100 dark:bg-slate-800"></div>
                             <div className="text-left max-w-xs">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">{t.academy.exam.ratingLabel}</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 dark:text-slate-400">{t.academy.exam.ratingLabel}</p>
                                 <p className="text-2xl font-bold text-slate-800 dark:text-white leading-tight">
                                     {getEvaluation(examScore)}
                                 </p>
@@ -291,7 +291,7 @@ const Academy: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {['Ethics', 'Derivatives', 'Economics'].map((topic, i) => (
                         <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
-                            <h4 className="font-bold text-sm text-slate-500 uppercase mb-4">{topic}</h4>
+                            <h4 className="font-bold text-sm text-slate-500 uppercase mb-4 dark:text-slate-400">{topic}</h4>
                             <div className="flex items-end justify-between">
                                 <span className="text-2xl font-black font-mono">82%</span>
                                 <span className="text-[10px] font-bold text-emerald-500 bg-emerald-50 dark:bg-emerald-900/30 px-2 py-1 rounded">MASTERED</span>
@@ -324,7 +324,7 @@ const Academy: React.FC = () => {
                             {t.academy.subtitle}
                         </p>
                         <div className="flex gap-4 pt-2">
-                            <button className="px-6 py-3 bg-white text-indigo-900 rounded-xl font-bold hover:bg-indigo-50 transition-colors shadow-lg">
+                            <button className="px-6 py-3 bg-white text-indigo-900 rounded-xl font-bold hover:bg-indigo-50 transition-colors shadow-lg dark:bg-slate-900 dark:text-indigo-300 dark:hover:bg-indigo-950/40">
                                 {language === 'cn' ? '开始学习' : 'Start Learning'}
                             </button>
                             <button className="px-6 py-3 bg-white/10 text-white rounded-xl font-bold hover:bg-white/20 transition-colors backdrop-blur-sm">
@@ -361,7 +361,7 @@ const Academy: React.FC = () => {
                         </div>
 
                         <div className="relative w-full md:w-72">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-400" />
                             <input 
                                 type="text" 
                                 placeholder={t.academy.search}
@@ -381,17 +381,17 @@ const Academy: React.FC = () => {
                                             {course.level}
                                         </span>
                                         {course.price > 0 ? (
-                                            <span className="bg-white text-indigo-900 text-xs font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1">
+                                            <span className="bg-white text-indigo-900 text-xs font-bold px-2 py-1 rounded shadow-sm flex items-center gap-1 dark:bg-slate-900 dark:text-indigo-300">
                                                 <Lock className="w-3 h-3" /> ${course.price}
                                             </span>
                                         ) : (
-                                            <span className="bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
+                                            <span className="bg-emerald-700 text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
                                                 FREE
                                             </span>
                                         )}
                                     </div>
                                     <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
-                                        <button className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 py-2 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors">
+                                        <button className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 py-2 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-700">
                                             <PlayCircle className="w-4 h-4" /> Preview
                                         </button>
                                     </div>
@@ -408,7 +408,7 @@ const Academy: React.FC = () => {
                                     <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                                         <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
                                             <Star className="w-4 h-4 fill-current" /> {course.rating}
-                                            <span className="text-slate-400 text-xs font-normal ml-1">({course.students})</span>
+                                            <span className="text-slate-400 text-xs font-normal ml-1 dark:text-slate-400">({course.students})</span>
                                         </div>
                                         <button className="text-indigo-600 dark:text-indigo-400 font-bold text-sm flex items-center gap-1 hover:gap-2 transition-all">
                                             {t.academy.course.start} <ChevronRight className="w-4 h-4" />
@@ -442,18 +442,18 @@ const Academy: React.FC = () => {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Items</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 dark:text-slate-400">Items</p>
                                     <p className="text-xl font-black">50</p>
                                 </div>
                                 <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
-                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Level</p>
+                                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 dark:text-slate-400">Level</p>
                                     <p className="text-xl font-black">II - III</p>
                                 </div>
                             </div>
 
                             <button 
                                 onClick={handleStartExam}
-                                className="w-full py-4 bg-white text-indigo-900 rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group/btn"
+                                className="w-full py-4 bg-white text-indigo-900 rounded-2xl font-black text-lg shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group/btn dark:bg-slate-900 dark:text-indigo-300"
                             >
                                 {t.academy.exam.startBtn}
                                 <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
@@ -474,7 +474,7 @@ const Academy: React.FC = () => {
                             ].map((user, i) => (
                                 <div key={i} className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500">#{i+1}</div>
+                                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold text-slate-500 dark:text-slate-400">#{i+1}</div>
                                         <div>
                                             <p className="text-sm font-bold">{user.name}</p>
                                             <p className="text-[10px] text-indigo-500 font-bold uppercase">{user.rank}</p>

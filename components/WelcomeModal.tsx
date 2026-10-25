@@ -114,10 +114,10 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                 onClick={handleOpen}
                 style={{
                     height: 42, borderRadius: 9,
-                    border: `1.5px solid ${hasError ? '#ff4d6a' : open ? '#6366f1' : '#e8e8f0'}`,
+                    border: `1.5px solid ${hasError ? 'var(--tg-negative, #ff4d6a)' : open ? 'var(--tg-accent-border, #6366f1)' : 'var(--tg-border, #e8e8f0)'}`,
                     padding: '0 14px',
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    cursor: 'pointer', background: '#fff',
+                    cursor: 'pointer', background: 'var(--tg-surface, #fff)',
                     boxShadow: open ? '0 0 0 3px rgba(99,102,241,0.1)' : 'none',
                     transition: 'border-color 0.15s, box-shadow 0.15s',
                     boxSizing: 'border-box',
@@ -136,8 +136,8 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
             {open && (
                 <div style={{
                     ...dropdownStyle,
-                    background: '#fff',
-                    border: '1.5px solid #e8e8f0',
+                    background: 'var(--tg-surface, #fff)',
+                    border: '1.5px solid var(--tg-border, #e8e8f0)',
                     borderRadius: 10,
                     boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
                     maxHeight: 240,
@@ -145,7 +145,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                     animation: 'dd-open 0.15s ease-out',
                 }}>
                     {searchable && (
-                        <div style={{ padding: '8px 10px', borderBottom: '1px solid #f0f0f6', position: 'sticky', top: 0, background: '#fff' }}>
+                        <div style={{ padding: '8px 10px', borderBottom: '1px solid var(--tg-border, #f0f0f6)', position: 'sticky', top: 0, background: 'var(--tg-surface, #fff)' }}>
                             <input
                                 ref={searchRef}
                                 type="text"
@@ -154,9 +154,9 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                                 onChange={e => setSearch(e.target.value)}
                                 style={{
                                     width: '100%', height: 32, borderRadius: 6,
-                                    border: '1px solid #e8e8f0', padding: '0 10px',
-                                    fontSize: 12, color: '#1a1d2e', outline: 'none',
-                                    boxSizing: 'border-box', background: '#fafafa',
+                                    border: '1px solid var(--tg-border, #e8e8f0)', padding: '0 10px',
+                                    fontSize: 12, color: 'var(--tg-text, #1a1d2e)', outline: 'none',
+                                    boxSizing: 'border-box', background: 'var(--tg-surface-muted, #fafafa)',
                                 }}
                             />
                         </div>
@@ -170,11 +170,11 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                                 style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                     padding: '10px 14px', cursor: 'pointer',
-                                    background: isSelected ? '#f5f5ff' : 'transparent',
+                                    background: isSelected ? 'var(--tg-accent-soft, #f5f5ff)' : 'transparent',
                                     transition: 'background 0.1s',
                                 }}
-                                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#fafafa'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? '#f5f5ff' : 'transparent'; }}
+                                onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--tg-surface-muted, #fafafa)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = isSelected ? 'var(--tg-accent-soft, #f5f5ff)' : 'transparent'; }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                     {renderOption(opt)}
@@ -291,7 +291,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
             }}>
                 {/* Card — no overflow:hidden so dropdowns aren't clipped */}
                 <div style={{
-                    background: '#fff', borderRadius: 20, width: '100%', maxWidth: 460,
+                    background: 'var(--tg-surface, #fff)', borderRadius: 20, width: '100%', maxWidth: 460,
                     boxShadow: '0 32px 80px rgba(0,0,0,0.25)',
                     animation: 'wm-fadeIn 0.45s cubic-bezier(0.34,1.4,0.64,1)', position: 'relative',
                 }}>
@@ -303,7 +303,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
 
                     {/* Form area */}
                     <div style={{ padding: '52px 32px 32px' }}>
-                        <h3 style={{ fontSize: 16, fontWeight: 700, color: '#1a1d2e', marginBottom: 20, letterSpacing: '-0.2px' }}>
+                        <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', marginBottom: 20, letterSpacing: '-0.2px' }}>
                             设置你的偏好
                         </h3>
 
@@ -311,24 +311,24 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             {/* 名 + 姓 */}
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
-                                    <label style={labelStyle}>名 <span style={{ color: '#ff4d6a' }}>*</span></label>
+                                    <label style={labelStyle}>名 <span style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
                                     <input
                                         type="text" placeholder="First name" value={form.firstName}
                                         onChange={e => update('firstName', e.target.value)}
-                                        style={{ ...inputStyle, borderColor: errors.firstName ? '#ff4d6a' : '#e8e8f0' }}
-                                        onFocus={e => { e.currentTarget.style.borderColor = errors.firstName ? '#ff4d6a' : '#6366f1'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
-                                        onBlur={e => { e.currentTarget.style.borderColor = errors.firstName ? '#ff4d6a' : '#e8e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
+                                        style={{ ...inputStyle, borderColor: errors.firstName ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e8e8f0)' }}
+                                        onFocus={e => { e.currentTarget.style.borderColor = errors.firstName ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-accent-border, #6366f1)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                                        onBlur={e => { e.currentTarget.style.borderColor = errors.firstName ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e8e8f0)'; e.currentTarget.style.boxShadow = 'none'; }}
                                     />
                                     {errors.firstName && <div style={errorStyle}>{errors.firstName}</div>}
                                 </div>
                                 <div>
-                                    <label style={labelStyle}>姓 <span style={{ color: '#ff4d6a' }}>*</span></label>
+                                    <label style={labelStyle}>姓 <span style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
                                     <input
                                         type="text" placeholder="Last name" value={form.lastName}
                                         onChange={e => update('lastName', e.target.value)}
-                                        style={{ ...inputStyle, borderColor: errors.lastName ? '#ff4d6a' : '#e8e8f0' }}
-                                        onFocus={e => { e.currentTarget.style.borderColor = errors.lastName ? '#ff4d6a' : '#6366f1'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
-                                        onBlur={e => { e.currentTarget.style.borderColor = errors.lastName ? '#ff4d6a' : '#e8e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
+                                        style={{ ...inputStyle, borderColor: errors.lastName ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e8e8f0)' }}
+                                        onFocus={e => { e.currentTarget.style.borderColor = errors.lastName ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-accent-border, #6366f1)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                                        onBlur={e => { e.currentTarget.style.borderColor = errors.lastName ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e8e8f0)'; e.currentTarget.style.boxShadow = 'none'; }}
                                     />
                                     {errors.lastName && <div style={errorStyle}>{errors.lastName}</div>}
                                 </div>
@@ -336,17 +336,17 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
 
                             {/* 用户名 */}
                             <div>
-                                <label style={labelStyle}>用户名 <span style={{ color: '#ff4d6a' }}>*</span></label>
+                                <label style={labelStyle}>用户名 <span style={{ color: 'var(--tg-negative, #ff4d6a)' }}>*</span></label>
                                 <input
                                     type="text" placeholder="username" value={form.username}
                                     onChange={e => update('username', e.target.value.toLowerCase().replace(/\s/g, ''))}
-                                    style={{ ...inputStyle, borderColor: errors.username ? '#ff4d6a' : '#e8e8f0' }}
-                                    onFocus={e => { e.currentTarget.style.borderColor = errors.username ? '#ff4d6a' : '#6366f1'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
-                                    onBlur={e => { e.currentTarget.style.borderColor = errors.username ? '#ff4d6a' : '#e8e8f0'; e.currentTarget.style.boxShadow = 'none'; }}
+                                    style={{ ...inputStyle, borderColor: errors.username ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e8e8f0)' }}
+                                    onFocus={e => { e.currentTarget.style.borderColor = errors.username ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-accent-border, #6366f1)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(99,102,241,0.1)'; }}
+                                    onBlur={e => { e.currentTarget.style.borderColor = errors.username ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e8e8f0)'; e.currentTarget.style.boxShadow = 'none'; }}
                                 />
                                 {errors.username
                                     ? <div style={errorStyle}>{errors.username}</div>
-                                    : <div style={{ fontSize: 11, color: '#b0b3c6', marginTop: 4 }}>已根据注册信息自动填入，可修改</div>
+                                    : <div style={{ fontSize: 11, color: 'var(--tg-muted, #b0b3c6)', marginTop: 4 }}>已根据注册信息自动填入，可修改</div>
                                 }
                             </div>
 
@@ -361,17 +361,17 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                                         const c = CURRENCIES.find(x => x.value === val);
                                         return (
                                             <>
-                                                <span style={{ fontSize: 14, color: '#4a4d6a', fontWeight: 600, minWidth: 24 }}>{c?.symbol}</span>
-                                                <span style={{ fontSize: 13, color: '#1a1d2e', fontWeight: 500 }}>{c?.label}</span>
+                                                <span style={{ fontSize: 14, color: 'var(--tg-secondary, #4a4d6a)', fontWeight: 600, minWidth: 24 }}>{c?.symbol}</span>
+                                                <span style={{ fontSize: 13, color: 'var(--tg-text, #1a1d2e)', fontWeight: 500 }}>{c?.label}</span>
                                             </>
                                         );
                                     }}
                                     renderOption={opt => (
                                         <>
-                                            <span style={{ fontSize: 14, color: '#4a4d6a', fontWeight: 600, minWidth: 24 }}>{opt.symbol}</span>
+                                            <span style={{ fontSize: 14, color: 'var(--tg-secondary, #4a4d6a)', fontWeight: 600, minWidth: 24 }}>{opt.symbol}</span>
                                             <div>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{opt.label}</div>
-                                                {opt.desc && <div style={{ fontSize: 11, color: '#9396aa', marginTop: 1 }}>{opt.desc}</div>}
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }}>{opt.label}</div>
+                                                {opt.desc && <div style={{ fontSize: 11, color: 'var(--tg-muted, #9396aa)', marginTop: 1 }}>{opt.desc}</div>}
                                             </div>
                                         </>
                                     )}
@@ -390,15 +390,15 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                                         const tz = TIMEZONES.find(x => x.value === val);
                                         return (
                                             <>
-                                                <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, minWidth: 46 }}>{tz?.offset}</span>
-                                                <span style={{ fontSize: 13, color: '#1a1d2e', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tz?.label}</span>
+                                                <span style={{ fontSize: 12, color: 'var(--tg-accent, #6366f1)', fontWeight: 700, minWidth: 46 }}>{tz?.offset}</span>
+                                                <span style={{ fontSize: 13, color: 'var(--tg-text, #1a1d2e)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tz?.label}</span>
                                             </>
                                         );
                                     }}
                                     renderOption={opt => (
                                         <>
-                                            <span style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, minWidth: 46 }}>{opt.offset}</span>
-                                            <span style={{ fontSize: 13, color: '#1a1d2e' }}>{opt.label}</span>
+                                            <span style={{ fontSize: 12, color: 'var(--tg-accent, #6366f1)', fontWeight: 700, minWidth: 46 }}>{opt.offset}</span>
+                                            <span style={{ fontSize: 13, color: 'var(--tg-text, #1a1d2e)' }}>{opt.label}</span>
                                         </>
                                     )}
                                 />
@@ -411,8 +411,8 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                             disabled={saving}
                             style={{
                                 width: '100%', height: 46, marginTop: 24, borderRadius: 10, border: 'none',
-                                background: saving ? '#e8e8f0' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
-                                color: saving ? '#b0b3c6' : '#fff', fontSize: 14, fontWeight: 700,
+                                background: saving ? 'var(--tg-accent-soft, #e8e8f0)' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)',
+                                color: saving ? 'var(--tg-muted, #b0b3c6)' : '#fff', fontSize: 14, fontWeight: 700,
                                 cursor: saving ? 'not-allowed' : 'pointer', letterSpacing: '0.02em',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                                 boxShadow: saving ? 'none' : '0 4px 16px rgba(30,27,75,0.4)',
@@ -425,7 +425,7 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
                                 e.currentTarget.style.boxShadow = '0 6px 20px rgba(30,27,75,0.5)';
                             }}
                             onMouseLeave={e => {
-                                e.currentTarget.style.background = saving ? '#e8e8f0' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)';
+                                e.currentTarget.style.background = saving ? 'var(--tg-accent-soft, #e8e8f0)' : 'linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #3730a3 100%)';
                                 e.currentTarget.style.transform = 'translateY(0)';
                                 e.currentTarget.style.boxShadow = saving ? 'none' : '0 4px 16px rgba(30,27,75,0.4)';
                             }}
@@ -459,19 +459,19 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ userId, userEmail, userMeta
 
 const labelStyle: React.CSSProperties = {
     display: 'block', fontSize: 12, fontWeight: 600,
-    color: '#6366f1', marginBottom: 6, letterSpacing: '0.01em',
+    color: 'var(--tg-accent, #6366f1)', marginBottom: 6, letterSpacing: '0.01em',
 };
 
 const inputStyle: React.CSSProperties = {
     width: '100%', height: 42, borderRadius: 9,
-    border: '1.5px solid #e8e8f0', padding: '0 14px',
-    fontSize: 13.5, color: '#1a1d2e', background: '#fff',
+    border: '1.5px solid var(--tg-border, #e8e8f0)', padding: '0 14px',
+    fontSize: 13.5, color: 'var(--tg-text, #1a1d2e)', background: 'var(--tg-surface, #fff)',
     outline: 'none', boxSizing: 'border-box',
     transition: 'border-color 0.15s, box-shadow 0.15s',
 };
 
 const errorStyle: React.CSSProperties = {
-    fontSize: 11, color: '#ff4d6a', marginTop: 4,
+    fontSize: 11, color: 'var(--tg-negative, #ff4d6a)', marginTop: 4,
 };
 
 export default WelcomeModal;

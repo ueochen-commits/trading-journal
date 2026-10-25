@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { TradingAccount } from '../types';
+import AccountDetailsModal from './AccountDetailsModal';
 
 interface Props {
   accounts?: TradingAccount[];
@@ -8,7 +9,7 @@ interface Props {
   onEditAccount?: (id: string) => void;
   onDeleteAccount?: (id: string) => void;
   onSyncAccount?: (id: string) => void;
-  onUpdateAccount?: (id: string, updates: { manualBalance?: number | null; balance?: number }) => void;
+  onUpdateAccount?: (id: string, updates: { name?: string; currency?: string; manualBalance?: number | null; balance?: number }) => void | Promise<void>;
   onClearTrades?: (id: string) => void;
   onViewHistory?: (id: string) => void;
   onUpgrade?: () => void;
@@ -115,8 +116,8 @@ const RowMenu: React.FC<{
         style={{
           padding: '8px 12px', borderRadius: 7, fontSize: 13, cursor: disabled ? 'not-allowed' : 'pointer',
           display: 'flex', alignItems: 'center', gap: 8, transition: 'background 0.12s',
-          background: hov && !disabled ? (danger ? '#fff0f0' : '#f5f2fc') : 'transparent',
-          color: disabled ? '#c0bcd8' : (danger ? '#c04040' : '#2a2a40'),
+          background: hov && !disabled ? (danger ? 'var(--tg-negative-soft, #fff0f0)' : 'var(--tg-accent-soft, #f5f2fc)') : 'transparent',
+          color: disabled ? 'var(--tg-muted, #c0bcd8)' : (danger ? 'var(--tg-negative, #c04040)' : 'var(--tg-text, #2a2a40)'),
           opacity: disabled ? 0.5 : 1,
         }}
       >
@@ -134,7 +135,7 @@ const RowMenu: React.FC<{
           title={isSyncing ? '同步中...' : '立即同步'}
           style={{
             width: 30, height: 30, borderRadius: 7, border: 'none', cursor: isSyncing ? 'default' : 'pointer',
-            background: syncHov && !isSyncing ? '#f0edf8' : 'transparent',
+            background: syncHov && !isSyncing ? 'var(--tg-accent-soft, #f0edf8)' : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.12s',
           }}
         >
@@ -145,11 +146,12 @@ const RowMenu: React.FC<{
         </button>
       )}
       <button
+        aria-label={`账户操作：${account.name}`}
         onClick={() => setOpen(o => !o)}
         onMouseEnter={() => setDotsHov(true)} onMouseLeave={() => setDotsHov(false)}
         style={{
           width: 30, height: 30, borderRadius: 7, border: 'none', cursor: 'pointer',
-          background: open || dotsHov ? '#f0edf8' : 'transparent',
+          background: open || dotsHov ? 'var(--tg-accent-soft, #f0edf8)' : 'transparent',
           display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.12s',
         }}
       >
@@ -159,7 +161,7 @@ const RowMenu: React.FC<{
       {open && (
         <div style={{
           position: 'absolute', top: '100%', right: 0, zIndex: 100,
-          background: '#ffffff', border: '1px solid #e8e4f4',
+          background: 'var(--tg-surface, #ffffff)', border: '1px solid var(--tg-border, #e8e4f4)',
           borderRadius: 10, boxShadow: '0 4px 20px rgba(80,80,160,0.12)',
           padding: 6, minWidth: 160, marginTop: 4,
         }}>
@@ -169,7 +171,7 @@ const RowMenu: React.FC<{
           {account.type === 'auto_sync' && (
             <MenuItem icon={<IconLink />} label="重新连接" onClick={() => {}} />
           )}
-          <div style={{ borderTop: '1px solid #f0edf8', margin: '4px 0' }} />
+          <div style={{ borderTop: '1px solid var(--tg-border, #f0edf8)', margin: '4px 0' }} />
           <MenuItem icon={<IconClear />} label="清除交易" danger onClick={onClearTrades} />
           <MenuItem
             icon={<IconTrash />} label="删除账户" danger
@@ -205,49 +207,49 @@ const DeleteAccountModal: React.FC<{
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,35,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: '#ffffff', border: '0.5px solid #e4e4ef', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}>
         <style>{`@keyframes clearModalIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
 
         {/* Header */}
-        <div style={{ padding: '22px 22px 18px', borderBottom: '0.5px solid #f0f0f8' }}>
+        <div style={{ padding: '22px 22px 18px', borderBottom: '0.5px solid var(--tg-border, #f0f0f8)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e' }}>删除账户</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--tg-text, #1a1a2e)' }}>删除账户</span>
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ cursor: 'pointer', opacity: 0.4 }} onClick={onClose}>
               <line x1="1.5" y1="1.5" x2="11.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
               <line x1="11.5" y1="1.5" x2="1.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, margin: 0 }}>
-            <span style={{ color: '#c0392b', fontWeight: 500 }}>此操作无法撤销</span>，将永久删除账户{' '}
-            <span style={{ color: '#1a1a2e', fontWeight: 500 }}>{accountName}</span>{' '}
+          <p style={{ fontSize: 13, color: 'var(--tg-secondary, #888)', lineHeight: 1.7, margin: 0 }}>
+            <span style={{ color: 'var(--tg-negative, #c0392b)', fontWeight: 500 }}>此操作无法撤销</span>，将永久删除账户{' '}
+            <span style={{ color: 'var(--tg-text, #1a1a2e)', fontWeight: 500 }}>{accountName}</span>{' '}
             及其下所有交易记录。
           </p>
         </div>
 
         {/* Input */}
         <div style={{ padding: '16px 22px 18px' }}>
-          <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>请输入「我确认删除我的账户」以确认</div>
+          <div style={{ fontSize: 11, color: 'var(--tg-muted, #aaa)', marginBottom: 6 }}>请输入「我确认删除我的账户」以确认</div>
           <input
             autoFocus
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             placeholder="我确认删除我的账户"
             onKeyDown={e => { if (e.key === 'Enter' && canConfirm) { onConfirm(accountId); onClose(); } }}
-            style={{ width: '100%', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: '#1a1a2e', outline: 'none', background: '#fff', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
-            onFocus={e => (e.target.style.borderColor = '#9b8fde')}
-            onBlur={e => (e.target.style.borderColor = '#e4e4ef')}
+            style={{ width: '100%', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none', background: 'var(--tg-surface, #fff)', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
+            onFocus={e => (e.target.style.borderColor = 'var(--tg-accent-border, #9b8fde)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--tg-border, #e4e4ef)')}
           />
         </div>
 
         {/* Buttons */}
         <div style={{ padding: '0 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ background: '#fff', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: '#666', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: 'var(--tg-secondary, #666)', cursor: 'pointer' }}>
             取消
           </button>
           <button
             disabled={!canConfirm}
             onClick={() => { if (canConfirm) { onConfirm(accountId); onClose(); } }}
-            style={{ background: canConfirm ? '#c0392b' : '#f0f0f5', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: canConfirm ? '#fff' : '#bbb', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
+            style={{ background: canConfirm ? '#c0392b' : 'var(--tg-accent-soft, #f0f0f5)', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, fontWeight: 600, color: canConfirm ? '#fff' : 'var(--tg-muted, #bbb)', cursor: canConfirm ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}>
             确认删除
           </button>
         </div>
@@ -295,50 +297,50 @@ const ClearTradesModal: React.FC<{
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: '#ffffff', border: '0.5px solid #e4e4ef', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}
+        style={{ background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}
       >
         <style>{`@keyframes clearModalIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
 
         {/* Header */}
-        <div style={{ padding: '22px 22px 18px', borderBottom: '0.5px solid #f0f0f8' }}>
+        <div style={{ padding: '22px 22px 18px', borderBottom: '0.5px solid var(--tg-border, #f0f0f8)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontSize: 14, fontWeight: 500, color: '#1a1a2e' }}>清除交易记录</span>
+            <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--tg-text, #1a1a2e)' }}>清除交易记录</span>
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ cursor: 'pointer', opacity: 0.4 }} onClick={onClose}>
               <line x1="1.5" y1="1.5" x2="11.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
               <line x1="11.5" y1="1.5" x2="1.5" y2="11.5" stroke="#1a1a2e" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </div>
-          <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, margin: 0 }}>
-            <span style={{ color: '#c0392b', fontWeight: 500 }}>此操作无法撤销</span>，将清除{' '}
-            <span style={{ color: '#1a1a2e', fontWeight: 500 }}>{accountName}</span>{' '}
+          <p style={{ fontSize: 13, color: 'var(--tg-secondary, #888)', lineHeight: 1.7, margin: 0 }}>
+            <span style={{ color: 'var(--tg-negative, #c0392b)', fontWeight: 500 }}>此操作无法撤销</span>，将清除{' '}
+            <span style={{ color: 'var(--tg-text, #1a1a2e)', fontWeight: 500 }}>{accountName}</span>{' '}
             账户下所有交易记录、标签与备注。
           </p>
         </div>
 
         {/* Input */}
         <div style={{ padding: '16px 22px 18px' }}>
-          <div style={{ fontSize: 11, color: '#aaa', marginBottom: 6 }}>请输入「清除所有交易」以确认</div>
+          <div style={{ fontSize: 11, color: 'var(--tg-muted, #aaa)', marginBottom: 6 }}>请输入「清除所有交易」以确认</div>
           <input
             autoFocus
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             placeholder="清除所有交易"
-            style={{ width: '100%', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: '#1a1a2e', outline: 'none', background: '#fff', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
-            onFocus={e => (e.target.style.borderColor = '#9b8fde')}
-            onBlur={e => (e.target.style.borderColor = '#e4e4ef')}
+            style={{ width: '100%', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none', background: 'var(--tg-surface, #fff)', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
+            onFocus={e => (e.target.style.borderColor = 'var(--tg-accent-border, #9b8fde)')}
+            onBlur={e => (e.target.style.borderColor = 'var(--tg-border, #e4e4ef)')}
             onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
           />
         </div>
 
         {/* Buttons */}
         <div style={{ padding: '0 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ background: '#fff', border: '0.5px solid #e4e4ef', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: '#666', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: 'var(--tg-secondary, #666)', cursor: 'pointer' }}>
             取消
           </button>
           <button
             onClick={handleConfirm}
             disabled={!canConfirm || loading}
-            style={{ background: canConfirm ? '#5050c8' : '#f0f0f5', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: canConfirm ? '#fff' : '#bbb', cursor: canConfirm && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
+            style={{ background: canConfirm ? '#5050c8' : 'var(--tg-accent-soft, #f0f0f5)', border: 'none', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: canConfirm ? '#fff' : 'var(--tg-muted, #bbb)', cursor: canConfirm && !loading ? 'pointer' : 'not-allowed', transition: 'all 0.15s' }}
           >
             {loading ? '清除中...' : '确认清除'}
           </button>
@@ -351,20 +353,20 @@ const ClearTradesModal: React.FC<{
 // ─── Type badge ───────────────────────────────────────────────────────────────
 const TypeBadge: React.FC<{ account: TradingAccount }> = ({ account }) => {
   if (account.type === 'demo') {
-    return <span style={{ background: '#f0eeff', color: '#5050a0', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>演示</span>;
+    return <span style={{ background: 'var(--tg-accent-soft, #f0eeff)', color: 'var(--tg-secondary, #5050a0)', fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>演示</span>;
   }
   if (account.type === 'manual') {
-    return <span style={{ color: '#8080a8', fontSize: 12 }}>手动</span>;
+    return <span style={{ color: 'var(--tg-muted, #8080a8)', fontSize: 12 }}>手动</span>;
   }
   const statusMap = {
-    synced: { bg: '#e8f7ee', color: '#1a7a42', label: '已同步' },
-    syncing: { bg: '#f0eeff', color: '#8060c0', label: '同步中' },
-    error: { bg: '#fff0f0', color: '#a03030', label: '错误' },
+    synced: { bg: 'var(--tg-positive-soft, #e8f7ee)', color: 'var(--tg-positive, #1a7a42)', label: '已同步' },
+    syncing: { bg: 'var(--tg-accent-soft, #f0eeff)', color: 'var(--tg-accent, #8060c0)', label: '同步中' },
+    error: { bg: 'var(--tg-negative-soft, #fff0f0)', color: 'var(--tg-negative, #a03030)', label: '错误' },
   };
   const s = statusMap[account.syncStatus ?? 'synced'];
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ color: '#6060a0', fontSize: 12 }}>Auto sync</span>
+      <span style={{ color: 'var(--tg-secondary, #6060a0)', fontSize: 12 }}>Auto sync</span>
       <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>{s.label}</span>
     </div>
   );
@@ -388,7 +390,6 @@ const BrokersPage: React.FC<Props> = ({
   const [syncBtnHov, setSyncBtnHov] = useState(false);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [editingAccount, setEditingAccount] = useState<TradingAccount | null>(null);
-  const [manualBalanceInput, setManualBalanceInput] = useState('');
   const [clearModal, setClearModal] = useState<{ id: string; name: string } | null>(null);
   const [deleteModal, setDeleteModal] = useState<{ id: string; name: string } | null>(null);
   const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
@@ -410,16 +411,6 @@ const BrokersPage: React.FC<Props> = ({
 
   const handleOpenEdit = (account: TradingAccount) => {
     setEditingAccount(account);
-    setManualBalanceInput(account.manualBalance != null ? String(account.manualBalance) : '');
-  };
-
-  const handleSaveManualBalance = () => {
-    if (!editingAccount) return;
-    const val = manualBalanceInput.trim() === '' ? null : parseFloat(manualBalanceInput);
-    const updated = { ...editingAccount, manualBalance: val ?? undefined };
-    setAccounts(a => a.map(x => x.id === editingAccount.id ? updated : x));
-    onUpdateAccount?.(editingAccount.id, { manualBalance: val });
-    setEditingAccount(null);
   };
 
   const handleSelectAll = () => {
@@ -434,20 +425,20 @@ const BrokersPage: React.FC<Props> = ({
   const COL_WIDTHS = [220, 180, 120, 160, 180, 180, 120, 80];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: '#ffffff' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--tg-surface, #ffffff)' }}>
 
       {/* Page title */}
       <div style={{ padding: '28px 40px 20px' }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1a2e', margin: 0 }}>我的交易账户</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--tg-text, #1a1a2e)', margin: 0 }}>我的交易账户</h1>
       </div>
 
       {/* Top bar */}
       <div style={{
-        height: 52, borderBottom: '1px solid #f0edf8', flexShrink: 0,
+        height: 52, borderBottom: '1px solid var(--tg-border, #f0edf8)', flexShrink: 0,
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 40px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <a style={{ fontSize: 12, color: '#8080b8', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', textDecoration: 'none' }}>
+          <a style={{ fontSize: 12, color: 'var(--tg-muted, #8080b8)', display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer', textDecoration: 'none' }}>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10"/>
               <line x1="12" y1="16" x2="12" y2="12"/>
@@ -464,9 +455,9 @@ const BrokersPage: React.FC<Props> = ({
             onClick={() => selectedIds.forEach(id => onSyncAccount?.(id))}
             style={{
               height: 34, padding: '0 14px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-              border: '1px solid #e4e0f4', transition: 'all 0.14s',
-              background: selectedIds.length > 0 ? (syncBtnHov ? '#f5f2fc' : '#ffffff') : '#f5f3fc',
-              color: selectedIds.length > 0 ? '#5050a0' : '#b0a8d0',
+              border: '1px solid var(--tg-border, #e4e0f4)', transition: 'all 0.14s',
+              background: selectedIds.length > 0 ? (syncBtnHov ? 'var(--tg-accent-soft, #f5f2fc)' : 'var(--tg-surface, #ffffff)') : 'var(--tg-accent-soft, #f5f3fc)',
+              color: selectedIds.length > 0 ? 'var(--tg-secondary, #5050a0)' : 'var(--tg-muted, #b0a8d0)',
               cursor: selectedIds.length > 0 ? 'pointer' : 'not-allowed',
             }}
           >
@@ -474,12 +465,12 @@ const BrokersPage: React.FC<Props> = ({
           </button>
           {isAtLimit && userPlan !== 'elite' && (
             <div style={{
-              fontSize: 12, color: '#8080b8', background: '#f5f3fc',
-              border: '1px solid #e4e0f4', borderRadius: 8, padding: '5px 12px',
+              fontSize: 12, color: 'var(--tg-muted, #8080b8)', background: 'var(--tg-accent-soft, #f5f3fc)',
+              border: '1px solid var(--tg-border, #e4e0f4)', borderRadius: 8, padding: '5px 12px',
               display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
             }}>
               已达到 {limit} 个账户上限 —
-              <span onClick={onUpgrade} style={{ color: '#5050c8', fontWeight: 600, cursor: 'pointer' }}>升级到 Pro ↗</span>
+              <span onClick={onUpgrade} style={{ color: 'var(--tg-accent, #5050c8)', fontWeight: 600, cursor: 'pointer' }}>升级到 Pro ↗</span>
             </div>
           )}
           <button
@@ -490,8 +481,8 @@ const BrokersPage: React.FC<Props> = ({
             style={{
               height: 34, padding: '0 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
               border: 'none', transition: 'all 0.14s',
-              background: isAtLimit ? '#d8d4f0' : (addBtnHov ? '#3e3eb6' : '#5050c8'),
-              color: isAtLimit ? '#a8a8c8' : '#ffffff',
+              background: isAtLimit ? 'var(--tg-accent-soft, #d8d4f0)' : (addBtnHov ? '#3e3eb6' : '#5050c8'),
+              color: isAtLimit ? 'var(--tg-muted, #a8a8c8)' : '#ffffff',
               cursor: isAtLimit ? 'not-allowed' : 'pointer',
               boxShadow: !isAtLimit && addBtnHov ? '0 2px 10px rgba(80,80,200,0.22)' : 'none',
             }}
@@ -506,8 +497,8 @@ const BrokersPage: React.FC<Props> = ({
         {accounts.length === 0 ? (
           <div style={{ padding: '80px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
             <IconEmpty />
-            <div style={{ fontSize: 16, fontWeight: 500, color: '#6060a0' }}>还没有连接任何账户</div>
-            <div style={{ fontSize: 13, color: '#a0a0b8' }}>添加您的第一个经纪商账户，开始追踪交易</div>
+            <div style={{ fontSize: 16, fontWeight: 500, color: 'var(--tg-secondary, #6060a0)' }}>还没有连接任何账户</div>
+            <div style={{ fontSize: 13, color: 'var(--tg-muted, #a0a0b8)' }}>添加您的第一个经纪商账户，开始追踪交易</div>
             <button onClick={onAddAccount} style={{ marginTop: 8, height: 34, padding: '0 16px', borderRadius: 8, fontSize: 13, fontWeight: 600, border: 'none', background: '#5050c8', color: '#fff', cursor: 'pointer' }}>
               + 添加账户
             </button>
@@ -516,17 +507,17 @@ const BrokersPage: React.FC<Props> = ({
           <>
             {/* Group label */}
             <div style={{ padding: '16px 40px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 13, fontWeight: 600, color: '#4a4a6a' }}>活跃账户</span>
-              <span style={{ fontSize: 12, color: '#b0aac8' }}>共 {accounts.length} 个账户</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-secondary, #4a4a6a)' }}>活跃账户</span>
+              <span style={{ fontSize: 12, color: 'var(--tg-muted, #b0aac8)' }}>共 {accounts.length} 个账户</span>
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table style={{ width: '100%', minWidth: 1080, borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
-                <tr style={{ height: 38, borderBottom: '1px solid #f0edf8', background: '#faf8ff' }}>
+                <tr style={{ height: 38, borderBottom: '1px solid var(--tg-border, #f0edf8)', background: 'var(--tg-surface, #faf8ff)' }}>
                   <th style={{ width: 40, padding: '0 0 0 40px' }}>
                     <input type="checkbox" checked={selectedIds.length === accounts.length && accounts.length > 0} onChange={handleSelectAll} style={{ cursor: 'pointer', accentColor: '#5050c8' }} />
                   </th>
                   {COLS.map((col, i) => (
-                    <th key={col} style={{ padding: '0 16px', fontSize: 11, fontWeight: 600, color: '#b0aac8', letterSpacing: '0.05em', textTransform: 'uppercase', textAlign: 'left', whiteSpace: 'nowrap', width: COL_WIDTHS[i] }}>
+                    <th key={col} style={{ padding: '0 16px', fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #b0aac8)', letterSpacing: '0.05em', textTransform: 'uppercase', textAlign: 'left', whiteSpace: 'nowrap', width: COL_WIDTHS[i] }}>
                       {col}
                     </th>
                   ))}
@@ -539,7 +530,7 @@ const BrokersPage: React.FC<Props> = ({
                     account={account}
                     selected={selectedIds.includes(account.id)}
                     onToggleSelect={() => handleToggleSelect(account.id)}
-                    onEdit={() => account.type === 'manual' ? handleOpenEdit(account) : onEditAccount?.(account.id)}
+                    onEdit={() => handleOpenEdit(account)}
                     onDelete={() => setDeleteModal({ id: account.id, name: account.name })}
                     onSync={async () => {
                       setSyncingIds(prev => new Set(prev).add(account.id));
@@ -564,40 +555,20 @@ const BrokersPage: React.FC<Props> = ({
         )}
       </div>
 
-      {/* Manual Balance Edit Modal */}
-      {editingAccount && editingAccount.type === 'manual' && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          onClick={() => setEditingAccount(null)}>
-          <div style={{ background: '#fff', borderRadius: 12, padding: 28, width: 360, boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
-            onClick={e => e.stopPropagation()}>
-            <h3 style={{ fontSize: 16, fontWeight: 600, color: '#1a1a2e', margin: '0 0 4px' }}>{editingAccount.name}</h3>
-            <p style={{ fontSize: 12, color: '#b0aac8', margin: '0 0 20px' }}>手动账户设置</p>
-            <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#2a2a40', marginBottom: 6 }}>账户总资产</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <input
-                type="number" step="any" placeholder="请输入账户总资产"
-                value={manualBalanceInput}
-                onChange={e => setManualBalanceInput(e.target.value)}
-                style={{ flex: 1, padding: '8px 12px', border: '1px solid #e4e0f4', borderRadius: 8, fontSize: 14, color: '#1a1a2e', outline: 'none' }}
-                autoFocus
-              />
-              <span style={{ fontSize: 13, color: '#8080a8', flexShrink: 0 }}>{editingAccount.currency}</span>
-            </div>
-            <p style={{ fontSize: 12, color: '#b0aac8', margin: '0 0 20px', lineHeight: 1.5 }}>
-              用于计算仓位占比和风险评级，建议与实际账户资金保持一致
-            </p>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button onClick={() => setEditingAccount(null)}
-                style={{ padding: '8px 16px', borderRadius: 8, border: '1px solid #e4e0f4', background: '#fff', color: '#8080a8', fontSize: 13, cursor: 'pointer' }}>
-                取消
-              </button>
-              <button onClick={handleSaveManualBalance}
-                style={{ padding: '8px 16px', borderRadius: 8, border: 'none', background: '#5050c8', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
-                保存
-              </button>
-            </div>
-          </div>
-        </div>
+      {editingAccount && (
+        <AccountDetailsModal mode="edit"
+          initial={{ name: editingAccount.name, balance: editingAccount.balance, currency: editingAccount.currency, manualBalance: editingAccount.manualBalance }}
+          showManualBalance={editingAccount.type === 'manual'}
+          synced={editingAccount.type === 'auto_sync'}
+          onClose={() => setEditingAccount(null)}
+          onSave={async details => {
+            if (!onUpdateAccount) throw new Error('暂时无法保存账户，请刷新后重试');
+            await onUpdateAccount(editingAccount.id, details);
+            setAccounts(previous => previous.map(account => account.id === editingAccount.id
+              ? { ...account, ...details, manualBalance: details.manualBalance ?? undefined }
+              : account));
+          }}
+        />
       )}
 
       {/* Clear Trades Modal */}
@@ -647,7 +618,7 @@ const AccountRow: React.FC<{
   return (
     <tr
       onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
-      style={{ height: 52, borderBottom: '1px solid #f5f2fc', background: selected ? '#f5f2ff' : (hov ? '#faf8ff' : '#ffffff'), transition: 'background 0.12s' }}
+      style={{ height: 52, borderBottom: '1px solid var(--tg-border, #f5f2fc)', background: selected ? 'var(--tg-accent-soft, #f5f2ff)' : (hov ? 'var(--tg-surface, #faf8ff)' : 'var(--tg-surface, #ffffff)'), transition: 'background 0.12s' }}
     >
       {/* Checkbox */}
       <td style={{ padding: '0 0 0 40px', verticalAlign: 'middle' }}>
@@ -655,7 +626,7 @@ const AccountRow: React.FC<{
       </td>
 
       {/* Name */}
-      <td style={{ padding: '0 16px', color: '#1a1a2e', fontWeight: 500, verticalAlign: 'middle' }}>
+      <td style={{ padding: '0 16px', color: 'var(--tg-text, #1a1a2e)', fontWeight: 500, verticalAlign: 'middle' }}>
         {account.name}
       </td>
 
@@ -664,7 +635,7 @@ const AccountRow: React.FC<{
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             width: 20, height: 20, borderRadius: 4, flexShrink: 0, overflow: 'hidden',
-            background: account.brokerBrandColor ?? '#e0ddf0',
+            background: account.brokerBrandColor ?? 'var(--tg-accent-soft, #e0ddf0)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {account.brokerLogoUrl
@@ -672,7 +643,7 @@ const AccountRow: React.FC<{
               : <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{brokerName[0]}</span>
             }
           </div>
-          <span style={{ color: '#2a2a40' }}>{brokerName}</span>
+          <span style={{ color: 'var(--tg-text, #2a2a40)' }}>{brokerName}</span>
         </div>
       </td>
 
@@ -697,32 +668,32 @@ const AccountRow: React.FC<{
                 if (!isNaN(val)) onEditBalance?.(val);
                 setEditingBalance(false);
               }}
-              style={{ width: 100, padding: '3px 8px', border: '1px solid #5050c8', borderRadius: 6, fontSize: 13, color: '#1a1a2e', outline: 'none' }}
+              style={{ width: 100, padding: '3px 8px', border: '1px solid #5050c8', borderRadius: 6, fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none' }}
             />
-            <span style={{ fontSize: 12, color: '#8080a8' }}>{account.currency}</span>
+            <span style={{ fontSize: 12, color: 'var(--tg-muted, #8080a8)' }}>{account.currency}</span>
           </div>
         ) : (
-          <span style={{ color: '#5050c8', fontWeight: 500 }}>
+          <span style={{ color: 'var(--tg-accent, #5050c8)', fontWeight: 500 }}>
             {fmt(account.balance, account.currency)}
           </span>
         )}
       </td>
 
       {/* Profit method */}
-      <td style={{ padding: '0 16px', color: '#6060a0', verticalAlign: 'middle' }}>
+      <td style={{ padding: '0 16px', color: 'var(--tg-secondary, #6060a0)', verticalAlign: 'middle' }}>
         {account.profitMethod}
       </td>
 
       {/* Last update */}
-      <td style={{ padding: '0 16px', color: '#8080a8', fontSize: 12, verticalAlign: 'middle' }}>
-        {account.lastSync ?? <span style={{ color: '#c0bcd8' }}>—</span>}
+      <td style={{ padding: '0 16px', color: 'var(--tg-muted, #8080a8)', fontSize: 12, verticalAlign: 'middle' }}>
+        {account.lastSync ?? <span style={{ color: 'var(--tg-muted, #c0bcd8)' }}>—</span>}
       </td>
 
       {/* Next update */}
-      <td style={{ padding: '0 16px', color: '#8080a8', fontSize: 12, verticalAlign: 'middle' }}>
+      <td style={{ padding: '0 16px', color: 'var(--tg-muted, #8080a8)', fontSize: 12, verticalAlign: 'middle' }}>
         {account.nextSync && account.nextSync !== '—'
           ? account.nextSync
-          : <span style={{ color: '#c0bcd8' }}>—</span>
+          : <span style={{ color: 'var(--tg-muted, #c0bcd8)' }}>—</span>
         }
       </td>
 

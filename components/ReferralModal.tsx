@@ -36,9 +36,9 @@ const ReferralModal = () => {
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <h2 className="text-3xl font-bold text-slate-900 dark:text-white">${currentBalance}</h2>
-                            <p className="text-xs text-slate-500">{t.referral.balance}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">{t.referral.balance}</p>
                         </div>
-                        <button onClick={closeReferral} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                        <button onClick={closeReferral} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors dark:text-slate-400">
                             <X className="w-6 h-6" />
                         </button>
                     </div>
@@ -50,7 +50,7 @@ const ReferralModal = () => {
                             className={`pb-3 text-sm font-bold transition-all ${
                                 activeTab === 'refer' 
                                 ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white' 
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'
                             }`}
                         >
                             {t.referral.tabs.refer}
@@ -60,7 +60,7 @@ const ReferralModal = () => {
                             className={`pb-3 text-sm font-bold transition-all ${
                                 activeTab === 'redeem' 
                                 ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white' 
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'
                             }`}
                         >
                             {t.referral.tabs.redeem}
@@ -70,7 +70,7 @@ const ReferralModal = () => {
                             className={`pb-3 text-sm font-bold transition-all ${
                                 activeTab === 'stats' 
                                 ? 'text-slate-900 dark:text-white border-b-2 border-slate-900 dark:border-white' 
-                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'
                             }`}
                         >
                             {t.referral.tabs.stats}
@@ -94,7 +94,7 @@ const ReferralModal = () => {
                             </div>
 
                             <div className="mb-6">
-                                <p className="text-xs text-slate-500 mb-2">{t.referral.copyLink}</p>
+                                <p className="text-xs text-slate-500 mb-2 dark:text-slate-400">{t.referral.copyLink}</p>
                                 <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">
                                     <input 
                                         type="text" 
@@ -113,7 +113,7 @@ const ReferralModal = () => {
                                     <Mail className="w-4 h-4" /> {t.referral.socials.email}
                                 </button>
                                 <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
-                                    <Facebook className="w-4 h-4 text-blue-600" /> {t.referral.socials.facebook}
+                                    <Facebook className="w-4 h-4 text-blue-600 dark:text-blue-300" /> {t.referral.socials.facebook}
                                 </button>
                                 <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
                                     <Twitter className="w-4 h-4" /> {t.referral.socials.x}
@@ -123,7 +123,7 @@ const ReferralModal = () => {
                             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center mb-8 shadow-sm">
                                 <div className="text-center md:text-left mb-4 md:mb-0">
                                     <h4 className="text-4xl font-bold text-slate-900 dark:text-white mb-1">${currentBalance}</h4>
-                                    <p className="text-xs text-slate-500 uppercase tracking-wide">{t.referral.stats.earned}</p>
+                                    <p className="text-xs text-slate-500 uppercase tracking-wide dark:text-slate-400">{t.referral.stats.earned}</p>
                                 </div>
                                 <div className="flex flex-col gap-2 w-full md:w-auto">
                                     <div className="flex justify-between items-center gap-8 md:gap-12">
@@ -137,7 +137,7 @@ const ReferralModal = () => {
                                 </div>
                             </div>
 
-                            <p className="text-sm text-slate-500 leading-relaxed">
+                            <p className="text-sm text-slate-500 leading-relaxed dark:text-slate-400">
                                 {t.referral.footer} <a href="#" className="text-indigo-600 dark:text-indigo-400 hover:underline">Affiliate Program</a>
                             </p>
                         </div>
@@ -150,7 +150,7 @@ const ReferralModal = () => {
                                 <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
                                     {language === 'cn' ? '使用您的推荐收入' : 'Use your referral earnings'}
                                 </h3>
-                                <p className="text-sm text-slate-500">
+                                <p className="text-sm text-slate-500 dark:text-slate-400">
                                     {language === 'cn' 
                                         ? '您可以将其用于付费方案（和以后的其他福利）。' 
                                         : 'You can use it for paid plans (and other future benefits). '}
@@ -169,10 +169,10 @@ const ReferralModal = () => {
                                                     <h4 className="font-bold text-lg text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                                         {option.name}
                                                     </h4>
-                                                    <p className="text-sm text-slate-500 mt-1">{option.duration}</p>
+                                                    <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{option.duration}</p>
                                                 </div>
                                                 <div className="relative">
-                                                    <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-600" strokeWidth={1.5} />
+                                                    <Calendar className="w-8 h-8 text-slate-300 dark:text-slate-400" strokeWidth={1.5} />
                                                     <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-slate-500 dark:text-slate-400 pt-1.5">
                                                         {option.months}
                                                     </span>
@@ -181,7 +181,7 @@ const ReferralModal = () => {
                                             <div>
                                                 <p className="text-2xl font-bold text-slate-900 dark:text-white">${option.price}</p>
                                                 {currentBalance < option.price && (
-                                                    <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
+                                                    <p className="text-xs text-slate-400 mt-2 flex items-center gap-1 dark:text-slate-400">
                                                         {language === 'cn' ? '资金不足' : 'Insufficient funds'}
                                                     </p>
                                                 )}
@@ -191,7 +191,7 @@ const ReferralModal = () => {
                                 ))}
                             </div>
 
-                            <p className="text-xs text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                            <p className="text-xs text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800 dark:text-slate-400">
                                 {language === 'cn' 
                                     ? 'TradeGrail, Inc.在某些国家/地区注册了销售税。因此，根据您所在的位置，您的最终账单可能会添加销售税。' 
                                     : 'TradeGrail, Inc. is registered for sales tax in certain jurisdictions. Sales tax may be added to your final bill based on your location.'}
@@ -201,7 +201,7 @@ const ReferralModal = () => {
 
                     {/* --- STATS TAB (Placeholder) --- */}
                     {activeTab === 'stats' && (
-                        <div className="flex flex-col items-center justify-center h-64 text-slate-400 animate-fade-in">
+                        <div className="flex flex-col items-center justify-center h-64 text-slate-400 animate-fade-in dark:text-slate-400">
                             <AlertCircle className="w-12 h-12 mb-4 opacity-20" />
                             <p className="text-sm">{language === 'cn' ? '统计数据正在生成中...' : 'Stats are being generated...'}</p>
                         </div>

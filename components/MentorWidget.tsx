@@ -243,11 +243,11 @@ const MentorWidget: React.FC<MentorWidgetProps> = ({ trades, plans, riskSettings
                     faceBack: 'bg-rose-800 border-rose-600',
                     faceRight: 'bg-rose-700 border-rose-500',
                     faceLeft: 'bg-rose-700 border-rose-500',
-                    faceTop: 'bg-rose-500 border-rose-300',
+                    faceTop: 'bg-rose-500 border-rose-300 dark:border-rose-500/30',
                     faceBottom: 'bg-rose-900 border-rose-800',
                     glow: 'bg-rose-400',
-                    eye: 'bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]',
-                    mouth: 'bg-rose-200',
+                    eye: 'bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)] dark:bg-slate-900',
+                    mouth: 'bg-rose-200 dark:bg-rose-950/40',
                     bubbleBorder: 'border-rose-500',
                     textColor: 'text-rose-500',
                     eyeShape: 'w-2.5 h-1', // Squint
@@ -261,11 +261,11 @@ const MentorWidget: React.FC<MentorWidgetProps> = ({ trades, plans, riskSettings
                     faceBack: 'bg-purple-800 border-purple-600',
                     faceRight: 'bg-purple-700 border-purple-500',
                     faceLeft: 'bg-purple-700 border-purple-500',
-                    faceTop: 'bg-purple-500 border-purple-300',
+                    faceTop: 'bg-purple-500 border-purple-300 dark:border-purple-500/30',
                     faceBottom: 'bg-purple-900 border-purple-800',
                     glow: 'bg-purple-400',
-                    eye: 'bg-purple-200 shadow-none opacity-80',
-                    mouth: 'bg-purple-300',
+                    eye: 'bg-purple-200 shadow-none opacity-80 dark:bg-purple-950/40',
+                    mouth: 'bg-purple-300 dark:bg-purple-950/40',
                     bubbleBorder: 'border-purple-500',
                     textColor: 'text-purple-500',
                     eyeShape: 'w-2.5 h-2.5 rounded-full',
@@ -276,15 +276,15 @@ const MentorWidget: React.FC<MentorWidgetProps> = ({ trades, plans, riskSettings
             case 'normal': // Green/Emerald (Calm)
             default:
                 return {
-                    faceFront: 'bg-emerald-500 border-emerald-300',
+                    faceFront: 'bg-emerald-500 border-emerald-300 dark:border-emerald-500/30',
                     faceBack: 'bg-emerald-700 border-emerald-500',
                     faceRight: 'bg-emerald-600 border-emerald-400',
                     faceLeft: 'bg-emerald-600 border-emerald-400',
-                    faceTop: 'bg-emerald-400 border-emerald-200',
+                    faceTop: 'bg-emerald-400 border-emerald-200 dark:border-emerald-500/30',
                     faceBottom: 'bg-emerald-800 border-emerald-700',
                     glow: 'bg-emerald-400',
-                    eye: 'bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)]',
-                    mouth: 'bg-emerald-100',
+                    eye: 'bg-white shadow-[0_0_5px_rgba(255,255,255,0.8)] dark:bg-slate-900',
+                    mouth: 'bg-emerald-100 dark:bg-emerald-950/40',
                     bubbleBorder: 'border-emerald-500',
                     textColor: 'text-emerald-600 dark:text-emerald-400',
                     eyeShape: 'w-2.5 h-2.5 rounded-full',
@@ -317,7 +317,7 @@ const MentorWidget: React.FC<MentorWidgetProps> = ({ trades, plans, riskSettings
             >
                 <div className="flex justify-between items-start mb-1">
                     <span className={`text-[10px] font-bold uppercase tracking-widest ${moodStyle.textColor}`}>The Mentor</span>
-                    <button onClick={(e) => { e.stopPropagation(); setIsVisible(false); }} className="text-slate-400 hover:text-slate-600 dark:hover:text-white"><X className="w-3 h-3"/></button>
+                    <button onClick={(e) => { e.stopPropagation(); setIsVisible(false); }} className="text-slate-400 hover:text-slate-600 dark:hover:text-white dark:text-slate-400"><X className="w-3 h-3"/></button>
                 </div>
                 <p className="text-xs font-medium leading-relaxed font-mono">
                     {isThinking ? (
@@ -338,7 +338,7 @@ const MentorWidget: React.FC<MentorWidgetProps> = ({ trades, plans, riskSettings
                 style={{ width: cubeSize, height: cubeSize }}
             >
                 {/* Drag Hint (Visible on Hover) */}
-                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] font-bold text-slate-400 bg-slate-900/80 px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none">
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity text-[9px] font-bold text-slate-400 bg-slate-900/80 px-1.5 py-0.5 rounded whitespace-nowrap pointer-events-none dark:text-slate-400">
                     Drag Me
                 </div>
 

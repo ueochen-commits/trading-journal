@@ -176,7 +176,7 @@ const AuthPage: React.FC = () => {
         className="relative z-10 flex flex-col items-center text-center gap-6 py-6"
       >
         <div className="w-20 h-20 rounded-2xl bg-[#6E64FF]/10 border border-[#6E64FF]/20 flex items-center justify-center">
-          <Mail className="w-10 h-10 text-[#6E64FF]" />
+          <Mail className="w-10 h-10 text-[#6E64FF] dark:text-[var(--tg-accent)]" />
         </div>
 
         <div className="space-y-2">
@@ -385,7 +385,7 @@ const AuthPage: React.FC = () => {
                         type="checkbox"
                         checked={agreeTerms}
                         onChange={(e) => setAgreeTerms(e.target.checked)}
-                        className="w-4 h-4 rounded border-white/20 bg-[#0A051A] text-[#6E64FF] focus:ring-[#6E64FF]"
+                        className="w-4 h-4 rounded border-white/20 bg-[#0A051A] text-[#6E64FF] focus:ring-[#6E64FF] dark:text-[var(--tg-accent)]"
                       />
                       <span>
                         {language === 'cn' ? '我同意' : 'I agree to the'}{' '}
@@ -401,7 +401,7 @@ const AuthPage: React.FC = () => {
                   type="button"
                   onClick={handleGoogleLogin}
                   disabled={isLoading}
-                  className="w-full bg-white text-gray-800 py-4 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full bg-white text-gray-800 py-4 rounded-xl font-bold text-sm hover:bg-gray-100 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-700"
                 >
                   <GoogleIcon />
                   {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : (language === 'cn' ? '使用 Google 继续' : 'Continue with Google')}

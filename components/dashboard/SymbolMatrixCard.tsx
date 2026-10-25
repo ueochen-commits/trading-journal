@@ -145,31 +145,31 @@ const BubbleTooltip = ({ state }: { state: TooltipState }) => {
   return (
     <div style={{
       position: 'fixed', left: state.x, top: state.y,
-      background: '#fff', border: '1px solid rgba(148,163,184,0.25)',
+      background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
       borderRadius: 8, padding: '12px 14px', minWidth: 180,
       boxShadow: '0 4px 16px -4px rgba(15,23,42,0.12)',
       pointerEvents: 'none', zIndex: 9999,
       fontFamily: 'inherit', fontSize: 12,
     }}>
       <div style={{ marginBottom: 6, paddingBottom: 8, borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: '#0F172A', letterSpacing: '0.02em' }}>{d.symbol}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--tg-text, #0F172A)', letterSpacing: '0.02em' }}>{d.symbol}</span>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
         <span style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, flexShrink: 0, display: 'inline-block' }} />
-        <span style={{ color: '#64748B', flex: 1 }}>总盈亏</span>
+        <span style={{ color: 'var(--tg-secondary, #64748B)', flex: 1 }}>总盈亏</span>
         <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: pnlClass }}>
           {isPos ? '+' : '−'}${Math.abs(d.totalPnL).toFixed(2)}
         </span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 16px', paddingTop: 10, borderTop: '1px solid rgba(148,163,184,0.1)' }}>
         {[
-          { label: '交易笔数', value: String(d.tradeCount), color: '#0F172A' },
-          { label: '胜率', value: `${(d.winRate * 100).toFixed(0)}%`, color: '#0F172A' },
+          { label: '交易笔数', value: String(d.tradeCount), color: 'var(--tg-text, #0F172A)' },
+          { label: '胜率', value: `${(d.winRate * 100).toFixed(0)}%`, color: 'var(--tg-text, #0F172A)' },
           { label: '平均 R', value: `${d.avgR >= 0 ? '+' : ''}${d.avgR.toFixed(2)}R`, color: avgRColor },
-          { label: '最长连亏', value: `${d.maxLossStreak} 笔`, color: '#DC2626' },
+          { label: '最长连亏', value: `${d.maxLossStreak} 笔`, color: 'var(--tg-negative, #DC2626)' },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <span style={{ fontSize: 10, color: '#94A3B8', letterSpacing: '0.02em' }}>{s.label}</span>
+            <span style={{ fontSize: 10, color: 'var(--tg-muted, #94A3B8)', letterSpacing: '0.02em' }}>{s.label}</span>
             <span style={{ fontSize: 12, fontWeight: 600, color: s.color, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums' }}>{s.value}</span>
           </div>
         ))}
@@ -251,7 +251,7 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
   }, []);
 
   const cardStyle: React.CSSProperties = {
-    background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12,
+    background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e8e8f0)', borderRadius: 12,
     padding: '16px 20px', display: 'flex', flexDirection: 'column',
     height: 420,
     overflow: 'hidden',
@@ -261,8 +261,8 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
     return (
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, cursor: 'default' }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
-          <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tg-border, #94A3B8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, cursor: 'default' }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>近 90 天</span>
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 260, gap: 8 }}>
           <EmptyChartState
@@ -285,8 +285,8 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
       <div style={cardStyle}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14, flexShrink: 0 }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, cursor: 'default' }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
-          <span style={{ fontSize: 11, color: '#94A3B8' }}>近 90 天 · 气泡大小 = 总盈亏</span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '品种表现' : 'Symbol Performance'}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--tg-border, #94A3B8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, cursor: 'default' }}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>近 90 天 · 气泡大小 = 总盈亏</span>
         </div>
 
         {/* Chart */}
@@ -298,14 +298,14 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
                 type="number" dataKey="x" name="交易频次"
                 domain={scatterBounds.xDomain}
                 axisLine={false} tickLine={false}
-                tick={{ fontSize: 9, fill: '#94A3B8', fontFamily: '"SF Mono", monospace' }}
-                label={{ value: '交易频次 (笔)', position: 'insideBottom', offset: -2, fontSize: 10, fill: '#94A3B8' }}
+                tick={{ fontSize: 9, fill: 'var(--tg-muted, #94A3B8)', fontFamily: '"SF Mono", monospace' }}
+                label={{ value: '交易频次 (笔)', position: 'insideBottom', offset: -2, fontSize: 10, fill: 'var(--tg-muted, #94A3B8)' }}
               />
               <YAxis
                 type="number" dataKey="y" name="期望收益 R"
                 domain={scatterBounds.yDomain}
                 axisLine={false} tickLine={false} width={36}
-                tick={{ fontSize: 9, fill: '#94A3B8', fontFamily: '"SF Mono", monospace' }}
+                tick={{ fontSize: 9, fill: 'var(--tg-muted, #94A3B8)', fontFamily: '"SF Mono", monospace' }}
                 tickFormatter={(v: number) => v > 0 ? `+${v.toFixed(1)}R` : `${v.toFixed(1)}R`}
               />
               <Scatter
@@ -324,13 +324,13 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
         {stats && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', paddingTop: 12, borderTop: '1px solid rgba(148,163,184,0.12)', flexShrink: 0 }}>
             {[
-              { label: '最佳品种', value: stats.best, color: '#15803D', mono: false },
-              { label: '最差品种', value: stats.worst, color: '#B91C1C', mono: false },
-              { label: '盈利品种', value: `${stats.profitable} / ${stats.total}`, color: stats.profitable > stats.total / 2 ? '#15803D' : '#B91C1C', mono: true },
-              { label: '组合期望', value: `${stats.portfolioExp >= 0 ? '+' : ''}${stats.portfolioExp.toFixed(2)}R`, color: stats.portfolioExp >= 0 ? '#15803D' : '#B91C1C', mono: true },
+              { label: '最佳品种', value: stats.best, color: 'var(--tg-positive, #15803D)', mono: false },
+              { label: '最差品种', value: stats.worst, color: 'var(--tg-negative, #B91C1C)', mono: false },
+              { label: '盈利品种', value: `${stats.profitable} / ${stats.total}`, color: stats.profitable > stats.total / 2 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #B91C1C)', mono: true },
+              { label: '组合期望', value: `${stats.portfolioExp >= 0 ? '+' : ''}${stats.portfolioExp.toFixed(2)}R`, color: stats.portfolioExp >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #B91C1C)', mono: true },
             ].map((s, i) => (
               <div key={s.label} style={{ padding: '0 14px', borderRight: i < 3 ? '1px solid rgba(148,163,184,0.1)' : 'none', paddingLeft: i === 0 ? 0 : 14, paddingRight: i === 3 ? 0 : 14, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <span style={{ fontSize: 10, color: '#94A3B8', letterSpacing: '0.04em' }}>{s.label}</span>
+                <span style={{ fontSize: 10, color: 'var(--tg-muted, #94A3B8)', letterSpacing: '0.04em' }}>{s.label}</span>
                 <span style={{ fontSize: 13, fontWeight: 600, color: s.color, fontFamily: s.mono ? '"SF Mono", monospace' : '"Inter", sans-serif', fontVariantNumeric: 'tabular-nums' }}>{s.value}</span>
               </div>
             ))}

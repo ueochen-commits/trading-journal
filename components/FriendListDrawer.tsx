@@ -37,16 +37,16 @@ const FriendListDrawer: React.FC = () => {
         <div className="fixed top-0 right-0 h-screen w-80 bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl z-[45] flex flex-col animate-fade-in-right transform transition-transform duration-300">
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                 <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    {t.social.friends} <span className="text-xs font-normal text-slate-500 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full">{friends.length}</span>
+                    {t.social.friends} <span className="text-xs font-normal text-slate-500 bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded-full dark:text-slate-400">{friends.length}</span>
                 </h3>
-                <button onClick={closeFriendDrawer} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500">
+                <button onClick={closeFriendDrawer} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400">
                     <X className="w-5 h-5" />
                 </button>
             </div>
 
             <div className="p-4">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-400" />
                     <input 
                         type="text" 
                         placeholder={t.social.search}
@@ -75,7 +75,7 @@ const FriendListDrawer: React.FC = () => {
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-center mb-0.5">
                                     <h4 className="font-bold text-sm text-slate-900 dark:text-white truncate">{friend.name}</h4>
-                                    <span className="text-[10px] text-slate-400">{friend.status === 'online' ? t.social.online : friend.lastSeen}</span>
+                                    <span className="text-[10px] text-slate-400 dark:text-slate-400">{friend.status === 'online' ? t.social.online : friend.lastSeen}</span>
                                 </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                                     {chatHistory[friend.id]?.slice(-1)[0]?.text || friend.tier}
@@ -86,7 +86,7 @@ const FriendListDrawer: React.FC = () => {
                                     {unread}
                                 </div>
                             ) : (
-                                <div className="opacity-0 group-hover:opacity-100 text-slate-400">
+                                <div className="opacity-0 group-hover:opacity-100 text-slate-400 dark:text-slate-400">
                                     <MessageCircle className="w-4 h-4" />
                                 </div>
                             )}

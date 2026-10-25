@@ -10,6 +10,7 @@ import {
 import { TrendingUp, TrendingDown, Target, Activity, ShieldCheck, AlertOctagon, Hexagon, Calendar, Settings, X, XCircle, Plus, Sparkles, BrainCircuit, Trophy, Star, Crown, Eye, EyeOff, Users, UserPlus, Search, Flame, Award, CheckCircle2, Zap, Lightbulb, ClipboardList, CheckSquare, Edit2, ArrowRight, Clock, Globe, Sun, Building2, Landmark, Euro, BookOpen, Shield, Gem, Medal, Sunrise, Flower, Apple, ChevronDown, ChevronLeft, ChevronRight, Check, Briefcase, Trash2, Circle, RefreshCw, BarChart2 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
+import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import CalendarView from './CalendarView';
 import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
 import MentorWidget from './MentorWidget';
@@ -83,9 +84,9 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
         ref={iconRef}
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
-        style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid #d1d5db', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: '#9ca3af', flexShrink: 0, cursor: 'help', transition: 'border-color 0.15s, color 0.15s' }}
-        onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = '#6366f1'; (e.currentTarget as HTMLElement).style.color = '#6366f1'; }}
-        onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = '#d1d5db'; (e.currentTarget as HTMLElement).style.color = '#9ca3af'; }}
+        style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid var(--tg-border, #d1d5db)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: 'var(--tg-muted, #9ca3af)', flexShrink: 0, cursor: 'help', transition: 'border-color 0.15s, color 0.15s' }}
+        onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--tg-accent-border, #6366f1)'; (e.currentTarget as HTMLElement).style.color = 'var(--tg-accent, #6366f1)'; }}
+        onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--tg-border, #d1d5db)'; (e.currentTarget as HTMLElement).style.color = 'var(--tg-muted, #9ca3af)'; }}
       >i</span>
 
       {/* Tooltip — positioned relative to the card via fixed positioning */}
@@ -113,7 +114,7 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
           }}
         >
           <div style={{ fontSize: 12.5, fontWeight: 600, color: '#fff', marginBottom: 6, letterSpacing: '0.01em', lineHeight: 1.4 }}>{info.title}</div>
-          <div style={{ fontSize: 11.5, color: '#CBD5E1', lineHeight: 1.65, fontWeight: 400 }}>{info.body}</div>
+          <div style={{ fontSize: 11.5, color: 'var(--tg-muted, #CBD5E1)', lineHeight: 1.65, fontWeight: 400 }}>{info.body}</div>
           {/* Arrow */}
           <span style={{
             position: 'absolute',
@@ -134,8 +135,8 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
 
 const tzCardShell: React.CSSProperties = {
   position: 'relative',
-  background: '#ffffff',
-  border: '1px solid #edf0f6',
+  background: 'var(--tg-surface, #ffffff)',
+  border: '1px solid var(--tg-border, #edf0f6)',
   borderRadius: 16,
   padding: '16px 16px 14px',
   display: 'flex',
@@ -147,7 +148,7 @@ const tzCardShell: React.CSSProperties = {
   width: '100%',
   boxShadow: '0 1px 2px rgba(15,23,42,0.03)',
 };
-const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#6b7280', fontWeight: 400, marginBottom: 12, lineHeight: 1.1 };
+const tzLabelRow: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--tg-secondary, #6b7280)', fontWeight: 400, marginBottom: 12, lineHeight: 1.1 };
 const tzBigVal = (c: string): React.CSSProperties => ({ fontSize: 'clamp(16px, 1.5vw, 28px)', fontWeight: 600, letterSpacing: '-0.035em', lineHeight: 0.98, color: c, whiteSpace: 'nowrap', minWidth: 0 });
 const tzMetaPill: React.CSSProperties = {
   display: 'inline-flex',
@@ -157,8 +158,8 @@ const tzMetaPill: React.CSSProperties = {
   height: 18,
   padding: '0 8px',
   borderRadius: 999,
-  background: '#f3f4f6',
-  color: '#111827',
+  background: 'var(--tg-surface-muted, #f3f4f6)',
+  color: 'var(--tg-text, #111827)',
   fontSize: 10,
   fontWeight: 500,
   lineHeight: 1,
@@ -193,7 +194,7 @@ const DashboardLoadingFrame: React.FC<{ isLoading?: boolean; radius?: number; ch
         style={{ borderRadius: radius, cursor: 'wait' }}
         aria-label="Loading card data"
       >
-        <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin" />
+        <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin dark:border-indigo-500/30" />
       </div>
     )}
   </div>
@@ -207,7 +208,7 @@ const DashboardCardLoadingOverlay: React.FC<{ isLoading?: boolean; radius?: numb
       style={{ borderRadius: radius, cursor: 'wait' }}
       aria-label="Loading card data"
     >
-      <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin" />
+      <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin dark:border-indigo-500/30" />
     </div>
   );
 };
@@ -222,15 +223,15 @@ const SemiGauge: React.FC<{ wins: number; bes: number; losses: number }> = ({ wi
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: '100%', maxWidth: 92 }}>
       <svg viewBox="0 0 88 52" style={{ width: '100%', height: 'auto', display: 'block', overflow: 'visible' }}>
-        <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="#eef1f5" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} />
+        <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="var(--tg-border, #eef1f5)" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} />
         {wLen > 0 && <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="#4fc79a" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} strokeDasharray={`${wLen} ${PL}`} strokeDashoffset="0" />}
-        {bLen > 0 && <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="#6f78ff" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} strokeDasharray={`${bLen} ${PL}`} strokeDashoffset={-wLen} />}
-        {lLen > 0 && <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="#f26666" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} strokeDasharray={`${lLen} ${PL}`} strokeDashoffset={-(wLen + bLen)} />}
+        {bLen > 0 && <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="var(--tg-accent-border, #6f78ff)" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} strokeDasharray={`${bLen} ${PL}`} strokeDashoffset={-wLen} />}
+        {lLen > 0 && <path d="M6,44 A38,38 0 0,1 82,44" fill="none" stroke="var(--tg-negative, #f26666)" strokeWidth="6.5" strokeLinecap="butt" pathLength={PL} strokeDasharray={`${lLen} ${PL}`} strokeDashoffset={-(wLen + bLen)} />}
       </svg>
       <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: 1, gap: 4 }}>
-        <span style={tzSoftStat('#e8f7ef', '#2eb67d')}>{wins}</span>
-        <span style={{ ...tzSoftStat('#eef2ff', '#6f78ff'), marginInline: 'auto' }}>{bes}</span>
-        <span style={tzSoftStat('#fee9e9', '#f26666')}>{losses}</span>
+        <span style={tzSoftStat('var(--tg-positive-soft, #e8f7ef)', 'var(--tg-positive, #15803d)')}>{wins}</span>
+        <span style={{ ...tzSoftStat('var(--tg-accent-soft, #eef2ff)', 'var(--tg-accent, #4f46e5)'), marginInline: 'auto' }}>{bes}</span>
+        <span style={tzSoftStat('var(--tg-negative-soft, #fee9e9)', 'var(--tg-negative, #dc2626)')}>{losses}</span>
       </div>
     </div>
   );
@@ -242,7 +243,7 @@ const ProfitFactorRing: React.FC<{ value: number }> = ({ value }) => {
   const greenLength = safeValue * circumference;
   return (
     <svg viewBox="0 0 64 64" style={{ width: 62, height: 62, flexShrink: 0 }}>
-      <circle cx="32" cy="32" r="25" fill="none" stroke="#f26666" strokeWidth="6" />
+      <circle cx="32" cy="32" r="25" fill="none" stroke="var(--tg-negative, #f26666)" strokeWidth="6" />
       {safeValue > 0 && (
         <circle
           cx="32"
@@ -285,7 +286,7 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="winRate" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flex: 1, minHeight: 52 }}>
-        <div style={{ ...tzBigVal('#111827'), flex: '1 1 auto' }} className="dark:text-white">
+        <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flex: '1 1 auto' }} className="dark:text-white">
           {total === 0 ? '--' : `${winRate.toFixed(2)}%`}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 92, marginTop: -1 }}>
@@ -302,7 +303,7 @@ const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value,
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="profitFactor" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flex: 1, minHeight: 52 }}>
         <div>
-          <div style={{ ...tzBigVal('#111827'), flex: '1 1 auto' }} className="dark:text-white">
+          <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flex: '1 1 auto' }} className="dark:text-white">
             {value === 0 ? '--' : value === Infinity ? '∞' : value.toFixed(2)}
           </div>
         </div>
@@ -320,7 +321,7 @@ const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: nu
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="dailyWinRate" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flex: 1, minHeight: 52 }}>
-        <div style={{ ...tzBigVal('#111827'), flex: '1 1 auto' }} className="dark:text-white">
+        <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flex: '1 1 auto' }} className="dark:text-white">
           {total === 0 ? '--' : `${dayWinRate.toFixed(2)}%`}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0, width: 92, marginTop: -1 }}>
@@ -339,17 +340,17 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
     <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="profitLossRatio" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1, minHeight: 52 }}>
-        <div style={{ ...tzBigVal('#111827'), flexShrink: 0 }} className="dark:text-white">
+        <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flexShrink: 0 }} className="dark:text-white">
           {ratio === 0 ? '--' : ratio.toFixed(2)}
         </div>
         <div style={{ flex: 1, minWidth: 94, display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: 7, paddingTop: 6 }}>
-          <div style={{ width: '100%', height: 7, borderRadius: 999, overflow: 'hidden', display: 'flex', background: '#eef1f5' }}>
+          <div style={{ width: '100%', height: 7, borderRadius: 999, overflow: 'hidden', display: 'flex', background: 'var(--tg-accent-soft, #eef1f5)' }}>
             <div style={{ background: '#4fc79a', width: `${winPct}%` }} />
             <div style={{ background: '#f26666', flex: 1 }} />
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 10.5, color: '#4fc79a', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>${avgWin.toFixed(1)}</span>
-            <span style={{ fontSize: 10.5, color: '#f26666', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>-${absLoss.toFixed(1)}</span>
+            <span style={{ fontSize: 10.5, color: 'var(--tg-positive, #4fc79a)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>${avgWin.toFixed(1)}</span>
+            <span style={{ fontSize: 10.5, color: 'var(--tg-negative, #f26666)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>-${absLoss.toFixed(1)}</span>
           </div>
         </div>
       </div>
@@ -359,7 +360,7 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
 
 const ReportRangeIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
-    <rect x="2.7" y="4" width="14.6" height="13.7" rx="3.8" fill="#d8d0f2" />
+    <rect x="2.7" y="4" width="14.6" height="13.7" rx="3.8" fill="var(--tg-accent-soft, #d8d0f2)" />
     <path d="M2.7 7.6h14.6v-0.2c0-1.9-1.5-3.4-3.4-3.4H6.1C4.2 4 2.7 5.5 2.7 7.4v0.2Z" fill="#8674d6" />
     <rect x="5.5" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
     <rect x="12.6" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
@@ -373,10 +374,10 @@ const ReportRangeIcon = () => (
 
 const ReportAccountIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
-    <path d="M3.6 7.6c0-1.4 1.1-2.5 2.5-2.5h7.6c1.4 0 2.5 1.1 2.5 2.5v0.5h-2.1c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 3.2 3.2h2.1v0.5c0 1.4-1.1 2.5-2.5 2.5H6.1c-1.4 0-2.5-1.1-2.5-2.5V7.6Z" fill="#d8d0f2" />
+    <path d="M3.6 7.6c0-1.4 1.1-2.5 2.5-2.5h7.6c1.4 0 2.5 1.1 2.5 2.5v0.5h-2.1c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 3.2 3.2h2.1v0.5c0 1.4-1.1 2.5-2.5 2.5H6.1c-1.4 0-2.5-1.1-2.5-2.5V7.6Z" fill="var(--tg-accent-soft, #d8d0f2)" />
     <path d="M6.5 5.2 12 2.8c1-0.4 2.1 0.3 2.1 1.4v1H6.5Z" fill="#b8ace8" />
     <path d="M10.9 11.3c0-1.2 1-2.2 2.2-2.2h2.9c0.8 0 1.4 0.6 1.4 1.4v1.7c0 0.8-0.6 1.4-1.4 1.4h-2.9c-1.2 0-2.2-1-2.2-2.3Z" fill="#8674d6" />
-    <circle cx="13.5" cy="11.4" r="0.85" fill="#f8f6ff" />
+    <circle cx="13.5" cy="11.4" r="0.85" fill="var(--tg-accent-soft, #f8f6ff)" />
   </svg>
 );
 
@@ -388,11 +389,11 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
   const pos = val >= 0;
   const { currencySymbol } = useUser();
   return (
-    <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 }}>
-      <div style={{ fontWeight: 600, color: '#1a1d2e', marginBottom: 5 }}>{label}</div>
+    <div style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 }}>
+      <div style={{ fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', marginBottom: 5 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 10, height: 10, background: pos ? '#00c896' : '#ff4d6a', borderRadius: 2, display: 'inline-block' }} />
-        <span style={{ color: pos ? '#00c896' : '#ff4d6a', fontWeight: 700 }}>{pos ? '+' : ''}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
+        <span style={{ color: pos ? 'var(--tg-positive, #00c896)' : 'var(--tg-negative, #ff4d6a)', fontWeight: 700 }}>{pos ? '+' : ''}{currencySymbol}{Math.abs(val).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span>
       </div>
     </div>
   );
@@ -441,7 +442,7 @@ function buildHeatPoints(trades: any[]) {
 }
 
 const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trades, language }) => {
-  const isDark = document.documentElement.classList.contains('dark');
+  const isDark = useIsDarkMode();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const { points, totalCount, reviewedCount } = useMemo(() => buildHeatPoints(trades), [trades]);
 
@@ -450,15 +451,15 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
   const warnX = xScale(WARN_X); const dangX = xScale(DANG_X); const zeroY = yScale(0);
 
   const cardStyle: React.CSSProperties = {
-    background: isDark ? '#0f172a' : '#fff',
-    border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`,
+    background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)',
+    border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #ededf3)'}`,
     borderRadius: 12, padding: '16px 20px',
     boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
   };
 
   if (totalCount === 0) return (
     <div style={cardStyle}>
-      <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a', marginBottom: 14 }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #0f172a)', marginBottom: 14 }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</div>
       <EmptyChartState
         variant="cloud"
         compact
@@ -472,8 +473,8 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
   if (reviewedCount === 0) return (
     <div style={cardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
-        <span style={{ fontSize: 10, color: '#94a3b8' }}>{language === 'cn' ? '每笔交易一个点' : 'One dot per trade'}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #0f172a)' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
+        <span style={{ fontSize: 10, color: 'var(--tg-muted, #94a3b8)' }}>{language === 'cn' ? '每笔交易一个点' : 'One dot per trade'}</span>
       </div>
       <EmptyChartState
         variant="cloud"
@@ -491,9 +492,9 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
     <div style={cardStyle}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#0f172a' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #0f172a)' }}>{language === 'cn' ? '仓位情绪热图' : 'Position Heat'}</span>
         </div>
-        <span style={{ fontSize: 10, color: '#94a3b8' }}>{reviewedCount}{language === 'cn' ? ' 笔已复盘交易' : ' reviewed trades'}</span>
+        <span style={{ fontSize: 10, color: 'var(--tg-muted, #94a3b8)' }}>{reviewedCount}{language === 'cn' ? ' 笔已复盘交易' : ' reviewed trades'}</span>
       </div>
 
       <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: '100%', height: VH }}>
@@ -510,24 +511,24 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
         <line x1={warnX} y1={PT} x2={warnX} y2={PT + PH} stroke="#f59e0b" strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
         <line x1={dangX} y1={PT} x2={dangX} y2={PT + PH} stroke="#dc2626" strokeWidth="1" strokeDasharray="3,3" opacity="0.6" />
         {/* 0R reference line */}
-        <line x1={PL} y1={zeroY} x2={VW - PR} y2={zeroY} stroke="#94a3b8" strokeWidth="1" opacity="0.4" />
+        <line x1={PL} y1={zeroY} x2={VW - PR} y2={zeroY} stroke="var(--tg-border, #94a3b8)" strokeWidth="1" opacity="0.4" />
         {/* zone labels */}
-        <text x={(PL + warnX) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="#15803d" fontWeight="500">{language === 'cn' ? '正常仓位区' : 'Normal'}</text>
-        <text x={(warnX + dangX) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="#f59e0b" fontWeight="500">{language === 'cn' ? '警戒区' : 'Caution'}</text>
-        <text x={(dangX + VW - PR) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="#dc2626" fontWeight="500">{language === 'cn' ? '超限区' : 'Danger'}</text>
+        <text x={(PL + warnX) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="var(--tg-positive, #15803d)" fontWeight="500">{language === 'cn' ? '正常仓位区' : 'Normal'}</text>
+        <text x={(warnX + dangX) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="var(--tg-warning, #f59e0b)" fontWeight="500">{language === 'cn' ? '警戒区' : 'Caution'}</text>
+        <text x={(dangX + VW - PR) / 2} y={PT + 13} textAnchor="middle" fontSize="9" fill="var(--tg-negative, #dc2626)" fontWeight="500">{language === 'cn' ? '超限区' : 'Danger'}</text>
         {/* Y axis labels */}
         {[5,2,0,-2,-5].map(r => (
           <text key={r} x={PL - 4} y={yScale(r) + 3.5} textAnchor="end" fontSize="9"
-            fill={r === 0 ? (isDark ? '#94a3b8' : '#64748b') : '#94a3b8'}
+            fill={r === 0 ? (isDark ? 'var(--tg-muted, #94a3b8)' : 'var(--tg-secondary, #64748b)') : 'var(--tg-muted, #94a3b8)'}
             fontWeight={r === 0 ? '500' : '400'} fontFamily="SF Mono, monospace">
             {r > 0 ? `+${r}R` : `${r}R`}
           </text>
         ))}
         {/* X axis tick labels — just below plot area */}
-        <text x={warnX} y={PT + PH + 13} textAnchor="middle" fontSize="9" fill="#f59e0b" fontFamily="SF Mono, monospace">2x</text>
-        <text x={dangX} y={PT + PH + 13} textAnchor="middle" fontSize="9" fill="#dc2626" fontFamily="SF Mono, monospace">3x</text>
+        <text x={warnX} y={PT + PH + 13} textAnchor="middle" fontSize="9" fill="var(--tg-warning, #f59e0b)" fontFamily="SF Mono, monospace">2x</text>
+        <text x={dangX} y={PT + PH + 13} textAnchor="middle" fontSize="9" fill="var(--tg-negative, #dc2626)" fontFamily="SF Mono, monospace">3x</text>
         {/* X axis title — one line below tick labels */}
-        <text x={VW / 2} y={PT + PH + 26} textAnchor="middle" fontSize="9" fill="#64748b">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
+        <text x={VW / 2} y={PT + PH + 26} textAnchor="middle" fontSize="9" fill="var(--tg-secondary, #64748b)">{language === 'cn' ? '仓位倍数（相对标准仓）' : 'Position Size Multiple'}</text>
         {/* data points */}
         {points.map(p => {
           const fill = p.color === 'profit' ? '#059669' : p.color === 'loss-small' ? '#f87171' : '#dc2626';
@@ -536,7 +537,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
             <circle key={p.tradeId}
               cx={xScale(p.sizeMultiple)} cy={yScale(p.rValue)}
               r={isHov ? 5 : 2.5} fill={fill}
-              stroke={isHov ? (isDark ? '#1e293b' : '#fff') : 'none'} strokeWidth={isHov ? 1.5 : 0}
+              stroke={isHov ? (isDark ? '#1e293b' : 'var(--tg-border, #fff)') : 'none'} strokeWidth={isHov ? 1.5 : 0}
               opacity={isHov ? 1 : 0.6}
               style={{ cursor: 'pointer', transition: 'r 0.1s, opacity 0.1s' }}
               onMouseEnter={() => setHoveredId(p.tradeId)}
@@ -553,13 +554,13 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
           const rColor = hp.rValue > 0 ? '#059669' : hp.rValue <= -2 ? '#dc2626' : '#f59e0b';
           return (
             <foreignObject x={toLeft ? tx - 128 : tx + 10} y={ty - 36} width="118" height="52" style={{ overflow: 'visible', pointerEvents: 'none' }}>
-              <div style={{ background: isDark ? '#1e293b' : '#fff', border: `1px solid ${isDark ? '#334155' : 'rgba(148,163,184,0.3)'}`, borderRadius: 8, padding: '7px 10px', boxShadow: '0 4px 12px rgba(15,23,42,0.1)', fontSize: 11, fontFamily: '-apple-system, Inter, sans-serif' }}>
+              <div style={{ background: isDark ? '#1e293b' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#334155' : 'rgba(148,163,184,0.3)'}`, borderRadius: 8, padding: '7px 10px', boxShadow: '0 4px 12px rgba(15,23,42,0.1)', fontSize: 11, fontFamily: '-apple-system, Inter, sans-serif' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 3 }}>
-                  <span style={{ color: '#94a3b8' }}>{language === 'cn' ? '仓位' : 'Size'}</span>
-                  <span style={{ color: isDark ? '#f8fafc' : '#0f172a', fontWeight: 600, fontFamily: 'SF Mono, monospace' }}>{hp.sizeMultiple.toFixed(1)}x</span>
+                  <span style={{ color: 'var(--tg-muted, #94a3b8)' }}>{language === 'cn' ? '仓位' : 'Size'}</span>
+                  <span style={{ color: isDark ? '#f8fafc' : 'var(--tg-text, #0f172a)', fontWeight: 600, fontFamily: 'SF Mono, monospace' }}>{hp.sizeMultiple.toFixed(1)}x</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-                  <span style={{ color: '#94a3b8' }}>R</span>
+                  <span style={{ color: 'var(--tg-muted, #94a3b8)' }}>R</span>
                   <span style={{ color: rColor, fontWeight: 600, fontFamily: 'SF Mono, monospace' }}>{hp.rValue > 0 ? '+' : ''}{hp.rValue.toFixed(2)}R</span>
                 </div>
               </div>
@@ -569,7 +570,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
       </svg>
 
       {overLimitLosses.length > 0 && (
-        <div style={{ marginTop: 8, padding: '7px 10px', background: isDark ? 'rgba(220,38,38,0.1)' : '#fef2f2', border: `1px solid ${isDark ? 'rgba(220,38,38,0.25)' : '#fecaca'}`, borderRadius: 8, fontSize: 11, color: isDark ? '#fca5a5' : '#dc2626', lineHeight: 1.5 }}>
+        <div style={{ marginTop: 8, padding: '7px 10px', background: isDark ? 'rgba(220,38,38,0.1)' : 'var(--tg-negative-soft, #fef2f2)', border: `1px solid ${isDark ? 'rgba(220,38,38,0.25)' : 'var(--tg-border, #fecaca)'}`, borderRadius: 8, fontSize: 11, color: isDark ? 'var(--tg-muted, #fca5a5)' : 'var(--tg-negative, #dc2626)', lineHeight: 1.5 }}>
           ⚠️ {language === 'cn'
             ? `超限仓位 ${overLimitLosses.length} 笔交易全部亏损——这是过度自信偏差的典型信号。`
             : `${overLimitLosses.length} oversized trades all resulted in losses — classic Conviction Bias.`}
@@ -628,14 +629,14 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
     return `${sign}$${abs.toFixed(2)}`;
   };
 
-  const isDark = document.documentElement.classList.contains('dark');
-  const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
+  const isDark = useIsDarkMode();
+  const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #e8e8f0)'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8ecf3'}`, borderRadius: 16, padding: '0 0 18px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 10px rgba(15, 23, 42, 0.02)' }}>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #e8ecf3)'}`, borderRadius: 16, padding: '0 0 18px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 10px rgba(15, 23, 42, 0.02)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 16px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#f8fafc' : '#1f2430', letterSpacing: '-0.015em' }}>
+          <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#f8fafc' : 'var(--tg-text, #1f2430)', letterSpacing: '-0.015em' }}>
             {language === 'cn' ? '交易时间表现' : 'Trade time performance'}
           </span>
           <div style={{ transform: 'scale(1.02)' }}>
@@ -646,13 +647,13 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
           <div ref={configRef} style={{ position: 'relative' }}>
             <button
               onClick={() => setIsConfigOpen(current => !current)}
-              style={{ border: 'none', background: 'transparent', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#cbd5e1' : '#5c6574', cursor: 'pointer' }}
+              style={{ border: 'none', background: 'transparent', padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: isDark ? 'var(--tg-muted, #cbd5e1)' : 'var(--tg-secondary, #5c6574)', cursor: 'pointer' }}
               aria-label={language === 'cn' ? '图表设置' : 'Chart settings'}
             >
               <Settings className="h-[16px] w-[16px]" strokeWidth={1.85} />
             </button>
             {isConfigOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 132, background: isDark ? '#111827' : '#fff', border: `1px solid ${isDark ? '#1f2937' : '#e5e7eb'}`, borderRadius: 12, boxShadow: '0 18px 36px rgba(15, 23, 42, 0.12)', padding: 6, zIndex: 20 }}>
+              <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 132, background: isDark ? '#111827' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1f2937' : 'var(--tg-border, #e5e7eb)'}`, borderRadius: 12, boxShadow: '0 18px 36px rgba(15, 23, 42, 0.12)', padding: 6, zIndex: 20 }}>
                 {(['entry', 'exit'] as const).map(key => {
                   const active = mode === key;
                   return (
@@ -665,8 +666,8 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
                       style={{
                         width: '100%',
                         border: 'none',
-                        background: active ? (isDark ? '#1f2937' : '#f5f7fb') : 'transparent',
-                        color: active ? (isDark ? '#f8fafc' : '#202634') : (isDark ? '#cbd5e1' : '#5b6474'),
+                        background: active ? (isDark ? '#1f2937' : 'var(--tg-accent-soft, #f5f7fb)') : 'transparent',
+                        color: active ? (isDark ? '#f8fafc' : 'var(--tg-text, #202634)') : (isDark ? 'var(--tg-muted, #cbd5e1)' : 'var(--tg-secondary, #5b6474)'),
                         borderRadius: 8,
                         padding: '8px 10px',
                         textAlign: 'left',
@@ -687,7 +688,7 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
           </div>
         </div>
       </div>
-      <div style={{ height: 1, background: isDark ? '#1e293b' : '#e9edf4', flexShrink: 0 }} />
+      <div style={{ height: 1, background: isDark ? '#1e293b' : 'var(--tg-accent-soft, #e9edf4)', flexShrink: 0 }} />
       <div style={{ flex: 1, minHeight: 0, padding: '14px 16px 0 10px' }}>
         {ttData.length === 0 ? (
           <EmptyChartState
@@ -704,18 +705,18 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
               <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} ticks={Array.from({ length: Math.round((yMax - yMin) / 100) + 1 }, (_, index) => yMin + index * 100)} tickLine={false} axisLine={false} tick={{ fontSize: 10.5, fill: axisText }} width={58}
                 tickFormatter={ttTickFormatter} />
               <ReferenceLine y={0} stroke={referenceLineColor} strokeWidth={1} strokeDasharray="2 4" />
-              <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
+              <Tooltip cursor={{ strokeDasharray: '4 4', stroke: 'var(--tg-border, #c0c3d4)' }}
                 content={({ active, payload }: any) => {
                   if (!active || !payload?.length) return null;
                   const d = payload[0]?.payload;
                   const isUp = d.pnl >= 0;
                   return (
                     <div style={ttTooltipStyle}>
-                      <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e', marginBottom: 6 }}>{d.symbol}</div>
+                      <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #1a1d2e)', marginBottom: 6 }}>{d.symbol}</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>{language === 'cn' ? '时间' : 'Time'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{d.timeLabel}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>{language === 'cn' ? '时间' : 'Time'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #1a1d2e)' }}>{d.timeLabel}</span></div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? positiveDotColor : negativeDotColor }}>{isUp ? '+' : ''}{currencySymbol}{Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: '#4a4d6a' }}>{d.date}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: neutralText }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: 'var(--tg-secondary, #4a4d6a)' }}>{d.date}</span></div>
                       </div>
                     </div>
                   );
@@ -774,13 +775,13 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
     return `${sign}$${abs.toFixed(2)}`;
   };
 
-  const isDark = document.documentElement.classList.contains('dark');
-  const tooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#e8e8f0'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
+  const isDark = useIsDarkMode();
+  const tooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #e8e8f0)'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ position: 'relative', background: isDark ? '#0f172a' : '#fff', border: `1px solid ${isDark ? '#1e293b' : '#ededf3'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #ededf3)'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14, flexShrink: 0 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{language === 'cn' ? '交易时长表现' : 'Trade Duration Performance'}</span>
+        <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '交易时长表现' : 'Trade Duration Performance'}</span>
         <TZInfoIcon infoKey="tradeTiming" />
       </div>
       <div style={{ flex: 1, minHeight: 0 }}>
@@ -795,23 +796,23 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="4 4" stroke="rgba(0,0,0,0.04)" />
-              <XAxis type="number" dataKey="x" domain={['dataMin', 'dataMax']} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }}
+              <XAxis type="number" dataKey="x" domain={['dataMin', 'dataMax']} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--tg-muted, #b0b3c6)' }}
                 tickFormatter={(v: number) => v < 24 ? `${Math.round(v)}h` : `${(v / 24).toFixed(0)}d`} />
-              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#b0b3c6' }} width={52}
+              <YAxis type="number" dataKey="pnl" domain={[yMin, yMax]} tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--tg-muted, #b0b3c6)' }} width={52}
                 tickFormatter={tdTickFormatter} />
               <ReferenceLine y={0} stroke="rgba(0,0,0,0.12)" strokeWidth={1} />
-              <Tooltip cursor={{ strokeDasharray: '4 4', stroke: '#c0c3d4' }}
+              <Tooltip cursor={{ strokeDasharray: '4 4', stroke: 'var(--tg-border, #c0c3d4)' }}
                 content={({ active, payload }: any) => {
                   if (!active || !payload?.length) return null;
                   const d = payload[0]?.payload;
                   const isUp = d.pnl >= 0;
                   return (
                     <div style={tooltipStyle}>
-                      <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e', marginBottom: 6 }}>{d.symbol}</div>
+                      <div style={{ fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #1a1d2e)', marginBottom: 6 }}>{d.symbol}</div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '持仓时长' : 'Duration'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : '#1a1d2e' }}>{d.durationLabel}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? '#00c896' : '#ff4d6a' }}>{isUp ? '+' : ''}{currencySymbol}{Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: '#9396aa' }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: isDark ? '#94a3b8' : '#4a4d6a' }}>{d.date}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: 'var(--tg-muted, #9396aa)' }}>{language === 'cn' ? '持仓时长' : 'Duration'}</span><span style={{ fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #1a1d2e)' }}>{d.durationLabel}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: 'var(--tg-muted, #9396aa)' }}>P&L</span><span style={{ fontWeight: 700, color: isUp ? 'var(--tg-positive, #00c896)' : 'var(--tg-negative, #ff4d6a)' }}>{isUp ? '+' : ''}{currencySymbol}{Math.abs(d.pnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}</span></div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}><span style={{ color: 'var(--tg-muted, #9396aa)' }}>{language === 'cn' ? '日期' : 'Date'}</span><span style={{ color: isDark ? 'var(--tg-muted, #94a3b8)' : 'var(--tg-secondary, #4a4d6a)' }}>{d.date}</span></div>
                       </div>
                     </div>
                   );
@@ -824,15 +825,15 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
         )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 10, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00c896', display: 'inline-block' }}/><span style={{ fontSize: 11, color: '#9396aa' }}>{language === 'cn' ? '盈利' : 'Profit'}</span></div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d6a', display: 'inline-block' }}/><span style={{ fontSize: 11, color: '#9396aa' }}>{language === 'cn' ? '亏损' : 'Loss'}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00c896', display: 'inline-block' }}/><span style={{ fontSize: 11, color: 'var(--tg-muted, #9396aa)' }}>{language === 'cn' ? '盈利' : 'Profit'}</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff4d6a', display: 'inline-block' }}/><span style={{ fontSize: 11, color: 'var(--tg-muted, #9396aa)' }}>{language === 'cn' ? '亏损' : 'Loss'}</span></div>
       </div>
     </div>
   );
 };
 
 // ── Dashboard Progress Tracker (heatmap + today score) ───────────────────────
-const HEAT_COLORS = ['#f0f0f6','#e0e4fd','#b8bef9','#7b7ef8','#4338ca'];
+const HEAT_COLORS = ['var(--tg-track, #f0f0f6)','var(--tg-heat-1, #e0e4fd)','var(--tg-heat-2, #b8bef9)','var(--tg-heat-3, #7b7ef8)','#6366f1'];
 const heatColor = (v: number | undefined) => {
   if (!v) return HEAT_COLORS[0];
   if (v <= 0.25) return HEAT_COLORS[1];
@@ -981,29 +982,29 @@ const DashboardHeatmap: React.FC<{
   });
 
   return (
-    <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
+    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
       {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 10, padding: '4px 8px', borderRadius: 5, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}：{Math.round((heatmapData[tip.key] ?? 0) * 100)}%</div>}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }} className="dark:text-white">{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
           <TZInfoIcon infoKey="performanceHeatmap" />
         </div>
       </div>
 
       {showChecklist ? (
         <div>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#1a1d2e', marginBottom: 10 }} className="dark:text-white">{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', marginBottom: 10 }} className="dark:text-white">{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
           {todayRuleRows.length === 0 ? (
-            <div style={{ fontSize: 12, color: '#b0b3c6', textAlign: 'center', padding: '20px 0' }}>{language === 'cn' ? '今日无生效规则' : 'No rules active today'}</div>
+            <div style={{ fontSize: 12, color: 'var(--tg-muted, #b0b3c6)', textAlign: 'center', padding: '20px 0' }}>{language === 'cn' ? '今日无生效规则' : 'No rules active today'}</div>
           ) : todayRuleRows.map((rule, i) => (
-            <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < todayRuleRows.length - 1 ? '1px solid #f5f5fa' : 'none' }}>
-              <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#f0f0f6', border: `2px solid ${rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#e0e0ea'}` }}>
+            <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < todayRuleRows.length - 1 ? '1px solid var(--tg-border, #f5f5fa)' : 'none' }}>
+              <div style={{ width: 20, height: 20, borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : 'var(--tg-accent-soft, #f0f0f6)', border: `2px solid ${rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e0e0ea)'}` }}>
                 {rule.status === 'pass' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
                 {rule.status === 'fail' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✕</span>}
               </div>
-              <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? '#9396aa' : '#1a1d2e', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
-              <span style={{ fontSize: 12, fontWeight: 400, flexShrink: 0, color: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#b0b3c6' }}>{rule.value}</span>
+              <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? 'var(--tg-muted, #9396aa)' : 'var(--tg-text, #1a1d2e)', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
+              <span style={{ fontSize: 12, fontWeight: 400, flexShrink: 0, color: rule.status === 'pass' ? 'var(--tg-positive, #00c896)' : rule.status === 'fail' ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-muted, #b0b3c6)' }}>{rule.value}</span>
             </div>
           ))}
         </div>
@@ -1012,14 +1013,14 @@ const DashboardHeatmap: React.FC<{
           <div style={{ display: 'flex', gap: 3 }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 18, marginRight: 4 }}>
               {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => (
-                <div key={d} style={{ height: 14, fontSize: 9, color: '#b0b3c6', lineHeight: '14px', width: 22, textAlign: 'right' }}>
+                <div key={d} style={{ height: 14, fontSize: 9, color: 'var(--tg-muted, #b0b3c6)', lineHeight: '14px', width: 22, textAlign: 'right' }}>
                   {['Mon','Wed','Fri'].includes(d) ? d : ''}
                 </div>
               ))}
             </div>
             <div>
               <div style={{ display: 'flex', gap: 3, height: 18 }}>
-                {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 14, fontSize: 9, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
+                {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 14, fontSize: 9, color: 'var(--tg-muted, #b0b3c6)', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
               </div>
               <div style={{ display: 'flex', gap: 3 }}>
                 {weeks.map((week, wi) => (
@@ -1033,31 +1034,31 @@ const DashboardHeatmap: React.FC<{
                 ))}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginTop: 6, justifyContent: 'flex-end' }}>
-                <span style={{ fontSize: 9, color: '#b0b3c6' }}>Less</span>
+                <span style={{ fontSize: 9, color: 'var(--tg-muted, #b0b3c6)' }}>Less</span>
                 {HEAT_COLORS.map((c, i) => <span key={i} style={{ width: 11, height: 11, background: c, borderRadius: 2, display: 'inline-block' }} />)}
-                <span style={{ fontSize: 9, color: '#b0b3c6' }}>More</span>
+                <span style={{ fontSize: 9, color: 'var(--tg-muted, #b0b3c6)' }}>More</span>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div style={{ height: 1, background: '#f0f0f6', margin: '12px 0' }} />
+      <div style={{ height: 1, background: 'var(--tg-accent-soft, #f0f0f6)', margin: '12px 0' }} />
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <div style={{ fontSize: 11, color: '#9396aa', marginBottom: 5 }}>{language === 'cn' ? '今日得分' : "Today's score"}</div>
+          <div style={{ fontSize: 11, color: 'var(--tg-muted, #9396aa)', marginBottom: 5 }}>{language === 'cn' ? '今日得分' : "Today's score"}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 20, fontWeight: 700, color: '#1a1d2e', letterSpacing: '-0.5px' }} className="dark:text-white">{todayCompleted}/{todayTotal}</span>
-            <div style={{ width: 100, height: 5, background: '#f0f0f6', borderRadius: 3, overflow: 'hidden' }}>
+            <span style={{ fontSize: 20, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', letterSpacing: '-0.5px' }} className="dark:text-white">{todayCompleted}/{todayTotal}</span>
+            <div style={{ width: 100, height: 5, background: 'var(--tg-accent-soft, #f0f0f6)', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${pct}%`, background: pct === 100 ? '#00c896' : '#6366f1', borderRadius: 3, transition: 'width 0.3s' }} />
             </div>
           </div>
         </div>
         <button onClick={() => setShowChecklist(v => !v)}
-          style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid #e0e0ea', background: '#fff', fontSize: 12, fontWeight: 600, color: '#1a1d2e', cursor: 'pointer' }}
-          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#f5f5fa'}
-          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = '#fff'}
+          style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--tg-border, #e0e0ea)', background: 'var(--tg-surface, #fff)', fontSize: 12, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', cursor: 'pointer' }}
+          onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--tg-accent-soft, #f5f5fa)'}
+          onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--tg-surface, #fff)'}
         >
           {showChecklist ? (language === 'cn' ? '← 热力图' : '← Heatmap') : (language === 'cn' ? '每日检查清单' : 'Daily checklist')}
         </button>
@@ -1217,8 +1218,8 @@ const MarketSessionCard: React.FC<{
     <div style={{
       flex: 1,
       padding: '10px 14px',
-      backgroundColor: data.isOpen ? '#ffffff' : '#f7f7f9',
-      borderLeft: isFirst ? 'none' : '0.5px solid #e4e4ec',
+      backgroundColor: data.isOpen ? 'var(--tg-surface, #ffffff)' : 'var(--tg-surface-muted, #f7f7f9)',
+      borderLeft: isFirst ? 'none' : '0.5px solid var(--tg-border, #e4e4ec)',
       display: 'flex',
       flexDirection: 'column',
       gap: 0,
@@ -1250,14 +1251,14 @@ const MarketSessionCard: React.FC<{
         fontWeight: 400,
         letterSpacing: '0.08em',
         textTransform: 'uppercase',
-        color: '#9b9bb0',
+        color: 'var(--tg-muted, #9b9bb0)',
         lineHeight: 1.2,
         whiteSpace: 'nowrap',
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         position: 'relative',
         zIndex: 2,
-      }} className="dark:text-slate-500">
+      }} className="dark:text-slate-400">
         {cityName}
       </span>
       {/* Time */}
@@ -1268,10 +1269,10 @@ const MarketSessionCard: React.FC<{
         letterSpacing: '-0.02em',
         lineHeight: 1,
         margin: '3px 0',
-        color: data.isOpen ? '#1a1d2e' : '#9b9bb0',
+        color: data.isOpen ? 'var(--tg-text, #1a1d2e)' : 'var(--tg-muted, #9b9bb0)',
         position: 'relative',
         zIndex: 2,
-      }} className={data.isOpen ? 'dark:text-white' : 'dark:text-slate-500'}>
+      }} className={data.isOpen ? 'dark:text-white' : 'dark:text-slate-400'}>
         {data.time}
       </span>
       {/* Status row */}
@@ -1283,7 +1284,7 @@ const MarketSessionCard: React.FC<{
           flexShrink: 0,
           backgroundColor: data.isOpen ? '#639922' : 'rgba(155,155,176,0.3)',
         }} />
-        <span style={{ fontSize: 11, color: '#9b9bb0' }} className="dark:text-slate-500">
+        <span style={{ fontSize: 11, color: 'var(--tg-muted, #9b9bb0)' }} className="dark:text-slate-400">
           {data.isOpen ? t.dashboard.marketHours.open : t.dashboard.marketHours.closed}
         </span>
       </div>
@@ -1301,7 +1302,7 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
                         <Trophy className="w-5 h-5 text-amber-500" />
                         {language === 'cn' ? '往期目标回顾' : 'Goal History'}
                     </h3>
-                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                    <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors dark:text-slate-400">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -1320,7 +1321,7 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
                                 {history.map((row) => (
                                     <tr key={row.id} className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10 transition-colors">
                                         <td className="px-4 py-4 text-slate-600 dark:text-slate-300 font-bold whitespace-nowrap">{row.week}</td>
-                                        <td className="px-4 py-4 text-slate-500 font-mono">${row.target}</td>
+                                        <td className="px-4 py-4 text-slate-500 font-mono dark:text-slate-400">${row.target}</td>
                                         <td className={`px-4 py-4 font-mono font-bold ${row.status === 'success' ? 'text-emerald-500' : 'text-rose-500'}`}>
                                             ${row.current}
                                         </td>
@@ -1412,12 +1413,12 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
     <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#f0f0f0] dark:border-slate-800 p-6">
       {/* Title row */}
       <div className="flex items-center justify-between">
-        <span className="text-[15px] font-semibold" style={{ color: '#1a1a2e' }}>
+        <span className="text-[15px] font-semibold" style={{ color: 'var(--tg-text, #1a1a2e)' }}>
           <span className="dark:text-slate-100">Grail Score</span>
         </span>
         <TZInfoIcon infoKey="grailScore" />
       </div>
-      <div className="h-px mt-3 mb-2" style={{ backgroundColor: '#f0f0f0' }} />
+      <div className="h-px mt-3 mb-2" style={{ backgroundColor: 'var(--tg-surface-muted, #f0f0f0)' }} />
 
       {/* Pure SVG Radar */}
       <div className="flex justify-center">
@@ -1425,17 +1426,17 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
 
           {/* Hexagonal grid layers (outer to inner, so inner paints on top) */}
           {(() => {
-            const layerFills = ['#f8f8fc', '#fdfdff', '#f8f8fc', '#fdfdff', '#f8f8fc'];
+            const layerFills = ['var(--tg-surface-muted, #f8f8fc)', 'var(--tg-surface, #fdfdff)', 'var(--tg-surface-muted, #f8f8fc)', 'var(--tg-surface, #fdfdff)', 'var(--tg-surface-muted, #f8f8fc)'];
             return [...Array(layers)].map((_, idx) => {
               const i = layers - 1 - idx;
-              return <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill={layerFills[i]} stroke="#dddde8" strokeWidth={1} />;
+              return <path key={`grid-${i}`} d={hexPath(maxR * ((i + 1) / layers))} fill={layerFills[i]} stroke="var(--tg-border, #dddde8)" strokeWidth={1} />;
             });
           })()}
 
           {/* Axis lines from center to vertices */}
           {Array.from({ length: sides }, (_, i) => {
             const [px, py] = hexPoint(maxR, i);
-            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="#dddde8" strokeWidth={1} />;
+            return <line key={`axis-${i}`} x1={cx} y1={cy} x2={px} y2={py} stroke="var(--tg-border, #dddde8)" strokeWidth={1} />;
           })}
 
           {/* Filled data area — no stroke */}
@@ -1445,7 +1446,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
           {dataPoints.map((p, i) => (
             <g key={`dot-${i}`}>
               <circle cx={p[0]} cy={p[1]} r={6} fill="rgba(139,92,246,0.15)" />
-              <circle cx={p[0]} cy={p[1]} r={2.5} fill="#ffffff" stroke="#8b72d4" strokeWidth={1.5} />
+              <circle cx={p[0]} cy={p[1]} r={2.5} fill="var(--tg-surface, #ffffff)" stroke="var(--tg-accent-border, #8b72d4)" strokeWidth={1.5} />
             </g>
           ))}
 
@@ -1458,7 +1459,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
               textAnchor={labelAnchors[i]}
               dy={labelDy[i]}
               fontSize={12}
-              fill="#888"
+              fill="var(--tg-secondary, #888)"
               fontWeight={400}
             >
               {label}
@@ -1471,8 +1472,8 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
       <div className="flex items-center gap-5 mt-2">
         {/* Left: score */}
         <div className="flex-shrink-0">
-          <p className="uppercase text-[11px] font-semibold tracking-[1px]" style={{ color: '#999' }}>YOUR GRAIL 分数</p>
-          <span className="text-[40px] font-bold tabular-nums leading-none" style={{ color: '#1a1a2e' }}>
+          <p className="uppercase text-[11px] font-semibold tracking-[1px]" style={{ color: 'var(--tg-muted, #999)' }}>YOUR GRAIL 分数</p>
+          <span className="text-[40px] font-bold tabular-nums leading-none" style={{ color: 'var(--tg-text, #1a1a2e)' }}>
             <span className="dark:text-white">{clampedScore.toFixed(2)}</span>
           </span>
         </div>
@@ -1481,7 +1482,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
         <div className="flex-1 flex flex-col justify-center">
           <div className="relative">
             {/* Bar track */}
-            <div className="h-[5px] w-full rounded-full overflow-hidden" style={{ backgroundColor: '#e5e5e5' }}>
+            <div className="h-[5px] w-full rounded-full overflow-hidden" style={{ backgroundColor: 'var(--tg-surface-muted, #e5e5e5)' }}>
               <div
                 className="h-full rounded-full"
                 style={{
@@ -1503,7 +1504,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
           {/* Tick labels */}
           <div className="flex justify-between mt-1.5">
             {[0, 20, 40, 60, 80, 100].map(n => (
-              <span key={n} className="text-[11px] tabular-nums" style={{ color: '#ccc' }}>{n}</span>
+              <span key={n} className="text-[11px] tabular-nums" style={{ color: 'var(--tg-muted, #ccc)' }}>{n}</span>
             ))}
           </div>
         </div>
@@ -1571,10 +1572,10 @@ const Dashboard: React.FC<DashboardProps> = ({
   const { t, language } = useLanguage();
   const { currencySymbol } = useUser();
   const accounts = tradingAccounts || [];
-  const isDark = document.documentElement.classList.contains('dark');
+  const isDark = useIsDarkMode();
   const tooltipStyle = isDark
     ? { backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '0.5rem' }
-    : { backgroundColor: '#ffffff', borderColor: '#e2e8f0', color: '#0f172a', borderRadius: '0.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' };
+    : { backgroundColor: 'var(--tg-surface, #ffffff)', borderColor: 'var(--tg-border, #e2e8f0)', color: 'var(--tg-text, #0f172a)', borderRadius: '0.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' };
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [aiTips, setAiTips] = useState<string[]>([]);
   const [loadingTips, setLoadingTips] = useState(false);
@@ -2037,9 +2038,9 @@ const Dashboard: React.FC<DashboardProps> = ({
       for(let d = 1; d <= days; d++) {
           const current = new Date(baseDate.getFullYear(), baseDate.getMonth(), d);
           const isSelected = current >= dateRange.start && current <= dateRange.end, isStart = current.toDateString() === dateRange.start.toDateString(), isEnd = current.toDateString() === dateRange.end.toDateString();
-          dayCells.push(<div key={d} className={`w-8 h-8 flex items-center justify-center text-xs cursor-pointer rounded-full transition-all ${isStart || isEnd ? 'bg-indigo-600 text-white font-bold' : isSelected ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-slate-100 text-slate-700'}`} onClick={() => { if (dateRange.start.toDateString() === dateRange.end.toDateString()) { if (current < dateRange.start) setDateRange({ start: current, end: dateRange.end }); else setDateRange({ start: dateRange.start, end: current }); } else { setDateRange({ start: current, end: current }); } setActiveDatePreset('Custom'); }}>{d}</div>);
+          dayCells.push(<div key={d} className={`w-8 h-8 flex items-center justify-center text-xs cursor-pointer rounded-full transition-all ${isStart || isEnd ? 'bg-indigo-600 text-white font-bold' : isSelected ? 'bg-indigo-100 text-indigo-700 dark:text-indigo-300 dark:bg-indigo-950/40' : 'hover:bg-slate-100 text-slate-700 dark:hover:bg-slate-700 dark:text-slate-300'}`} onClick={() => { if (dateRange.start.toDateString() === dateRange.end.toDateString()) { if (current < dateRange.start) setDateRange({ start: current, end: dateRange.end }); else setDateRange({ start: dateRange.start, end: current }); } else { setDateRange({ start: current, end: current }); } setActiveDatePreset('Custom'); }}>{d}</div>);
       }
-      return (<div className="w-full"><div className="text-center font-bold text-sm mb-2 text-slate-700">{baseDate.toLocaleString('default', { month: 'short' })} {baseDate.getFullYear()}</div><div className="grid grid-cols-7 gap-y-1 justify-items-center">{['S','M','T','W','T','F','S'].map(d => <div key={d} className="text-[10px] text-slate-400 font-bold">{d}</div>)}{dayCells}</div></div>);
+      return (<div className="w-full"><div className="text-center font-bold text-sm mb-2 text-slate-700 dark:text-slate-300">{baseDate.toLocaleString('default', { month: 'short' })} {baseDate.getFullYear()}</div><div className="grid grid-cols-7 gap-y-1 justify-items-center">{['S','M','T','W','T','F','S'].map(d => <div key={d} className="text-[10px] text-slate-400 font-bold dark:text-slate-400">{d}</div>)}{dayCells}</div></div>);
   };
 
   const getDaysInMonth = (date: Date) => ({ days: new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate(), firstDay: new Date(date.getFullYear(), date.getMonth(), 1).getDay() });
@@ -2089,7 +2090,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 : (language === 'cn' ? '从未同步' : 'Never synced');
               return (
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-400 dark:text-slate-500">{lastSyncLabel}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-400">{lastSyncLabel}</span>
                   <button
                     onClick={() => onResync?.(selectedAccountId)}
                     className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
@@ -2133,22 +2134,22 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsDatePickerOpen(current => !current)}
-                    className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                    className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                 >
                     <div className="flex min-w-0 items-center gap-3">
                         <ReportRangeIcon />
                         <div className="min-w-0 flex-1 text-left">
-                            <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                            <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-400">
                                 {(datePresets.find(p => p.id === activeDatePreset)?.label || (activeDatePreset === 'Custom' ? 'Custom Range' : activeDatePreset)).toUpperCase()}
                             </p>
                             <p className="truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
                                 {activeDatePreset === 'All Time' || activeDatePreset === '所有时间' ? (language === 'cn' ? '所有时间' : 'All Time') : (
-                                    <>{dateRange.start.toLocaleDateString()} <span className="mx-1 text-slate-400">→</span> {dateRange.end.toLocaleDateString()}</>
+                                    <>{dateRange.start.toLocaleDateString()} <span className="mx-1 text-slate-400 dark:text-slate-400">→</span> {dateRange.end.toLocaleDateString()}</>
                                 )}
                             </p>
                         </div>
                     </div>
-                    <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isDatePickerOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
@@ -2159,7 +2160,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
-                                className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
                             >
                                 <ChevronLeft className="h-4 w-4" />
                             </button>
@@ -2170,7 +2171,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
-                                className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
                             >
                                 <ChevronRight className="h-4 w-4" />
                             </button>
@@ -2198,18 +2199,18 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsAccountSwitcherOpen(current => !current)}
-                    className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                    className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                 >
                     <div className="flex min-w-0 items-center gap-3">
                         <ReportAccountIcon />
                         <div className="min-w-0 flex-1 text-left">
-                            <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">Trading Account</p>
+                            <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-400">Trading Account</p>
                             <p className="max-w-[130px] truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
                                 {currentAccountName}
                             </p>
                         </div>
                     </div>
-                    <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
@@ -2258,7 +2259,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <button
                             type="button"
                             onClick={() => onManageAccounts?.()}
-                            className="flex w-full items-center justify-center gap-2 py-1.5 text-center text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600"
+                            className="flex w-full items-center justify-center gap-2 py-1.5 text-center text-xs font-bold text-slate-500 transition-colors hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-300"
                         >
                             <Settings className="h-3 w-3" />
                             Manage Accounts
@@ -2275,10 +2276,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{
                     display: 'flex',
                     flexWrap: 'nowrap',
-                    border: '0.5px solid #e4e4ec',
+                    border: '0.5px solid var(--tg-border, #e4e4ec)',
                     borderRadius: 12,
                     overflow: 'hidden',
-                    backgroundColor: '#ffffff',
+                    backgroundColor: 'var(--tg-surface, #ffffff)',
                   }} className="dark:border-slate-700 dark:bg-slate-900">
                     {MARKET_OPTIONS.filter(m => selectedMarketIds.includes(m.id)).map((market, idx) => (
                       <MarketSessionCard
@@ -2291,7 +2292,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                       />
                     ))}
                   </div>
-                  <button onClick={() => setIsMarketConfigOpen(true)} className="absolute -top-3 -right-2 p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-500 opacity-0 group-hover/config:opacity-100 transition-all hover:scale-110 z-10" title={t.dashboard.marketHours.configure}><Settings className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setIsMarketConfigOpen(true)} className="absolute -top-3 -right-2 p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-500 opacity-0 group-hover/config:opacity-100 transition-all hover:scale-110 z-10 dark:text-slate-400" title={t.dashboard.marketHours.configure}><Settings className="w-3.5 h-3.5" /></button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
@@ -2323,35 +2324,35 @@ const Dashboard: React.FC<DashboardProps> = ({
                       flexDirection: 'column',
                       gap: 0,
                       ...(status === 'danger'
-                        ? { background: '#FFF5F5', border: '1px solid #E24B4A' }
+                        ? { background: 'var(--tg-negative-soft, #FFF5F5)', border: '1px solid #E24B4A' }
                         : status === 'warn'
-                        ? { background: '#FFFBF5', border: '1px solid #EF9F27' }
-                        : { background: '#ffffff', border: '0.5px solid #e8e8f0' }),
+                        ? { background: 'var(--tg-warning-soft, #FFFBF5)', border: '1px solid #EF9F27' }
+                        : { background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e8e8f0)' }),
                     };
                     return (
                       <div id="dashboard-risk" style={cardStyle} className={status === 'danger' ? 'dark:!bg-[rgba(226,75,74,0.08)]' : status === 'warn' ? 'dark:!bg-[rgba(239,159,39,0.08)]' : 'dark:!bg-slate-900 dark:!border-slate-700'}>
                         <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={14} />
                         {/* Title row */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                          <span style={{ fontSize: 12, fontWeight: 500, color: '#111827' }} className="dark:text-white">
+                          <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--tg-text, #111827)' }} className="dark:text-white">
                             {language === 'cn' ? '风控状态' : 'Risk Status'}
                           </span>
                           <span style={{ width: 7, height: 7, borderRadius: '50%', background: dotColor, display: 'inline-block' }} />
                         </div>
                         {/* Data rows */}
-                        <div style={{ borderBottom: '0.5px solid #e8e8f0', padding: '4px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 11, color: '#6b7280' }} className="dark:text-slate-400">
+                        <div style={{ borderBottom: '0.5px solid var(--tg-border, #e8e8f0)', padding: '4px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span style={{ fontSize: 11, color: 'var(--tg-secondary, #6b7280)' }} className="dark:text-slate-400">
                             {status === 'danger' ? (language === 'cn' ? '今日亏损' : 'Today loss') : (language === 'cn' ? '今日盈亏' : 'Today P&L')}
                           </span>
-                          <span style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: stats.todayPnl >= 0 && status === 'safe' ? '#1D9E75' : '#E24B4A' }}>
+                          <span style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: stats.todayPnl >= 0 && status === 'safe' ? 'var(--tg-positive, #1D9E75)' : 'var(--tg-negative, #E24B4A)' }}>
                             {stats.todayPnl >= 0 ? '+' : ''}{stats.todayPnl.toFixed(2)}
                           </span>
                         </div>
                         <div style={{ padding: '4px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <span style={{ fontSize: 11, color: '#6b7280' }} className="dark:text-slate-400">
+                          <span style={{ fontSize: 11, color: 'var(--tg-secondary, #6b7280)' }} className="dark:text-slate-400">
                             {status === 'danger' ? (language === 'cn' ? '超出限额' : 'Over limit') : (language === 'cn' ? '日亏损限额' : 'Daily limit')}
                           </span>
-                          <span style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: status === 'danger' ? '#E24B4A' : '#111827' }} className={status !== 'danger' ? 'dark:text-white' : ''}>
+                          <span style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: status === 'danger' ? 'var(--tg-negative, #E24B4A)' : 'var(--tg-text, #111827)' }} className={status !== 'danger' ? 'dark:text-white' : ''}>
                             {status === 'danger'
                               ? `+$${(todayLoss - limit).toFixed(2)}`
                               : `-$${riskSettings.maxDailyLoss}`}
@@ -2360,24 +2361,24 @@ const Dashboard: React.FC<DashboardProps> = ({
                         {/* Battery */}
                         <div style={{ marginTop: 14 }}>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 7 }}>
-                            <span style={{ fontSize: 10, letterSpacing: '0.03em', color: '#9ca3af' }}>{language === 'cn' ? '风险用量' : 'Risk used'}</span>
+                            <span style={{ fontSize: 10, letterSpacing: '0.03em', color: 'var(--tg-muted, #9ca3af)' }}>{language === 'cn' ? '风险用量' : 'Risk used'}</span>
                             <span style={{ fontSize: 11, fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: pctColor }}>{pct}%</span>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
                             <div style={{ display: 'flex', gap: 3, flex: 1 }}>
                               {Array.from({ length: 10 }, (_, i) => (
-                                <div key={i} style={{ flex: 1, height: 14, borderRadius: 2, background: i < filledCells ? cellColor : '#e8e8f0' }} />
+                                <div key={i} style={{ flex: 1, height: 14, borderRadius: 2, background: i < filledCells ? cellColor : 'var(--tg-accent-soft, #e8e8f0)' }} />
                               ))}
                             </div>
-                            <div style={{ width: 4, height: 8, borderRadius: '0 2px 2px 0', background: filledCells > 0 ? cellColor : '#e8e8f0' }} />
+                            <div style={{ width: 4, height: 8, borderRadius: '0 2px 2px 0', background: filledCells > 0 ? cellColor : 'var(--tg-accent-soft, #e8e8f0)' }} />
                           </div>
                         </div>
                         {/* Countdown — danger only */}
                         {status === 'danger' && (
                           <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 5 }}>
                             <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#E24B4A', flexShrink: 0 }} />
-                            <span style={{ fontSize: 11, color: '#6b7280' }} className="dark:text-slate-400">{language === 'cn' ? '距账户重置' : 'Reset in'}</span>
-                            <span style={{ fontSize: 11, fontWeight: 500, color: '#E24B4A', fontVariantNumeric: 'tabular-nums' }}>{timeToMidnight}</span>
+                            <span style={{ fontSize: 11, color: 'var(--tg-secondary, #6b7280)' }} className="dark:text-slate-400">{language === 'cn' ? '距账户重置' : 'Reset in'}</span>
+                            <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--tg-negative, #E24B4A)', fontVariantNumeric: 'tabular-nums' }}>{timeToMidnight}</span>
                           </div>
                         )}
                       </div>
@@ -2402,16 +2403,16 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, width: '100%', alignItems: 'stretch' }}>
 
-              <div id="dashboard-equity" style={{ position: 'relative', background: '#fff', border: '0.5px solid #e8e8f0', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
+              <div id="dashboard-equity" style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e8e8f0)', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
                 <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '累计净盈亏' : 'Daily net cumulative P&L'}</span>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #1a1d2e)' }} className="dark:text-white">{language === 'cn' ? '累计净盈亏' : 'Daily net cumulative P&L'}</span>
                     <TZInfoIcon infoKey="cumulativePnL" />
                     <span className={`text-sm font-bold px-2.5 py-1 rounded-full ${currentTotalReturnPct >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400'}`}>{currentTotalReturnPct >= 0 ? '+' : ''}{currentTotalReturnPct.toFixed(2)}%</span>
                   </div>
-                  <div style={{ fontSize: 11, color: '#b0b3c6' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
+                  <div style={{ fontSize: 11, color: 'var(--tg-muted, #b0b3c6)' }}>{t.dashboard.equityChart.initial} {currencySymbol}{riskSettings.accountSize.toLocaleString()}</div>
                 </div>
                 {/* Chart */}
                 <div style={{ flex: 1, minHeight: 0 }}>
@@ -2452,19 +2453,19 @@ const Dashboard: React.FC<DashboardProps> = ({
                           })()}
                         </defs>
                         <CartesianGrid strokeDasharray="6 4" stroke="rgba(0,0,0,0.07)" vertical={false} />
-                        <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} interval="preserveStartEnd" />
-                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: '#bbb' }} width={55}
+                        <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--tg-muted, #bbb)' }} interval="preserveStartEnd" />
+                        <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10, fill: 'var(--tg-muted, #bbb)' }} width={55}
                           tickFormatter={(v: number) => v >= 1000 ? `$${(v/1000).toFixed(0)}k` : v <= -1000 ? `-$${(Math.abs(v)/1000).toFixed(0)}k` : `$${v}`}
                           domain={['auto', 'auto']}
                         />
                         <Tooltip
-                          cursor={{ stroke: '#6366F1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                          cursor={{ stroke: 'var(--tg-accent-border, #6366F1)', strokeWidth: 1, strokeDasharray: '4 4' }}
                           content={({ active, payload, label }: any) => {
                             if (!active || !payload?.length) return null;
                             const val = payload.find((p: any) => p.dataKey === 'cumulativePnl')?.value ?? payload[0]?.value ?? 0;
                             const sign = val >= 0 ? '+' : '';
                             return (
-                              <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
+                              <div style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: 'var(--tg-text, #1a1d2e)' }}>
                                 <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                   <span style={{ width: 10, height: 10, background: val >= 0 ? '#34D399' : '#FB7185', borderRadius: 2, display: 'inline-block' }} />
@@ -2475,10 +2476,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                           }}
                         />
                         <Area type="monotone" dataKey="cumulativePnl"
-                          stroke="#6366F1" strokeWidth={1.2}
+                          stroke="var(--tg-accent-border, #6366F1)" strokeWidth={1.2}
                           fill="url(#eqCombinedGrad)" fillOpacity={1}
                           dot={false}
-                          activeDot={{ r: 4, fill: '#6366F1', stroke: '#fff', strokeWidth: 1.5 }}
+                          activeDot={{ r: 4, fill: '#6366F1', stroke: 'var(--tg-border, #fff)', strokeWidth: 1.5 }}
                           isAnimationActive={false}
                         />
                         {selectedFriends.map(friendId => {
@@ -2527,16 +2528,16 @@ const Dashboard: React.FC<DashboardProps> = ({
                 const safeAmtMin = yAmtMin === yAmtMax ? yAmtMin - stepSize : yAmtMin;
                 const safeAmtMax = yAmtMin === yAmtMax ? yAmtMax + stepSize : yAmtMax;
                 const legendItems = [
-                  { color: '#3563f6', label: language === 'cn' ? '胜率' : 'Win %' },
-                  { color: '#5cc4a7', label: language === 'cn' ? '平均胜场' : 'Avg win' },
-                  { color: '#f16363', label: language === 'cn' ? '平均负场' : 'Avg loss' },
+                  { color: 'var(--tg-accent, #3563f6)', label: language === 'cn' ? '胜率' : 'Win %' },
+                  { color: 'var(--tg-positive, #5cc4a7)', label: language === 'cn' ? '平均胜场' : 'Avg win' },
+                  { color: 'var(--tg-negative, #f16363)', label: language === 'cn' ? '平均负场' : 'Avg loss' },
                 ];
                 const hasWinRateTrendData = winRateData.length > 0;
 	                return (
-	                  <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 420, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
+	                  <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 420, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
 	                    <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
-	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '16px 20px 14px', borderBottom: '1px solid #edf0f4', flexShrink: 0 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
+	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '16px 20px 14px', borderBottom: '1px solid var(--tg-border, #edf0f4)', flexShrink: 0 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
                       <TZInfoIcon infoKey="winRateTrend" />
                     </div>
                     <div style={{ flex: 1, minHeight: 0, padding: '14px 16px 0 12px' }}>
@@ -2565,7 +2566,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               dataKey="date"
                               tickLine={false}
                               axisLine={false}
-                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              tick={{ fontSize: 11, fill: 'var(--tg-muted, #9aa3b2)' }}
                               interval="preserveStartEnd"
                               minTickGap={28}
                               tickFormatter={formatShortDashboardDate}
@@ -2575,7 +2576,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               yAxisId="pct"
                               tickLine={false}
                               axisLine={false}
-                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              tick={{ fontSize: 11, fill: 'var(--tg-muted, #9aa3b2)' }}
                               width={42}
                               domain={[0, 60]}
                               tickCount={7}
@@ -2586,7 +2587,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               orientation="right"
                               tickLine={false}
                               axisLine={false}
-                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              tick={{ fontSize: 11, fill: 'var(--tg-muted, #9aa3b2)' }}
                               width={48}
                               domain={[safeAmtMin, safeAmtMax]}
                               tickCount={7}
@@ -2597,7 +2598,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               content={({ active, payload, label }: any) => {
                                 if (!active || !payload?.length) return null;
                                 return (
-                                  <div style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: '#1a1d2e' }}>
+                                  <div style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: 'var(--tg-text, #1a1d2e)' }}>
                                     <div style={{ fontWeight: 600, marginBottom: 6 }}>{formatShortDashboardDate(label)}</div>
                                     {payload.map((p: any) => (
                                       <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
@@ -2615,9 +2616,9 @@ const Dashboard: React.FC<DashboardProps> = ({
                                 );
                               }}
                             />
-                            <Line yAxisId="pct" type="monotone" dataKey="winPct" stroke="#3563f6" strokeWidth={2.1} dot={{ r: 2.6, fill: '#3563f6', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
-                            <Line yAxisId="amt" type="monotone" dataKey="avgWin" stroke="#5cc4a7" strokeWidth={2.1} dot={{ r: 2.6, fill: '#5cc4a7', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
-                            <Line yAxisId="amt" type="monotone" dataKey="avgLoss" stroke="#f16363" strokeWidth={2.1} dot={{ r: 2.6, fill: '#f16363', stroke: '#fff', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                            <Line yAxisId="pct" type="monotone" dataKey="winPct" stroke="#3563f6" strokeWidth={2.1} dot={{ r: 2.6, fill: '#3563f6', stroke: 'var(--tg-border, #fff)', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                            <Line yAxisId="amt" type="monotone" dataKey="avgWin" stroke="#5cc4a7" strokeWidth={2.1} dot={{ r: 2.6, fill: '#5cc4a7', stroke: 'var(--tg-border, #fff)', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
+                            <Line yAxisId="amt" type="monotone" dataKey="avgLoss" stroke="var(--tg-negative, #f16363)" strokeWidth={2.1} dot={{ r: 2.6, fill: '#f16363', stroke: 'var(--tg-border, #fff)', strokeWidth: 1.2 }} activeDot={{ r: 4.5 }} />
                           </ComposedChart>
                         </ResponsiveContainer>
                       )}
@@ -2625,7 +2626,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     {hasWinRateTrendData && (
                       <div style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 10, padding: '0 20px' }}>
                         {legendItems.map(item => (
-                          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#7f8793' }}>
+                          <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--tg-secondary, #7f8793)' }}>
                             <span style={{ width: 11, height: 11, borderRadius: '50%', background: item.color, display: 'inline-block' }} />
                             {item.label}
                           </div>
@@ -2649,10 +2650,10 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div id="dashboard-strategy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', alignItems: 'stretch' }}>
 	                {/* Left: Daily P&L bar chart */}
-	                <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+	                <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 	                  <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
 	                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
                     <TZInfoIcon infoKey="dailyPnL" />
                   </div>
                   <div style={{ flex: 1, minHeight: 0 }}>
@@ -2691,11 +2692,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                           >
                             <CartesianGrid strokeDasharray="3 4" stroke="rgba(141,153,174,0.22)" vertical={false} />
                             <ReferenceLine y={0} stroke="rgba(168,176,188,0.55)" strokeWidth={1} />
-                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: '#9aa3b2' }} interval="preserveStartEnd" minTickGap={26} />
+                            <XAxis dataKey="date" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: 'var(--tg-muted, #9aa3b2)' }} interval="preserveStartEnd" minTickGap={26} />
                             <YAxis
                               tickLine={false}
                               axisLine={false}
-                              tick={{ fontSize: 11, fill: '#9aa3b2' }}
+                              tick={{ fontSize: 11, fill: 'var(--tg-muted, #9aa3b2)' }}
                               width={60}
                               domain={[domainMin, domainMax]}
                               tickCount={7}
@@ -2727,18 +2728,18 @@ const Dashboard: React.FC<DashboardProps> = ({
                     .slice(0, 10);
                   const fmtDate = (d: string) => { const dt = new Date(d); return `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`; };
 	                  return (
-	                    <div style={{ position: 'relative', background: '#fff', border: '1px solid #ededf3', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
+	                    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
 	                      <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
 	                      {/* Tab header */}
-                      <div style={{ padding: '14px 20px 0', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', paddingBottom: 12, display: 'inline-block', borderBottom: '2px solid #6366f1' }}>
+                      <div style={{ padding: '14px 20px 0', borderBottom: '1px solid var(--tg-border, #f0f0f6)', flexShrink: 0 }}>
+                        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', paddingBottom: 12, display: 'inline-block', borderBottom: '2px solid var(--tg-accent-border, #6366f1)' }}>
                           {language === 'cn' ? '最近交易' : 'Recent trades'}
                         </span>
                       </div>
                       {/* Table header */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px 20px', background: '#fafafa', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '10px 20px', background: 'var(--tg-surface-muted, #fafafa)', borderBottom: '1px solid var(--tg-border, #f0f0f6)', flexShrink: 0 }}>
                         {[language === 'cn' ? '平仓日期' : 'Close Date', language === 'cn' ? '品种' : 'Symbol', language === 'cn' ? '净盈亏' : 'Net P&L'].map((h, i) => (
-                          <span key={h} style={{ fontSize: 12, fontWeight: 600, color: '#9396aa', textAlign: i === 2 ? 'right' : i === 1 ? 'center' : 'left' }}>{h}</span>
+                          <span key={h} style={{ fontSize: 12, fontWeight: 600, color: 'var(--tg-muted, #9396aa)', textAlign: i === 2 ? 'right' : i === 1 ? 'center' : 'left' }}>{h}</span>
                         ))}
                       </div>
                       {/* Rows */}
@@ -2756,13 +2757,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                           return (
                             <div key={trade.id || idx}
                               onClick={() => trade.id && onOpenTradeReview?.(trade.id)}
-                              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 20px', borderBottom: idx < recent.length - 1 ? '1px solid #f5f5fa' : 'none', transition: 'background 0.1s', cursor: 'pointer' }}
-                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#fafafe'}
+                              style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', padding: '11px 20px', borderBottom: idx < recent.length - 1 ? '1px solid var(--tg-border, #f5f5fa)' : 'none', transition: 'background 0.1s', cursor: 'pointer' }}
+                              onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--tg-surface, #fafafe)'}
                               onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                             >
-                              <span style={{ fontSize: 12.5, color: '#4a4d6a' }}>{fmtDate(trade.exitDate)}</span>
-                              <span style={{ fontSize: 12.5, color: '#4a4d6a', fontWeight: 500, textAlign: 'center' }}>{trade.symbol}</span>
-                              <span style={{ fontSize: 12.5, fontWeight: 600, color: netPnl >= 0 ? '#00c896' : '#ff4d6a', textAlign: 'right' }}>
+                              <span style={{ fontSize: 12.5, color: 'var(--tg-secondary, #4a4d6a)' }}>{fmtDate(trade.exitDate)}</span>
+                              <span style={{ fontSize: 12.5, color: 'var(--tg-secondary, #4a4d6a)', fontWeight: 500, textAlign: 'center' }}>{trade.symbol}</span>
+                              <span style={{ fontSize: 12.5, fontWeight: 600, color: netPnl >= 0 ? 'var(--tg-positive, #00c896)' : 'var(--tg-negative, #ff4d6a)', textAlign: 'right' }}>
                                 {netPnl >= 0 ? '+' : ''}{currencySymbol}{Math.abs(netPnl).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
@@ -2814,9 +2815,9 @@ const Dashboard: React.FC<DashboardProps> = ({
 	          </div>
       </div>
 
-      {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); const isDisabled = !isSelected && selectedMarketIds.length >= 4; return (<button key={market.id} onClick={() => toggleMarket(market.id)} disabled={isDisabled} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isDisabled ? 'opacity-40 cursor-not-allowed bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}
+      {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); const isDisabled = !isSelected && selectedMarketIds.length >= 4; return (<button key={market.id} onClick={() => toggleMarket(market.id)} disabled={isDisabled} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isDisabled ? 'opacity-40 cursor-not-allowed bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}
 
-      {isGoalModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Target className="w-5 h-5 text-pink-500" />{t.dashboard.goals.modalTitle}</h3><button onClick={() => setIsGoalModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-4"><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.type}</label><select value={tempGoal.type} onChange={(e) => setTempGoal({...tempGoal, type: e.target.value as any})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500"><option value="amount">{t.dashboard.goals.types.amount}</option><option value="percentage">{t.dashboard.goals.types.percentage}</option><option value="r_multiple">{t.dashboard.goals.types.r_multiple}</option></select></div><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.target}</label><input type="number" value={tempGoal.value} onChange={(e) => setTempGoal({...tempGoal, value: Number(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500 font-mono" /></div><div className="flex items-center gap-2 mt-2"><input type="checkbox" checked={tempGoal.isActive} onChange={(e) => setTempGoal({...tempGoal, isActive: e.target.checked})} className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500 border-gray-300" /><label className="text-sm text-slate-600 dark:text-slate-400">{t.dashboard.discipline.active}</label></div><button onClick={() => { if (onSetWeeklyGoal) onSetWeeklyGoal(tempGoal); setIsGoalModalOpen(false); }} className="w-full mt-4 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-bold transition-colors shadow-lg shadow-pink-500/20">{t.dashboard.tracker.save}</button></div></div></div>)}
+      {isGoalModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Target className="w-5 h-5 text-pink-500" />{t.dashboard.goals.modalTitle}</h3><button onClick={() => setIsGoalModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-4"><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.type}</label><select value={tempGoal.type} onChange={(e) => setTempGoal({...tempGoal, type: e.target.value as any})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500"><option value="amount">{t.dashboard.goals.types.amount}</option><option value="percentage">{t.dashboard.goals.types.percentage}</option><option value="r_multiple">{t.dashboard.goals.types.r_multiple}</option></select></div><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.target}</label><input type="number" value={tempGoal.value} onChange={(e) => setTempGoal({...tempGoal, value: Number(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500 font-mono" /></div><div className="flex items-center gap-2 mt-2"><input type="checkbox" checked={tempGoal.isActive} onChange={(e) => setTempGoal({...tempGoal, isActive: e.target.checked})} className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500 border-gray-300 dark:border-slate-700 dark:text-pink-300" /><label className="text-sm text-slate-600 dark:text-slate-400">{t.dashboard.discipline.active}</label></div><button onClick={() => { if (onSetWeeklyGoal) onSetWeeklyGoal(tempGoal); setIsGoalModalOpen(false); }} className="w-full mt-4 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-bold transition-colors shadow-lg shadow-pink-500/20">{t.dashboard.tracker.save}</button></div></div></div>)}
 
       {isHistoryModalOpen && (
           <GoalHistoryModal 
@@ -2827,7 +2828,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           />
       )}
 
-      {isAddFriendModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><UserPlus className="w-5 h-5 text-indigo-500" />{t.social.addModalTitle}</h3><button onClick={() => setIsAddFriendModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white"><X className="w-5 h-5"/></button></div><div className="p-6"><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.social.namePlaceholder}</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" /><input type="text" value={newFriendName} onChange={e => setNewFriendName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddFriend()} className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. TradingWiz" autoFocus /></div><p className="text-xs text-slate-400 mt-3 italic text-center">{t.social.simulated}</p><button onClick={handleAddFriend} disabled={!newFriendName.trim()} className="w-full mt-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.social.addBtn}</button></div></div></div>)}
+      {isAddFriendModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><UserPlus className="w-5 h-5 text-indigo-500" />{t.social.addModalTitle}</h3><button onClick={() => setIsAddFriendModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6"><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.social.namePlaceholder}</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-400" /><input type="text" value={newFriendName} onChange={e => setNewFriendName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddFriend()} className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. TradingWiz" autoFocus /></div><p className="text-xs text-slate-400 mt-3 italic text-center dark:text-slate-400">{t.social.simulated}</p><button onClick={handleAddFriend} disabled={!newFriendName.trim()} className="w-full mt-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.social.addBtn}</button></div></div></div>)}
     </div>
   );
 };

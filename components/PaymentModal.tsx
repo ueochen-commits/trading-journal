@@ -115,7 +115,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
           </h3>
           <button
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
+            className="p-2 text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
           >
             <X className="w-5 h-5" />
           </button>
@@ -135,7 +135,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
             <span className="text-sm text-slate-600 dark:text-slate-400">
               {language === 'cn' ? '支付金额' : 'Amount'}
             </span>
-            <span className="text-2xl font-black text-indigo-600">
+            <span className="text-2xl font-black text-indigo-600 dark:text-indigo-300">
               ¥{amount}
             </span>
           </div>
@@ -155,7 +155,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
                     <div className="text-sm font-bold text-slate-900 dark:text-white">
                       {language === 'cn' ? '支付宝' : 'Alipay'}
                     </div>
-                    <div className="text-xs text-slate-500 mt-1">
+                    <div className="text-xs text-slate-500 mt-1 dark:text-slate-400">
                       {language === 'cn' ? '唯一支持的支付方式' : 'Only supported method'}
                     </div>
                   </div>
@@ -199,7 +199,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
                 </p>
 
                 {/* QR Code */}
-                <div className="bg-white p-4 rounded-xl inline-block mb-4">
+                <div className="bg-white p-4 rounded-xl inline-block mb-4 dark:bg-slate-900">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCode)}`}
                     alt="Payment QR Code"
@@ -214,19 +214,19 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
                 {/* 或者直接跳转 */}
                 <button
                   onClick={() => window.open(qrCode, '_blank')}
-                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium dark:text-indigo-300 dark:hover:text-indigo-300"
                 >
                   {language === 'cn' ? '或点击此处在新窗口打开' : 'Or click here to open in new window'}
                 </button>
 
-                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500">
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   {language === 'cn' ? '等待支付确认...' : 'Waiting for payment confirmation...'}
                 </div>
               </>
             ) : (
               <>
-                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4" />
+                <Loader2 className="w-12 h-12 text-indigo-600 animate-spin mx-auto mb-4 dark:text-indigo-300" />
                 <p className="text-lg font-bold text-slate-900 dark:text-white mb-2">
                   {language === 'cn' ? '正在生成支付二维码...' : 'Generating payment QR code...'}
                 </p>

@@ -12,7 +12,7 @@ interface RiskAssessmentModalProps {
 
 const InfoTooltip = ({ text }: { text: string }) => (
     <div className="group relative ml-1.5 inline-flex">
-        <HelpCircle className="w-3 h-3 text-slate-400 cursor-help hover:text-indigo-500 transition-colors" />
+        <HelpCircle className="w-3 h-3 text-slate-400 cursor-help hover:text-indigo-500 transition-colors dark:text-slate-400" />
         <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 p-2 bg-slate-900 text-white text-[10px] rounded-lg shadow-xl z-50 pointer-events-none text-center leading-snug">
             {text}
             <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
@@ -119,7 +119,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                             <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                                 {language === 'cn' ? '风控配置向导' : 'Risk Calibration'}
                             </h2>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                 {language === 'cn' ? '让我们根据专业标准为您定制风控参数' : 'Lets tailor your risk parameters to professional standards'}
                             </p>
                         </div>
@@ -160,14 +160,14 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                             className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                                 experience === opt.id 
                                                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'
+                                                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/30'
                                             }`}
                                         >
                                             <div className="flex justify-between items-center">
                                                 <span className={`font-bold ${experience === opt.id ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-300'}`}>{opt.label}</span>
                                                 {experience === opt.id && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}
                                             </div>
-                                            <p className="text-xs text-slate-500 mt-1">{opt.desc}</p>
+                                            <p className="text-xs text-slate-500 mt-1 dark:text-slate-400">{opt.desc}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -201,7 +201,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                             className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
                                                 riskTolerance === opt.id
                                                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-400'
                                             }`}
                                         >
                                             {opt.label}
@@ -214,11 +214,11 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                 <label className="flex items-center text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
                                     {language === 'cn' ? '“疼痛”阈值' : '"Pain" Threshold'} <InfoTooltip text={t.risk.tooltips.painThreshold} />
                                 </label>
-                                <p className="text-xs text-slate-500 mb-3">
+                                <p className="text-xs text-slate-500 mb-3 dark:text-slate-400">
                                     {language === 'cn' ? '当一天亏损多少钱时，你会感到情绪失控或想要报复市场？' : 'At what daily loss amount do you start feeling emotional or wanting to revenge trade?'}
                                 </p>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold dark:text-slate-400">$</span>
                                     <input 
                                         type="number" 
                                         value={drawdownPain}
@@ -267,7 +267,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold">
+                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Max Trade Risk <InfoTooltip text={t.risk.tooltips.maxTradeRisk} />
                                     </p>
                                     <p className="text-lg font-mono font-bold text-indigo-600 dark:text-indigo-400">
@@ -275,7 +275,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                     </p>
                                 </div>
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold">
+                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Max Daily Loss <InfoTooltip text={t.risk.tooltips.maxDailyLoss} />
                                     </p>
                                     <p className="text-lg font-mono font-bold text-rose-500">
@@ -283,7 +283,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                     </p>
                                 </div>
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold">
+                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Max Loss Streak <InfoTooltip text={t.risk.tooltips.maxConsecutiveLosses} />
                                     </p>
                                     <p className="text-lg font-mono font-bold text-slate-700 dark:text-slate-300">
@@ -291,7 +291,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                     </p>
                                 </div>
                                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold">
+                                    <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Daily Profit Target <InfoTooltip text={t.risk.tooltips.dailyProfitTarget} />
                                     </p>
                                     <p className="text-lg font-mono font-bold text-emerald-500">

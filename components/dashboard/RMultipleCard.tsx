@@ -136,35 +136,35 @@ const BinTooltip = ({
   return (
     <div style={{
       position: 'absolute', left, top, zIndex: 100, pointerEvents: 'none',
-      background: '#fff', border: '1px solid rgba(148,163,184,0.25)',
+      background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
       borderRadius: 8, padding: '10px 12px', minWidth: 160,
       boxShadow: '0 4px 16px -4px rgba(15,23,42,0.12)',
       fontFamily: 'inherit', fontSize: 12,
     }}>
-      <div style={{ fontWeight: 600, color: '#0F172A', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
+      <div style={{ fontWeight: 600, color: 'var(--tg-text, #0F172A)', marginBottom: 6, paddingBottom: 6, borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
         {label}{isCap ? (bin.center < 0 ? ' (极端亏损)' : ' (极端盈利)') : ''}
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <span style={{ color: '#64748B' }}>笔数</span>
-          <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, color: '#0F172A' }}>{bin.count} 笔</span>
+          <span style={{ color: 'var(--tg-secondary, #64748B)' }}>笔数</span>
+          <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, color: 'var(--tg-text, #0F172A)' }}>{bin.count} 笔</span>
         </div>
         {isCap ? (
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            <span style={{ color: '#64748B' }}>范围</span>
-            <span style={{ fontFamily: '"SF Mono", monospace', color: '#475569', fontSize: 10 }}>
+            <span style={{ color: 'var(--tg-secondary, #64748B)' }}>范围</span>
+            <span style={{ fontFamily: '"SF Mono", monospace', color: 'var(--tg-secondary, #475569)', fontSize: 10 }}>
               {bin.rValues.sort((a, b) => a - b).map(r => fmtR(r)).join(', ')}
             </span>
           </div>
         ) : (
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-            <span style={{ color: '#64748B' }}>占比</span>
-            <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, color: '#0F172A' }}>{pct}%</span>
+            <span style={{ color: 'var(--tg-secondary, #64748B)' }}>占比</span>
+            <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, color: 'var(--tg-text, #0F172A)' }}>{pct}%</span>
           </div>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-          <span style={{ color: '#64748B' }}>区间均值</span>
-          <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, color: avgR >= 0 ? '#059669' : '#DC2626' }}>{fmtR(avgR)}</span>
+          <span style={{ color: 'var(--tg-secondary, #64748B)' }}>区间均值</span>
+          <span style={{ fontFamily: '"SF Mono", monospace', fontWeight: 600, color: avgR >= 0 ? 'var(--tg-positive, #059669)' : 'var(--tg-negative, #DC2626)' }}>{fmtR(avgR)}</span>
         </div>
       </div>
     </div>
@@ -203,7 +203,7 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
-    background: '#fff',
+    background: 'var(--tg-surface, #fff)',
     border: '1px solid rgba(148,163,184,0.2)',
     borderRadius: 10,
     padding: '20px 22px',
@@ -218,10 +218,10 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
       <div style={cardStyle}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16, flexShrink: 0 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>R-Multiple 分布</span>
+            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--tg-text, #0F172A)', letterSpacing: '-0.01em' }}>R-Multiple 分布</span>
             {infoIcon}
           </span>
-          <span style={{ fontSize: 11, color: '#94A3B8' }}>近 {stats.totalTrades} 笔</span>
+          <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>近 {stats.totalTrades} 笔</span>
         </div>
         <EmptyChartState
           variant="cards"
@@ -243,10 +243,10 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 16, flexShrink: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>R-Multiple 分布</span>
+          <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--tg-text, #0F172A)', letterSpacing: '-0.01em' }}>R-Multiple 分布</span>
           {infoIcon}
         </span>
-        <span style={{ fontSize: 11, color: '#94A3B8' }}>近 {stats.totalTrades} 笔 · R = 盈亏 / 初始风险</span>
+        <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>近 {stats.totalTrades} 笔 · R = 盈亏 / 初始风险</span>
       </div>
 
       {/* Chart — explicit height so children's height:% resolves correctly */}
@@ -292,7 +292,7 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
             <span key={idx} style={{
               flex: 1, textAlign: 'center', fontSize: 9, overflow: 'hidden',
               fontFamily: '"SF Mono", Menlo, monospace',
-              color: isCap ? '#475569' : isZero ? '#64748B' : '#94A3B8',
+              color: isCap ? 'var(--tg-secondary, #475569)' : isZero ? 'var(--tg-secondary, #64748B)' : 'var(--tg-muted, #94A3B8)',
               fontWeight: isCap ? 600 : isZero ? 500 : 400,
             }}>
               {label}
@@ -304,13 +304,13 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0 10px', paddingTop: 12, borderTop: '1px solid rgba(148,163,184,0.12)', flexShrink: 0 }}>
         {[
-          { label: 'EXPECTANCY', value: fmtR(stats.expectancy), color: expPos ? '#059669' : '#DC2626', bold: true },
-          { label: '平均胜场',   value: fmtR(stats.avgWin),     color: '#059669', bold: true },
-          { label: '平均负场',   value: fmtR(stats.avgLoss),    color: '#DC2626', bold: true },
-          { label: '最大盈亏',   value: `${fmtR(stats.maxWin)} / ${fmtR(stats.maxLoss)}`, color: '#0F172A', bold: false },
+          { label: 'EXPECTANCY', value: fmtR(stats.expectancy), color: expPos ? 'var(--tg-positive, #059669)' : 'var(--tg-negative, #DC2626)', bold: true },
+          { label: '平均胜场',   value: fmtR(stats.avgWin),     color: 'var(--tg-positive, #059669)', bold: true },
+          { label: '平均负场',   value: fmtR(stats.avgLoss),    color: 'var(--tg-negative, #DC2626)', bold: true },
+          { label: '最大盈亏',   value: `${fmtR(stats.maxWin)} / ${fmtR(stats.maxLoss)}`, color: 'var(--tg-text, #0F172A)', bold: false },
         ].map(s => (
           <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-            <span style={{ fontSize: 9, color: '#94A3B8', letterSpacing: '0.06em', fontWeight: 500, textTransform: 'uppercase' }}>{s.label}</span>
+            <span style={{ fontSize: 9, color: 'var(--tg-muted, #94A3B8)', letterSpacing: '0.06em', fontWeight: 500, textTransform: 'uppercase' }}>{s.label}</span>
             <span style={{
               fontSize: 13, fontWeight: s.bold ? 600 : 500, color: s.color,
               fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums',

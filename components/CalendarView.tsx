@@ -88,7 +88,7 @@ const ToolBtn = ({
     aria-label={ariaLabel}
     aria-pressed={active}
     className={`w-6 h-6 flex items-center justify-center rounded-[4px] transition-colors
-      ${active ? 'bg-[#f3f4f6] text-[#1a1a1a]' : 'text-[#6b7280] hover:bg-[#f3f4f6]'}
+      ${active ? 'bg-[#f3f4f6] text-[#1a1a1a] dark:bg-[var(--tg-surface-muted)] dark:text-[var(--tg-text)]' : 'text-[#6b7280] hover:bg-[#f3f4f6] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]'}
       ${disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
     `}
   >
@@ -119,7 +119,7 @@ const RDropdown = ({
       {isOpen && pos && (
         <>
           <div className="fixed inset-0 z-[10040]" onClick={onClose} />
-          <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 10050 }} className="bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg py-1 min-w-[140px]">
+          <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 10050 }} className="bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg py-1 min-w-[140px] dark:bg-slate-900">
             {children}
           </div>
         </>
@@ -146,7 +146,7 @@ const RColorPicker = ({
   return (
     <>
       <div className="fixed inset-0 z-[10040]" onClick={onClose} />
-      <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 10050 }} className="bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg p-2 w-[180px]">
+      <div style={{ position: 'fixed', top: pos.top, left: pos.left, zIndex: 10050 }} className="bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg p-2 w-[180px] dark:bg-slate-900">
         <div className="grid grid-cols-5 gap-1.5 mb-2">
           {colors.map((c) => (
             <button key={c} type="button" onClick={() => { onSelect(c); onClose(); }}
@@ -155,7 +155,7 @@ const RColorPicker = ({
           ))}
         </div>
         <button type="button" onClick={onCustom}
-          className="w-full text-xs text-center py-1 text-[#6b7280] hover:text-[#1a1a1a] transition-colors">
+          className="w-full text-xs text-center py-1 text-[#6b7280] hover:text-[#1a1a1a] transition-colors dark:text-[var(--tg-secondary)] dark:hover:text-[var(--tg-text)]">
           自定义颜色...
         </button>
       </div>
@@ -213,7 +213,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     try {
       await document.fonts.ready;
       const opts = {
-        quality: 1, pixelRatio: 2, backgroundColor: '#FFFFFF', cacheBust: true,
+        quality: 1, pixelRatio: 2, backgroundColor: 'var(--tg-surface, #FFFFFF)', cacheBust: true,
         filter: (node: HTMLElement) => !node.classList?.contains('screenshot-ignore'),
       };
       const calDataUrl = await toPng(calendarRef.current, opts);
@@ -378,7 +378,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const reviewEditor = useEditor({
     extensions: [
-      StarterKit.configure({ dropcursor: { color: '#B3BFFF', width: 3 } }), Underline, Link.configure({ openOnClick: false }),
+      StarterKit.configure({ dropcursor: { color: 'var(--tg-muted, #B3BFFF)', width: 3 } }), Underline, Link.configure({ openOnClick: false }),
       TextStyle, Color, Highlight.configure({ multicolor: true }),
       FontFamily, TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Placeholder.configure({ placeholder: '今天的交易心得、市场观察、情绪状态...' }),
@@ -726,8 +726,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     return Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthDays - firstDayOfMonth + 1 + i;
       return (
-        <div key={`prev-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: '#f3f4f6', border: '1px solid #eef0f3' }}>
-          <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: '#aeb5bf' }}>{day}</span>
+        <div key={`prev-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: 'var(--tg-surface-muted, #f3f4f6)', border: '1px solid var(--tg-border, #eef0f3)' }}>
+          <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: 'var(--tg-muted, #aeb5bf)' }}>{day}</span>
         </div>
       );
     });
@@ -735,8 +735,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const renderNextMonthBlanks = () => {
     return Array.from({ length: trailingBlanks }, (_, i) => (
-      <div key={`next-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: '#ffffff', border: '1px solid #eef0f3' }}>
-        <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: '#b7bec8' }}>{i + 1}</span>
+      <div key={`next-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: 'var(--tg-surface, #ffffff)', border: '1px solid var(--tg-border, #eef0f3)' }}>
+        <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: 'var(--tg-muted, #b7bec8)' }}>{i + 1}</span>
       </div>
     ));
   };
@@ -746,35 +746,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       const d = i + 1;
       const data = getDayData(d);
       const isToday = new Date().toDateString() === new Date(currentDate.getFullYear(), currentDate.getMonth(), d).toDateString();
-      let bgStyle = '#f3f4f6';
-      let textColor = '#23262d';
-      let pnlTextColor = '#23262d';
-      let metaTextColor = '#6b7280';
-      let cardBorder = '1px solid #eef0f3';
+      let bgStyle = 'var(--tg-surface-muted, #f3f4f6)';
+      let textColor = 'var(--tg-text, #23262d)';
+      let pnlTextColor = 'var(--tg-text, #23262d)';
+      let metaTextColor = 'var(--tg-muted, #6b7280)';
+      let cardBorder = '1px solid var(--tg-border, #eef0f3)';
       if (data && data.count > 0) {
         if (data.netPnl > 0) {
-          bgStyle = '#dff6e7';
-          textColor = '#15824d';
-          pnlTextColor = '#15824d';
-          metaTextColor = '#768a7b';
-          cardBorder = '1px solid #bfe8cd';
+          bgStyle = 'var(--tg-positive-soft, #dff6e7)';
+          textColor = 'var(--tg-positive, #15824d)';
+          pnlTextColor = 'var(--tg-positive, #15824d)';
+          metaTextColor = 'var(--tg-muted, #768a7b)';
+          cardBorder = '1px solid var(--tg-border, #bfe8cd)';
         } else if (data.netPnl < 0) {
-          bgStyle = '#f9dddd';
-          textColor = '#ef3f3f';
-          pnlTextColor = '#ef3f3f';
-          metaTextColor = '#8d7676';
-          cardBorder = '1px solid #f17f7f';
+          bgStyle = 'var(--tg-negative-soft, #f9dddd)';
+          textColor = 'var(--tg-negative, #ef3f3f)';
+          pnlTextColor = 'var(--tg-negative, #ef3f3f)';
+          metaTextColor = 'var(--tg-muted, #8d7676)';
+          cardBorder = '1px solid var(--tg-negative, #f17f7f)';
         } else {
-          bgStyle = '#f8f1d8';
-          textColor = '#8d6a17';
-          pnlTextColor = '#8d6a17';
-          metaTextColor = '#857a5d';
-          cardBorder = '1px solid #ead9a6';
+          bgStyle = 'var(--tg-warning-soft, #f8f1d8)';
+          textColor = 'var(--tg-warning, #8d6a17)';
+          pnlTextColor = 'var(--tg-warning, #8d6a17)';
+          metaTextColor = 'var(--tg-muted, #857a5d)';
+          cardBorder = '1px solid var(--tg-border, #ead9a6)';
         }
       }
       const iconColor = data && data.count > 0
-        ? (data.netPnl > 0 ? '#15824d' : data.netPnl < 0 ? '#ea3d3d' : '#8d6a17')
-        : '#6b7280';
+        ? (data.netPnl > 0 ? 'var(--tg-positive, #15824d)' : data.netPnl < 0 ? 'var(--tg-negative, #ea3d3d)' : 'var(--tg-warning, #8d6a17)')
+        : 'var(--tg-muted, #6b7280)';
       const iconOpacity = data && data.count > 0 ? 0.7 : 0.5;
       return (
         <div key={d} onClick={() => handleDayClick(d)} role="button" tabIndex={0}
@@ -805,14 +805,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             style={{
               top: 10,
               right: 12,
-              color: isToday ? '#1f2937' : textColor,
+              color: isToday ? 'var(--tg-text, #1f2937)' : textColor,
               width: 18,
               height: 18,
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               borderRadius: isToday ? 999 : 0,
-              background: isToday ? '#ffffff' : 'transparent',
+              background: isToday ? 'var(--tg-accent-soft, #ffffff)' : 'transparent',
               boxShadow: isToday ? '0 1px 3px rgba(15,23,42,0.08)' : 'none',
             }}
           >
@@ -850,10 +850,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   return (
     <div ref={calendarRef} className="space-y-4 relative">
       {/* Toolbar */}
-      <div style={{ background: '#ffffff', border: '1px solid #edf0f4', borderRadius: 16, overflow: 'hidden' }}>
-      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid #edf0f4' }}>
+      <div style={{ background: 'var(--tg-surface, #ffffff)', border: '1px solid var(--tg-border, #edf0f4)', borderRadius: 16, overflow: 'hidden' }}>
+      <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--tg-border, #edf0f4)' }}>
         <div className="flex items-center gap-2">
-          <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
+          <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280] dark:hover:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]" style={{ transition: 'all 150ms ease' }}>
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div
@@ -862,34 +862,34 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             className="flex cursor-pointer items-center gap-1 px-[6px] py-[2px] text-left"
             style={{ transition: 'all 150ms ease' }}
           >
-            <span className="text-[15px] font-semibold text-[#1f2937]">{monthTitle}</span>
-            <ChevronDown className={`h-[14px] w-[14px] text-[#9aa3b2] transition-transform ${yearPickerOpen ? 'rotate-180' : ''}`} />
+            <span className="text-[15px] font-semibold text-[#1f2937] dark:text-[var(--tg-text)]">{monthTitle}</span>
+            <ChevronDown className={`h-[14px] w-[14px] text-[#9aa3b2] transition-transform  dark:text-[var(--tg-muted)] ${yearPickerOpen ? 'rotate-180' : ''}`} />
           </div>
-          <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280]" style={{ transition: 'all 150ms ease' }}>
+          <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280] dark:hover:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]" style={{ transition: 'all 150ms ease' }}>
             <ChevronRight className="w-4 h-4" />
           </button>
           <button onClick={() => setCurrentDate(new Date())}
-            className="ml-2 bg-white border border-[#E5E7EB] rounded-[10px] text-[13px] font-medium text-[#4b5563] hover:bg-[#F9FAFB]"
+            className="ml-2 bg-white border border-[#E5E7EB] rounded-[10px] text-[13px] font-medium text-[#4b5563] hover:bg-[#F9FAFB] dark:bg-slate-900 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-accent-soft)]"
             style={{ padding: '7px 14px', transition: 'all 150ms ease' }}>
             {cal.thisMonth || 'This month'}
           </button>
         </div>
         <div className="flex items-center gap-2.5">
-          <span className="text-[13px] font-semibold text-[#111827]">{cal.monthlyStats || 'Monthly:'}</span>
-          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${monthStats.totalPnl >= 0 ? 'bg-[#dff6e7] text-[#15824d]' : 'bg-[#f9dddd] text-[#ef3f3f]'}`}
+          <span className="text-[13px] font-semibold text-[#111827] dark:text-[var(--tg-text)]">{cal.monthlyStats || 'Monthly:'}</span>
+          <span className={`inline-flex items-center rounded-full px-3 py-1 text-[13px] font-medium ${monthStats.totalPnl >= 0 ? 'bg-[#dff6e7] text-[#15824d] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-positive)]' : 'bg-[#f9dddd] text-[#ef3f3f] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-negative)]'}`}
             style={{ fontVariantNumeric: 'tabular-nums' }}>
             {monthStats.totalPnl >= 0 ? '+' : '\u2212'}${Math.abs(monthStats.totalPnl).toFixed(2)}
           </span>
-          <span className="inline-flex items-center rounded-full bg-[#f1ecfb] px-3 py-1 text-[13px] font-medium text-[#5f5d70]">
+          <span className="inline-flex items-center rounded-full bg-[#f1ecfb] px-3 py-1 text-[13px] font-medium text-[#5f5d70] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
             {monthStats.tradingDays} {cal.tradingDays || 'days'}
           </span>
           <button
             type="button"
             title={cal.weekSuffix ? '设置' : 'Settings'}
-            className="screenshot-ignore flex h-7 w-7 items-center justify-center text-[#7d8794] transition-all"
+            className="screenshot-ignore flex h-7 w-7 items-center justify-center text-[#7d8794] transition-all dark:text-[var(--tg-secondary)]"
             style={{ flexShrink: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#111827'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#7d8794'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-text, #111827)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-secondary, #7d8794)'; }}
           >
             <Settings className="h-[14px] w-[14px]" strokeWidth={1.9} />
           </button>
@@ -898,9 +898,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             disabled={isCapturing}
             title={cal.weekSuffix ? '分享日历' : 'Share calendar'}
             className="screenshot-ignore flex h-7 w-7 items-center justify-center transition-all"
-            style={{ flexShrink: 0, background: 'transparent', border: 'none', color: '#6f54d9', cursor: 'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#5b46c7'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6f54d9'; }}
+            style={{ flexShrink: 0, background: 'transparent', border: 'none', color: 'var(--tg-accent, #6f54d9)', cursor: 'pointer' }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-accent, #5b46c7)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-accent, #6f54d9)'; }}
           >
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
               <path d="M9 3L7.17 5H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.17L15 3H9zm3 15a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/>
@@ -910,10 +910,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
           <button
             type="button"
             title={cal.weekSuffix ? '说明' : 'Info'}
-            className="screenshot-ignore flex h-7 w-7 items-center justify-center text-[#7d8794] transition-all"
+            className="screenshot-ignore flex h-7 w-7 items-center justify-center text-[#7d8794] transition-all dark:text-[var(--tg-secondary)]"
             style={{ flexShrink: 0, background: 'transparent', border: 'none', cursor: 'pointer' }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#111827'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#7d8794'; }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-text, #111827)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-secondary, #7d8794)'; }}
           >
             <Info className="h-[14px] w-[14px]" strokeWidth={1.9} />
           </button>
@@ -925,8 +925,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         <div className="flex-1 min-w-0">
           <div className="grid grid-cols-7 gap-[6px] mb-[8px]">
             {t.calendar.weekdays.map(day => (
-              <div key={day} className="flex items-center justify-center rounded-[10px]" style={{ height: 34, border: '1px solid #e7eaee', background: '#ffffff' }}>
-                <span className="text-[13px] font-semibold text-[#2f3640]">{day}</span>
+              <div key={day} className="flex items-center justify-center rounded-[10px]" style={{ height: 34, border: '1px solid var(--tg-border, #e7eaee)', background: 'var(--tg-surface, #ffffff)' }}>
+                <span className="text-[13px] font-semibold text-[#2f3640] dark:text-[var(--tg-text)]">{day}</span>
               </div>
             ))}
           </div>
@@ -942,16 +942,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             const isPositive = week.pnl >= 0;
             const weekLabel = cal.weekSuffix ? `${cal.week}${i + 1}${cal.weekSuffix}` : `${cal.week} ${i + 1}`;
             return (
-              <div key={i} className="rounded-[14px] border border-[#e4e8ed] flex-1 flex flex-col justify-center"
-                style={{ minHeight: 128, padding: '16px 14px', background: '#ffffff', transition: 'all 150ms ease' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = '#fafbfc'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = '#ffffff'; }}>
-                <span className="text-[12px] font-medium text-[#8f96a3] mb-1.5">{weekLabel}</span>
-                <span className={`text-[15px] font-bold mb-2 ${week.count === 0 ? 'text-[#111827]' : isPositive ? 'text-[#15824d]' : 'text-[#ea3d3d]'}`}
+              <div key={i} className="rounded-[14px] border border-[#e4e8ed] flex-1 flex flex-col justify-center dark:border-[var(--tg-border)]"
+                style={{ minHeight: 128, padding: '16px 14px', background: 'var(--tg-surface, #ffffff)', transition: 'all 150ms ease' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--tg-accent-soft, #fafbfc)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = 'var(--tg-surface, #ffffff)'; }}>
+                <span className="text-[12px] font-medium text-[#8f96a3] mb-1.5 dark:text-[var(--tg-muted)]">{weekLabel}</span>
+                <span className={`text-[15px] font-bold mb-2 ${week.count === 0 ? 'text-[#111827] dark:text-[var(--tg-text)]' : isPositive ? 'text-[#15824d] dark:text-[var(--tg-positive)]' : 'text-[#ea3d3d] dark:text-[var(--tg-negative)]'}`}
                   style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {week.count === 0 ? '$0' : `${isPositive ? '+' : '\u2212'}$${Math.abs(week.pnl).toFixed(2)}`}
                 </span>
-                <span className="inline-flex items-center self-start rounded-full bg-[#f1ecfb] px-2.5 py-0.5 text-[11px] font-medium text-[#5f5d70]">
+                <span className="inline-flex items-center self-start rounded-full bg-[#f1ecfb] px-2.5 py-0.5 text-[11px] font-medium text-[#5f5d70] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                   {week.tradingDays} {cal.tradingDays || 'days'}
                 </span>
               </div>
@@ -970,19 +970,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             left: yearPickerPos.left,
             zIndex: 40,
             width: 320,
-            background: '#ffffff',
-            border: '1px solid #e6e9ef',
+            background: 'var(--tg-surface, #ffffff)',
+            border: '1px solid var(--tg-border, #e6e9ef)',
             borderRadius: 16,
             boxShadow: '0 18px 48px rgba(15,23,42,0.12)',
             overflow: 'hidden',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px 14px', borderBottom: '1px solid #eef1f5' }}>
-            <span className="text-[16px] font-semibold text-[#1f2937]">{monthTitle}</span>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 18px 14px', borderBottom: '1px solid var(--tg-border, #eef1f5)' }}>
+            <span className="text-[16px] font-semibold text-[#1f2937] dark:text-[var(--tg-text)]">{monthTitle}</span>
             <button
               type="button"
               onClick={() => setYearPickerOpen(false)}
-              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f6f7f9] text-[#4b5563]"
+              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#f6f7f9] text-[#4b5563] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]"
             >
               <ChevronDown className="h-4 w-4 rotate-180" />
             </button>
@@ -1003,7 +1003,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                     borderRadius: 999,
                     border: selected ? 'none' : '1px solid transparent',
                     background: selected ? '#463c96' : 'transparent',
-                    color: selected ? '#ffffff' : '#1f2937',
+                    color: selected ? '#ffffff' : 'var(--tg-text, #1f2937)',
                     fontSize: 14,
                     fontWeight: selected ? 600 : 500,
                     transition: 'all 150ms ease',
@@ -1014,11 +1014,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
               );
             })}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 18px', borderTop: '1px solid #eef1f5' }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 18px', borderTop: '1px solid var(--tg-border, #eef1f5)' }}>
             <button
               type="button"
               onClick={() => setYearPickerOpen(false)}
-              style={{ fontSize: 14, fontWeight: 600, color: '#6c5ce7', background: 'transparent', border: 'none' }}
+              style={{ fontSize: 14, fontWeight: 600, color: 'var(--tg-accent, #6c5ce7)', background: 'transparent', border: 'none' }}
             >
               OK
             </button>
@@ -1039,7 +1039,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
               width: 'min(1040px, 92vw)',
               height: currentView === 'review' ? 'min(92vh, 1040px)' : undefined,
               maxHeight: 'min(92vh, 1040px)',
-              background: '#FFFFFF', borderRadius: 16,
+              background: 'var(--tg-surface, #FFFFFF)', borderRadius: 16,
               boxShadow: '0 24px 72px rgba(15,23,42,0.14)',
               display: 'flex', flexDirection: 'column', overflow: 'hidden',
               fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -1054,10 +1054,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   {/* ── View A: Header ── */}
                   <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '36px 44px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <span style={{ fontSize: 19, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.015em' }}>{modalDateLabel}</span>
-                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#CBD5E1', flexShrink: 0, display: 'inline-block' }} />
-                      <span style={{ fontSize: 13, fontWeight: 400, color: '#64748B' }}>Net P&L</span>
-                      <span style={{ fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: selectedDayStats ? (selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
+                      <span style={{ fontSize: 19, fontWeight: 600, color: 'var(--tg-text, #0F172A)', letterSpacing: '-0.015em' }}>{modalDateLabel}</span>
+                      <span style={{ width: 5, height: 5, borderRadius: '50%', background: 'var(--tg-track, #CBD5E1)', flexShrink: 0, display: 'inline-block' }} />
+                      <span style={{ fontSize: 13, fontWeight: 400, color: 'var(--tg-secondary, #64748B)' }}>Net P&L</span>
+                      <span style={{ fontSize: 19, fontWeight: 500, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums', color: selectedDayStats ? (selectedDayStats.pnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-muted, #94A3B8)' }}>
                         {selectedDayStats ? `${selectedDayStats.pnl >= 0 ? '+' : '\u2212'}$${Math.abs(selectedDayStats.pnl).toFixed(2)}` : '\u2014'}
                       </span>
                     </div>
@@ -1076,14 +1076,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                           }
                           switchView('review');
                         }}
-                        style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#334155', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
+                        style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: 'var(--tg-text, #334155)', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #F8FAFC)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-surface, #FFFFFF)'; }}
                       >
                         <Edit3 style={{ width: 14, height: 14 }} />
                         {selectedDayHasReview ? (cal.weekSuffix ? '查看复盘' : 'View note') : (cal.weekSuffix ? '写复盘' : 'Add note')}
                         {selectedDayHasReview && (
-                          <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#6366F1', border: '2px solid #fff' }} />
+                          <span style={{ position: 'absolute', top: -2, right: -2, width: 8, height: 8, borderRadius: '50%', background: '#6366F1', border: '2px solid var(--tg-border, #fff)' }} />
                         )}
                       </button>
                       <div style={{ width: 38, height: 38, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
@@ -1091,8 +1091,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       </div>
                       <button
                         onClick={() => { doSaveReview(reviewHtml); setSelectedDay(null); }}
-                        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
+                        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: 'var(--tg-secondary, #64748B)', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #F1F5F9)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                       >
                         <X style={{ width: 17, height: 17 }} />
@@ -1115,39 +1115,39 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                                 <stop offset="100%" stopColor="#FB7185" stopOpacity={0.4} />
                               </linearGradient>
                             </defs>
-                            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#F1F5F9" />
+                            <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--tg-border, #F1F5F9)" />
                             <XAxis dataKey="i" axisLine={false} tickLine={false} tick={false} />
-                            <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: '#94A3B8', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
-                            <Tooltip contentStyle={{ background: '#fff', border: '1px solid #E2E8F0', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
-                            <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#10B981' : '#F43F5E'} strokeWidth={1.5} strokeLinecap="round" fill={selectedDayStats.pnl >= 0 ? 'url(#calPnlGreenGrad)' : 'url(#calPnlRedGrad)'} fillOpacity={1} dot={false} activeDot={{ r: 3 }} />
+                            <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: 'var(--tg-muted, #94A3B8)', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
+                            <Tooltip contentStyle={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
+                            <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#10B981' : 'var(--tg-negative, #F43F5E)'} strokeWidth={1.5} strokeLinecap="round" fill={selectedDayStats.pnl >= 0 ? 'url(#calPnlGreenGrad)' : 'url(#calPnlRedGrad)'} fillOpacity={1} dot={false} activeDot={{ r: 3 }} />
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
-                        <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8', fontSize: 14 }}>当日无交易</div>
+                        <div style={{ height: 180, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--tg-muted, #94A3B8)', fontSize: 14 }}>当日无交易</div>
                       )}
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', rowGap: 26, columnGap: 24 }}>
                       {[
-                        { label: cal.weekSuffix ? '总交易' : 'Total Trades', value: selectedDayStats ? String(selectedDayStats.count) : '\u2014', color: '#0F172A' },
-                        { label: cal.weekSuffix ? '毛盈亏' : 'Gross P&L', value: extendedDayStats ? `${extendedDayStats.grossPnl >= 0 ? '+' : '\u2212'}$${Math.abs(extendedDayStats.grossPnl).toFixed(2)}` : '\u2014', color: extendedDayStats ? (extendedDayStats.grossPnl >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' },
-                        { label: cal.weekSuffix ? '盈/亏笔数' : 'Winners / Losers', value: selectedDayStats ? `${selectedDayStats.wins} / ${selectedDayStats.losses}` : '\u2014', color: '#0F172A' },
-                        { label: cal.weekSuffix ? '手续费' : 'Commissions', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: '#0F172A' },
-                        { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: '#0F172A' },
-                        { label: cal.weekSuffix ? '成交量' : 'Volume', value: extendedDayStats && extendedDayStats.volume > 0 ? extendedDayStats.volume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014', color: '#0F172A' },
-                        { label: cal.weekSuffix ? '盈利因子' : 'Profit Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: '#0F172A' },
-                        { label: cal.weekSuffix ? '均盈 / 均亏' : 'Avg Win / Loss', value: null, color: '#0F172A', isAvgWinLoss: true },
+                        { label: cal.weekSuffix ? '总交易' : 'Total Trades', value: selectedDayStats ? String(selectedDayStats.count) : '\u2014', color: 'var(--tg-text, #0F172A)' },
+                        { label: cal.weekSuffix ? '毛盈亏' : 'Gross P&L', value: extendedDayStats ? `${extendedDayStats.grossPnl >= 0 ? '+' : '\u2212'}$${Math.abs(extendedDayStats.grossPnl).toFixed(2)}` : '\u2014', color: extendedDayStats ? (extendedDayStats.grossPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-muted, #94A3B8)' },
+                        { label: cal.weekSuffix ? '盈/亏笔数' : 'Winners / Losers', value: selectedDayStats ? `${selectedDayStats.wins} / ${selectedDayStats.losses}` : '\u2014', color: 'var(--tg-text, #0F172A)' },
+                        { label: cal.weekSuffix ? '手续费' : 'Commissions', value: extendedDayStats ? `$${extendedDayStats.totalFees.toFixed(2)}` : '\u2014', color: 'var(--tg-text, #0F172A)' },
+                        { label: cal.weekSuffix ? '胜率' : 'Win Rate', value: selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014', color: 'var(--tg-text, #0F172A)' },
+                        { label: cal.weekSuffix ? '成交量' : 'Volume', value: extendedDayStats && extendedDayStats.volume > 0 ? extendedDayStats.volume.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '\u2014', color: 'var(--tg-text, #0F172A)' },
+                        { label: cal.weekSuffix ? '盈利因子' : 'Profit Factor', value: extendedDayStats ? (extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)) : '\u2014', color: 'var(--tg-text, #0F172A)' },
+                        { label: cal.weekSuffix ? '均盈 / 均亏' : 'Avg Win / Loss', value: null, color: 'var(--tg-text, #0F172A)', isAvgWinLoss: true },
                       ].map(kpi => (
                         <div key={kpi.label} style={{ whiteSpace: 'nowrap' }}>
-                          <div style={{ fontSize: 12.5, fontWeight: 400, color: '#64748B', marginBottom: 8, letterSpacing: '-0.005em' }}>{kpi.label}</div>
+                          <div style={{ fontSize: 12.5, fontWeight: 400, color: 'var(--tg-secondary, #64748B)', marginBottom: 8, letterSpacing: '-0.005em' }}>{kpi.label}</div>
                           {kpi.isAvgWinLoss ? (
                             <div style={{ fontSize: 16, fontWeight: 500, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>
                               {selectedDayStats ? (
                                 <>
-                                  <span style={{ color: '#15803D' }}>${selectedDayStats.avgWin.toFixed(2)}</span>
-                                  <span style={{ color: '#94A3B8' }}> / </span>
-                                  <span style={{ color: '#DC2626' }}>{'\u2212'}${Math.abs(selectedDayStats.avgLoss).toFixed(2)}</span>
+                                  <span style={{ color: 'var(--tg-positive, #15803D)' }}>${selectedDayStats.avgWin.toFixed(2)}</span>
+                                  <span style={{ color: 'var(--tg-muted, #94A3B8)' }}> / </span>
+                                  <span style={{ color: 'var(--tg-negative, #DC2626)' }}>{'\u2212'}${Math.abs(selectedDayStats.avgLoss).toFixed(2)}</span>
                                 </>
-                              ) : <span style={{ color: '#94A3B8' }}>\u2014</span>}
+                              ) : <span style={{ color: 'var(--tg-muted, #94A3B8)' }}>\u2014</span>}
                             </div>
                           ) : (
                             <div style={{ fontSize: 16, fontWeight: 500, color: kpi.color, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.015em' }}>{kpi.value}</div>
@@ -1158,13 +1158,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   </div>
                   {/* ── View A: Trade Table ── */}
                   {selectedDayTrades.length > 0 && (
-                    <div style={{ borderTop: '1px solid #F1F5F9', flex: '1 1 auto', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
+                    <div style={{ borderTop: '1px solid var(--tg-border, #F1F5F9)', flex: '1 1 auto', minHeight: 0, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#D1D5DB transparent' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
                         <colgroup>
                           <col style={{ width: '13%' }} /><col style={{ width: '18%' }} /><col style={{ width: '10%' }} />
                           <col style={{ width: '15%' }} /><col style={{ width: '14%' }} /><col style={{ width: '12%' }} /><col />
                         </colgroup>
-                        <thead style={{ position: 'sticky', top: 0, background: '#F8FAFC', zIndex: 1 }}>
+                        <thead style={{ position: 'sticky', top: 0, background: 'var(--tg-accent-soft, #F8FAFC)', zIndex: 1 }}>
                           <tr>
                             {[
                               { label: cal.weekSuffix ? '开仓时间' : 'Time', align: 'left' },
@@ -1175,7 +1175,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                               { label: 'ROI%', align: 'right' },
                               { label: cal.weekSuffix ? '策略' : 'Strategy', align: 'left' },
                             ].map((col, ci) => (
-                              <th key={col.label} style={{ padding: '12px 16px', textAlign: col.align as any, fontSize: 12.5, fontWeight: 500, color: '#475569', borderBottom: '1px solid #F1F5F9', paddingLeft: ci === 0 ? 44 : 16, paddingRight: ci === 6 ? 44 : 16 }}>{col.label}</th>
+                              <th key={col.label} style={{ padding: '12px 16px', textAlign: col.align as any, fontSize: 12.5, fontWeight: 500, color: 'var(--tg-secondary, #475569)', borderBottom: '1px solid var(--tg-border, #F1F5F9)', paddingLeft: ci === 0 ? 44 : 16, paddingRight: ci === 6 ? 44 : 16 }}>{col.label}</th>
                             ))}
                           </tr>
                         </thead>
@@ -1186,28 +1186,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                             const roi = costBasis > 0 ? (netPnl / costBasis) * 100 : null;
                             return (
                               <tr key={trade.id}
-                                style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 100ms', cursor: onOpenTradeReview ? 'pointer' : 'default' }}
+                                style={{ borderBottom: '1px solid var(--tg-border, #F1F5F9)', transition: 'background 100ms', cursor: onOpenTradeReview ? 'pointer' : 'default' }}
                                 onClick={() => { if (onOpenTradeReview && trade.id) { doSaveReview(reviewHtml); setSelectedDay(null); onOpenTradeReview(trade.id); } }}
-                                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = '#FAFBFC'; }}
+                                onMouseEnter={e => { (e.currentTarget as HTMLTableRowElement).style.background = 'var(--tg-accent-soft, #FAFBFC)'; }}
                                 onMouseLeave={e => { (e.currentTarget as HTMLTableRowElement).style.background = ''; }}>
-                                <td style={{ padding: '18px 16px 18px 44px', fontSize: 13.5, color: '#0F172A', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                                <td style={{ padding: '18px 16px 18px 44px', fontSize: 13.5, color: 'var(--tg-text, #0F172A)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
                                   {new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                                 </td>
                                 <td style={{ padding: '18px 16px' }}>
-                                  <span style={{ display: 'inline-block', padding: '3px 9px', background: '#EEF2FF', color: '#4338CA', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.symbol}</span>
+                                  <span style={{ display: 'inline-block', padding: '3px 9px', background: 'var(--tg-accent-soft, #EEF2FF)', color: 'var(--tg-accent, #4338CA)', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.symbol}</span>
                                 </td>
-                                <td style={{ padding: '18px 16px', fontSize: 13.5, fontWeight: 500, color: '#0F172A' }}>{trade.direction}</td>
-                                <td style={{ padding: '18px 16px', fontSize: 13.5, color: '#0F172A', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{trade.quantity.toLocaleString()}</td>
-                                <td style={{ padding: '18px 16px', fontSize: 13.5, fontWeight: 500, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: netPnl >= 0 ? '#15803D' : '#DC2626' }}>
+                                <td style={{ padding: '18px 16px', fontSize: 13.5, fontWeight: 500, color: 'var(--tg-text, #0F172A)' }}>{trade.direction}</td>
+                                <td style={{ padding: '18px 16px', fontSize: 13.5, color: 'var(--tg-text, #0F172A)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>{trade.quantity.toLocaleString()}</td>
+                                <td style={{ padding: '18px 16px', fontSize: 13.5, fontWeight: 500, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: netPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)' }}>
                                   {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
                                 </td>
-                                <td style={{ padding: '18px 16px', fontSize: 13.5, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: roi !== null ? (roi >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
+                                <td style={{ padding: '18px 16px', fontSize: 13.5, textAlign: 'right', fontVariantNumeric: 'tabular-nums', color: roi !== null ? (roi >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-muted, #94A3B8)' }}>
                                   {roi !== null ? (roi >= 0 ? `${roi.toFixed(2)}%` : `(${Math.abs(roi).toFixed(2)}%)`) : '\u2014'}
                                 </td>
                                 <td style={{ padding: '18px 44px 18px 16px' }}>
                                   {trade.setup
-                                    ? <span style={{ display: 'inline-block', padding: '3px 9px', background: '#F8FAFC', color: '#334155', border: '1px solid #CBD5E1', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
-                                    : <span style={{ color: '#CBD5E1', fontSize: 13.5, letterSpacing: '0.05em' }}>--</span>
+                                    ? <span style={{ display: 'inline-block', padding: '3px 9px', background: 'var(--tg-accent-soft, #F8FAFC)', color: 'var(--tg-text, #334155)', border: '1px solid var(--tg-border, #CBD5E1)', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
+                                    : <span style={{ color: 'var(--tg-muted, #CBD5E1)', fontSize: 13.5, letterSpacing: '0.05em' }}>--</span>
                                   }
                                 </td>
                               </tr>
@@ -1218,12 +1218,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                     </div>
                   )}
                   {/* ── View A: Bottom Bar ── */}
-                  <div style={{ flexShrink: 0, borderTop: '1px solid #F1F5F9', padding: '20px 44px 28px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                  <div style={{ flexShrink: 0, borderTop: '1px solid var(--tg-border, #F1F5F9)', padding: '20px 44px 28px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
                     <button
                       onClick={() => { doSaveReview(reviewHtml); setSelectedDay(null); }}
-                      style={{ height: 40, padding: '0 22px', background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: '#475569', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F8FAFC'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FFFFFF'; }}
+                      style={{ height: 40, padding: '0 22px', background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: 'var(--tg-secondary, #475569)', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #F8FAFC)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-surface, #FFFFFF)'; }}
                     >
                       {cal.weekSuffix ? '关闭' : 'Close'}
                     </button>
@@ -1237,22 +1237,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                     {/* 左侧：纯文字返回按钮 */}
                     <button
                       onClick={() => switchView('transactions')}
-                      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: '#64748B', padding: 0, outline: 'none', transition: 'color 150ms', flexShrink: 0 }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#0F172A'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#64748B'; }}
+                      style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13.5, fontWeight: 500, color: 'var(--tg-secondary, #64748B)', padding: 0, outline: 'none', transition: 'color 150ms', flexShrink: 0 }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-accent, #0F172A)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-secondary, #64748B)'; }}
                     >
                       <ArrowLeft style={{ width: 14, height: 14 }} />
                       {cal.weekSuffix ? '返回交易详情' : 'Back to trades'}
                     </button>
                     {/* 右侧：保存状态 + 保存按钮 + logo + X */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 12.5, color: saveStatus === 'unsaved' ? '#6366F1' : '#94A3B8' }}>
+                      <span style={{ fontSize: 12.5, color: saveStatus === 'unsaved' ? 'var(--tg-accent, #6366F1)' : 'var(--tg-muted, #94A3B8)' }}>
                         {saveStatus === 'saving' ? '保存中...' : saveStatus === 'unsaved' ? '未保存' : lastSavedAt ? `已保存 · ${lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '已保存'}
                       </span>
                       <button
                         onClick={() => doSaveReview(reviewHtml)}
                         disabled={saveStatus !== 'unsaved'}
-                        style={{ height: 34, padding: '0 14px', background: saveStatus === 'unsaved' ? '#6366F1' : '#F1F5F9', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, color: saveStatus === 'unsaved' ? '#fff' : '#94A3B8', cursor: saveStatus === 'unsaved' ? 'pointer' : 'default', outline: 'none', transition: 'all 150ms', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
+                        style={{ height: 34, padding: '0 14px', background: saveStatus === 'unsaved' ? '#6366F1' : 'var(--tg-accent-soft, #F1F5F9)', border: 'none', borderRadius: 7, fontSize: 13, fontWeight: 500, color: saveStatus === 'unsaved' ? '#fff' : 'var(--tg-muted, #94A3B8)', cursor: saveStatus === 'unsaved' ? 'pointer' : 'default', outline: 'none', transition: 'all 150ms', display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
                       >
                         <Save style={{ width: 13, height: 13 }} />
                         {cal.weekSuffix ? '保存' : 'Save'}
@@ -1262,8 +1262,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       </div>
                       <button
                         onClick={() => { doSaveReview(reviewHtml); setSelectedDay(null); }}
-                        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: '#64748B', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#F1F5F9'; }}
+                        style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', borderRadius: 8, color: 'var(--tg-secondary, #64748B)', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #F1F5F9)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
                       >
                         <X style={{ width: 17, height: 17 }} />
@@ -1271,28 +1271,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                     </div>
                   </div>
                   {/* B2: Data Context Strip */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 20, height: 64, padding: '0 44px', background: '#F8FAFC', borderBottom: '1px solid #F1F5F9', marginTop: 24 }}>
-                    <span style={{ fontSize: 13, fontWeight: 500, color: '#334155' }}>{modalDateLabel}</span>
-                    <span style={{ width: 1, height: 16, background: '#CBD5E1' }} />
-                    <span style={{ fontSize: 13, color: '#64748B' }}>Net P&L</span>
-                    <span style={{ fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: selectedDayStats ? (selectedDayStats.pnl >= 0 ? '#15803D' : '#DC2626') : '#94A3B8' }}>
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 20, height: 64, padding: '0 44px', background: 'var(--tg-accent-soft, #F8FAFC)', borderBottom: '1px solid var(--tg-border, #F1F5F9)', marginTop: 24 }}>
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #334155)' }}>{modalDateLabel}</span>
+                    <span style={{ width: 1, height: 16, background: 'var(--tg-track, #CBD5E1)' }} />
+                    <span style={{ fontSize: 13, color: 'var(--tg-secondary, #64748B)' }}>Net P&L</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: selectedDayStats ? (selectedDayStats.pnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-muted, #94A3B8)' }}>
                       {selectedDayStats ? `${selectedDayStats.pnl >= 0 ? '+' : '\u2212'}$${Math.abs(selectedDayStats.pnl).toFixed(2)}` : '\u2014'}
                     </span>
-                    <span style={{ width: 1, height: 16, background: '#CBD5E1' }} />
-                    <span style={{ fontSize: 13, color: '#64748B' }}>{selectedDayStats?.count ?? 0} {cal.weekSuffix ? '笔' : 'trades'}</span>
-                    <span style={{ width: 1, height: 16, background: '#CBD5E1' }} />
-                    <span style={{ fontSize: 13, color: '#64748B' }}>{cal.weekSuffix ? '胜率' : 'Win'} {selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014'}</span>
+                    <span style={{ width: 1, height: 16, background: 'var(--tg-track, #CBD5E1)' }} />
+                    <span style={{ fontSize: 13, color: 'var(--tg-secondary, #64748B)' }}>{selectedDayStats?.count ?? 0} {cal.weekSuffix ? '笔' : 'trades'}</span>
+                    <span style={{ width: 1, height: 16, background: 'var(--tg-track, #CBD5E1)' }} />
+                    <span style={{ fontSize: 13, color: 'var(--tg-secondary, #64748B)' }}>{cal.weekSuffix ? '胜率' : 'Win'} {selectedDayStats ? `${selectedDayStats.winRate.toFixed(1)}%` : '\u2014'}</span>
                     {extendedDayStats && (
                       <>
-                        <span style={{ width: 1, height: 16, background: '#CBD5E1' }} />
-                        <span style={{ fontSize: 13, color: '#64748B' }}>{cal.weekSuffix ? '盈利因子' : 'PF'} {extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)}</span>
+                        <span style={{ width: 1, height: 16, background: 'var(--tg-track, #CBD5E1)' }} />
+                        <span style={{ fontSize: 13, color: 'var(--tg-secondary, #64748B)' }}>{cal.weekSuffix ? '盈利因子' : 'PF'} {extendedDayStats.profitFactor === Infinity ? '\u221e' : extendedDayStats.profitFactor.toFixed(2)}</span>
                       </>
                     )}
                   </div>
                   {/* B3+B4 wrapper — position:relative so trade picker overlay anchors here */}
                   <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', flex: '1 1 auto', minHeight: 0 }}>
                   {/* B3: Rich Text Toolbar */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2, height: 48, padding: '0 28px', borderBottom: '1px solid #F1F5F9', background: '#FAFBFC', overflowX: 'auto' }}
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', flexWrap: 'nowrap', gap: 2, height: 48, padding: '0 28px', borderBottom: '1px solid var(--tg-border, #F1F5F9)', background: 'var(--tg-accent-soft, #FAFBFC)', overflowX: 'auto' }}
                     onMouseDown={e => e.preventDefault()}>
                     <ToolBtn onClick={() => reviewEditor?.chain().focus().undo().run()} title="撤销" ariaLabel="撤销" disabled={!reviewEditor?.can().undo()}>
                       <Undo2 className="w-3 h-3" />
@@ -1308,37 +1308,37 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       trigger={
                         <button type="button" onMouseDown={e => e.preventDefault()}
                           onClick={() => setReviewOpenDropdown(reviewOpenDropdown === 'paragraph' ? null : 'paragraph')}
-                          className="flex items-center gap-1 px-2 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[6px] transition-colors" title="段落样式" aria-label="段落样式">
+                          className="flex items-center gap-1 px-2 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[6px] transition-colors dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" title="段落样式" aria-label="段落样式">
                           正文 <ChevronDown className="w-2.5 h-2.5" />
                         </button>
                       }>
                       {PARAGRAPH_STYLES.map(s => (
                         <button key={s.value} type="button" onClick={() => applyReviewParagraphStyle(s.value)}
-                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors">{s.label}</button>
+                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]">{s.label}</button>
                       ))}
                     </RDropdown>
                     <RDropdown isOpen={reviewOpenDropdown === 'font'} onClose={() => setReviewOpenDropdown(null)}
                       trigger={
                         <button type="button" onMouseDown={e => e.preventDefault()}
                           onClick={() => setReviewOpenDropdown(reviewOpenDropdown === 'font' ? null : 'font')}
-                          className="flex items-center gap-1 px-2 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[6px] transition-colors" title="字体" aria-label="字体">
+                          className="flex items-center gap-1 px-2 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[6px] transition-colors dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" title="字体" aria-label="字体">
                           Arial <ChevronDown className="w-2.5 h-2.5" />
                         </button>
                       }>
                       {FONT_OPTIONS.map(f => (
                         <button key={f.value || 'default'} type="button"
                           onClick={() => { reviewEditor?.chain().focus().setFontFamily(f.value || 'sans-serif').run(); setReviewOpenDropdown(null); }}
-                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors" style={{ fontFamily: f.value || 'inherit' }}>{f.label}</button>
+                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]" style={{ fontFamily: f.value || 'inherit' }}>{f.label}</button>
                       ))}
                     </RDropdown>
                     <div className="flex items-center">
                       <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => changeReviewFontSize(-1)}
-                        className="w-5 h-6 flex items-center justify-center text-[#6b7280] hover:bg-[#f3f4f6] rounded-l-[4px] transition-colors text-[11px]" title="减小字号" aria-label="减小字号">−</button>
+                        className="w-5 h-6 flex items-center justify-center text-[#6b7280] hover:bg-[#f3f4f6] rounded-l-[4px] transition-colors text-[11px] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" title="减小字号" aria-label="减小字号">−</button>
                       <input type="number" value={reviewFontSize}
                         onChange={e => { const v = Math.max(8, Math.min(72, parseInt(e.target.value) || 14)); setReviewFontSize(v); reviewEditor?.chain().focus().setFontSize(`${v}px`).run(); }}
-                        className="w-8 h-6 text-center text-[12px] border-x border-[rgba(0,0,0,0.12)] bg-transparent text-[#1a1a1a] outline-none" min={8} max={72} aria-label="字号" />
+                        className="w-8 h-6 text-center text-[12px] border-x border-[rgba(0,0,0,0.12)] bg-transparent text-[#1a1a1a] outline-none dark:text-[var(--tg-text)]" min={8} max={72} aria-label="字号" />
                       <button type="button" onMouseDown={e => e.preventDefault()} onClick={() => changeReviewFontSize(1)}
-                        className="w-5 h-6 flex items-center justify-center text-[#6b7280] hover:bg-[#f3f4f6] rounded-r-[4px] transition-colors text-[11px]" title="增大字号" aria-label="增大字号">+</button>
+                        className="w-5 h-6 flex items-center justify-center text-[#6b7280] hover:bg-[#f3f4f6] rounded-r-[4px] transition-colors text-[11px] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" title="增大字号" aria-label="增大字号">+</button>
                     </div>
                     <ToolDivider />
                     <ToolBtn onClick={() => reviewEditor?.chain().focus().toggleBold().run()} active={reviewEditor?.isActive('bold')} title="加粗" ariaLabel="加粗">
@@ -1388,10 +1388,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       {reviewInsertMenuOpen && (
                         <>
                           <div className="fixed inset-0 z-[10040]" onClick={() => setReviewInsertMenuOpen(false)} />
-                          <div className="absolute top-full left-0 mt-1 z-[10050] bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg py-1 min-w-[160px]">
-                            <button type="button" onClick={() => { reviewEditor?.chain().focus().setHorizontalRule().run(); setReviewInsertMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] flex items-center gap-2"><Minus className="w-3 h-3" /> 插入分隔线</button>
-                            <button type="button" onClick={() => { reviewEditor?.chain().focus().toggleTaskList().run(); setReviewInsertMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] flex items-center gap-2"><ListTodo className="w-3 h-3" /> 插入待办列表</button>
-                            <button type="button" onClick={() => { setShowTradePicker(true); setReviewInsertMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] flex items-center gap-2"><Plus className="w-3 h-3" /> 引用交易</button>
+                          <div className="absolute top-full left-0 mt-1 z-[10050] bg-white border border-[rgba(0,0,0,0.12)] rounded-md shadow-lg py-1 min-w-[160px] dark:bg-slate-900">
+                            <button type="button" onClick={() => { reviewEditor?.chain().focus().setHorizontalRule().run(); setReviewInsertMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] flex items-center gap-2 dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"><Minus className="w-3 h-3" /> 插入分隔线</button>
+                            <button type="button" onClick={() => { reviewEditor?.chain().focus().toggleTaskList().run(); setReviewInsertMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] flex items-center gap-2 dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"><ListTodo className="w-3 h-3" /> 插入待办列表</button>
+                            <button type="button" onClick={() => { setShowTradePicker(true); setReviewInsertMenuOpen(false); }} className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] flex items-center gap-2 dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"><Plus className="w-3 h-3" /> 引用交易</button>
                           </div>
                         </>
                       )}
@@ -1401,13 +1401,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       trigger={
                         <button type="button" onMouseDown={e => e.preventDefault()}
                           onClick={() => setReviewOpenDropdown(reviewOpenDropdown === 'align' ? null : 'align')}
-                          className="flex items-center gap-1 px-1.5 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[4px] transition-colors" title="对齐" aria-label="对齐">
+                          className="flex items-center gap-1 px-1.5 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[4px] transition-colors dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" title="对齐" aria-label="对齐">
                           <AlignLeft className="w-3 h-3" /> <ChevronDown className="w-2.5 h-2.5" />
                         </button>
                       }>
                       {ALIGN_OPTIONS.map(o => (
                         <button key={o.value} type="button" onClick={() => { reviewEditor?.chain().focus().setTextAlign(o.value).run(); setReviewOpenDropdown(null); }}
-                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors flex items-center gap-2">
+                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors flex items-center gap-2 dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]">
                           <o.icon className="w-3 h-3" /> {o.label}
                         </button>
                       ))}
@@ -1416,13 +1416,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       trigger={
                         <button type="button" onMouseDown={e => e.preventDefault()}
                           onClick={() => setReviewOpenDropdown(reviewOpenDropdown === 'case' ? null : 'case')}
-                          className="flex items-center gap-1 px-1.5 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[4px] transition-colors" title="大小写" aria-label="大小写">
+                          className="flex items-center gap-1 px-1.5 h-6 text-[12px] text-[#6b7280] hover:bg-[#f3f4f6] rounded-[4px] transition-colors dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" title="大小写" aria-label="大小写">
                           <CaseSensitive className="w-3.5 h-3.5" /> <ChevronDown className="w-2.5 h-2.5" />
                         </button>
                       }>
                       {CASE_OPTIONS.map(o => (
                         <button key={o.value} type="button" onClick={() => applyReviewCase(o.value)}
-                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors">{o.label}</button>
+                          className="w-full text-left px-3 py-1.5 text-[12px] text-[#1a1a1a] hover:bg-[#f3f4f6] transition-colors dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]">{o.label}</button>
                       ))}
                     </RDropdown>
                     {/* 引用交易按钮 */}
@@ -1445,9 +1445,9 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       }}
                       onClick={() => { setShowTradePicker(true); setTradeSearchQuery(''); setTradeHighlightIdx(0); setTimeout(() => tradeSearchInputRef.current?.focus(), 50); }}
                       title="引用今日交易"
-                      style={{ height: 24, padding: '0 10px', background: '#EEF2FF', border: '1px solid #C7D2FE', borderRadius: 5, color: '#4338CA', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, transition: 'background 150ms' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#E0E7FF'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = '#EEF2FF'; }}
+                      style={{ height: 24, padding: '0 10px', background: 'var(--tg-accent-soft, #EEF2FF)', border: '1px solid var(--tg-border, #C7D2FE)', borderRadius: 5, color: 'var(--tg-accent, #4338CA)', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, transition: 'background 150ms' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #E0E7FF)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #EEF2FF)'; }}
                     >
                       <Paperclip style={{ width: 11, height: 11 }} />
                       引用交易
@@ -1459,36 +1459,36 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       <div style={{ position: 'fixed', inset: 0, zIndex: 10099 }} onClick={() => setShowTradePicker(false)} />
                       <div onClick={e => e.stopPropagation()} className="trade-picker-dropdown" style={
                         tradePickerPos
-                          ? { position: 'fixed', top: Math.min(tradePickerPos.top, window.innerHeight - 400), left: Math.min(tradePickerPos.left, window.innerWidth - 440), width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
-                          : { position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+                          ? { position: 'fixed', top: Math.min(tradePickerPos.top, window.innerHeight - 400), left: Math.min(tradePickerPos.left, window.innerWidth - 440), width: 420, maxHeight: 380, background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+                          : { position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
                       }>
                         {/* Search */}
-                        <div style={{ padding: '12px 16px', borderBottom: '1px solid #F1F5F9', flexShrink: 0 }}>
+                        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--tg-border, #F1F5F9)', flexShrink: 0 }}>
                           <div style={{ position: 'relative' }}>
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)' }}>
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--tg-border, #94A3B8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)' }}>
                               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
                             </svg>
                             <input ref={tradeSearchInputRef} type="text" placeholder="搜索品种或方向..." value={tradeSearchQuery}
                               onChange={e => { setTradeSearchQuery(e.target.value); setTradeHighlightIdx(0); }}
                               onKeyDown={handleSelectorKeyDown}
-                              style={{ width: '100%', padding: '7px 12px 7px 30px', border: '1px solid #E2E8F0', borderRadius: 6, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                              style={{ width: '100%', padding: '7px 12px 7px 30px', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 6, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                           </div>
-                          <div style={{ marginTop: 6, fontSize: 11, color: '#64748B' }}>{modalDateLabel} · {selectedDayTrades.length} 笔交易</div>
+                          <div style={{ marginTop: 6, fontSize: 11, color: 'var(--tg-secondary, #64748B)' }}>{modalDateLabel} · {selectedDayTrades.length} 笔交易</div>
                         </div>
                         {/* List */}
                         <div style={{ flex: '1 1 auto', overflowY: 'auto', minHeight: 0 }}>
                           {filteredPickerTrades.length === 0 ? (
-                            <div style={{ padding: '28px 16px', textAlign: 'center', color: '#94A3B8', fontSize: 13 }}>没有匹配的交易</div>
+                            <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--tg-muted, #94A3B8)', fontSize: 13 }}>没有匹配的交易</div>
                           ) : filteredPickerTrades.map((trade, idx) => {
                             const netPnl = trade.pnl - trade.fees;
                             const time = new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                             return (
                               <div key={trade.id} onClick={() => handleInsertTrade(trade)} onMouseEnter={() => setTradeHighlightIdx(idx)}
-                                style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', background: idx === tradeHighlightIdx ? '#F8FAFC' : 'transparent', borderTop: idx === 0 ? 'none' : '1px solid #F1F5F9' }}>
-                                <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#64748B', minWidth: 44, flexShrink: 0 }}>{time}</span>
-                                <span style={{ display: 'inline-block', padding: '2px 7px', background: '#EEF2FF', color: '#4338CA', borderRadius: 4, fontSize: 11.5, fontWeight: 500, flexShrink: 0 }}>{trade.symbol}</span>
-                                <span style={{ fontSize: 12, color: '#0F172A', fontWeight: 500, flexShrink: 0 }}>{trade.direction}</span>
-                                <span style={{ fontSize: 12.5, fontWeight: 500, color: netPnl >= 0 ? '#15803D' : '#DC2626', fontVariantNumeric: 'tabular-nums', marginLeft: 'auto', flexShrink: 0 }}>
+                                style={{ padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', background: idx === tradeHighlightIdx ? 'var(--tg-accent-soft, #F8FAFC)' : 'transparent', borderTop: idx === 0 ? 'none' : '1px solid var(--tg-border, #F1F5F9)' }}>
+                                <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--tg-secondary, #64748B)', minWidth: 44, flexShrink: 0 }}>{time}</span>
+                                <span style={{ display: 'inline-block', padding: '2px 7px', background: 'var(--tg-accent-soft, #EEF2FF)', color: 'var(--tg-accent, #4338CA)', borderRadius: 4, fontSize: 11.5, fontWeight: 500, flexShrink: 0 }}>{trade.symbol}</span>
+                                <span style={{ fontSize: 12, color: 'var(--tg-text, #0F172A)', fontWeight: 500, flexShrink: 0 }}>{trade.direction}</span>
+                                <span style={{ fontSize: 12.5, fontWeight: 500, color: netPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)', fontVariantNumeric: 'tabular-nums', marginLeft: 'auto', flexShrink: 0 }}>
                                   {netPnl >= 0 ? '+' : '\u2212'}${Math.abs(netPnl).toFixed(2)}
                                 </span>
                               </div>
@@ -1496,7 +1496,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                           })}
                         </div>
                         {/* Footer */}
-                        <div style={{ padding: '7px 16px', borderTop: '1px solid #F1F5F9', background: '#FAFBFC', fontSize: 10.5, color: '#94A3B8', flexShrink: 0 }}>
+                        <div style={{ padding: '7px 16px', borderTop: '1px solid var(--tg-border, #F1F5F9)', background: 'var(--tg-accent-soft, #FAFBFC)', fontSize: 10.5, color: 'var(--tg-muted, #94A3B8)', flexShrink: 0 }}>
                           ↑↓ 选择 · ⏎ 插入 · Esc 关闭
                         </div>
                       </div>
@@ -1521,19 +1521,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   </div>
                   </div>{/* end B3+B4 wrapper */}
                   {/* B5: Status Bar */}
-                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 40, padding: '0 44px', background: '#FAFBFC', borderTop: '1px solid #F1F5F9' }}>
+                  <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 40, padding: '0 44px', background: 'var(--tg-accent-soft, #FAFBFC)', borderTop: '1px solid var(--tg-border, #F1F5F9)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: 12, color: '#94A3B8' }}>
+                      <span style={{ fontSize: 12, color: 'var(--tg-muted, #94A3B8)' }}>
                         {reviewHtml.replace(/<[^>]*>/g, '').length} {cal.weekSuffix ? '字' : 'chars'}
                       </span>
-                      <span style={{ width: 1, height: 10, background: '#E2E8F0' }} />
-                      {saveStatus === 'saving' && <span style={{ fontSize: 12, color: '#10B981' }}>自动保存中...</span>}
-                      {saveStatus === 'saved' && lastSavedAt && <span style={{ fontSize: 12, color: '#94A3B8' }}>已保存 · {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
-                      {saveStatus === 'unsaved' && <span style={{ fontSize: 12, color: '#6366F1' }}>未保存</span>}
+                      <span style={{ width: 1, height: 10, background: 'var(--tg-accent-soft, #E2E8F0)' }} />
+                      {saveStatus === 'saving' && <span style={{ fontSize: 12, color: 'var(--tg-positive, #10B981)' }}>自动保存中...</span>}
+                      {saveStatus === 'saved' && lastSavedAt && <span style={{ fontSize: 12, color: 'var(--tg-muted, #94A3B8)' }}>已保存 · {lastSavedAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>}
+                      {saveStatus === 'unsaved' && <span style={{ fontSize: 12, color: 'var(--tg-accent, #6366F1)' }}>未保存</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                       {[['⌘B', '加粗'], ['⌘I', '斜体'], ['⌘K', '链接'], ['⌘S', '保存']].map(([key, label]) => (
-                        <span key={key} style={{ fontSize: 11, color: '#CBD5E1' }}><kbd style={{ fontFamily: 'inherit' }}>{key}</kbd> {label}</span>
+                        <span key={key} style={{ fontSize: 11, color: 'var(--tg-muted, #CBD5E1)' }}><kbd style={{ fontFamily: 'inherit' }}>{key}</kbd> {label}</span>
                       ))}
                     </div>
                   </div>
@@ -1555,7 +1555,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       {/* Share Modal */}
       {shareModalOpen && screenshotUrl && createPortal(
         <div style={{ position: 'fixed', bottom: 24, right: 24, zIndex: 99999, animation: 'slideInUp 200ms ease-out', width: 320 }}>
-          <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
+          <div style={{ background: 'var(--tg-surface, #fff)', borderRadius: 16, boxShadow: '0 8px 40px rgba(0,0,0,0.18)', overflow: 'hidden', fontFamily: "'Inter', sans-serif" }}>
             {/* Preview — image already contains gradient + logo + url */}
             <div style={{ position: 'relative' }}>
               <button
@@ -1579,7 +1579,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
               </button>
               <button
                 onClick={handleCopy}
-                style={{ flex: 1, height: 38, background: copyStatus === 'copied' ? '#10B981' : copyStatus === 'error' ? '#EF4444' : '#F1F5F9', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 500, color: copyStatus === 'idle' ? '#334155' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 150ms' }}
+                style={{ flex: 1, height: 38, background: copyStatus === 'copied' ? '#10B981' : copyStatus === 'error' ? '#EF4444' : 'var(--tg-accent-soft, #F1F5F9)', border: 'none', borderRadius: 9, fontSize: 13, fontWeight: 500, color: copyStatus === 'idle' ? 'var(--tg-text, #334155)' : '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, transition: 'all 150ms' }}
               >
                 {copyStatus === 'copied' ? (
                   <><CheckCircle2 style={{ width: 13, height: 13 }} />已复制</>

@@ -44,7 +44,7 @@ const CircularProgress = ({ percentage, size = 48, strokeWidth = 4, color = '#10
         <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
             <svg width={size} height={size} className="transform -rotate-90 transition-all duration-500">
                 <circle
-                    className="text-slate-100 dark:text-slate-800"
+                    className="text-slate-100 dark:text-slate-400"
                     stroke="currentColor"
                     fill="transparent"
                     strokeWidth={strokeWidth}
@@ -72,11 +72,11 @@ const CircularProgress = ({ percentage, size = 48, strokeWidth = 4, color = '#10
 // --- Strategy Notes Component ---
 const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (notes: StrategyNote[]) => void }) => {
     const { language } = useLanguage();
-    
+
     // Manage a list of notes/scenarios
     const [notes, setNotes] = useState<StrategyNote[]>(
-        Array.isArray(strategy.notes) && strategy.notes.length > 0 
-            ? strategy.notes 
+        Array.isArray(strategy.notes) && strategy.notes.length > 0
+            ? strategy.notes
             : [{ id: 'default', title: language === 'cn' ? '通用逻辑' : 'General Logic', content: '' }]
     );
     const [activeNoteId, setActiveNoteId] = useState<string>(notes[0]?.id || 'default');
@@ -132,7 +132,7 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
         e.stopPropagation();
         if (notes.length <= 1) return;
         if (!window.confirm(language === 'cn' ? '确认删除此笔记吗？' : 'Are you sure you want to delete this note?')) return;
-        
+
         const updated = notes.filter(n => n.id !== id);
         setNotes(updated);
         if (activeNoteId === id) {
@@ -168,14 +168,14 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
 
     return (
         <div className="flex h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm animate-fade-in">
-            
+
             {/* --- LEFT SIDEBAR: Directory --- */}
             <div className="w-[280px] flex-shrink-0 border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex flex-col">
                 <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
-                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-slate-400">
                         {language === 'cn' ? '笔记 & 场景' : 'Notes & Scenarios'}
                     </h3>
-                    <button 
+                    <button
                         onClick={handleAddNote}
                         className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-indigo-600 dark:text-indigo-400 transition-colors"
                         title="Add Note"
@@ -183,23 +183,23 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
                         <Plus size={16} />
                     </button>
                 </div>
-                
+
                 <div className="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
                     {notes.map((note) => {
                         const isActive = activeNoteId === note.id;
                         return (
-                            <div 
+                            <div
                                 key={note.id}
                                 onClick={() => setActiveNoteId(note.id)}
                                 className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
-                                    isActive 
-                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/10' 
+                                    isActive
+                                    ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/10'
                                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
                                 }`}
                             >
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                    <StickyNote size={14} className={isActive ? 'text-indigo-500' : 'text-slate-400'} />
-                                    <input 
+                                    <StickyNote size={14} className={isActive ? 'text-indigo-500' : 'text-slate-400 dark:text-slate-400'} />
+                                    <input
                                         type="text"
                                         value={note.title}
                                         onChange={(e) => handleRenameNote(note.id, e.target.value)}
@@ -208,7 +208,7 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
                                     />
                                 </div>
                                 {!isActive && (
-                                    <button 
+                                    <button
                                         onClick={(e) => { e.stopPropagation(); handleDeleteNote(e, note.id); }}
                                         className="opacity-0 group-hover:opacity-100 p-1 hover:text-rose-500 transition-all"
                                     >
@@ -226,30 +226,30 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
                 {/* Toolbar */}
                 <div className="flex flex-wrap items-center justify-between p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 sticky top-0 z-10">
                     <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
-                        <button onClick={() => execCmd('bold')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors" title="Bold"><Bold size={16} /></button>
-                        <button onClick={() => execCmd('insertUnorderedList')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors" title="List"><ListIcon size={16} /></button>
+                        <button onClick={() => execCmd('bold')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors dark:text-slate-400" title="Bold"><Bold size={16} /></button>
+                        <button onClick={() => execCmd('insertUnorderedList')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors dark:text-slate-400" title="List"><ListIcon size={16} /></button>
                         <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
-                        
-                        <button 
-                            onClick={() => insertTemplate(templates.logic)} 
+
+                        <button
+                            onClick={() => insertTemplate(templates.logic)}
                             className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-[10px] font-bold rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors whitespace-nowrap flex items-center gap-1.5 uppercase tracking-wide border border-indigo-100 dark:border-indigo-800"
                         >
                             <Sparkles size={12} /> {language === 'cn' ? '策略逻辑' : 'Logic'}
                         </button>
-                        <button 
-                            onClick={() => insertTemplate(templates.entry)} 
+                        <button
+                            onClick={() => insertTemplate(templates.entry)}
                             className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors whitespace-nowrap flex items-center gap-1.5 uppercase tracking-wide border border-emerald-100 dark:border-emerald-800"
                         >
                             <Wand2 size={12} /> {language === 'cn' ? '入场信号' : 'Signals'}
                         </button>
-                        <button 
-                            onClick={() => insertTemplate(templates.filters)} 
+                        <button
+                            onClick={() => insertTemplate(templates.filters)}
                             className="px-3 py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-[10px] font-bold rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors whitespace-nowrap flex items-center gap-1.5 uppercase tracking-wide border border-rose-100 dark:border-rose-800"
                         >
                             <Activity size={12} /> {language === 'cn' ? '行情过滤' : 'Filters'}
                         </button>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 pr-2 ml-auto">
                         <span className={`text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors duration-500 ${saveStatus === 'saving' ? 'text-indigo-500' : 'text-emerald-500'}`}>
                             {saveStatus === 'saving' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Cloud className="w-3 h-3" />}
@@ -260,7 +260,7 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
 
                 {/* Editor Area */}
                 <div className="flex-1 bg-[#F9FAFC] dark:bg-[#0A0A12] overflow-hidden p-8">
-                    <div 
+                    <div
                         ref={editorRef}
                         contentEditable
                         onInput={(e) => handleContentChange(e.currentTarget.innerHTML)}
@@ -301,7 +301,7 @@ const SectionTitleInput = ({ initialValue, onSave, className }: { initialValue: 
     };
 
     return (
-        <input 
+        <input
             type="text"
             value={val}
             onChange={(e) => setVal(e.target.value)}
@@ -321,15 +321,15 @@ interface RuleSectionData {
 }
 
 // --- Create/Edit Modal ---
-const CreatePlaybookModal = ({ 
-    isOpen, 
-    onClose, 
+const CreatePlaybookModal = ({
+    isOpen,
+    onClose,
     onSave,
     initialData
-}: { 
-    isOpen: boolean; 
-    onClose: () => void; 
-    onSave: (strategy: Strategy) => void; 
+}: {
+    isOpen: boolean;
+    onClose: () => void;
+    onSave: (strategy: Strategy) => void;
     initialData?: Strategy;
 }) => {
     const { language } = useLanguage();
@@ -344,7 +344,7 @@ const CreatePlaybookModal = ({
                 setName(initialData.name);
                 setDescription(initialData.description || '');
                 setSelectedColor(initialData.color || PLAYBOOK_COLORS[0]);
-                
+
                 const parsedSections: RuleSectionData[] = [];
                 const tempMap: Record<string, { id: string; text: string }[]> = {};
 
@@ -449,7 +449,7 @@ const CreatePlaybookModal = ({
                 if (rule.text.trim()) {
                     checklist.push({
                         id: rule.id,
-                        text: `${section.title}: ${rule.text.trim()}`, 
+                        text: `${section.title}: ${rule.text.trim()}`,
                         isCompleted: false
                     });
                 }
@@ -486,7 +486,7 @@ const CreatePlaybookModal = ({
             <div id="playbook-create-modal" className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
                 <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10 shrink-0">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{lbl.title}</h2>
-                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+                    <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors dark:text-slate-400"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/30">
                     <div className="mb-10 space-y-6">
@@ -517,14 +517,14 @@ const CreatePlaybookModal = ({
                                 <div key={section.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden mb-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 group shadow-sm">
                                     <div className="bg-slate-50/50 dark:bg-slate-900/50 px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10 transition-colors">
                                         <div className="flex items-center gap-3 flex-1">
-                                            <div className="p-1.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-400 cursor-grab active:cursor-grabbing hover:text-indigo-500 transition-colors"><GripVertical className="w-3.5 h-3.5" /></div>
+                                            <div className="p-1.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-400 cursor-grab active:cursor-grabbing hover:text-indigo-500 transition-colors dark:text-slate-400"><GripVertical className="w-3.5 h-3.5" /></div>
                                             <input type="text" value={section.title} onChange={(e) => handleSectionTitleChange(section.id, e.target.value)} className="bg-transparent border-none outline-none font-bold text-slate-800 dark:text-white text-sm w-full focus:ring-0 p-0 placeholder-slate-400" placeholder="Section Title" />
                                         </div>
                                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <button onClick={() => handleMoveSection(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-400 hover:text-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 rounded"><ArrowUp className="w-3.5 h-3.5" /></button>
-                                            <button onClick={() => handleMoveSection(idx, 'down')} disabled={idx === sections.length - 1} className="p-1 text-slate-400 hover:text-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 rounded"><ArrowDown className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => handleMoveSection(idx, 'up')} disabled={idx === 0} className="p-1 text-slate-400 hover:text-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 rounded dark:text-slate-400"><ArrowUp className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => handleMoveSection(idx, 'down')} disabled={idx === sections.length - 1} className="p-1 text-slate-400 hover:text-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-200 dark:hover:bg-slate-700 rounded dark:text-slate-400"><ArrowDown className="w-3.5 h-3.5" /></button>
                                             <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>
-                                            <button onClick={() => handleDeleteSection(section.id)} className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded"><Trash2 className="w-3.5 h-3.5" /></button>
+                                            <button onClick={() => handleDeleteSection(section.id)} className="p-1 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded dark:text-slate-400"><Trash2 className="w-3.5 h-3.5" /></button>
                                         </div>
                                     </div>
                                     <div className="p-4 space-y-3">
@@ -535,7 +535,7 @@ const CreatePlaybookModal = ({
                                                 <button onClick={() => handleDeleteRule(section.id, rule.id)} className="text-slate-300 hover:text-rose-500 p-1 opacity-0 group-hover/rule:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
                                             </div>
                                         ))}
-                                        <button onClick={() => handleAddRule(section.id)} className="mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 flex items-center gap-2 px-1 py-1 rounded transition-colors group/btn"><Plus className="w-4 h-4 group-hover/btn:scale-110 transition-transform" /> {lbl.addRule}</button>
+                                        <button onClick={() => handleAddRule(section.id)} className="mt-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 flex items-center gap-2 px-1 py-1 rounded transition-colors group/btn dark:hover:text-indigo-300"><Plus className="w-4 h-4 group-hover/btn:scale-110 transition-transform" /> {lbl.addRule}</button>
                                     </div>
                                 </div>
                             ))}
@@ -553,9 +553,9 @@ const CreatePlaybookModal = ({
 };
 
 // --- Sub-component: Strategy Detail View (TradeZella Style) ---
-const StrategyDetailView = ({ 
-    strategy, 
-    trades, 
+const StrategyDetailView = ({
+    strategy,
+    trades,
     onBack,
     onUpdateStrategy,
     onUpdateTrade,
@@ -564,9 +564,9 @@ const StrategyDetailView = ({
     strategies,
     language,
     t
-}: { 
-    strategy: any, 
-    trades: Trade[], 
+}: {
+    strategy: any,
+    trades: Trade[],
     onBack: () => void,
     onUpdateStrategy: (strategy: Strategy) => void,
     onUpdateTrade: (trade: Trade) => void,
@@ -579,32 +579,32 @@ const StrategyDetailView = ({
     const [activeTab, setActiveTab] = useState<'executed' | 'overview' | 'rules' | 'notes'>('overview');
     const [reviewTrade, setReviewTrade] = useState<Trade | null>(null);
     const [draggedSectionTitle, setDraggedSectionTitle] = useState<string | null>(null);
-    
+
     // 1. Calculations for Statistics
     const { filteredTrades, overviewStats, equityData, playbookSections, zeroOffset } = useMemo(() => {
         const relatedTrades = trades.filter(t => t.setup === strategy.name)
                                     .sort((a,b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
-        
+
         const closed = relatedTrades.filter(t => t.status !== TradeStatus.OPEN);
         const wins = closed.filter(t => t.pnl > 0);
         const losses = closed.filter(t => t.pnl < 0);
-        
+
         const totalNetPnl = closed.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
         const totalTrades = closed.length;
         const winRate = totalTrades > 0 ? (wins.length / totalTrades) * 100 : 0;
-        
+
         const grossProfit = wins.reduce((acc, t) => acc + t.pnl, 0);
         const grossLoss = Math.abs(losses.reduce((acc, t) => acc + t.pnl, 0));
         const profitFactor = grossLoss === 0 ? (grossProfit > 0 ? 99.9 : 0) : grossProfit / grossLoss;
-        
+
         const avgWin = wins.length > 0 ? grossProfit / wins.length : 0;
         const avgLoss = losses.length > 0 ? -grossLoss / losses.length : 0;
-        
+
         const largestProfit = wins.length > 0 ? Math.max(...wins.map(t => t.pnl)) : 0;
         const largestLoss = losses.length > 0 ? Math.min(...losses.map(t => t.pnl)) : 0;
-        
+
         const expectancy = totalTrades > 0 ? totalNetPnl / totalTrades : 0;
-        
+
         const totalR = closed.reduce((acc, t) => {
             const r = t.riskAmount && t.riskAmount > 0 ? (t.pnl - t.fees) / t.riskAmount : 0;
             return acc + r;
@@ -625,7 +625,7 @@ const StrategyDetailView = ({
         // Playbook Rules Tab: Statistical Calculations per Rule
         const sections: { title: string; rules: any[] }[] = [];
         const map: Record<string, ChecklistItem[]> = {};
-        const sectionOrder: string[] = []; 
+        const sectionOrder: string[] = [];
 
         strategy.checklist.forEach((item: any) => {
             const match = item.text.match(/^(.+?):\s*(.*)$/);
@@ -647,7 +647,7 @@ const StrategyDetailView = ({
         });
 
         const computeRuleStats = (ruleId: string) => {
-            const relevantTrades = closed; 
+            const relevantTrades = closed;
             const followedTrades = relevantTrades.filter(t => t.compliance?.[ruleId]);
             const followRate = relevantTrades.length > 0 ? (followedTrades.length / relevantTrades.length) * 100 : 0;
             const followedWins = followedTrades.filter(t => t.pnl > 0);
@@ -661,9 +661,9 @@ const StrategyDetailView = ({
         };
 
         sectionOrder.forEach(title => {
-            sections.push({ 
-                title, 
-                rules: map[title].map(r => ({ ...r, stats: computeRuleStats(r.id) })) 
+            sections.push({
+                title,
+                rules: map[title].map(r => ({ ...r, stats: computeRuleStats(r.id) }))
             });
         });
 
@@ -745,18 +745,18 @@ const StrategyDetailView = ({
     };
 
     const handleRuleTextChange = (ruleId: string, sectionTitle: string, newText: string) => {
-        const updated = strategy.checklist.map((i: any) => 
+        const updated = strategy.checklist.map((i: any) =>
             i.id === ruleId ? { ...i, text: `${sectionTitle}: ${newText}` } : i
         );
         onUpdateStrategy({ ...strategy, checklist: updated });
     };
 
     const handleSectionTitleChange = (oldTitle: string, newTitle: string) => {
-        const finalTitle = newTitle.trim() || oldTitle || 'Section'; 
+        const finalTitle = newTitle.trim() || oldTitle || 'Section';
         const updated = strategy.checklist.map((i: any) => {
             const match = i.text.match(/^(.+?):\s*(.*)$/);
             const itemTitle = match ? match[1].trim() : 'General';
-            
+
             if (itemTitle === oldTitle) {
                 const ruleText = match ? match[2].trim() : i.text;
                 return { ...i, text: `${finalTitle}: ${ruleText}` };
@@ -791,7 +791,7 @@ const StrategyDetailView = ({
     const StatBox = ({ label, value, colorClass = "text-slate-900 dark:text-white" }: { label: string, value: string | number, colorClass?: string }) => (
         <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
             <div className="flex justify-between items-start mb-2">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</span>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest dark:text-slate-400">{label}</span>
                 <Info className="w-3 h-3 text-indigo-400 opacity-50" />
             </div>
             <div className={`text-xl font-black font-mono leading-none ${colorClass}`}>
@@ -804,9 +804,9 @@ const StrategyDetailView = ({
         const activeTrade = trades.find(t => t.id === reviewTrade.id) || reviewTrade;
         return (
             <div className="absolute inset-0 z-[70] bg-white dark:bg-slate-950">
-                <TradeReviewModal 
+                <TradeReviewModal
                     trade={activeTrade}
-                    allTrades={filteredTrades} 
+                    allTrades={filteredTrades}
                     isOpen={true}
                     onClose={() => setReviewTrade(null)}
                     onUpdateTrade={onUpdateTrade}
@@ -821,9 +821,9 @@ const StrategyDetailView = ({
         <div className="h-full flex flex-col bg-[#F9FAFC] dark:bg-slate-950 animate-fade-in overflow-hidden">
             {/* Header */}
             <div className="px-8 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 bg-white dark:bg-slate-900 shrink-0">
-                <button 
+                <button
                     onClick={onBack}
-                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
+                    className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400"
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -832,7 +832,7 @@ const StrategyDetailView = ({
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: strategy.color }}></div>
                         {strategy.name}
                     </h2>
-                    <p className="text-xs text-slate-500 font-medium">{t.playbook.detail.back}</p>
+                    <p className="text-xs text-slate-500 font-medium dark:text-slate-400">{t.playbook.detail.back}</p>
                 </div>
             </div>
 
@@ -843,9 +843,9 @@ const StrategyDetailView = ({
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`pb-3 text-sm font-bold transition-all relative ${
-                            activeTab === tab.id 
-                            ? 'text-indigo-600 dark:text-indigo-400' 
-                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                            activeTab === tab.id
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-400'
                         }`}
                     >
                         {tab.label}
@@ -855,7 +855,7 @@ const StrategyDetailView = ({
                     </button>
                 ))}
                 <div className="ml-auto pb-3">
-                    <button className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors">
+                    <button className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 transition-colors dark:text-slate-400">
                         <Settings className="w-4 h-4" />
                     </button>
                 </div>
@@ -863,7 +863,7 @@ const StrategyDetailView = ({
 
             {/* Content Area */}
             <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 custom-scrollbar">
-                
+
                 {activeTab === 'overview' && (
                     <div className="space-y-6 w-full animate-fade-in-up">
                         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-4">
@@ -872,7 +872,7 @@ const StrategyDetailView = ({
                             <StatBox label="Win Rate %" value={`${overviewStats.winRate.toFixed(0)}%`} />
                             <StatBox label="Profit Factor" value={overviewStats.profitFactor.toFixed(2)} />
                             <StatBox label="Expectancy" value={`$${overviewStats.expectancy.toLocaleString(undefined, {minimumFractionDigits:2})}`} />
-                            
+
                             <StatBox label="Rules Followed" value={`${overviewStats.rulesFollowedPercent.toFixed(0)}%`} />
                             <StatBox label="Average Winner" value={`$${overviewStats.avgWin.toLocaleString(undefined, {minimumFractionDigits:2})}`} />
                             <StatBox label="Average Loser" value={`$${overviewStats.avgLoss.toLocaleString(undefined, {minimumFractionDigits:2})}`} />
@@ -884,7 +884,7 @@ const StrategyDetailView = ({
                         <div className="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
                             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
                                 Daily Net Cumulative P&L
-                                <Info className="w-3 h-3 text-slate-400" />
+                                <Info className="w-3 h-3 text-slate-400 dark:text-slate-400" />
                             </h3>
                             <div className="h-96 w-full">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -902,19 +902,19 @@ const StrategyDetailView = ({
                                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" opacity={0.3} />
                                         <XAxis dataKey="date" hide />
                                         <YAxis orientation="left" tick={{fontSize: 10, fill: '#94a3b8'}} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v.toLocaleString()}`} />
-                                        <Tooltip 
-                                            contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '0.5rem' }} 
+                                        <Tooltip
+                                            contentStyle={{ backgroundColor: '#0f172a', borderColor: '#1e293b', color: '#f8fafc', borderRadius: '0.5rem' }}
                                             itemStyle={{ fontSize: '12px' }}
                                             formatter={(value: number) => [`$${value.toLocaleString()}`, 'Net Equity']}
                                         />
                                         <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" strokeOpacity={0.5} />
-                                        <Area 
-                                            type="monotone" 
-                                            dataKey="equity" 
-                                            stroke="url(#equityStrokeGradient)" 
-                                            strokeWidth={3} 
-                                            fillOpacity={1} 
-                                            fill="url(#equityFillGradient)" 
+                                        <Area
+                                            type="monotone"
+                                            dataKey="equity"
+                                            stroke="url(#equityStrokeGradient)"
+                                            strokeWidth={3}
+                                            fillOpacity={1}
+                                            fill="url(#equityFillGradient)"
                                             animationDuration={1500}
                                             baseValue={0}
                                         />
@@ -942,7 +942,7 @@ const StrategyDetailView = ({
                                 <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
                                     {playbookSections.map((section, sIdx) => (
                                         <React.Fragment key={sIdx}>
-                                            <tr 
+                                            <tr
                                                 className={`bg-white dark:bg-slate-900 group transition-all ${draggedSectionTitle === section.title ? 'opacity-40 grayscale scale-[0.98]' : ''}`}
                                                 draggable="true"
                                                 onDragStart={() => handleDragSectionStart(section.title)}
@@ -953,15 +953,15 @@ const StrategyDetailView = ({
                                                     <div className="flex items-center justify-between">
                                                         <div className="flex items-center gap-3 w-full max-w-md">
                                                             <GripVertical className="w-4 h-4 text-slate-300 flex-shrink-0 group-hover:text-indigo-500 transition-colors" />
-                                                            <SectionTitleInput 
+                                                            <SectionTitleInput
                                                                 initialValue={section.title}
                                                                 onSave={(newVal) => handleSectionTitleChange(section.title, newVal)}
                                                                 className="text-base font-black text-slate-900 dark:text-white uppercase tracking-tight bg-transparent border-none focus:ring-0 w-full p-0 outline-none cursor-text"
                                                             />
                                                             <div className="flex gap-2 ml-4 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                                                                <button 
+                                                                <button
                                                                     onClick={(e) => { e.stopPropagation(); handleDeleteSection(section.title); }}
-                                                                    className="flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-rose-500 uppercase p-1 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition-all"
+                                                                    className="flex items-center gap-1 text-[10px] font-bold text-slate-400 hover:text-rose-500 uppercase p-1 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded transition-all dark:text-slate-400"
                                                                 >
                                                                     <Trash2 className="w-3.5 h-3.5" />
                                                                 </button>
@@ -976,8 +976,8 @@ const StrategyDetailView = ({
                                                 return (
                                                     <tr key={rule.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
                                                         <td className="px-6 py-4 pl-12 flex items-center gap-3 overflow-hidden">
-                                                            <GripVertical className="w-3.5 h-3.5 text-slate-200 group-hover:text-slate-400 flex-shrink-0" />
-                                                            <input 
+                                                            <GripVertical className="w-3.5 h-3.5 text-slate-200 group-hover:text-slate-400 flex-shrink-0 dark:group-hover:text-slate-400" />
+                                                            <input
                                                                 type="text"
                                                                 value={rule.text}
                                                                 onChange={(e) => handleRuleTextChange(rule.id, section.title, e.target.value)}
@@ -1006,7 +1006,7 @@ const StrategyDetailView = ({
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-center">
-                                                            <button 
+                                                            <button
                                                                 onClick={() => handleDeleteRule(rule.id)}
                                                                 className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
                                                             >
@@ -1018,7 +1018,7 @@ const StrategyDetailView = ({
                                             })}
                                             <tr className="bg-white dark:bg-slate-900">
                                                 <td colSpan={6} className="px-6 py-3 pl-12 border-b border-slate-50 dark:border-slate-800">
-                                                    <button 
+                                                    <button
                                                         onClick={() => handleCreateRule(section.title)}
                                                         className="text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center gap-1.5 hover:underline decoration-2 underline-offset-4"
                                                     >
@@ -1031,7 +1031,7 @@ const StrategyDetailView = ({
                                     <tr>
                                         <td colSpan={6} className="px-6 py-10 text-center bg-slate-50/30 dark:bg-slate-900/10">
                                             <div className="flex flex-col items-center gap-4">
-                                                 <button 
+                                                 <button
                                                     onClick={() => {
                                                         const newTitle = language === 'cn' ? '新规则分组' : 'New Rule Section';
                                                         const placeholderRule: ChecklistItem = {
@@ -1039,16 +1039,16 @@ const StrategyDetailView = ({
                                                             text: `${newTitle}: `,
                                                             isCompleted: false
                                                         };
-                                                        onUpdateStrategy({ 
-                                                            ...strategy, 
-                                                            checklist: [...strategy.checklist, placeholderRule] 
+                                                        onUpdateStrategy({
+                                                            ...strategy,
+                                                            checklist: [...strategy.checklist, placeholderRule]
                                                         });
                                                     }}
-                                                    className="px-10 py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 font-black text-xs hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-widest flex items-center gap-3 bg-white/50 dark:bg-slate-900/50 shadow-sm"
+                                                    className="px-10 py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-400 font-black text-xs hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-widest flex items-center gap-3 bg-white/50 dark:bg-slate-900/50 shadow-sm"
                                                 >
                                                     <Plus className="w-5 h-5" /> Add New Rule Section
                                                 </button>
-                                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest">Organize your technicals and mindset</p>
+                                                <p className="text-[10px] text-slate-400 font-medium uppercase tracking-widest dark:text-slate-400">Organize your technicals and mindset</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -1085,8 +1085,8 @@ const StrategyDetailView = ({
                                         const accountName = MOCK_ACCOUNTS.find(a => a.id === t.accountId)?.name || 'Default Account';
 
                                         return (
-                                            <tr 
-                                                key={t.id} 
+                                            <tr
+                                                key={t.id}
                                                 onClick={() => setReviewTrade(t)}
                                                 className="hover:bg-indigo-50/30 dark:hover:bg-indigo-900/5 transition-colors group cursor-pointer"
                                             >
@@ -1098,9 +1098,9 @@ const StrategyDetailView = ({
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
                                                     <span className={`inline-block px-3 py-0.5 rounded border text-[10px] font-black uppercase tracking-wider ${
-                                                        isWin 
-                                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-500/30' 
-                                                        : 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30'
+                                                        isWin
+                                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-500/30 dark:text-emerald-300'
+                                                        : 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-900/20 dark:border-rose-500/30 dark:text-rose-300'
                                                     }`}>
                                                         {isWin ? 'WIN' : 'LOSS'}
                                                     </span>
@@ -1129,7 +1129,7 @@ const StrategyDetailView = ({
                                                     {accountName}
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <button 
+                                                    <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             if (window.confirm("Are you sure you want to delete this trade?")) {
@@ -1146,7 +1146,7 @@ const StrategyDetailView = ({
                                     })}
                                     {filteredTrades.length === 0 && (
                                         <tr>
-                                            <td colSpan={11} className="py-20 text-center text-slate-400 italic">
+                                            <td colSpan={11} className="py-20 text-center text-slate-400 italic dark:text-slate-400">
                                                 No executed trades found for this strategy.
                                             </td>
                                         </tr>
@@ -1159,9 +1159,9 @@ const StrategyDetailView = ({
 
                 {activeTab === 'notes' && (
                     <div className="h-full flex flex-col">
-                        <StrategyNotes 
-                            strategy={strategy} 
-                            onUpdate={(notes) => onUpdateStrategy({ ...strategy, notes })} 
+                        <StrategyNotes
+                            strategy={strategy}
+                            onUpdate={(notes) => onUpdateStrategy({ ...strategy, notes })}
                         />
                     </div>
                 )}
@@ -1171,10 +1171,10 @@ const StrategyDetailView = ({
 };
 
 // --- Main Page ---
-const PlaybookPage: React.FC<PlaybookPageProps> = ({ 
-    strategies, trades, onAddStrategy, onUpdateStrategy, onDeleteStrategy, 
-    onUpdateTrade, onDeleteTrade, onSavePlan, 
-    autoCreate, onResetAutoCreate 
+const PlaybookPage: React.FC<PlaybookPageProps> = ({
+    strategies, trades, onAddStrategy, onUpdateStrategy, onDeleteStrategy,
+    onUpdateTrade, onDeleteTrade, onSavePlan,
+    autoCreate, onResetAutoCreate
 }) => {
     const { t, language } = useLanguage();
     const { registerStepAction, unregisterStepAction } = useTour();
@@ -1333,7 +1333,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
             count: 0,
             netPnl: 0,
             winRate: 0,
-            color: '#8b5cf6',
+            color: 'var(--tg-accent, #8b5cf6)',
         };
         const best = [...activeStrategies].sort((a, b) => b.netPnl - a.netPnl)[0] || fallback;
         const least = [...activeStrategies].sort((a, b) => a.netPnl - b.netPnl)[0] || fallback;
@@ -1347,7 +1347,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 icon: <ArrowUp className="h-3.5 w-3.5 text-emerald-500" />,
                 strategy: best,
                 value: best.count > 0 ? `${best.netPnl >= 0 ? '+' : '-'}$${Math.abs(best.netPnl).toFixed(2)}` : '',
-                chipClass: best.netPnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600',
+                chipClass: best.netPnl >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300',
                 footer: best.count > 0 ? `${best.count} ${language === 'cn' ? '笔交易' : best.count === 1 ? 'trade' : 'trades'}` : (language === 'cn' ? '暂无数据' : 'No data'),
             },
             {
@@ -1356,7 +1356,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 icon: <ArrowDown className="h-3.5 w-3.5 text-rose-500" />,
                 strategy: least,
                 value: least.count > 0 ? `${least.netPnl >= 0 ? '+' : '-'}$${Math.abs(least.netPnl).toFixed(2)}` : '',
-                chipClass: least.netPnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600',
+                chipClass: least.netPnl >= 0 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300' : 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-300',
                 footer: least.count > 0 ? `${least.count} ${language === 'cn' ? '笔交易' : least.count === 1 ? 'trade' : 'trades'}` : (language === 'cn' ? '暂无数据' : 'No data'),
             },
             {
@@ -1365,7 +1365,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 icon: <Activity className="h-3.5 w-3.5 text-amber-500" />,
                 strategy: mostActive,
                 value: '',
-                chipClass: 'bg-slate-100 text-slate-600',
+                chipClass: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
                 footer: mostActive.count > 0 ? `${mostActive.count} ${language === 'cn' ? '笔交易' : mostActive.count === 1 ? 'trade' : 'trades'}` : (language === 'cn' ? '暂无数据' : 'No data'),
             },
             {
@@ -1374,7 +1374,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 icon: <Sparkles className="h-3.5 w-3.5 text-violet-500" />,
                 strategy: bestWinRate,
                 value: '',
-                chipClass: 'bg-slate-100 text-slate-600',
+                chipClass: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300',
                 footer: bestWinRate.count > 0
                     ? `${bestWinRate.winRate.toFixed(0)}% / ${bestWinRate.count} ${language === 'cn' ? '笔交易' : bestWinRate.count === 1 ? 'trade' : 'trades'}`
                     : (language === 'cn' ? '暂无数据' : 'No data'),
@@ -1402,8 +1402,8 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
 
     const iconTile = (color?: string) => (
         <div
-            className="flex h-7 w-7 items-end gap-[2.5px] rounded-[8px] border border-slate-200/80 bg-white px-[4px] py-[4px] shadow-[0_1px_2px_rgba(15,23,42,0.04)]"
-            style={{ borderColor: `${color || '#8b5cf6'}22` }}
+            className="flex h-7 w-7 items-end gap-[2.5px] rounded-[8px] border border-slate-200/80 bg-white px-[4px] py-[4px] shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:bg-slate-900"
+            style={{ borderColor: `${color || 'var(--tg-accent-border, #8b5cf6)'}22` }}
         >
             <span className="w-1.5 rounded-full bg-emerald-500/90" style={{ height: '72%' }} />
             <span className="w-1.5 rounded-full bg-indigo-500/90" style={{ height: '100%' }} />
@@ -1453,15 +1453,15 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
         const strategy = strategies.find(s => s.id === detailedStrategyId);
         if (strategy) {
             return (
-                <StrategyDetailView 
-                    strategy={strategy} 
-                    trades={trades} 
+                <StrategyDetailView
+                    strategy={strategy}
+                    trades={trades}
                     strategies={strategies}
                     onBack={() => setDetailedStrategyId(null)}
                     onUpdateStrategy={onUpdateStrategy}
-                    onUpdateTrade={onUpdateTrade} 
+                    onUpdateTrade={onUpdateTrade}
                     onDeleteTrade={onDeleteTrade}
-                    onSavePlan={onSavePlan} 
+                    onSavePlan={onSavePlan}
                     language={language}
                     t={t}
                 />
@@ -1499,7 +1499,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                             </div>
                             <button
                                 onClick={() => setIsColumnModalOpen(false)}
-                                className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:text-slate-400"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -1513,7 +1513,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             type="checkbox"
                                             checked={checked}
                                             onChange={() => toggleDraftColumn(column.id)}
-                                            className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
+                                            className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 dark:border-slate-700 dark:text-violet-300"
                                         />
                                         <span>{column.label}</span>
                                     </label>
@@ -1548,15 +1548,15 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                         {language === 'cn' ? '策略手册' : 'Strategies'}
                     </h2>
                     <div className="flex flex-wrap items-center gap-2">
-                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700">
                             <Activity className="h-3.5 w-3.5 text-violet-500" />
                             <span>{selectedTimeLabel}</span>
-                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                            <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-400" />
                         </button>
-                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700">
                             <BookMarked className="h-3.5 w-3.5 text-violet-500" />
                             <span>{selectedAccountLabel}</span>
-                            <ChevronDown className="h-4 w-4 text-slate-400" />
+                            <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-400" />
                         </button>
                     </div>
                 </div>
@@ -1571,7 +1571,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                     active ? 'text-violet-600 dark:text-violet-400' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
                                 }`}
                             >
-                                <span className={active ? 'text-violet-500' : 'text-slate-400'}>
+                                <span className={active ? 'text-violet-500' : 'text-slate-400 dark:text-slate-400'}>
                                     {tab.icon}
                                 </span>
                                 <span>{tab.label}</span>
@@ -1652,7 +1652,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             key={item.id}
                                             onClick={() => setViewMode(item.id)}
                                             className={`relative rounded-lg p-2 transition-colors ${
-                                                active ? 'text-violet-600' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200'
+                                                active ? 'text-violet-600 dark:text-violet-300' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 dark:text-slate-400'
                                             }`}
                                         >
                                             {item.icon}
@@ -1662,7 +1662,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                 })}
                                 <button
                                     onClick={openColumnModal}
-                                    className="rounded-lg p-2 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-200"
+                                    className="rounded-lg p-2 text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-200 dark:text-slate-400"
                                 >
                                     <Settings className="h-5 w-5" />
                                 </button>
@@ -1705,7 +1705,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             <article
                                                 key={strategy.id}
                                                 onClick={() => setDetailedStrategyId(strategy.id)}
-                                                className="group cursor-pointer rounded-[18px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] transition-all hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900"
+                                                className="group cursor-pointer rounded-[18px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] transition-all hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                                             >
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
@@ -1734,7 +1734,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                 event.stopPropagation();
                                                                 setMenuOpenId(current => current === strategy.id ? null : strategy.id);
                                                             }}
-                                                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                            className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:text-slate-400"
                                                         >
                                                             <MoreVertical className="h-4 w-4" />
                                                         </button>
@@ -1757,7 +1757,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                             onDeleteStrategy(strategy.id);
                                                                         }
                                                                     }}
-                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/10"
+                                                                    className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/10 dark:text-rose-300"
                                                                 >
                                                                     <Trash2 className="h-3.5 w-3.5" />
                                                                     <span>{language === 'cn' ? '删除' : 'Delete'}</span>
@@ -1868,7 +1868,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                     event.stopPropagation();
                                                                     setMenuOpenId(current => current === strategy.id ? null : strategy.id);
                                                                 }}
-                                                                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+                                                                className="rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-200 dark:text-slate-400"
                                                             >
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </button>
@@ -1891,7 +1891,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                                 onDeleteStrategy(strategy.id);
                                                                             }
                                                                         }}
-                                                                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/10"
+                                                                        className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/10 dark:text-rose-300"
                                                                     >
                                                                         <Trash2 className="h-3.5 w-3.5" />
                                                                         <span>{language === 'cn' ? '删除' : 'Delete'}</span>

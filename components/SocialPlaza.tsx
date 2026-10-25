@@ -166,7 +166,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
 
     const RenderAttachedTrade = ({ trade }: { trade: Trade }) => (
         <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 relative group w-full">
-            <div className={`p-2 rounded-lg ${trade.pnl >= 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}`}>
+            <div className={`p-2 rounded-lg ${trade.pnl >= 0 ? 'bg-emerald-100 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-950/40' : 'bg-rose-100 text-rose-600 dark:text-rose-300 dark:bg-rose-950/40'}`}>
                 {trade.pnl >= 0 ? <TrendingUp className="w-5 h-5"/> : <TrendingDown className="w-5 h-5"/>}
             </div>
             <div>
@@ -188,11 +188,11 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
             </div>
             <div className="flex-1">
                 <p className="text-sm font-bold text-slate-900 dark:text-white">{plan.title || 'Untitled Note'}</p>
-                <p className="text-xs text-slate-500">{plan.date}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{plan.date}</p>
             </div>
             {onClick && (
                 <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-sm text-slate-400">
+                    <div className="p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-sm text-slate-400 dark:text-slate-400">
                         <FileText className="w-4 h-4" />
                     </div>
                 </div>
@@ -231,10 +231,10 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                             {/* Quoted Post Preview */}
                             {quotedPost && (
                                 <div className="mt-3 relative p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/30">
-                                    <button onClick={() => setQuotedPost(null)} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500"><X className="w-4 h-4"/></button>
+                                    <button onClick={() => setQuotedPost(null)} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500 dark:text-slate-400"><X className="w-4 h-4"/></button>
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Repeat className="w-3 h-3 text-slate-400" />
-                                        <span className="text-xs font-bold text-slate-500">{t.plaza.quoted} {quotedPost.authorName}</span>
+                                        <Repeat className="w-3 h-3 text-slate-400 dark:text-slate-400" />
+                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{t.plaza.quoted} {quotedPost.authorName}</span>
                                     </div>
                                     <div className="text-sm text-slate-600 dark:text-slate-300 line-clamp-3">
                                         {quotedPost.content}
@@ -261,14 +261,14 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
 
                             <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex gap-2">
-                                    <label className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full cursor-pointer transition-colors" title="Image">
+                                    <label className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full cursor-pointer transition-colors dark:text-slate-400" title="Image">
                                         <ImageIcon className="w-5 h-5" />
                                         <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
                                     </label>
-                                    <button onClick={() => setShowTradeModal(true)} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-full transition-colors" title={t.plaza.attachTrade}>
+                                    <button onClick={() => setShowTradeModal(true)} className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-full transition-colors dark:text-slate-400" title={t.plaza.attachTrade}>
                                         <TrendingUp className="w-5 h-5" />
                                     </button>
-                                    <button onClick={() => setShowPlanModal(true)} className="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-full transition-colors" title={t.plaza.attachNote}>
+                                    <button onClick={() => setShowPlanModal(true)} className="p-2 text-slate-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-full transition-colors dark:text-slate-400" title={t.plaza.attachNote}>
                                         <FileText className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -306,14 +306,14 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                             <div className="flex items-center gap-2">
                                                 <h4 className="font-bold text-slate-900 dark:text-white">{post.authorName}</h4>
                                                 {/* Tier Badge */}
-                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700">
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 dark:text-slate-400">
                                                     {post.authorTier}
                                                 </span>
                                             </div>
-                                            <p className="text-xs text-slate-500">{post.timestamp}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{post.timestamp}</p>
                                         </div>
                                     </div>
-                                    <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                    <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-400">
                                         <MoreHorizontal className="w-5 h-5" />
                                     </button>
                                 </div>
@@ -331,7 +331,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                                 {post.quotedPost.authorInitials}
                                             </div>
                                             <span className="text-xs font-bold text-slate-900 dark:text-white">{post.quotedPost.authorName}</span>
-                                            <span className="text-[10px] text-slate-400">• {post.quotedPost.timestamp}</span>
+                                            <span className="text-[10px] text-slate-400 dark:text-slate-400">• {post.quotedPost.timestamp}</span>
                                         </div>
                                         <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-3">
                                             {post.quotedPost.content}
@@ -364,7 +364,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                 <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
                                     <button 
                                         onClick={() => toggleLike(post.id)}
-                                        className={`flex items-center gap-2 text-sm transition-colors group ${post.isLiked ? 'text-rose-500 font-medium' : 'text-slate-500 hover:text-rose-500'}`}
+                                        className={`flex items-center gap-2 text-sm transition-colors group ${post.isLiked ? 'text-rose-500 font-medium' : 'text-slate-500 hover:text-rose-500 dark:text-slate-400'}`}
                                     >
                                         <Heart className={`w-5 h-5 ${post.isLiked ? 'fill-current' : 'group-hover:scale-110 transition-transform'}`} />
                                         <span>{post.likes}</span>
@@ -372,7 +372,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                     
                                     <button 
                                         onClick={() => toggleComments(post.id)}
-                                        className={`flex items-center gap-2 text-sm transition-colors ${showComments ? 'text-blue-500 font-medium' : 'text-slate-500 hover:text-blue-500'}`}
+                                        className={`flex items-center gap-2 text-sm transition-colors ${showComments ? 'text-blue-500 font-medium' : 'text-slate-500 hover:text-blue-500 dark:text-slate-400'}`}
                                     >
                                         <MessageCircle className="w-5 h-5" />
                                         <span>{post.comments}</span>
@@ -380,7 +380,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                     
                                     <button 
                                         onClick={() => handleQuotePost(post)}
-                                        className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-500 transition-colors"
+                                        className="flex items-center gap-2 text-sm text-slate-500 hover:text-emerald-500 transition-colors dark:text-slate-400"
                                         title={t.plaza.shareQuote}
                                     >
                                         <Share2 className="w-5 h-5" />
@@ -407,7 +407,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                                 />
                                                 <button 
                                                     onClick={() => handleCommentSubmit(post.id)}
-                                                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-full transition-colors"
+                                                    className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-full transition-colors dark:text-indigo-300"
                                                 >
                                                     <Send className="w-4 h-4" />
                                                 </button>
@@ -425,14 +425,14 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                                         <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl rounded-tl-none">
                                                             <div className="flex justify-between items-baseline mb-1">
                                                                 <span className="text-xs font-bold text-slate-900 dark:text-white">{comment.authorName}</span>
-                                                                <span className="text-[10px] text-slate-400">{comment.timestamp}</span>
+                                                                <span className="text-[10px] text-slate-400 dark:text-slate-400">{comment.timestamp}</span>
                                                             </div>
                                                             <p className="text-sm text-slate-700 dark:text-slate-300">{comment.content}</p>
                                                         </div>
                                                     </div>
                                                 ))
                                             ) : (
-                                                <div className="text-center py-4 text-slate-400 text-sm italic">
+                                                <div className="text-center py-4 text-slate-400 text-sm italic dark:text-slate-400">
                                                     No comments yet. Be the first!
                                                 </div>
                                             )}
@@ -449,7 +449,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
             <div className="hidden lg:block space-y-6">
                 {/* Search */}
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-400" />
                     <input 
                         type="text" 
                         placeholder="Search Plaza..."
@@ -467,12 +467,12 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                         {suggestedFriends.map(friend => (
                             <div key={friend.id} className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{backgroundColor: friend.color}}>
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-slate-900 dark:text-slate-900" style={{backgroundColor: friend.color}}>
                                         {friend.initials}
                                     </div>
                                     <div>
                                         <p className="font-bold text-sm text-slate-900 dark:text-white">{friend.name}</p>
-                                        <p className="text-[10px] text-slate-500">{friend.followers?.toLocaleString()} {t.plaza.followers}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{friend.followers?.toLocaleString()} {t.plaza.followers}</p>
                                     </div>
                                 </div>
                                 <button 
@@ -498,19 +498,19 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                     </h3>
                     <div className="space-y-3">
                         <div className="cursor-pointer group">
-                            <p className="text-xs text-slate-500">Trending in Crypto</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Trending in Crypto</p>
                             <p className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500">#BitcoinATH</p>
-                            <p className="text-xs text-slate-400">125K Posts</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-400">125K Posts</p>
                         </div>
                         <div className="cursor-pointer group">
-                            <p className="text-xs text-slate-500">Trending in Forex</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Trending in Forex</p>
                             <p className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500">#EURUSD</p>
-                            <p className="text-xs text-slate-400">45K Posts</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-400">45K Posts</p>
                         </div>
                         <div className="cursor-pointer group">
-                            <p className="text-xs text-slate-500">Strategy</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Strategy</p>
                             <p className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-500">ICT Concepts</p>
-                            <p className="text-xs text-slate-400">12K Posts</p>
+                            <p className="text-xs text-slate-400 dark:text-slate-400">12K Posts</p>
                         </div>
                     </div>
                 </div>
@@ -522,7 +522,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                     <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up border border-slate-200 dark:border-slate-700">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t.plaza.selectTrade}</h3>
-                            <button onClick={() => setShowTradeModal(false)}><X className="w-5 h-5 text-slate-500" /></button>
+                            <button onClick={() => setShowTradeModal(false)}><X className="w-5 h-5 text-slate-500 dark:text-slate-400" /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-2">
                             {userTrades.map(trade => (
@@ -532,12 +532,12 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                     className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all flex justify-between items-center"
                                 >
                                     <div className="flex items-center gap-3">
-                                        <div className={`p-2 rounded-lg ${trade.pnl >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600' : 'bg-rose-100 dark:bg-rose-900/20 text-rose-600'}`}>
+                                        <div className={`p-2 rounded-lg ${trade.pnl >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300'}`}>
                                             {trade.pnl >= 0 ? <TrendingUp className="w-4 h-4"/> : <TrendingDown className="w-4 h-4"/>}
                                         </div>
                                         <div>
                                             <p className="font-bold text-slate-900 dark:text-white text-sm">{trade.symbol}</p>
-                                            <p className="text-xs text-slate-500">{new Date(trade.entryDate).toLocaleDateString()}</p>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">{new Date(trade.entryDate).toLocaleDateString()}</p>
                                         </div>
                                     </div>
                                     <p className={`font-mono font-bold ${trade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -556,7 +556,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                     <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up border border-slate-200 dark:border-slate-700">
                         <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t.plaza.selectNote}</h3>
-                            <button onClick={() => setShowPlanModal(false)}><X className="w-5 h-5 text-slate-500" /></button>
+                            <button onClick={() => setShowPlanModal(false)}><X className="w-5 h-5 text-slate-500 dark:text-slate-400" /></button>
                         </div>
                         <div className="flex-1 overflow-y-auto p-2 space-y-2">
                             {userPlans.map(plan => (
@@ -567,9 +567,9 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                 >
                                     <div className="flex justify-between items-start mb-1">
                                         <p className="font-bold text-slate-900 dark:text-white text-sm">{plan.title || 'Untitled'}</p>
-                                        <p className="text-xs text-slate-500">{plan.date}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400">{plan.date}</p>
                                     </div>
-                                    <p className="text-xs text-slate-400 line-clamp-2">
+                                    <p className="text-xs text-slate-400 line-clamp-2 dark:text-slate-400">
                                         {plan.content.replace(/<[^>]*>?/gm, '')}
                                     </p>
                                 </div>
@@ -586,12 +586,12 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                         <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">{viewPlan.title || 'Untitled Note'}</h3>
-                                <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
+                                <p className="text-sm text-slate-500 flex items-center gap-2 mt-1 dark:text-slate-400">
                                     <span className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs">{viewPlan.date}</span>
                                     {viewPlan.folder && <span className="capitalize px-2 py-0.5 border border-slate-200 dark:border-slate-700 rounded text-xs">{viewPlan.folder.replace('-', ' ')}</span>}
                                 </p>
                             </div>
-                            <button onClick={() => setViewPlan(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X className="w-6 h-6 text-slate-500" /></button>
+                            <button onClick={() => setViewPlan(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X className="w-6 h-6 text-slate-500 dark:text-slate-400" /></button>
                         </div>
                         
                         <div className="p-8 overflow-y-auto bg-slate-50/50 dark:bg-slate-950/30 flex-1">

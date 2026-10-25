@@ -98,30 +98,30 @@ function calcYAxis(maxDrawdown: number): YAxisConfig {
   if (abs < 5) return {
     yMin: -6,
     ticks: [0, -3, -6],
-    thresholds: [{ value: -3, label: '警戒', color: '#F59E0B' }],
+    thresholds: [{ value: -3, label: '警戒', color: 'var(--tg-warning, #F59E0B)' }],
   };
   if (abs < 10) return {
     yMin: -12,
     ticks: [0, -4, -8, -12],
     thresholds: [
-      { value: -5,  label: '警戒', color: '#F59E0B' },
-      { value: -10, label: '危险', color: '#DC2626' },
+      { value: -5,  label: '警戒', color: 'var(--tg-warning, #F59E0B)' },
+      { value: -10, label: '危险', color: 'var(--tg-negative, #DC2626)' },
     ],
   };
   if (abs < 20) return {
     yMin: -24,
     ticks: [0, -8, -16, -24],
     thresholds: [
-      { value: -10, label: '警戒', color: '#F59E0B' },
-      { value: -20, label: '危险', color: '#DC2626' },
+      { value: -10, label: '警戒', color: 'var(--tg-warning, #F59E0B)' },
+      { value: -20, label: '危险', color: 'var(--tg-negative, #DC2626)' },
     ],
   };
   if (abs < 35) return {
     yMin: -40,
     ticks: [0, -10, -20, -30, -40],
     thresholds: [
-      { value: -10, label: '警戒', color: '#F59E0B' },
-      { value: -20, label: '危险', color: '#DC2626' },
+      { value: -10, label: '警戒', color: 'var(--tg-warning, #F59E0B)' },
+      { value: -20, label: '危险', color: 'var(--tg-negative, #DC2626)' },
     ],
   };
   const yMin = Math.floor(maxDrawdown * 1.3 / 10) * 10;
@@ -132,9 +132,9 @@ function calcYAxis(maxDrawdown: number): YAxisConfig {
     yMin,
     ticks,
     thresholds: [
-      { value: -10, label: '警戒', color: '#F59E0B' },
-      { value: -20, label: '危险', color: '#DC2626' },
-      { value: -30, label: '极限', color: '#991B1B' },
+      { value: -10, label: '警戒', color: 'var(--tg-warning, #F59E0B)' },
+      { value: -20, label: '危险', color: 'var(--tg-negative, #DC2626)' },
+      { value: -30, label: '极限', color: 'var(--tg-negative, #991B1B)' },
     ],
   };
 }
@@ -210,14 +210,14 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
       {/* Y-axis ticks */}
       {ticks.map(v => (
         <text key={v} x={PL - 5} y={yS(v, yMin) + 3} textAnchor="end"
-          fontSize="9" fill={v === 0 ? '#64748B' : '#CBD5E1'}
+          fontSize="9" fill={v === 0 ? 'var(--tg-secondary, #64748B)' : 'var(--tg-muted, #CBD5E1)'}
           fontWeight={v === 0 ? '500' : '400'}
           fontFamily='"SF Mono", monospace'>{v}%</text>
       ))}
 
       {/* 0% new-high line */}
       <line x1={PL} y1={PT} x2={VW-PR} y2={PT} stroke="#059669" strokeWidth="1.2" strokeDasharray="4,3" />
-      <text x={PL+4} y={PT-4} fontSize="8" fill="#059669" fontWeight="500" fontFamily='"SF Mono", monospace'>新高水位线</text>
+      <text x={PL+4} y={PT-4} fontSize="8" fill="var(--tg-positive, #059669)" fontWeight="500" fontFamily='"SF Mono", monospace'>新高水位线</text>
 
       {/* Dynamic threshold lines */}
       {thresholds.map(t => {
@@ -246,7 +246,7 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
       {hoverIdx !== null && hoverPt && (
         <>
           <line x1={hoverPt.x} y1={PT} x2={hoverPt.x} y2={VH-PB}
-            stroke="#94A3B8" strokeWidth="0.8" strokeDasharray="3,2" opacity="0.6" />
+            stroke="var(--tg-border, #94A3B8)" strokeWidth="0.8" strokeDasharray="3,2" opacity="0.6" />
           <circle cx={hoverPt.x} cy={hoverPt.y} r="5" fill="#DC2626" stroke="white" strokeWidth="2" />
         </>
       )}
@@ -255,7 +255,7 @@ function DrawdownSVG({ stats, hoverIdx, onMouseMove, onMouseLeave }: DrawdownSVG
       {xTicks.map(({ idx, text, isLast }, i) => (
         <text key={idx} x={xS(idx, points.length)} y={VH - 6}
           textAnchor={i === 0 ? 'start' : i === 4 ? 'end' : 'middle'}
-          fontSize="9" fill={isLast ? '#64748B' : '#94A3B8'}
+          fontSize="9" fill={isLast ? 'var(--tg-secondary, #64748B)' : 'var(--tg-muted, #94A3B8)'}
           fontWeight={isLast ? '500' : '400'}
           fontFamily='"SF Mono", monospace'>{text}</text>
       ))}
@@ -302,14 +302,14 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, langua
   const uwDays = hoverIdx !== null ? daysUnderwaterAt(stats.points, hoverIdx) : null;
 
   return (
-    <div style={{ position: 'relative', background: '#fff', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '18px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '18px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, flexShrink: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: '#0F172A', letterSpacing: '-0.01em' }}>{language === 'cn' ? '回撤分析' : 'Drawdown'}</span>
+          <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #0F172A)', letterSpacing: '-0.01em' }}>{language === 'cn' ? '回撤分析' : 'Drawdown'}</span>
           {infoIcon}
         </span>
-        <span style={{ fontSize: 10, color: '#94A3B8' }}>从历史最高点的回撤%</span>
+        <span style={{ fontSize: 10, color: 'var(--tg-muted, #94A3B8)' }}>从历史最高点的回撤%</span>
       </div>
 
       {/* Chart */}
@@ -329,29 +329,29 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, langua
           {hoverPoint && tooltipStyle && (
             <div style={{
               ...tooltipStyle,
-              background: '#fff', border: '1px solid rgba(148,163,184,0.25)',
+              background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
               borderRadius: 8, padding: '10px 12px', minWidth: 148,
               boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
               pointerEvents: 'none', zIndex: 10, fontFamily: 'inherit',
             }}>
-              <div style={{ fontSize: 11, color: '#0F172A', fontWeight: 500, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid rgba(148,163,184,0.15)', fontFamily: '"SF Mono", monospace' }}>
+              <div style={{ fontSize: 11, color: 'var(--tg-text, #0F172A)', fontWeight: 500, marginBottom: 8, paddingBottom: 6, borderBottom: '1px solid rgba(148,163,184,0.15)', fontFamily: '"SF Mono", monospace' }}>
                 {hoverPoint.date.replace(/-/g, '/')}
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 5 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748B' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--tg-secondary, #64748B)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#DC2626', flexShrink: 0, display: 'inline-block' }} />
                   回撤
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 600, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums', color: '#DC2626' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums', color: 'var(--tg-negative, #DC2626)' }}>
                   {hoverPoint.drawdown.toFixed(1)}%
                 </span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#64748B' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--tg-secondary, #64748B)' }}>
                   <span style={{ width: 6, height: 6, borderRadius: '50%', background: uwDays === null ? '#059669' : '#F59E0B', flexShrink: 0, display: 'inline-block' }} />
                   {uwDays === null ? '状态' : '已水下'}
                 </span>
-                <span style={{ fontSize: 11, fontWeight: 600, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums', color: uwDays === null ? '#059669' : '#F59E0B' }}>
+                <span style={{ fontSize: 11, fontWeight: 600, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums', color: uwDays === null ? 'var(--tg-positive, #059669)' : 'var(--tg-warning, #F59E0B)' }}>
                   {uwDays === null ? '新高 ✓' : `${uwDays} 天`}
                 </span>
               </div>
@@ -367,13 +367,13 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, langua
       {stats.points.length >= 2 && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0 12px', paddingTop: 12, borderTop: '1px solid rgba(148,163,184,0.12)', flexShrink: 0 }}>
           {[
-            { label: '最大回撤', value: `${stats.maxDrawdown.toFixed(1)}%`, color: '#DC2626' },
-            { label: '最长水下', value: `${stats.longestUnderwater} 天`, color: '#DC2626' },
-            { label: '历史恢复', value: stats.maxRecoveryDays != null ? `${stats.maxRecoveryDays} 天` : '--', color: '#F59E0B' },
-            { label: '当前状态', value: stats.currentStatus === 'new_high' ? '新高 ✓' : '水下中', color: stats.currentStatus === 'new_high' ? '#059669' : '#DC2626' },
+            { label: '最大回撤', value: `${stats.maxDrawdown.toFixed(1)}%`, color: 'var(--tg-negative, #DC2626)' },
+            { label: '最长水下', value: `${stats.longestUnderwater} 天`, color: 'var(--tg-negative, #DC2626)' },
+            { label: '历史恢复', value: stats.maxRecoveryDays != null ? `${stats.maxRecoveryDays} 天` : '--', color: 'var(--tg-warning, #F59E0B)' },
+            { label: '当前状态', value: stats.currentStatus === 'new_high' ? '新高 ✓' : '水下中', color: stats.currentStatus === 'new_high' ? 'var(--tg-positive, #059669)' : 'var(--tg-negative, #DC2626)' },
           ].map(s => (
             <div key={s.label} style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
-              <span style={{ fontSize: 9, color: '#94A3B8', letterSpacing: '0.06em', fontWeight: 500, textTransform: 'uppercase' }}>{s.label}</span>
+              <span style={{ fontSize: 9, color: 'var(--tg-muted, #94A3B8)', letterSpacing: '0.06em', fontWeight: 500, textTransform: 'uppercase' }}>{s.label}</span>
               <span style={{ fontSize: 14, fontWeight: 600, color: s.color, fontFamily: '"SF Mono", monospace', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>{s.value}</span>
             </div>
           ))}

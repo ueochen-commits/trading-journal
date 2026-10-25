@@ -1,3 +1,4 @@
+import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount, TagCategoryDefinition } from '../types';
 import { buildCategoryId, normalizeTagCategories, TAG_CATEGORY_COLORS } from '../utils/tagCategories';
@@ -49,7 +50,7 @@ const RiskTooltipCard: React.FC<{ visible: boolean; top: number; left: number; d
         <div style={{
             position: 'fixed', top, left,
             width: '480px',
-            background: '#ffffff', border: '0.5px solid #e8e8f0', borderRadius: '10px',
+            background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e8e8f0)', borderRadius: '10px',
             padding: '16px 18px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
             zIndex: 100, opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(4px)',
@@ -62,34 +63,34 @@ const RiskTooltipCard: React.FC<{ visible: boolean; top: number; left: number; d
                     <div style={{ fontSize: '28px', fontWeight: 500, color, letterSpacing: '-1px', lineHeight: 1 }}>
                         {displayScore != null ? Math.round(displayScore) : '--'}
                     </div>
-                    <div style={{ fontSize: '11px', color: '#999', marginTop: '2px' }}>/ 100</div>
+                    <div style={{ fontSize: '11px', color: 'var(--tg-muted, #999)', marginTop: '2px' }}>/ 100</div>
                     <div style={{ fontSize: '11px', color, marginTop: '4px', fontWeight: 500 }}>{label}</div>
                 </div>
 
                 {/* 右侧内容 */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                     {/* 进度条 */}
-                    <div style={{ fontSize: '10px', color: '#999', letterSpacing: '0.8px', marginBottom: '4px' }}>风险区间</div>
-                    <div style={{ height: '4px', background: '#ebebf0', borderRadius: '99px', overflow: 'visible', position: 'relative', margin: '5px 0 3px' }}>
+                    <div style={{ fontSize: '10px', color: 'var(--tg-muted, #999)', letterSpacing: '0.8px', marginBottom: '4px' }}>风险区间</div>
+                    <div style={{ height: '4px', background: 'var(--tg-surface-muted, #ebebf0)', borderRadius: '99px', overflow: 'visible', position: 'relative', margin: '5px 0 3px' }}>
                         <div style={{ height: '100%', borderRadius: '99px', background: 'linear-gradient(90deg, #1d9e75 0%, #ef9f27 50%, #e24b4a 100%)', opacity: isPending ? 0.3 : 1 }} />
-                        <div style={{ position: 'absolute', top: '-3px', width: '2px', height: '10px', background: isPending ? '#ccc' : 'rgba(0,0,0,0.25)', borderRadius: '1px', left: `${displayScore ?? 50}%`, transform: 'translateX(-50%)' }} />
+                        <div style={{ position: 'absolute', top: '-3px', width: '2px', height: '10px', background: isPending ? 'var(--tg-track, #ccc)' : 'rgba(0,0,0,0.25)', borderRadius: '1px', left: `${displayScore ?? 50}%`, transform: 'translateX(-50%)' }} />
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                        <span style={{ fontSize: '10px', color: '#999' }}>低风险</span>
-                        <span style={{ fontSize: '10px', color: '#999' }}>中等</span>
-                        <span style={{ fontSize: '10px', color: '#999' }}>高风险</span>
+                        <span style={{ fontSize: '10px', color: 'var(--tg-muted, #999)' }}>低风险</span>
+                        <span style={{ fontSize: '10px', color: 'var(--tg-muted, #999)' }}>中等</span>
+                        <span style={{ fontSize: '10px', color: 'var(--tg-muted, #999)' }}>高风险</span>
                     </div>
 
                     {/* 分析文字 */}
                     {isPending ? (
-                        <div style={{ fontSize: '12px', color: '#888', lineHeight: 1.6 }}>
+                        <div style={{ fontSize: '12px', color: 'var(--tg-secondary, #888)', lineHeight: 1.6 }}>
                             {missingHint === '请设置账户总资产'
-                                ? <>暂无足够数据。请补充<span style={{ color: '#7c3aed', cursor: 'pointer' }} onClick={onClickSetup}> 账户总资产 </span>以启用风险评级。</>
-                                : <>请填写<span style={{ color: '#7c3aed', cursor: 'pointer' }}> 风险金额 </span>或<span style={{ color: '#7c3aed' }}> 计划止损价格 </span>以启用风险评级。</>
+                                ? <>暂无足够数据。请补充<span style={{ color: 'var(--tg-accent, #7c3aed)', cursor: 'pointer' }} onClick={onClickSetup}> 账户总资产 </span>以启用风险评级。</>
+                                : <>请填写<span style={{ color: 'var(--tg-accent, #7c3aed)', cursor: 'pointer' }}> 风险金额 </span>或<span style={{ color: 'var(--tg-accent, #7c3aed)' }}> 计划止损价格 </span>以启用风险评级。</>
                             }
                         </div>
                     ) : (
-                        <div style={{ fontSize: '12px', color: '#555', lineHeight: 1.6 }}>{analysisText}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--tg-secondary, #555)', lineHeight: 1.6 }}>{analysisText}</div>
                     )}
 
                     {/* 四项指标 */}
@@ -101,14 +102,14 @@ const RiskTooltipCard: React.FC<{ visible: boolean; top: number; left: number; d
                             { label: '最大潜在亏损', value: metrics.maxLoss != null ? `-${metrics.maxLoss.toFixed(0)}` : '--', type: 'maxloss', raw: metrics.maxLoss },
                         ].map(({ label: ml, value, type, raw }) => (
                             <div key={ml}>
-                                <div style={{ fontSize: '11px', color: '#888' }}>{ml}</div>
-                                <div style={{ fontSize: '14px', fontWeight: 500, color: raw != null ? getMetricColor(type, raw) : '#ccc' }}>{value}</div>
+                                <div style={{ fontSize: '11px', color: 'var(--tg-secondary, #888)' }}>{ml}</div>
+                                <div style={{ fontSize: '14px', fontWeight: 500, color: raw != null ? getMetricColor(type, raw) : 'var(--tg-muted, #ccc)' }}>{value}</div>
                             </div>
                         ))}
                     </div>
 
                     {/* 底部建议 */}
-                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '0.5px solid #f0f0f6', fontSize: '12px', color: '#888', lineHeight: 1.5 }}>
+                    <div style={{ marginTop: '12px', paddingTop: '10px', borderTop: '0.5px solid var(--tg-border, #f0f0f6)', fontSize: '12px', color: 'var(--tg-secondary, #888)', lineHeight: 1.5 }}>
                         {footerHighlight
                             ? footerText.split(footerHighlight).map((part, i, arr) =>
                                 i < arr.length - 1
@@ -125,9 +126,9 @@ const RiskTooltipCard: React.FC<{ visible: boolean; top: number; left: number; d
 };
 
 function getRiskLevel(score: number) {
-    if (score < 33) return { label: '低风险', sub: '风险可控，执行良好', color: '#1d9e75' };
-    if (score < 66) return { label: '中等风险', sub: '仓位适中，注意止损', color: '#ef9f27' };
-    return { label: '高风险', sub: '仓位偏重，建议减仓', color: '#e24b4a' };
+    if (score < 33) return { label: '低风险', sub: '风险可控，执行良好', color: 'var(--tg-positive, #1d9e75)' };
+    if (score < 66) return { label: '中等风险', sub: '仓位适中，注意止损', color: 'var(--tg-warning, #ef9f27)' };
+    return { label: '高风险', sub: '仓位偏重，建议减仓', color: 'var(--tg-negative, #e24b4a)' };
 }
 
 const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup }) => {
@@ -152,7 +153,7 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup 
     const clampedScore = score != null ? Math.max(0, Math.min(100, score)) : 50;
     const unknown = score === null;
     const { label, sub, color } = unknown
-        ? { label: '待评估', sub: tooltipData.missingHint ?? '数据不足', color: '#aaaacc' }
+        ? { label: '待评估', sub: tooltipData.missingHint ?? '数据不足', color: 'var(--tg-muted, #aaaacc)' }
         : getRiskLevel(clampedScore);
 
     const rotateDeg = -90 + clampedScore * 1.8;
@@ -185,7 +186,7 @@ const RiskGauge: React.FC<RiskGaugeProps> = ({ score, tooltipData, onClickSetup 
                 <circle cx="50" cy="52" r="2" fill="white" opacity="0.6" />
             </svg>
             <div style={{ fontSize: 12, fontWeight: 600, color, textAlign: 'center', marginTop: 2, lineHeight: 1.3 }}>{label}</div>
-            <div style={{ fontSize: 10, color: '#aaaacc', textAlign: 'center', marginTop: 2, lineHeight: 1.4 }}>{sub}</div>
+            <div style={{ fontSize: 10, color: 'var(--tg-muted, #aaaacc)', textAlign: 'center', marginTop: 2, lineHeight: 1.4 }}>{sub}</div>
             <RiskTooltipCard visible={isHovered} top={cardPos.top} left={cardPos.left} data={tooltipData} onClickSetup={onClickSetup} />
         </div>
     );
@@ -384,13 +385,13 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
                     <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <button 
                             onClick={() => setActiveTab('trade')}
-                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'trade' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'trade' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'}`}
                         >
                             Trade note
                         </button>
                         <button 
                             onClick={() => setActiveTab('journal')}
-                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'journal' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'journal' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'}`}
                         >
                             Daily Journal
                         </button>
@@ -398,7 +399,7 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
                     <button 
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={handleExportWord} 
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors"
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors dark:text-slate-400"
                         title="Export Note"
                     >
                         <Share2 className="w-4 h-4" />
@@ -406,7 +407,7 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
                 </div>
 
                 <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase whitespace-nowrap tracking-wide mr-1">Recently used templates</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase whitespace-nowrap tracking-wide mr-1 dark:text-slate-400">Recently used templates</span>
                     {QUICK_TEMPLATES.map((t, idx) => (
                         <button 
                             key={idx} 
@@ -648,7 +649,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                 onDrop(cat.id);
             }}
             className={`mb-5 relative group/section rounded-[14px] transition-all duration-200 ${
-                isDragOver ? 'bg-indigo-50/50' : ''
+                isDragOver ? 'bg-indigo-50/50 dark:bg-indigo-950/40' : ''
             } ${isDragging ? 'opacity-70' : ''}`}
         >
             {/* Header Row: Icon + Label + ... Menu */}
@@ -665,7 +666,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         }}
                         onDragEnd={() => onDragEnd()}
                         onClick={(e) => e.preventDefault()}
-                        className="flex h-[20px] w-[14px] cursor-grab active:cursor-grabbing items-center justify-center text-slate-400 transition-colors hover:text-slate-500 dark:text-slate-500 dark:hover:text-slate-400"
+                        className="flex h-[20px] w-[14px] cursor-grab active:cursor-grabbing items-center justify-center text-slate-400 transition-colors hover:text-slate-500 dark:text-slate-400 dark:hover:text-slate-400"
                         aria-label={language === 'cn' ? '拖动分类排序' : 'Drag category to reorder'}
                     >
                         <span className="grid grid-cols-2 gap-[2px]">
@@ -683,7 +684,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                 <div className="relative" ref={menuRef}>
                     <button 
                         onClick={() => setIsMenuOpen((prev) => !prev)}
-                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                        className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors dark:text-slate-400"
                     >
                         <MoreHorizontal className="w-4 h-4" />
                     </button>
@@ -695,7 +696,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                             </div>
 
                             <div className="mb-3">
-                                <div className="mb-2 text-[11px] font-medium text-slate-400 dark:text-slate-500">
+                                <div className="mb-2 text-[11px] font-medium text-slate-400 dark:text-slate-400">
                                     {language === 'cn' ? '颜色' : 'Color'}
                                 </div>
                                 <div className="flex flex-wrap gap-2">
@@ -706,7 +707,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             className="flex h-5 w-5 items-center justify-center rounded-full border transition-transform hover:scale-105"
                                             style={{
                                                 background: color,
-                                                borderColor: categoryDraftColor === color ? '#ffffff' : 'transparent',
+                                                borderColor: categoryDraftColor === color ? 'var(--tg-border, #ffffff)' : 'transparent',
                                                 boxShadow: categoryDraftColor === color ? '0 0 0 1.5px #0f172a' : '0 0 0 1px rgba(148,163,184,0.26)',
                                             }}
                                         />
@@ -727,7 +728,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                         setIsMenuOpen(false);
                                     }
                                 }}
-                                className="mb-3 w-full rounded-[11px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+                                className="mb-3 w-full rounded-[11px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500/30"
                             />
 
                             <div className="flex items-center justify-between px-1">
@@ -743,7 +744,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 )}
                                 <button
                                     onClick={handleSaveCategoryMeta}
-                                    className="text-[13px] font-semibold text-[#6c5ce7]"
+                                    className="text-[13px] font-semibold text-[#6c5ce7] dark:text-[var(--tg-accent)]"
                                 >
                                     {language === 'cn' ? '保存' : 'Save'}
                                 </button>
@@ -759,7 +760,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                     relative min-h-[42px] bg-white dark:bg-slate-900 border rounded-xl px-2 py-1.5 flex flex-wrap gap-2 transition-all cursor-text
                     ${isFocused 
                         ? 'border-indigo-500 ring-1 ring-indigo-500/20 shadow-sm' 
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 dark:hover:border-slate-700'
                     }
                 `}
                 onClick={() => setIsFocused(true)}
@@ -770,7 +771,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         {tag}
                         <button 
                             onClick={(e) => { e.stopPropagation(); onRemove(tag); }}
-                            className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5"
+                            className="text-slate-400 hover:text-rose-500 transition-colors ml-0.5 dark:text-slate-400"
                         >
                             <X className="w-3 h-3" />
                         </button>
@@ -792,7 +793,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
                 {/* Dropdown Arrow Indicator (Fixed Right) */}
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isFocused ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform  dark:text-slate-400 ${isFocused ? 'rotate-180' : ''}`} />
                 </div>
 
                 {/* Dropdown Menu Overlay */}
@@ -834,7 +835,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                                                 : { top: rect.bottom + 8, left: rect.left - 12 },
                                                         );
                                                     }}
-                                                    className="rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                                                    className="rounded-md p-0.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:text-slate-400 dark:hover:bg-slate-700 dark:hover:text-slate-300"
                                                 >
                                                     <MoreHorizontal className="w-[15px] h-[15px]" />
                                                 </button>
@@ -844,7 +845,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 </div>
                             ))
                         ) : (
-                            <div className="px-2 py-2 bg-[#f8f8fb] border-t border-slate-100 dark:border-slate-800">
+                            <div className="px-2 py-2 bg-[#f8f8fb] border-t border-slate-100 dark:border-slate-800 dark:bg-[var(--tg-accent-soft)]">
                                 {inputValue ? (
                                     <button 
                                         onMouseDown={(e) => {
@@ -852,17 +853,17 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             onAdd(inputValue);
                                             setInputValue('');
                                         }}
-                                        className="w-full flex items-center gap-2 rounded-[10px] bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 px-3 py-2.5 transition-colors text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8)]"
+                                        className="w-full flex items-center gap-2 rounded-[10px] bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 px-3 py-2.5 transition-colors text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:bg-slate-900 dark:border-slate-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-950/40"
                                     >
-                                        <span className="text-[13px] font-semibold text-[#6c5ce7] tracking-[0.01em]">
+                                        <span className="text-[13px] font-semibold text-[#6c5ce7] tracking-[0.01em] dark:text-[var(--tg-accent)]">
                                             {language === 'cn' ? '+ 创建' : '+ Create'}
                                         </span>
-                                        <span className="inline-flex items-center rounded-full bg-[#ededf1] px-3 py-1 text-[12px] font-medium text-slate-500">
+                                        <span className="inline-flex items-center rounded-full bg-[#ededf1] px-3 py-1 text-[12px] font-medium text-slate-500 dark:bg-[var(--tg-surface-muted)] dark:text-slate-400">
                                             {inputValue}
                                         </span>
                                     </button>
                                 ) : (
-                                    <div className="px-3 py-2 text-[12px] italic text-slate-400">
+                                    <div className="px-3 py-2 text-[12px] italic text-slate-400 dark:text-slate-400">
                                         {language === 'cn' ? '输入后创建新标签...' : 'Type to create new...'}
                                     </div>
                                 )}
@@ -874,7 +875,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
             {activeTagMenu && tagMenuAnchor && (
                 <div
-                    className="fixed z-[120] w-[200px] rounded-[14px] border border-slate-200 bg-white px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)]"
+                    className="fixed z-[120] w-[200px] rounded-[14px] border border-slate-200 bg-white px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900"
                     style={{ top: tagMenuAnchor.top, left: tagMenuAnchor.left }}
                 >
                     <input
@@ -896,7 +897,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 setTagMenuAnchor(null);
                             }
                         }}
-                        className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300"
+                        className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:focus:border-indigo-500/30"
                     />
                     <div className="mt-3 flex items-center justify-between px-1">
                         <button
@@ -918,7 +919,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 handleSaveTagRename();
                                 setActiveTagMenu(null);
                             }}
-                            className="text-[13px] font-semibold text-[#6c5ce7]"
+                            className="text-[13px] font-semibold text-[#6c5ce7] dark:text-[var(--tg-accent)]"
                         >
                             {language === 'cn' ? '保存' : 'Save'}
                         </button>
@@ -943,7 +944,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                             </div>
                             <button
                                 onClick={() => setIsDeleteConfirmOpen(false)}
-                                className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300"
+                                className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800 dark:hover:text-slate-300 dark:text-slate-400"
                             >
                                 <X className="h-4 w-4" />
                             </button>
@@ -1180,6 +1181,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         setSaveStatus('saved');
     };
 
+    const isDark = useIsDarkMode();
+
     // Load TradingView Advanced Chart Widget
     useEffect(() => {
         const chartContainer = chartContainerRef.current;
@@ -1194,7 +1197,6 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         if (!tvSymbol.endsWith('USDT') && !tvSymbol.endsWith('BUSD')) tvSymbol += 'USDT';
         if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
 
-        const isDark = document.documentElement.classList.contains('dark');
 
         const script = document.createElement('script');
         script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
@@ -1226,7 +1228,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                 }
             } catch { /* ignore cleanup errors */ }
         };
-    }, [currentTrade.symbol, language]);
+    }, [currentTrade.symbol, language, isDark]);
 
     // --- Dynamic Tag Handlers ---
     const handleAddTag = (catId: string, tag: string) => {
@@ -1499,7 +1501,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     // --- Execution Stats (Refactored to match truth) ---
     const executionStats = useMemo(() => {
         if (!activeStrategy || activeStrategy.checklist.length === 0) {
-            return { percent: 0, label: 'N/A', color: 'bg-slate-200', textColor: 'text-slate-400', checked: 0, total: 0 };
+            return { percent: 0, label: 'N/A', color: 'bg-slate-200 dark:bg-slate-800', textColor: 'text-slate-400 dark:text-slate-400', checked: 0, total: 0 };
         }
         
         const total = activeStrategy.checklist.length;
@@ -1628,7 +1630,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
 
         if (isPending) {
             return {
-                score: null, label: '待评估', color: '#aaaacc', isPending: true,
+                score: null, label: '待评估', color: 'var(--tg-muted, #aaaacc)', isPending: true,
                 analysisText: null,
                 metrics: { positionRatio, stopLossPercent, rrRatio, maxLoss },
                 footerText: '补充数据后将自动计算并显示风险评级',
@@ -1761,18 +1763,18 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         }
     };
 
-    const statsSectionTitleClass = 'text-[10px] font-semibold uppercase tracking-[1.28px] text-slate-400 dark:text-slate-500';
+    const statsSectionTitleClass = 'text-[10px] font-semibold uppercase tracking-[1.28px] text-slate-400 dark:text-slate-400';
     const statsLabelClass = 'text-[13px] font-medium text-[#7d86b2] dark:text-slate-400';
     const statsValueClass = 'text-[13px] font-semibold font-mono text-slate-800 dark:text-slate-100';
-    const statsMutedValueClass = 'text-[13px] font-medium text-slate-300 dark:text-slate-600';
+    const statsMutedValueClass = 'text-[13px] font-medium text-slate-300 dark:text-slate-400';
     const statsRowClass = 'flex justify-between items-center h-[38px] border-b border-slate-100 dark:border-white/[0.04]';
 
     const getGradeColorClass = (grade?: string) => {
-        if (!grade || grade === '-') return 'text-slate-400';
+        if (!grade || grade === '-') return 'text-slate-400 dark:text-slate-400';
         if (grade.startsWith('A')) return 'text-emerald-500';
         if (grade === 'B') return 'text-yellow-500';
         if (grade === 'C' || grade === 'D') return 'text-rose-500';
-        return 'text-slate-400';
+        return 'text-slate-400 dark:text-slate-400';
     };
 
     return (
@@ -1785,7 +1787,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                     <div className="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm">
                         <button 
                             onClick={onClose}
-                            className="p-1.5 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                            className="p-1.5 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors dark:text-slate-400"
                             title="Trade List"
                         >
                             <Menu className="w-4 h-4" />
@@ -1793,14 +1795,14 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                         <button 
                             onClick={handlePrev}
                             disabled={!allTrades || currentIndex <= 0}
-                            className="p-1.5 px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-r border-slate-200 dark:border-slate-700"
+                            className="p-1.5 px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-r border-slate-200 dark:border-slate-700 dark:text-slate-400"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button 
                             onClick={handleNext}
                             disabled={!allTrades || currentIndex >= allTrades.length - 1}
-                            className="p-1.5 px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            className="p-1.5 px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors dark:text-slate-400"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>
@@ -1816,7 +1818,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 {new Date(currentTrade.entryDate).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
                             </span>
                         </div>
-                        <div className="text-[10px] text-slate-400 font-mono font-medium mt-0.5 tracking-wide">
+                        <div className="text-[10px] text-slate-400 font-mono font-medium mt-0.5 tracking-wide dark:text-slate-400">
                            {new Date(currentTrade.entryDate).toISOString().split('T')[0]} • {new Date(currentTrade.entryDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                         </div>
                     </div>
@@ -1839,7 +1841,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                         <span className={`text-xs font-medium transition-colors ${
                             isReviewed
                                 ? 'text-emerald-600 dark:text-emerald-400'
-                                : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'
+                                : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 dark:text-slate-400'
                         }`}>
                             {language === 'cn' ? '标记为已复盘' : 'Reviewed'}
                         </span>
@@ -1858,7 +1860,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                         onClick={() => {
                             navigator.clipboard.writeText(`${currentTrade.symbol} | ${currentTrade.direction} | PnL: $${currentTrade.pnl.toFixed(2)}`);
                         }}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors"
+                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-indigo-500 transition-colors dark:text-slate-400"
                         title={language === 'cn' ? '分享' : 'Share'}
                     >
                         <Share2 className="w-4.5 h-4.5" />
@@ -1867,7 +1869,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                     {/* Divider */}
                     <div className="w-px h-5 bg-slate-200 dark:bg-slate-700" />
 
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-rose-500 transition-colors">
+                    <button onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-rose-500 transition-colors dark:text-slate-400">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -1935,7 +1937,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         key={id}
                                         onClick={() => setLeftTab(id)}
                                         className={`px-3 pb-3 pt-1 text-[11px] font-medium uppercase tracking-wider transition-all duration-200 relative ${
-                                            isActive ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                            isActive ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                         }`}
                                     >
                                         {labels.tabs[id]}
@@ -2046,7 +2048,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         <div className="relative h-[6px] rounded-full overflow-hidden mb-1.5 bg-slate-100 dark:bg-white/[0.06]">
                                             <div className="h-full transition-all duration-700 ease-out rounded-full" style={{ width: `${executionStats.percent}%`, background: '#818cf8' }}></div>
                                         </div>
-                                        <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-500">
+                                        <div className="flex justify-between items-center text-[10px] text-slate-400 dark:text-slate-400">
                                             <span>Based on Playbook rules</span>
                                             <span className="font-mono font-semibold">{executionStats.checked}/{executionStats.total} Rules</span>
                                         </div>
@@ -2060,10 +2062,10 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     </div>
                                     <div className={statsRowClass}>
                                         <span className={statsLabelClass}>{labels.stats.exitPrice}</span>
-                                        <span className={`text-[13px] font-semibold font-mono ${currentTrade.exitPrice ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${currentTrade.exitPrice ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-400'}`}>{currentTrade.exitPrice ? `$${currentTrade.exitPrice.toFixed(2)}` : '--'}</span>
                                     </div>
                                     <div className={statsRowClass}>
-                                        <span className="text-[13px] font-medium" style={{ color: '#00c896' }}>{labels.stats.profitTarget}</span>
+                                        <span className="text-[13px] font-medium" style={{ color: 'var(--tg-positive, #00c896)' }}>{labels.stats.profitTarget}</span>
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.profitTarget ?? ''}
@@ -2075,7 +2077,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         />
                                     </div>
                                     <div className={statsRowClass}>
-                                        <span className="text-[13px] font-medium" style={{ color: '#ff4d4d' }}>{labels.stats.stopLoss}</span>
+                                        <span className="text-[13px] font-medium" style={{ color: 'var(--tg-negative, #ff4d4d)' }}>{labels.stats.stopLoss}</span>
                                         <input
                                             type="number" step="any" placeholder="--"
                                             value={currentTrade.stopLoss ?? ''}
@@ -2093,7 +2095,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         <div className="flex gap-0.5">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button key={star} onClick={() => setRating(star)} className="p-0.5 transition-transform hover:scale-110">
-                                                    <Star className={`w-[18px] h-[18px] fill-current ${(currentTrade.rating || 0) >= star ? 'text-amber-400' : 'text-slate-200 dark:text-slate-700'}`} />
+                                                    <Star className={`w-[18px] h-[18px] fill-current ${(currentTrade.rating || 0) >= star ? 'text-amber-400' : 'text-slate-200 dark:text-slate-400'}`} />
                                                 </button>
                                             ))}
                                         </div>
@@ -2118,19 +2120,19 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     <p className={`${statsSectionTitleClass} pb-2 pt-5`}>{language === 'cn' ? '风险与回报' : 'RISK & REWARD'}</p>
                                     <div className={statsRowClass}>
                                         <span className={statsLabelClass}>{labels.stats.tradeRisk}</span>
-                                        <span className={`text-[13px] font-semibold font-mono ${tradeRisk != null ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${tradeRisk != null ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-400'}`}>{tradeRisk != null ? `$${tradeRisk.toFixed(2)}` : '--'}</span>
                                     </div>
                                     <div className={statsRowClass}>
                                         <span className={statsLabelClass}>{labels.stats.initialTarget}</span>
-                                        <span className={`text-[13px] font-semibold font-mono ${initialTarget != null ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${initialTarget != null ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-400'}`}>{initialTarget != null ? `$${initialTarget.toFixed(2)}` : '--'}</span>
                                     </div>
                                     <div className={statsRowClass}>
                                         <span className={statsLabelClass}>{labels.stats.plannedR}</span>
-                                        <span className={`text-[13px] font-semibold font-mono ${plannedR !== 'N/A' ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-600'}`}>{plannedR}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${plannedR !== 'N/A' ? 'text-slate-800 dark:text-slate-100' : 'text-slate-300 dark:text-slate-400'}`}>{plannedR}</span>
                                     </div>
                                     <div className={statsRowClass}>
                                         <span className={statsLabelClass}>{labels.stats.realizedR}</span>
-                                        <span className={`text-[13px] font-semibold font-mono ${realizedRFromTarget !== 'N/A' ? (isWin ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-300 dark:text-slate-600'}`}>{realizedRFromTarget}</span>
+                                        <span className={`text-[13px] font-semibold font-mono ${realizedRFromTarget !== 'N/A' ? (isWin ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-300 dark:text-slate-400'}`}>{realizedRFromTarget}</span>
                                     </div>
 
                                     {/* CATEGORIES SECTION */}
@@ -2165,13 +2167,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     <div className="flex justify-between items-center pt-3">
                                         <button
                                             onClick={() => setIsAddCategoryOpen(true)}
-                                            className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-500"
+                                            className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-400 hover:text-indigo-500"
                                         >
                                             <Plus className="w-3 h-3" /> {language === 'cn' ? '新增分类' : 'Add new category'}
                                         </button>
                                         <button
                                             onClick={onManageTags}
-                                            className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-500 hover:text-indigo-500"
+                                            className="text-[11px] font-medium transition-colors flex items-center gap-1 text-slate-400 dark:text-slate-400 hover:text-indigo-500"
                                         >
                                             <Settings className="w-3 h-3" /> {language === 'cn' ? '管理标签' : 'Manage tags'}
                                         </button>
@@ -2201,15 +2203,15 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         <div className="flex items-center gap-3">
                                             <div className={`
                                                 w-8 h-8 rounded-lg flex items-center justify-center text-lg
-                                                ${activeStrategy ? '' : 'bg-slate-100 dark:bg-slate-700 text-slate-400'}
-                                            `} style={activeStrategy ? { backgroundColor: `${activeStrategy.color || '#6366f1'}20`, color: activeStrategy.color || '#6366f1' } : {}}>
+                                                ${activeStrategy ? '' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-400'}
+                                            `} style={activeStrategy ? { backgroundColor: `${activeStrategy.color || '#6366f1'}20`, color: activeStrategy.color || 'var(--tg-accent, #6366f1)' } : {}}>
                                                 {activeStrategy ? <BookOpen className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                                             </div>
-                                            <span className={`font-bold text-sm ${activeStrategy ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>
+                                            <span className={`font-bold text-sm ${activeStrategy ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}`}>
                                                 {activeStrategy ? activeStrategy.name : labels.playbook.noStrategy}
                                             </span>
                                         </div>
-                                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isStrategyMenuOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-300  dark:text-slate-400 ${isStrategyMenuOpen ? 'rotate-180' : ''}`} />
                                     </button>
 
                                     {isStrategyMenuOpen && (
@@ -2231,7 +2233,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                         }
                                                     `}
                                                 >
-                                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color || '#94a3b8' }}></div>
+                                                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: s.color || 'var(--tg-track, #94a3b8)' }}></div>
                                                     {s.name}
                                                     {currentTrade.setup === s.name && <Check className="w-4 h-4 ml-auto" />}
                                                 </button>
@@ -2245,7 +2247,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 mb-6 border border-slate-100 dark:border-slate-800">
                                             <div className="flex justify-between items-end mb-3">
                                                 <div>
-                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{labels.playbook.rulesFollowed}</span>
+                                                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">{labels.playbook.rulesFollowed}</span>
                                                     <div className="text-2xl font-black text-slate-800 dark:text-white mt-1">
                                                         {Math.round(complianceProgress)}%
                                                     </div>
@@ -2272,7 +2274,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                 <div key={sIdx} className="group/section">
                                                     <div className="flex items-center gap-3 mb-3">
                                                         <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800 group-hover/section:bg-slate-200 transition-colors"></div>
-                                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest">{section.title}</h4>
+                                                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest dark:text-slate-400">{section.title}</h4>
                                                         <div className="h-px flex-1 bg-slate-100 dark:bg-slate-800 group-hover/section:bg-slate-200 transition-colors"></div>
                                                     </div>
                                                     <div className="space-y-2">
@@ -2284,7 +2286,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                                         <input type="checkbox" className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-md checked:bg-emerald-500 transition-all cursor-pointer" checked={isChecked} onChange={() => handleToggleRuleCompliance(rule.id)} />
                                                                         <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" strokeWidth={3} />
                                                                     </div>
-                                                                    <span className={`text-sm leading-snug transition-colors ${isChecked ? 'text-slate-500 line-through decoration-slate-400/50' : 'text-slate-700 dark:text-slate-200 font-medium'}`}>{rule.text}</span>
+                                                                    <span className={`text-sm leading-snug transition-colors ${isChecked ? 'text-slate-500 line-through decoration-slate-400/50 dark:text-slate-400' : 'text-slate-700 dark:text-slate-200 font-medium'}`}>{rule.text}</span>
                                                                 </label>
                                                             );
                                                         })}
@@ -2312,16 +2314,16 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative overflow-hidden">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">{labels.executions.entryFill}</span>
-                                        <span className="text-xs text-slate-400 font-mono">{new Date(currentTrade.entryDate).toLocaleTimeString()}</span>
+                                        <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider dark:text-emerald-300">{labels.executions.entryFill}</span>
+                                        <span className="text-xs text-slate-400 font-mono dark:text-slate-400">{new Date(currentTrade.entryDate).toLocaleTimeString()}</span>
                                     </div>
                                     <span className="font-mono text-lg font-bold text-slate-900 dark:text-white">{currentTrade.quantity} @ {currentTrade.entryPrice}</span>
                                 </div>
                                 <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative overflow-hidden">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500"></div>
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className="text-xs font-bold text-rose-600 uppercase tracking-wider">{labels.executions.exitFill}</span>
-                                        <span className="text-xs text-slate-400 font-mono">{currentTrade.exitDate ? new Date(currentTrade.exitDate).toLocaleTimeString() : '--:--:--'}</span>
+                                        <span className="text-xs font-bold text-rose-600 uppercase tracking-wider dark:text-rose-300">{labels.executions.exitFill}</span>
+                                        <span className="text-xs text-slate-400 font-mono dark:text-slate-400">{currentTrade.exitDate ? new Date(currentTrade.exitDate).toLocaleTimeString() : '--:--:--'}</span>
                                     </div>
                                     <span className="font-mono text-lg font-bold text-slate-900 dark:text-white">{currentTrade.quantity} @ {currentTrade.exitPrice || '---'}</span>
                                 </div>
@@ -2339,7 +2341,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                             <img key={i} src={img} className="w-full rounded-xl border border-slate-200 dark:border-slate-700" alt={`Screenshot ${i+1}`} />
                                         ))}
                                     </div>
-                                ) : <div className="text-sm text-slate-500 italic">{labels.attachments.none}</div>}
+                                ) : <div className="text-sm text-slate-500 italic dark:text-slate-400">{labels.attachments.none}</div>}
                             </div>
                         )}
                     </div>
@@ -2354,7 +2356,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                         <div ref={chartContainerRef} className="w-full h-full" />
                     </div>
                     <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-slate-700">
-                        <GripHorizontal className="w-4 h-4 text-slate-400" />
+                        <GripHorizontal className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                     </div>
                     <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3">
                         <NotesPanel
@@ -2396,7 +2398,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             {/* Modals (Existing) */}
             {isAddCategoryOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-sm p-4 border border-slate-200">
+                    <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-sm p-4 border border-slate-200 dark:border-slate-700">
                         <h3 className="font-bold mb-4">{language === 'cn' ? '新增分类' : 'Add New Category'}</h3>
                         <input type="text" placeholder={language === 'cn' ? '分类名称' : 'Category Name'} value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg px-3 py-2 text-sm mb-4" />
                         <button onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold">{language === 'cn' ? '创建' : 'Create'}</button>

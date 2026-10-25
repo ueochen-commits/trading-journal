@@ -79,8 +79,8 @@ const generateTimeOptions = () => {
 };
 
 const inputStyle: React.CSSProperties = {
-  height: 34, borderRadius: 7, border: '1px solid #e8e8f0',
-  padding: '0 10px', fontSize: 13, color: '#1a1d2e', background: '#fff', outline: 'none',
+  height: 34, borderRadius: 7, border: '1px solid var(--tg-border, #e8e8f0)',
+  padding: '0 10px', fontSize: 13, color: 'var(--tg-text, #1a1d2e)', background: 'var(--tg-surface, #fff)', outline: 'none',
 };
 
 const selectSt = (disabled: boolean): React.CSSProperties => ({
@@ -90,7 +90,7 @@ const selectSt = (disabled: boolean): React.CSSProperties => ({
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 const InfoIcon = () => (
-  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ color: '#b8bbc8', flexShrink: 0 }}>
+  <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ color: 'var(--tg-muted, #b8bbc8)', flexShrink: 0 }}>
     <circle cx="6.5" cy="6.5" r="5.75" stroke="currentColor" strokeWidth="1.1"/>
     <path d="M6.5 5.8v3.5M6.5 4.2h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
   </svg>
@@ -99,7 +99,7 @@ const InfoIcon = () => (
 const Toggle: React.FC<{ enabled: boolean; onToggle: (v: boolean) => void }> = ({ enabled, onToggle }) => (
   <div onClick={() => onToggle(!enabled)} style={{
     width: 44, height: 26, borderRadius: 13, cursor: 'pointer', flexShrink: 0,
-    background: enabled ? '#6366f1' : '#e0e0ea', position: 'relative', transition: 'background 0.2s',
+    background: enabled ? '#6366f1' : 'var(--tg-accent-soft, #e0e0ea)', position: 'relative', transition: 'background 0.2s',
   }}>
     <div style={{
       width: 22, height: 22, borderRadius: 11, background: '#fff',
@@ -113,11 +113,11 @@ const ToggleRow: React.FC<{
   enabled: boolean; onToggle: (v: boolean) => void;
   title: string; desc?: string; children?: React.ReactNode;
 }> = ({ enabled, onToggle, title, desc, children }) => (
-  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '16px 28px', borderBottom: '1px solid #f5f5fa' }}>
+  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16, padding: '16px 28px', borderBottom: '1px solid var(--tg-border, #f5f5fa)' }}>
     <Toggle enabled={enabled} onToggle={onToggle} />
     <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: enabled ? '#1a1d2e' : '#9396aa' }}>{title}</div>
-      {desc && <div style={{ fontSize: 12, color: '#b0b3c6', marginTop: 3, lineHeight: 1.5, whiteSpace: 'pre-line' }}>{desc}</div>}
+      <div style={{ fontSize: 14, fontWeight: 600, color: enabled ? 'var(--tg-text, #1a1d2e)' : 'var(--tg-muted, #9396aa)' }}>{title}</div>
+      {desc && <div style={{ fontSize: 12, color: 'var(--tg-muted, #b0b3c6)', marginTop: 3, lineHeight: 1.5, whiteSpace: 'pre-line' }}>{desc}</div>}
     </div>
     {children && <div style={{ flexShrink: 0, marginTop: 2 }}>{children}</div>}
   </div>
@@ -146,10 +146,10 @@ function buildWeeks(): (string | null)[][] {
 }
 
 function heatColor(v: number | undefined): string {
-  if (!v) return '#f0f0f6';
-  if (v <= 0.25) return '#eef0ff';
-  if (v <= 0.5) return '#c7cafd';
-  if (v <= 0.75) return '#9b9ef9';
+  if (!v) return 'var(--tg-track, #f0f0f6)';
+  if (v <= 0.25) return 'var(--tg-heat-1, #eef0ff)';
+  if (v <= 0.5) return 'var(--tg-heat-2, #c7cafd)';
+  if (v <= 0.75) return 'var(--tg-heat-3, #9b9ef9)';
   if (v < 1) return '#6366f1';
   return '#4338ca';
 }
@@ -168,11 +168,11 @@ const HeatmapCalendar: React.FC<{ data: Record<string, number> }> = ({ data }) =
       {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 11, padding: '4px 8px', borderRadius: 6, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}: {Math.round((data[tip.key] ?? 0) * 100)}%</div>}
       <div style={{ display: 'flex', gap: 3 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 3, paddingTop: 20, marginRight: 2 }}>
-          {DAY_LABELS.map(d => <div key={d} style={{ height: 18, fontSize: 10, color: '#b0b3c6', lineHeight: '18px', width: 28 }}>{d}</div>)}
+          {DAY_LABELS.map(d => <div key={d} style={{ height: 18, fontSize: 10, color: 'var(--tg-muted, #b0b3c6)', lineHeight: '18px', width: 28 }}>{d}</div>)}
         </div>
         <div>
           <div style={{ display: 'flex', gap: 3, marginBottom: 4, height: 16 }}>
-            {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 18, fontSize: 10, color: '#b0b3c6', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
+            {weeks.map((_, wi) => { const ml = monthLabels.find(m => m.col === wi); return <div key={wi} style={{ width: 18, fontSize: 10, color: 'var(--tg-muted, #b0b3c6)', whiteSpace: 'nowrap' }}>{ml?.label || ''}</div>; })}
           </div>
           <div style={{ display: 'flex', gap: 3 }}>
             {weeks.map((week, wi) => (
@@ -435,39 +435,39 @@ const Psychology: React.FC<PsychologyProps> = ({
     });
   }, [ruleSettings, manualRules, dbExecutionLogs, trades, language]);
 
-  const card: React.CSSProperties = { background: '#fff', border: '1px solid #ededf3', borderRadius: 12 };
+  const card: React.CSSProperties = { background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12 };
 
   return (
-    <div style={{ background: '#f8f9fc', minHeight: '100vh', padding: '28px 32px', width: '100%' }}>
+    <div style={{ background: 'var(--tg-accent-soft, #f8f9fc)', minHeight: '100vh', padding: '28px 32px', width: '100%' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 700, color: '#1a1d2e', margin: 0 }}>{language === 'cn' ? '心态风控' : 'Progress Tracker'}</h1>
+        <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', margin: 0 }}>{language === 'cn' ? '心态风控' : 'Progress Tracker'}</h1>
       </div>
 
       {/* Top 3 stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20, maxWidth: 560 }}>
         {/* Streak */}
         <div style={{ ...card, padding: '18px 20px', minHeight: 110 }}>
-          <div style={{ fontSize: 12, color: '#9396aa', fontWeight: 500, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', fontWeight: 500, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
             {language === 'cn' ? '连续天数' : 'Current streak'} <InfoIcon />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#1a1d2e' }}>{currentStreak} {language === 'cn' ? '天' : 'days'} {currentStreak === 0 ? '😐' : currentStreak > 3 ? '🔥' : '👍'}</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)' }}>{currentStreak} {language === 'cn' ? '天' : 'days'} {currentStreak === 0 ? '😐' : currentStreak > 3 ? '🔥' : '👍'}</div>
         </div>
         {/* Period score */}
         <div style={{ ...card, padding: '18px 20px', minHeight: 110 }}>
-          <div style={{ fontSize: 12, color: '#9396aa', fontWeight: 500, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', fontWeight: 500, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
             {language === 'cn' ? '当期得分' : 'Period score'} <InfoIcon />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: periodScore === null ? '#9396aa' : periodScore >= 70 ? '#00c896' : periodScore >= 40 ? '#f59e0b' : '#ff4d6a' }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: periodScore === null ? 'var(--tg-muted, #9396aa)' : periodScore >= 70 ? 'var(--tg-positive, #00c896)' : periodScore >= 40 ? 'var(--tg-warning, #f59e0b)' : 'var(--tg-negative, #ff4d6a)' }}>
             {periodScore === null ? '--' : `${periodScore}%`}
           </div>
         </div>
         {/* Today's progress */}
         <div style={{ ...card, padding: '18px 20px', minHeight: 110 }}>
-          <div style={{ fontSize: 12, color: '#9396aa', fontWeight: 500, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
+          <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', fontWeight: 500, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 4 }}>
             {language === 'cn' ? '今日进度' : "Today's progress"} <InfoIcon />
           </div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#1a1d2e', marginBottom: 10 }}>{todayCompleted}/{todayTotal}</div>
-          <div style={{ height: 3, background: '#f0f0f6', borderRadius: 2 }}>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', marginBottom: 10 }}>{todayCompleted}/{todayTotal}</div>
+          <div style={{ height: 3, background: 'var(--tg-accent-soft, #f0f0f6)', borderRadius: 2 }}>
             <div style={{ height: '100%', width: todayTotal > 0 ? `${(todayCompleted / todayTotal) * 100}%` : '0%', background: '#6366f1', borderRadius: 2, transition: 'width 0.3s' }} />
           </div>
         </div>
@@ -477,12 +477,12 @@ const Psychology: React.FC<PsychologyProps> = ({
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 16, marginBottom: 20, alignItems: 'stretch' }}>
         {/* Today rules */}
         <div style={{ ...card, padding: 20, display: 'flex', flexDirection: 'column', minHeight: 280 }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e', marginBottom: 16 }}>{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
+          <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', marginBottom: 16 }}>{language === 'cn' ? '今日规则' : "Today's Rules"}</div>
           {todayRulesList.length === 0 ? (
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
               <img src="/todolist.png" alt="" style={{ width: 110, height: 110, objectFit: 'contain', marginBottom: 8 }} />
-              <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? (allRuleIds.length === 0 ? '暂无规则' : '今日无生效规则') : (allRuleIds.length === 0 ? 'No rules yet' : 'No rules active today')}</div>
-              <div style={{ fontSize: 12, color: '#9396aa', textAlign: 'center', lineHeight: 1.6, maxWidth: 200 }}>
+              <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? (allRuleIds.length === 0 ? '暂无规则' : '今日无生效规则') : (allRuleIds.length === 0 ? 'No rules yet' : 'No rules active today')}</div>
+              <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', textAlign: 'center', lineHeight: 1.6, maxWidth: 200 }}>
                 {allRuleIds.length === 0
                   ? (language === 'cn' ? '点击「编辑规则」开始配置' : 'Click "Edit rules" to get started')
                   : (language === 'cn' ? '要更改此设置，请更新您的交易日或添加手动规则。' : `Today (${todayDayAbbr}) is not a trading day`)}
@@ -535,23 +535,23 @@ const Psychology: React.FC<PsychologyProps> = ({
                 });
 
                 return ruleRows.map((rule, i) => (
-                  <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < ruleRows.length - 1 ? '1px solid #f5f5fa' : 'none' }}>
+                  <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 0', borderBottom: i < ruleRows.length - 1 ? '1px solid var(--tg-border, #f5f5fa)' : 'none' }}>
                     {/* Status icon */}
                     <div style={{
                       width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      background: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#f0f0f6',
-                      border: `2px solid ${rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#e0e0ea'}`,
+                      background: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : 'var(--tg-accent-soft, #f0f0f6)',
+                      border: `2px solid ${rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-border, #e0e0ea)'}`,
                     }}>
                       {rule.status === 'pass' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✓</span>}
                       {rule.status === 'fail' && <span style={{ color: '#fff', fontSize: 10, fontWeight: 700 }}>✕</span>}
                     </div>
                     {/* Rule name */}
-                    <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? '#9396aa' : '#1a1d2e', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
+                    <span style={{ flex: 1, fontSize: 12.5, color: rule.status === 'pass' ? 'var(--tg-muted, #9396aa)' : 'var(--tg-text, #1a1d2e)', textDecoration: rule.status === 'pass' ? 'line-through' : 'none' }}>{rule.name}</span>
                     {/* Value — plain text, no badge */}
                     <span style={{
                       fontSize: 12, fontWeight: 400, flexShrink: 0,
-                      color: rule.status === 'pass' ? '#00c896' : rule.status === 'fail' ? '#ff4d6a' : '#b0b3c6',
+                      color: rule.status === 'pass' ? 'var(--tg-positive, #00c896)' : rule.status === 'fail' ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-muted, #b0b3c6)',
                     }}>{rule.value}</span>
                   </div>
                 ));
@@ -563,27 +563,27 @@ const Psychology: React.FC<PsychologyProps> = ({
         {/* Heatmap */}
         <div style={{ ...card, padding: '20px 24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: '#1a1d2e' }}>{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '规则追踪热力图' : 'Progress Tracker'}</span>
             <InfoIcon />
           </div>
           <HeatmapCalendar data={heatmapData} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end', marginTop: 12 }}>
-            <span style={{ fontSize: 11, color: '#b0b3c6' }}>Less</span>
+            <span style={{ fontSize: 11, color: 'var(--tg-muted, #b0b3c6)' }}>Less</span>
             {['#f0f0f6','#eef0ff','#c7cafd','#9b9ef9','#6366f1','#4338ca'].map((c, i) => <span key={i} style={{ width: 12, height: 12, background: c, borderRadius: 2, display: 'inline-block' }} />)}
-            <span style={{ fontSize: 11, color: '#b0b3c6' }}>More</span>
+            <span style={{ fontSize: 11, color: 'var(--tg-muted, #b0b3c6)' }}>More</span>
           </div>
         </div>
       </div>
 
       {/* Rules table */}
       <div style={{ ...card, overflow: 'hidden' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid #f0f0f6' }}>
-          <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1d2e' }}>{language === 'cn' ? '当前规则' : 'Current Rules'}</span>
-          <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 7, border: '1px solid #e0e0ea', background: '#fff', fontSize: 13, color: '#4a4d6a', fontWeight: 500, cursor: 'pointer' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--tg-border, #f0f0f6)' }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '当前规则' : 'Current Rules'}</span>
+          <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 7, border: '1px solid var(--tg-border, #e0e0ea)', background: 'var(--tg-surface, #fff)', fontSize: 13, color: 'var(--tg-secondary, #4a4d6a)', fontWeight: 500, cursor: 'pointer' }}>
             <Edit2 size={13} /> {language === 'cn' ? '编辑规则' : 'Edit rules'}
           </button>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr 1fr', padding: '10px 24px', background: '#fafafa', borderBottom: '1px solid #f0f0f6' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr 1fr', padding: '10px 24px', background: 'var(--tg-surface-muted, #fafafa)', borderBottom: '1px solid var(--tg-border, #f0f0f6)' }}>
           {[
           language === 'cn' ? '规则' : 'RULE',
           language === 'cn' ? '条件' : 'CONDITION',
@@ -591,26 +591,26 @@ const Psychology: React.FC<PsychologyProps> = ({
           language === 'cn' ? '平均表现' : 'AVG PERFORMANCE',
           language === 'cn' ? '执行率' : 'FOLLOW RATE',
         ].map((h, i) => (
-            <span key={h} style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', letterSpacing: '0.06em', textAlign: i > 1 ? 'center' : 'left' }}>{h}</span>
+            <span key={h} style={{ fontSize: 11, fontWeight: 700, color: 'var(--tg-accent, #6366f1)', letterSpacing: '0.06em', textAlign: i > 1 ? 'center' : 'left' }}>{h}</span>
           ))}
         </div>
         {tableRules.length === 0 ? (
-          <div style={{ padding: '40px', textAlign: 'center', color: '#c0c3d4', fontSize: 13 }}>{language === 'cn' ? '暂无规则，点击「编辑规则」开始配置' : 'No rules yet. Click "Edit rules" to get started.'}</div>
+          <div style={{ padding: '40px', textAlign: 'center', color: 'var(--tg-muted, #c0c3d4)', fontSize: 13 }}>{language === 'cn' ? '暂无规则，点击「编辑规则」开始配置' : 'No rules yet. Click "Edit rules" to get started.'}</div>
         ) : tableRules.map((rule, i) => (
           <div key={rule.id}
-            style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr 1fr', padding: '13px 24px', borderBottom: i < tableRules.length - 1 ? '1px solid #f5f5fa' : 'none', alignItems: 'center', transition: 'background 0.1s' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = '#fafafe'}
+            style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1.5fr 1fr', padding: '13px 24px', borderBottom: i < tableRules.length - 1 ? '1px solid var(--tg-border, #f5f5fa)' : 'none', alignItems: 'center', transition: 'background 0.1s' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--tg-surface, #fafafe)'}
             onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: 13, color: '#1a1d2e' }}>{rule.name}</span>
+              <span style={{ fontSize: 13, color: 'var(--tg-text, #1a1d2e)' }}>{rule.name}</span>
             </div>
-            <span style={{ fontSize: 13, color: '#4a4d6a' }}>{rule.condition}</span>
-            <span style={{ fontSize: 13, color: '#4a4d6a', textAlign: 'center' }}>{rule.streak}</span>
-            <span style={{ fontSize: 13, textAlign: 'center', color: rule.avgPerf === null ? '#9396aa' : rule.avgPerf > 0 ? '#00c896' : rule.avgPerf < 0 ? '#ff4d6a' : '#9396aa' }}>
+            <span style={{ fontSize: 13, color: 'var(--tg-secondary, #4a4d6a)' }}>{rule.condition}</span>
+            <span style={{ fontSize: 13, color: 'var(--tg-secondary, #4a4d6a)', textAlign: 'center' }}>{rule.streak}</span>
+            <span style={{ fontSize: 13, textAlign: 'center', color: rule.avgPerf === null ? 'var(--tg-muted, #9396aa)' : rule.avgPerf > 0 ? 'var(--tg-positive, #00c896)' : rule.avgPerf < 0 ? 'var(--tg-negative, #ff4d6a)' : 'var(--tg-muted, #9396aa)' }}>
               {rule.avgPerf === null ? '–' : `${rule.avgPerf > 0 ? '+' : ''}$${Math.abs(rule.avgPerf).toFixed(2)}`}
             </span>
-            <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', color: rule.followRate > 70 ? '#00c896' : rule.followRate > 30 ? '#f59e0b' : '#ff4d6a' }}>{rule.followRate}%</span>
+            <span style={{ fontSize: 13, fontWeight: 700, textAlign: 'center', color: rule.followRate > 70 ? 'var(--tg-positive, #00c896)' : rule.followRate > 30 ? 'var(--tg-warning, #f59e0b)' : 'var(--tg-negative, #ff4d6a)' }}>{rule.followRate}%</span>
           </div>
         ))}
       </div>
@@ -660,30 +660,30 @@ const RulesModal: React.FC<{
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 660, maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
+      <div style={{ background: 'var(--tg-surface, #fff)', borderRadius: 16, width: '100%', maxWidth: 660, maxHeight: '88vh', display: 'flex', flexDirection: 'column', boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}>
 
         {/* Header */}
-        <div style={{ padding: '22px 28px 14px', borderBottom: '1px solid #f0f0f6', flexShrink: 0 }}>
+        <div style={{ padding: '22px 28px 14px', borderBottom: '1px solid var(--tg-border, #f0f0f6)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#1a1d2e', margin: 0, letterSpacing: '-0.3px' }}>{language === 'cn' ? '规则设置' : 'Rules'}</h2>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #e8e8f0', background: 'transparent', fontSize: 16, color: '#9396aa', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+            <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', margin: 0, letterSpacing: '-0.3px' }}>{language === 'cn' ? '规则设置' : 'Rules'}</h2>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--tg-border, #e8e8f0)', background: 'transparent', fontSize: 16, color: 'var(--tg-muted, #9396aa)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
           </div>
-          <p style={{ fontSize: 12, color: '#9396aa', marginTop: 5, marginBottom: 0, lineHeight: 1.6 }}>{language === 'cn' ? '修改只会影响今天及以后的得分记录' : 'Changes you make will only update your scoring for today and for future days.'}</p>
+          <p style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginTop: 5, marginBottom: 0, lineHeight: 1.6 }}>{language === 'cn' ? '修改只会影响今天及以后的得分记录' : 'Changes you make will only update your scoring for today and for future days.'}</p>
         </div>
 
         {/* Scrollable body */}
         <div style={{ flex: 1, overflowY: 'auto' }}>
 
           {/* Trading days */}
-          <div style={{ padding: '18px 28px', borderBottom: '1px solid #f5f5fa' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1d2e', marginBottom: 4 }}>{language === 'cn' ? '交易天数' : 'Trading days'}</div>
-            <div style={{ fontSize: 12, color: '#9396aa', marginBottom: 12 }}>{language === 'cn' ? '规则在哪些天生效。' : 'The days on which these rules should be active.'}</div>
+          <div style={{ padding: '18px 28px', borderBottom: '1px solid var(--tg-border, #f5f5fa)' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', marginBottom: 4 }}>{language === 'cn' ? '交易天数' : 'Trading days'}</div>
+            <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginBottom: 12 }}>{language === 'cn' ? '规则在哪些天生效。' : 'The days on which these rules should be active.'}</div>
             <div style={{ display: 'flex', gap: 6 }}>
               {DAYS.map(day => {
                 const active = settings.trading_days.includes(day);
                 return (
                   <button key={day} onClick={() => update('trading_days', active ? settings.trading_days.filter(d => d !== day) : [...settings.trading_days, day])}
-                    style={{ width: 44, height: 38, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', background: active ? 'transparent' : '#f5f5fa', color: active ? '#00b894' : '#9396aa', border: active ? '1.5px solid #00b894' : '1px solid #e8e8f0', transition: 'all 0.15s' }}>
+                    style={{ width: 44, height: 38, borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer', background: active ? 'transparent' : 'var(--tg-accent-soft, #f5f5fa)', color: active ? 'var(--tg-positive, #00b894)' : 'var(--tg-muted, #9396aa)', border: active ? '1.5px solid #00b894' : '1px solid var(--tg-border, #e8e8f0)', transition: 'all 0.15s' }}>
                     {day}
                   </button>
                 );
@@ -704,7 +704,7 @@ const RulesModal: React.FC<{
               <select value={settings.trading_hours_from} onChange={e => update('trading_hours_from', e.target.value)} disabled={!settings.trading_hours_enabled} style={selectSt(!settings.trading_hours_enabled)}>
                 {generateTimeOptions().map(t => <option key={t} value={t}>{t}</option>)}
               </select>
-              <span style={{ fontSize: 11, color: '#9396aa' }}>to</span>
+              <span style={{ fontSize: 11, color: 'var(--tg-muted, #9396aa)' }}>to</span>
               <select value={settings.trading_hours_to} onChange={e => update('trading_hours_to', e.target.value)} disabled={!settings.trading_hours_enabled} style={selectSt(!settings.trading_hours_enabled)}>
                 {generateTimeOptions().map(t => <option key={t} value={t}>{t}</option>)}
               </select>
@@ -726,7 +726,7 @@ const RulesModal: React.FC<{
           <ToggleRow enabled={settings.net_max_loss_per_trade_enabled} onToggle={v => update('net_max_loss_per_trade_enabled', v)} title={language === 'cn' ? '单笔最大亏损限制' : 'Net max loss /trade'} desc={language === 'cn' ? '单笔交易的最大亏损金额或账户余额百分比。' : 'The maximum net loss on a trade in amount or percentage of the account balance.'}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
               {['%', '$'].map(t => (
-                <button key={t} onClick={() => update('net_max_loss_per_trade_type', t)} style={{ width: 34, height: 34, borderRadius: 6, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: settings.net_max_loss_per_trade_type === t ? '#6366f1' : '#f0f0f6', color: settings.net_max_loss_per_trade_type === t ? '#fff' : '#9396aa' }}>{t === '$' ? currencySymbol : t}</button>
+                <button key={t} onClick={() => update('net_max_loss_per_trade_type', t)} style={{ width: 34, height: 34, borderRadius: 6, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: settings.net_max_loss_per_trade_type === t ? '#6366f1' : 'var(--tg-accent-soft, #f0f0f6)', color: settings.net_max_loss_per_trade_type === t ? '#fff' : 'var(--tg-muted, #9396aa)' }}>{t === '$' ? currencySymbol : t}</button>
               ))}
               <input type="number" value={settings.net_max_loss_per_trade_value} onChange={e => update('net_max_loss_per_trade_value', Number(e.target.value))} disabled={!settings.net_max_loss_per_trade_enabled} style={{ ...inputStyle, width: 80 }} />
             </div>
@@ -738,50 +738,50 @@ const RulesModal: React.FC<{
           </ToggleRow>
 
           {/* Manual rules */}
-          <div style={{ padding: '18px 28px', borderTop: '1px solid #f0f0f6' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1d2e', marginBottom: 2 }}>{language === 'cn' ? '手动规则' : 'Manual rules'}</div>
-            <div style={{ fontSize: 12, color: '#9396aa', marginBottom: 12 }}>{language === 'cn' ? '规则将作为每日检查清单。' : 'The rule will be added as a daily check list'}</div>
+          <div style={{ padding: '18px 28px', borderTop: '1px solid var(--tg-border, #f0f0f6)' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', marginBottom: 2 }}>{language === 'cn' ? '手动规则' : 'Manual rules'}</div>
+            <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginBottom: 12 }}>{language === 'cn' ? '规则将作为每日检查清单。' : 'The rule will be added as a daily check list'}</div>
             <input type="text" placeholder={language === 'cn' ? '输入规则名称...' : 'Rule name...'} value={newRuleName} onChange={e => setNewRuleName(e.target.value)} onKeyDown={e => e.key === 'Enter' && addManualRule()} style={{ ...inputStyle, width: '100%', marginBottom: 8, boxSizing: 'border-box' }} />
             <div style={{ display: 'flex', gap: 5, marginBottom: 10 }}>
               {DAYS.map(day => {
                 const active = newRuleDays.includes(day);
-                return <button key={day} onClick={() => setNewRuleDays(prev => active ? prev.filter(d => d !== day) : [...prev, day])} style={{ width: 34, height: 28, borderRadius: 5, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: active ? 'transparent' : '#f5f5fa', color: active ? '#6366f1' : '#b0b3c6', border: active ? '1.5px solid #6366f1' : '1px solid #e8e8f0' }}>{day}</button>;
+                return <button key={day} onClick={() => setNewRuleDays(prev => active ? prev.filter(d => d !== day) : [...prev, day])} style={{ width: 34, height: 28, borderRadius: 5, fontSize: 11, fontWeight: 700, cursor: 'pointer', background: active ? 'transparent' : 'var(--tg-accent-soft, #f5f5fa)', color: active ? 'var(--tg-accent, #6366f1)' : 'var(--tg-muted, #b0b3c6)', border: active ? '1.5px solid var(--tg-accent-border, #6366f1)' : '1px solid var(--tg-border, #e8e8f0)' }}>{day}</button>;
               })}
-              <button onClick={addManualRule} disabled={!newRuleName.trim()} style={{ marginLeft: 'auto', padding: '0 14px', height: 28, borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: newRuleName.trim() ? 'pointer' : 'not-allowed', background: newRuleName.trim() ? '#6366f1' : '#e8e8f0', color: newRuleName.trim() ? '#fff' : '#b0b3c6' }}>{language === 'cn' ? '+ 添加' : '+ Add'}</button>
+              <button onClick={addManualRule} disabled={!newRuleName.trim()} style={{ marginLeft: 'auto', padding: '0 14px', height: 28, borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: newRuleName.trim() ? 'pointer' : 'not-allowed', background: newRuleName.trim() ? '#6366f1' : 'var(--tg-accent-soft, #e8e8f0)', color: newRuleName.trim() ? '#fff' : 'var(--tg-muted, #b0b3c6)' }}>{language === 'cn' ? '+ 添加' : '+ Add'}</button>
             </div>
             {manualRules.map(rule => (
-              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: '#fafafa', borderRadius: 8, marginBottom: 6, border: '1px solid #f0f0f6' }}>
-                <span style={{ flex: 1, fontSize: 13, color: '#1a1d2e' }}>{rule.name}</span>
+              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--tg-surface-muted, #fafafa)', borderRadius: 8, marginBottom: 6, border: '1px solid var(--tg-border, #f0f0f6)' }}>
+                <span style={{ flex: 1, fontSize: 13, color: 'var(--tg-text, #1a1d2e)' }}>{rule.name}</span>
                 <div style={{ display: 'flex', gap: 3 }}>
-                  {DAYS.map(day => <span key={day} style={{ width: 24, height: 20, borderRadius: 3, fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.active_days.includes(day) ? '#eef0ff' : '#f5f5fa', color: rule.active_days.includes(day) ? '#6366f1' : '#d0d3e0' }}>{day}</span>)}
+                  {DAYS.map(day => <span key={day} style={{ width: 24, height: 20, borderRadius: 3, fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.active_days.includes(day) ? 'var(--tg-accent-soft, #eef0ff)' : 'var(--tg-accent-soft, #f5f5fa)', color: rule.active_days.includes(day) ? 'var(--tg-accent, #6366f1)' : 'var(--tg-muted, #d0d3e0)' }}>{day}</span>)}
                 </div>
-                <button onClick={() => { setManualRules(prev => prev.filter(r => r.id !== rule.id)); setIsDirty(true); }} style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: '#fee2e2', color: '#ff4d6a', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                <button onClick={() => { setManualRules(prev => prev.filter(r => r.id !== rule.id)); setIsDirty(true); }} style={{ width: 24, height: 24, borderRadius: 5, border: 'none', background: 'var(--tg-negative-soft, #fee2e2)', color: 'var(--tg-negative, #ff4d6a)', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
               </div>
             ))}
           </div>
 
           {/* Reset */}
-          <div style={{ padding: '18px 28px 24px', borderTop: '1px solid #f0f0f6' }}>
-            <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1d2e', marginBottom: 4 }}>{language === 'cn' ? '重置进度' : 'Reset your progress tracker'}</div>
-            <div style={{ fontSize: 12, color: '#9396aa', marginBottom: 14 }}>{language === 'cn' ? '重新开始，清除所有规则、连续天数和习惯记录。' : 'Start over with new rules, streak and habit building.'}</div>
+          <div style={{ padding: '18px 28px 24px', borderTop: '1px solid var(--tg-border, #f0f0f6)' }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', marginBottom: 4 }}>{language === 'cn' ? '重置进度' : 'Reset your progress tracker'}</div>
+            <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginBottom: 14 }}>{language === 'cn' ? '重新开始，清除所有规则、连续天数和习惯记录。' : 'Start over with new rules, streak and habit building.'}</div>
             {!showResetConfirm ? (
               <button onClick={() => setShowResetConfirm(true)} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: '#ef4444', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', letterSpacing: '0.02em' }}>
                 {language === 'cn' ? '重置所有进度' : 'Reset all progress'}
               </button>
             ) : (
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 13, color: '#ff4d6a', fontWeight: 500 }}>{language === 'cn' ? '确认重置？此操作不可撤销。' : 'Confirm reset? This cannot be undone.'}</span>
+                <span style={{ fontSize: 13, color: 'var(--tg-negative, #ff4d6a)', fontWeight: 500 }}>{language === 'cn' ? '确认重置？此操作不可撤销。' : 'Confirm reset? This cannot be undone.'}</span>
                 <button onClick={() => { setManualRules([]); setSettings(DEFAULT_SETTINGS); setShowResetConfirm(false); setIsDirty(true); }} style={{ padding: '6px 14px', borderRadius: 6, background: '#ff4d6a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{language === 'cn' ? '确认' : 'Confirm'}</button>
-                <button onClick={() => setShowResetConfirm(false)} style={{ padding: '6px 14px', borderRadius: 6, background: '#f5f5fa', color: '#4a4d6a', border: '1px solid #e8e8f0', fontSize: 12, cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
+                <button onClick={() => setShowResetConfirm(false)} style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--tg-accent-soft, #f5f5fa)', color: 'var(--tg-secondary, #4a4d6a)', border: '1px solid var(--tg-border, #e8e8f0)', fontSize: 12, cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
               </div>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div style={{ padding: '16px 28px', borderTop: '1px solid #f0f0f6', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid #e0e0ea', background: 'transparent', fontSize: 13, fontWeight: 500, color: '#4a4d6a', cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
-          <button onClick={() => { onSave(settings, manualRules); setIsDirty(false); onClose(); }} disabled={!isDirty} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: isDirty ? 'pointer' : 'not-allowed', background: isDirty ? '#6366f1' : '#e8e8f0', color: isDirty ? '#fff' : '#b0b3c6', letterSpacing: '0.02em' }}>{language === 'cn' ? '保存' : 'Save changes'}</button>
+        <div style={{ padding: '16px 28px', borderTop: '1px solid var(--tg-border, #f0f0f6)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
+          <button onClick={onClose} style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid var(--tg-border, #e0e0ea)', background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--tg-secondary, #4a4d6a)', cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
+          <button onClick={() => { onSave(settings, manualRules); setIsDirty(false); onClose(); }} disabled={!isDirty} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: isDirty ? 'pointer' : 'not-allowed', background: isDirty ? '#6366f1' : 'var(--tg-accent-soft, #e8e8f0)', color: isDirty ? '#fff' : 'var(--tg-muted, #b0b3c6)', letterSpacing: '0.02em' }}>{language === 'cn' ? '保存' : 'Save changes'}</button>
         </div>
       </div>
     </div>

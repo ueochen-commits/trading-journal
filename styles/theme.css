@@ -1,0 +1,53 @@
+/* Inline UI keeps its light fallback. Shared dark roles cover every feature
+   without overriding author-selected editor colors or exported images. */
+:root {
+  color-scheme: light;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f3f4f6;
+  --text-primary: #111827;
+  --text-secondary: #6b7280;
+  --border-primary: #e2e8f0;
+  --border-secondary: #d1d5db;
+}
+
+html.dark {
+  color-scheme: dark;
+  --tg-page: #020617;
+  --tg-surface: #0f172a;
+  --tg-surface-muted: #172033;
+  --tg-track: #334155;
+  --tg-text: #f1f5f9;
+  --tg-secondary: #cbd5e1;
+  --tg-muted: #94a3b8;
+  --tg-border: #334155;
+  --tg-grid: #293548;
+  --tg-heat-1: #37305c;
+  --tg-heat-2: #4c3d7d;
+  --tg-heat-3: #6d5fbb;
+  --tg-accent: #a5b4fc;
+  --tg-accent-border: #818cf8;
+  --tg-accent-soft: #252445;
+  --tg-positive: #34d399;
+  --tg-positive-soft: #102e2b;
+  --tg-negative: #fb7185;
+  --tg-negative-soft: #35202e;
+  --tg-warning: #fbbf24;
+  --tg-warning-soft: #342b20;
+  --tg-info: #7dd3fc;
+  --tg-info-soft: #172f45;
+  --bg-primary: var(--tg-surface);
+  --bg-secondary: var(--tg-surface-muted);
+  --bg-tertiary: var(--tg-track);
+  --text-primary: var(--tg-text);
+  --text-secondary: var(--tg-muted);
+  --border-primary: var(--tg-border);
+  --border-secondary: var(--tg-border);
+}
+
+html.dark body { background: var(--tg-page); color: var(--tg-text); }
+html.dark input::placeholder,
+html.dark textarea::placeholder,
+html.dark [contenteditable]:empty::before { color: var(--tg-muted); }
+html.dark select option { background: var(--tg-surface); color: var(--tg-text); }
+html.dark .notes-panel-editor .tiptap { color: var(--tg-text); }

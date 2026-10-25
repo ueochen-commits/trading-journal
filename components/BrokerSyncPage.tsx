@@ -107,11 +107,11 @@ const BrokerSyncPage: React.FC<Props> = ({
     width: '100%',
     height: 44,
     borderRadius: 10,
-    border: `1px solid ${focusedField === fieldName ? '#5b5bd6' : '#d8d4ee'}`,
-    background: '#ffffff',
+    border: `1px solid ${focusedField === fieldName ? '#5b5bd6' : 'var(--tg-border, #d8d4ee)'}`,
+    background: 'var(--tg-surface, #ffffff)',
     padding: '0 14px',
     fontSize: 14,
-    color: '#1a1a3a',
+    color: 'var(--tg-text, #1a1a3a)',
     boxSizing: 'border-box',
     outline: 'none',
     transition: 'border-color 0.15s, box-shadow 0.15s',
@@ -121,7 +121,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const labelStyle: React.CSSProperties = {
     fontSize: 13,
     fontWeight: 500,
-    color: '#4a4a6a',
+    color: 'var(--tg-secondary, #4a4a6a)',
     marginBottom: 6,
     display: 'block',
   };
@@ -136,7 +136,7 @@ const BrokerSyncPage: React.FC<Props> = ({
   const StepItem = ({ text, children }: { text: string; children?: React.ReactNode }) => (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
       {bulletDot(6, '#5b5bd6')}
-      <div style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.7 }}>
+      <div style={{ fontSize: 14, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.7 }}>
         {text}
         {children}
       </div>
@@ -146,14 +146,14 @@ const BrokerSyncPage: React.FC<Props> = ({
   const SubItem = ({ text }: { text: string }) => (
     <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, paddingLeft: 14, marginTop: 4 }}>
       {bulletDot(4, '#c0c0d8')}
-      <span style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.7 }}>{text}</span>
+      <span style={{ fontSize: 14, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.7 }}>{text}</span>
     </div>
   );
 
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)',
+      background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)',
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       overflowY: 'auto', paddingBottom: 60, boxSizing: 'border-box',
@@ -180,10 +180,10 @@ const BrokerSyncPage: React.FC<Props> = ({
             </svg>
           </div>
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#1a1a3a', marginBottom: 6 }}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', marginBottom: 6 }}>
               正在连接 {exchangeName}...
             </div>
-            <div style={{ fontSize: 13, color: '#8888b0' }}>
+            <div style={{ fontSize: 13, color: 'var(--tg-muted, #8888b0)' }}>
               正在验证 API 密钥并导入交易记录，请稍候
             </div>
           </div>
@@ -193,7 +193,7 @@ const BrokerSyncPage: React.FC<Props> = ({
       {/* Progress bar */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, display: 'flex', zIndex: 100, height: 3 }}>
         <div style={{ flex: 4, background: '#5b5bd6' }} />
-        <div style={{ flex: 1, background: '#dcd8f0' }} />
+        <div style={{ flex: 1, background: 'var(--tg-accent-soft, #dcd8f0)' }} />
       </div>
 
       {/* Back button */}
@@ -202,7 +202,7 @@ const BrokerSyncPage: React.FC<Props> = ({
         style={{
           position: 'fixed', top: 28, left: 32, zIndex: 100,
           background: 'transparent', border: 'none', cursor: 'pointer',
-          color: backHovered ? '#3a3ab8' : '#6b6b9a',
+          color: backHovered ? 'var(--tg-accent, #3a3ab8)' : 'var(--tg-secondary, #6b6b9a)',
           padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'color 0.15s',
         }}
@@ -220,7 +220,7 @@ const BrokerSyncPage: React.FC<Props> = ({
         style={{
           position: 'fixed', top: 28, right: 32, zIndex: 100,
           background: 'transparent', border: 'none', cursor: 'pointer',
-          color: closeHovered ? '#3a3ab8' : '#6b6b9a',
+          color: closeHovered ? 'var(--tg-accent, #3a3ab8)' : 'var(--tg-secondary, #6b6b9a)',
           padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'color 0.15s',
         }}
@@ -236,10 +236,10 @@ const BrokerSyncPage: React.FC<Props> = ({
 
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ fontSize: 13, color: '#8888b0', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: 'var(--tg-muted, #8888b0)', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>
             添加交易
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a3a', margin: 0 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', margin: 0 }}>
             经纪商同步
           </h1>
         </div>
@@ -273,11 +273,11 @@ const BrokerSyncPage: React.FC<Props> = ({
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     cursor: 'pointer',
                     borderRadius: calendarOpen ? '10px 10px 0 0' : 10,
-                    border: calendarOpen ? '1px solid #e0e0ea' : '1px solid #d8d4ee',
+                    border: calendarOpen ? '1px solid var(--tg-border, #e0e0ea)' : '1px solid var(--tg-border, #d8d4ee)',
                     boxShadow: calendarOpen ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                   }}
                 >
-                  <span style={{ color: startDate ? '#1a1a3a' : '#a0a0c0', fontSize: 14 }}>
+                  <span style={{ color: startDate ? 'var(--tg-text, #1a1a3a)' : 'var(--tg-muted, #a0a0c0)', fontSize: 14 }}>
                     {displayDate(startDate)}
                   </span>
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
@@ -301,8 +301,8 @@ const BrokerSyncPage: React.FC<Props> = ({
                   return (
                     <div style={{
                       position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100,
-                      background: '#ffffff',
-                      border: '1px solid #e0e0ea', borderTop: 'none',
+                      background: 'var(--tg-surface, #ffffff)',
+                      border: '1px solid var(--tg-border, #e0e0ea)', borderTop: 'none',
                       borderRadius: '0 0 12px 12px',
                       boxShadow: '0 8px 24px rgba(0,0,0,0.10)',
                       padding: '12px 14px 14px',
@@ -312,20 +312,20 @@ const BrokerSyncPage: React.FC<Props> = ({
                         <button onClick={() => {
                           if (calendarMonth === 0) { setCalendarMonth(11); setCalendarYear(y => y - 1); }
                           else setCalendarMonth(m => m - 1);
-                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8888b0', padding: '2px 6px', borderRadius: 6, fontSize: 16, lineHeight: 1 }}>‹</button>
-                        <span style={{ fontSize: 14, fontWeight: 600, color: '#1a1a3a' }}>
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--tg-muted, #8888b0)', padding: '2px 6px', borderRadius: 6, fontSize: 16, lineHeight: 1 }}>‹</button>
+                        <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--tg-text, #1a1a3a)' }}>
                           {calendarYear}年 {MONTHS[calendarMonth]}
                         </span>
                         <button onClick={() => {
                           if (calendarMonth === 11) { setCalendarMonth(0); setCalendarYear(y => y + 1); }
                           else setCalendarMonth(m => m + 1);
-                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#8888b0', padding: '2px 6px', borderRadius: 6, fontSize: 16, lineHeight: 1 }}>›</button>
+                        }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--tg-muted, #8888b0)', padding: '2px 6px', borderRadius: 6, fontSize: 16, lineHeight: 1 }}>›</button>
                       </div>
 
                       {/* Weekday headers */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 4 }}>
                         {WEEKDAYS.map(d => (
-                          <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: '#b0b0c8', padding: '2px 0' }}>{d}</div>
+                          <div key={d} style={{ textAlign: 'center', fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #b0b0c8)', padding: '2px 0' }}>{d}</div>
                         ))}
                       </div>
 
@@ -343,12 +343,12 @@ const BrokerSyncPage: React.FC<Props> = ({
                                 textAlign: 'center', fontSize: 13, padding: '5px 0',
                                 borderRadius: 7, cursor: 'pointer',
                                 background: isSelected ? '#5b5bd6' : 'transparent',
-                                color: isSelected ? '#fff' : isToday ? '#5b5bd6' : '#1a1a3a',
+                                color: isSelected ? '#fff' : isToday ? 'var(--tg-accent, #5b5bd6)' : 'var(--tg-text, #1a1a3a)',
                                 fontWeight: isSelected || isToday ? 600 : 400,
-                                border: isToday && !isSelected ? '1px solid #c8c4f0' : '1px solid transparent',
+                                border: isToday && !isSelected ? '1px solid var(--tg-border, #c8c4f0)' : '1px solid transparent',
                                 transition: 'background 0.1s',
                               }}
-                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f0eeff'; }}
+                              onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--tg-accent-soft, #f0eeff)'; }}
                               onMouseLeave={e => { e.currentTarget.style.background = isSelected ? '#5b5bd6' : 'transparent'; }}
                             >
                               {day}
@@ -361,7 +361,7 @@ const BrokerSyncPage: React.FC<Props> = ({
                       {startDate && (
                         <div style={{ marginTop: 10, textAlign: 'center' }}>
                           <button onClick={() => { setStartDate(''); setCalendarOpen(false); }}
-                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#9090b8' }}>
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--tg-muted, #9090b8)' }}>
                             清除日期（导入所有记录）
                           </button>
                         </div>
@@ -374,7 +374,7 @@ const BrokerSyncPage: React.FC<Props> = ({
 
             {/* Account type — custom dropdown */}
             <div>
-              <label style={labelStyle}>账户类型 <span style={{ color: '#e05555' }}>*</span></label>
+              <label style={labelStyle}>账户类型 <span style={{ color: 'var(--tg-negative, #e05555)' }}>*</span></label>
               <div ref={accountDropdownRef} style={{ position: 'relative' }}>
                 {/* Trigger */}
                 <div
@@ -384,11 +384,11 @@ const BrokerSyncPage: React.FC<Props> = ({
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                     cursor: 'pointer',
                     borderRadius: accountDropdownOpen ? '10px 10px 0 0' : 10,
-                    border: accountDropdownOpen ? '1px solid #e0e0ea' : '1px solid #d8d4ee',
+                    border: accountDropdownOpen ? '1px solid var(--tg-border, #e0e0ea)' : '1px solid var(--tg-border, #d8d4ee)',
                     boxShadow: accountDropdownOpen ? '0 2px 8px rgba(0,0,0,0.08)' : 'none',
                   }}
                 >
-                  <span style={{ fontSize: 14, color: '#1a1a3a' }}>
+                  <span style={{ fontSize: 14, color: 'var(--tg-text, #1a1a3a)' }}>
                     {ACCOUNT_OPTIONS.find(o => o.value === accountType)?.label}
                   </span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -402,8 +402,8 @@ const BrokerSyncPage: React.FC<Props> = ({
                 {accountDropdownOpen && (
                   <div style={{
                     position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 50,
-                    background: '#ffffff',
-                    border: '1px solid #e0e0ea', borderTop: 'none',
+                    background: 'var(--tg-surface, #ffffff)',
+                    border: '1px solid var(--tg-border, #e0e0ea)', borderTop: 'none',
                     borderRadius: '0 0 10px 10px',
                     boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
                     overflow: 'hidden',
@@ -415,13 +415,13 @@ const BrokerSyncPage: React.FC<Props> = ({
                         style={{
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                           padding: '11px 14px', cursor: 'pointer', fontSize: 14,
-                          color: accountType === opt.value ? '#5b5bd6' : '#1a1a3a',
-                          background: accountType === opt.value ? '#f5f5ff' : 'transparent',
+                          color: accountType === opt.value ? 'var(--tg-accent, #5b5bd6)' : 'var(--tg-text, #1a1a3a)',
+                          background: accountType === opt.value ? 'var(--tg-accent-soft, #f5f5ff)' : 'transparent',
                           transition: 'background 0.1s',
                           fontWeight: accountType === opt.value ? 500 : 400,
                         }}
-                        onMouseEnter={e => { if (accountType !== opt.value) e.currentTarget.style.background = '#f8f8ff'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = accountType === opt.value ? '#f5f5ff' : 'transparent'; }}
+                        onMouseEnter={e => { if (accountType !== opt.value) e.currentTarget.style.background = 'var(--tg-surface, #f8f8ff)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = accountType === opt.value ? 'var(--tg-accent-soft, #f5f5ff)' : 'transparent'; }}
                       >
                         {opt.label}
                         {accountType === opt.value && (
@@ -439,7 +439,7 @@ const BrokerSyncPage: React.FC<Props> = ({
 
             {/* API Key */}
             <div>
-              <label style={labelStyle}>API 密钥 <span style={{ color: '#e05555' }}>*</span></label>
+              <label style={labelStyle}>API 密钥 <span style={{ color: 'var(--tg-negative, #e05555)' }}>*</span></label>
               <input
                 type="text"
                 value={apiKey}
@@ -452,7 +452,7 @@ const BrokerSyncPage: React.FC<Props> = ({
 
             {/* API Secret */}
             <div>
-              <label style={labelStyle}>API Secret <span style={{ color: '#e05555' }}>*</span></label>
+              <label style={labelStyle}>API Secret <span style={{ color: 'var(--tg-negative, #e05555)' }}>*</span></label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={apiSecretVisible ? 'text' : 'password'}
@@ -468,7 +468,7 @@ const BrokerSyncPage: React.FC<Props> = ({
                   style={{
                     position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
                     background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                    color: '#8888b0', display: 'flex', alignItems: 'center',
+                    color: 'var(--tg-muted, #8888b0)', display: 'flex', alignItems: 'center',
                   }}
                 >
                   {apiSecretVisible ? (
@@ -496,7 +496,7 @@ const BrokerSyncPage: React.FC<Props> = ({
             >
               <div style={{
                 width: 16, height: 16, borderRadius: 4, flexShrink: 0,
-                border: skipSpot ? 'none' : '1.5px solid #c8c4e8',
+                border: skipSpot ? 'none' : '1.5px solid var(--tg-border, #c8c4e8)',
                 background: skipSpot ? '#5b5bd6' : 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'all 0.15s',
@@ -508,13 +508,13 @@ const BrokerSyncPage: React.FC<Props> = ({
                   </svg>
                 )}
               </div>
-              <span style={{ fontSize: 13, color: '#6b6b9a' }}>跳过现货交易</span>
+              <span style={{ fontSize: 13, color: 'var(--tg-secondary, #6b6b9a)' }}>跳过现货交易</span>
             </div>
 
             {/* Warning banner */}
             <div style={{
-              background: '#fff8ec',
-              border: '1px solid #f5d080',
+              background: 'var(--tg-warning-soft, #fff8ec)',
+              border: '1px solid var(--tg-warning, #f5d080)',
               borderRadius: 10,
               padding: '12px 16px',
               display: 'flex', alignItems: 'flex-start', gap: 10,
@@ -528,7 +528,7 @@ const BrokerSyncPage: React.FC<Props> = ({
                 <text x="10" y="15" textAnchor="middle" fill="white"
                   fontSize="13" fontWeight="700" fontFamily="sans-serif">!</text>
               </svg>
-              <span style={{ fontSize: 13, color: '#9a6010', lineHeight: 1.6 }}>
+              <span style={{ fontSize: 13, color: 'var(--tg-warning, #9a6010)', lineHeight: 1.6 }}>
                 此次导入存在一些限制。请点击此消息查看详情，您将找到可能影响导入的关键信息。
               </span>
             </div>
@@ -551,8 +551,8 @@ const BrokerSyncPage: React.FC<Props> = ({
                 width: '100%', height: 48, borderRadius: 10,
                 fontSize: 15, fontWeight: 600, border: 'none', marginTop: 4,
                 transition: 'all 0.18s ease',
-                background: (!canConnect || isConnecting) ? (isConnecting ? '#5b5bd6' : '#e0ddf0') : (btnHovered ? '#4a4ac8' : '#5b5bd6'),
-                color: (!canConnect && !isConnecting) ? '#a8a8c8' : '#ffffff',
+                background: (!canConnect || isConnecting) ? (isConnecting ? '#5b5bd6' : 'var(--tg-accent-soft, #e0ddf0)') : (btnHovered ? '#4a4ac8' : '#5b5bd6'),
+                color: (!canConnect && !isConnecting) ? 'var(--tg-muted, #a8a8c8)' : '#ffffff',
                 cursor: (!canConnect || isConnecting) ? 'not-allowed' : 'pointer',
                 boxShadow: canConnect && !isConnecting
                   ? (btnHovered ? '0 6px 20px rgba(91,91,214,0.40)' : '0 4px 16px rgba(91,91,214,0.30)')
@@ -591,7 +591,7 @@ const BrokerSyncPage: React.FC<Props> = ({
               </div>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>{exchangeName}</span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)' }}>{exchangeName}</span>
                   {isNew && (
                     <span style={{
                       background: '#5b5bd6', color: '#fff',
@@ -605,7 +605,7 @@ const BrokerSyncPage: React.FC<Props> = ({
 
             {/* Supported assets */}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a', marginBottom: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1a3a)', marginBottom: 8 }}>
                 支持的资产类型：
               </div>
               <div style={{ display: 'flex', flexWrap: 'nowrap', gap: '4px 10px', alignItems: 'center', width: '100%', overflow: 'visible' }}>
@@ -620,7 +620,7 @@ const BrokerSyncPage: React.FC<Props> = ({
                       <span style={{
                         fontSize: 12, whiteSpace: 'nowrap', lineHeight: 1,
                         fontWeight: supported ? 500 : 400,
-                        color: supported ? '#1a1a3a' : '#b8b8d0',
+                        color: supported ? 'var(--tg-text, #1a1a3a)' : 'var(--tg-muted, #b8b8d0)',
                       }}>
                         {asset}
                       </span>
@@ -632,10 +632,10 @@ const BrokerSyncPage: React.FC<Props> = ({
 
             {/* Instructions */}
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a3a', marginBottom: 6 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', marginBottom: 6 }}>
                 链接 {exchangeName}
               </div>
-              <p style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.75, margin: '0 0 12px 0' }}>
+              <p style={{ fontSize: 14, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.75, margin: '0 0 12px 0' }}>
                 要同步您在 {exchangeName} 上的交易，您需要从您的 {exchangeName} 账户创建 API 密钥和 API Secret。
                 <br /><br />
                 请按照以下步骤创建您的 API 密钥：
@@ -678,7 +678,7 @@ const BrokerSyncPage: React.FC<Props> = ({
                 onClick={() => setExpanded(v => !v)}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: 4,
-                  color: '#5b5bd6', fontSize: 14, fontWeight: 500,
+                  color: 'var(--tg-accent, #5b5bd6)', fontSize: 14, fontWeight: 500,
                   cursor: 'pointer', background: 'none', border: 'none',
                   padding: 0, marginTop: 2,
                 }}

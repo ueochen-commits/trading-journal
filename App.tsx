@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 
 // 上传图片到 Supabase Storage
 const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
@@ -70,6 +70,7 @@ import CsvImportPage from './components/CsvImportPage';
 import ChartPage from './components/ChartPage';
 import LeaderboardPage from './components/LeaderboardPage';
 import TradeShareModal from './components/TradeShareModal';
+import AccountDetailsModal from './components/AccountDetailsModal';
 
 import { UserProvider, useUser } from './components/UserContext';
 import { LanguageProvider, useLanguage } from './LanguageContext';
@@ -223,6 +224,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [showSelectImportMethod, setShowSelectImportMethod] = useState(false);
   const [showBrokerSync, setShowBrokerSync] = useState(false);
   const [showCsvImport, setShowCsvImport] = useState(false);
+  const [showManualAccount, setShowManualAccount] = useState(false);
   const [connectingExchange, setConnectingExchange] = useState<{ id: string; name: string; logoUrl?: string; brandColor?: string } | null>(null);
   const isAutoCompactSidebar = viewportWidth < 1280;
   const isRailOnlySidebar = viewportWidth < 768;
@@ -423,8 +425,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       lastMonthlyReview: null
   });
 
-  // Effects
-  useEffect(() => {
+  // Set the root theme before charts paint; CSS variables update all inline UI.
+  useLayoutEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -1362,9 +1364,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                   }
                 }}
                 onUpdateAccount={async (id, updates) => {
-                  await userDataService.updateTradingAccount(id, updates);
+                  const { error } = await userDataService.updateTradingAccount(id, updates);
+                  if (error) throw new Error(typeof error === 'string' ? error : error.message);
                   setTradingAccounts(prev => prev.map(a => a.id === id
-                    ? { ...a, ...(updates.manualBalance !== undefined ? { manualBalance: updates.manualBalance ?? undefined } : {}), ...(updates.balance !== undefined ? { balance: updates.balance } : {}) }
+                    ? { ...a, ...updates, ...(updates.manualBalance !== undefined ? { manualBalance: updates.manualBalance ?? undefined } : {}) }
                     : a
                   ));
                 }}
@@ -1384,7 +1387,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   };
 
   return (
-      <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:white font-sans transition-colors duration-300">
+      <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
           <Sidebar 
               activeTab={activeTab} 
               setActiveTab={handleSetActiveTab}
@@ -1430,7 +1433,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                       )}
                       <button 
                           onClick={() => setIsFabOpen(!isFabOpen)}
-                          className={`w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform ${isFabOpen ? 'rotate-45 bg-rose-50 hover:bg-rose-600' : 'hover:scale-110'}`}
+                          className={`w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-xl flex items-center justify-center transition-all duration-300 transform ${isFabOpen ? 'rotate-45 bg-rose-50 hover:bg-rose-600 dark:bg-rose-950/40' : 'hover:scale-110'}`}
                       >
                           <Plus className="w-8 h-8" />
                       </button>
@@ -1503,6 +1506,11 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           {showConnectExchange && (
               <ConnectExchangePage
                 onClose={() => setShowConnectExchange(false)}
+                onCustomAccount={() => {
+                  setConnectingExchange(null);
+                  setShowConnectExchange(false);
+                  setShowManualAccount(true);
+                }}
                 onContinue={(exchange) => {
                   setConnectingExchange(exchange);
                   setShowConnectExchange(false);
@@ -1526,9 +1534,37 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                     setShowSelectImportMethod(false);
                   } else {
                     setShowSelectImportMethod(false);
+                    setShowManualAccount(true);
                   }
                 }}
               />
+          )}
+          {showManualAccount && (
+            <AccountDetailsModal mode="create" showBroker
+              initial={{ name: connectingExchange ? `${connectingExchange.name} 手动账户` : '我的交易账户', balance: 0, currency: 'USD', broker: connectingExchange?.name || '' }}
+              onClose={() => setShowManualAccount(false)}
+              onSave={async details => {
+                const limit = user.tier === 'elite' ? Infinity : user.tier === 'pro' ? 3 : 1;
+                if (tradingAccounts.filter(a => a.type !== 'demo').length >= limit) throw new Error('已达到当前方案的账户数量上限');
+                const sameBroker = details.broker === connectingExchange?.name;
+                const { data, error } = await userDataService.saveTradingAccount({
+                  name: details.name, balance: details.balance, currency: details.currency,
+                  exchange: details.broker || undefined,
+                  brokerLogoUrl: sameBroker ? connectingExchange?.logoUrl : undefined,
+                  brokerBrandColor: sameBroker ? connectingExchange?.brandColor : undefined,
+                  accountType: 'manual', profitMethod: 'FIFO', syncStatus: 'synced',
+                });
+                if (error || !data) throw new Error('创建账户失败，请重试');
+                const accounts = await userDataService.loadTradingAccounts();
+                setTradingAccounts(accounts);
+                setSelectedAccountId(data.id);
+                setConnectingExchange(null);
+                setSettingsInitialSection('brokers');
+                handleSetActiveTab('settings');
+                setTimeout(() => setSettingsInitialSection(undefined), 200);
+                showToast('账户已创建，可在交易日志中添加交易');
+              }}
+            />
           )}
           {showBrokerSync && connectingExchange && (
               <BrokerSyncPage
@@ -1551,7 +1587,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                 onImportComplete={async (trades) => {
                   // 1. 创建「文件导入」账户
                   const accountName = `${connectingExchange.name}（文件导入）`;
-                  const { data: accountData } = await userDataService.saveTradingAccount({
+                  const { data: accountData, error: accountError } = await userDataService.saveTradingAccount({
                     name: accountName,
                     exchange: connectingExchange.name,
                     brokerLogoUrl: connectingExchange.logoUrl,
@@ -1563,6 +1599,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                     syncStatus: 'synced',
                   });
                   const accountId = accountData?.id;
+                  if (accountError || !accountId) throw new Error('创建导入账户失败，请重试');
                   // 2. 把所有 trades 的 accountId 指向新账户
                   const tradesWithAccount = trades.map(t => ({ ...t, accountId: accountId || t.accountId }));
                   // 3. 批量入库

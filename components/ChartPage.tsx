@@ -1,3 +1,4 @@
+import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import React, { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../LanguageContext';
 import { 
@@ -53,6 +54,8 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
   const [toastMessage, setToastMessage] = useState('');
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
 
+  const isDark = useIsDarkMode();
+
   // Load TradingView Widget
   useEffect(() => {
     // Capture ref value so the cleanup closure has a stable reference
@@ -69,7 +72,6 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
     script.type = "text/javascript";
     script.async = true;
 
-    const isDark = document.documentElement.classList.contains('dark');
 
     script.textContent = JSON.stringify({
       "autosize": true,
@@ -112,7 +114,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
             // Ignore errors during cleanup
         }
     };
-  }, [language, symbol, interval]);
+  }, [language, symbol, interval, isDark]);
 
   // Drag Handlers
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -328,7 +330,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
           {/* Left: Symbol & Timeframe */}
           <div className="flex items-center gap-2 w-full md:w-auto">
               <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 dark:text-slate-400" />
                   <input 
                     type="text" 
                     value={tempSymbol}
@@ -347,7 +349,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
                         className={`px-2.5 py-1 text-xs font-bold rounded-md transition-all ${
                             interval === tf.value 
                             ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'
                         }`}
                       >
                           {tf.label}
@@ -363,14 +365,14 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
               
               {/* View Toggles */}
               <div id="chart-layout-toggle" className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                  <button onClick={() => setLayoutMode('chart-only')} className={`p-1.5 rounded ${layoutMode === 'chart-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}><Maximize2 className="w-4 h-4" /></button>
-                  <button onClick={() => setLayoutMode('note-only')} className={`p-1.5 rounded ${layoutMode === 'note-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}><Minimize2 className="w-4 h-4" /></button>
+                  <button onClick={() => setLayoutMode('chart-only')} className={`p-1.5 rounded ${layoutMode === 'chart-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Maximize2 className="w-4 h-4" /></button>
+                  <button onClick={() => setLayoutMode('note-only')} className={`p-1.5 rounded ${layoutMode === 'note-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Minimize2 className="w-4 h-4" /></button>
               </div>
 
               {/* Split Controls */}
               <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 ml-1">
-                  <button onClick={() => { setLayoutMode('split'); setSplitDirection('horizontal'); }} className={`p-1.5 rounded ${layoutMode === 'split' && splitDirection === 'horizontal' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}><Columns className="w-4 h-4" /></button>
-                  <button onClick={() => { setLayoutMode('split'); setSplitDirection('vertical'); }} className={`p-1.5 rounded ${layoutMode === 'split' && splitDirection === 'vertical' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400'}`}><Rows className="w-4 h-4" /></button>
+                  <button onClick={() => { setLayoutMode('split'); setSplitDirection('horizontal'); }} className={`p-1.5 rounded ${layoutMode === 'split' && splitDirection === 'horizontal' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Columns className="w-4 h-4" /></button>
+                  <button onClick={() => { setLayoutMode('split'); setSplitDirection('vertical'); }} className={`p-1.5 rounded ${layoutMode === 'split' && splitDirection === 'vertical' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Rows className="w-4 h-4" /></button>
               </div>
           </div>
       </div>
@@ -391,7 +393,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
 
               <div className="w-full h-full bg-slate-900" ref={container}>
                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                     <span className="text-slate-400 animate-pulse text-sm">Loading Chart...</span>
+                     <span className="text-slate-400 animate-pulse text-sm dark:text-slate-400">Loading Chart...</span>
                  </div>
               </div>
           </div>
@@ -406,8 +408,8 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
                   `}
               >
                   {splitDirection === 'horizontal' 
-                    ? <GripVertical className="w-3 h-3 text-slate-400" />
-                    : <GripHorizontal className="w-3 h-3 text-slate-400" />
+                    ? <GripVertical className="w-3 h-3 text-slate-400 dark:text-slate-400" />
+                    : <GripHorizontal className="w-3 h-3 text-slate-400 dark:text-slate-400" />
                   }
               </div>
           )}

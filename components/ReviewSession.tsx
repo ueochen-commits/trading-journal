@@ -100,13 +100,13 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                         </div>
                         <div>
                             <h3 className="text-xl font-bold text-slate-900 dark:text-white">{config.title}</h3>
-                            <p className="text-xs text-slate-500">
+                            <p className="text-xs text-slate-500 dark:text-slate-400">
                                 {config.dateRange.start.toLocaleDateString()} - {config.dateRange.end.toLocaleDateString()}
                             </p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <X className="w-6 h-6 text-slate-500" />
+                        <X className="w-6 h-6 text-slate-500 dark:text-slate-400" />
                     </button>
                 </div>
 
@@ -117,25 +117,25 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                         {/* Mini Stats */}
                         <div className="p-5 grid grid-cols-2 gap-3 border-b border-slate-200 dark:border-slate-800">
                             <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <p className="text-xs text-slate-500 uppercase font-semibold">{t.reviewSession.netPnl}</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold dark:text-slate-400">{t.reviewSession.netPnl}</p>
                                 <p className={`text-lg font-bold font-mono ${stats.netPnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                                     {stats.netPnl >= 0 ? '+' : ''}${stats.netPnl.toFixed(2)}
                                 </p>
                             </div>
                             <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                                <p className="text-xs text-slate-500 uppercase font-semibold">{t.reviewSession.winRate}</p>
+                                <p className="text-xs text-slate-500 uppercase font-semibold dark:text-slate-400">{t.reviewSession.winRate}</p>
                                 <div className="flex items-end gap-1">
                                     <p className="text-lg font-bold text-slate-900 dark:text-white font-mono">{stats.winRate.toFixed(1)}%</p>
-                                    <span className="text-xs text-slate-400 mb-1">({stats.count} trades)</span>
+                                    <span className="text-xs text-slate-400 mb-1 dark:text-slate-400">({stats.count} trades)</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Trade List */}
                         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">{t.reviewSession.tradesInPeriod}</h4>
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 dark:text-slate-400">{t.reviewSession.tradesInPeriod}</h4>
                             {sessionTrades.length === 0 ? (
-                                <p className="text-sm text-slate-500 italic text-center py-10">{t.reviewSession.noTrades}</p>
+                                <p className="text-sm text-slate-500 italic text-center py-10 dark:text-slate-400">{t.reviewSession.noTrades}</p>
                             ) : (
                                 sessionTrades.map(trade => (
                                     <div 
@@ -154,7 +154,7 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                                             </span>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-xs text-slate-500">{new Date(trade.entryDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+                                            <span className="text-xs text-slate-500 dark:text-slate-400">{new Date(trade.entryDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
                                             <span className={`text-sm font-mono font-bold ${trade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                 {trade.pnl >= 0 ? '+' : ''}${trade.pnl.toFixed(0)}
                                             </span>
@@ -172,7 +172,7 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                                 <div className="flex items-center justify-between mb-6">
                                     <h4 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                         {viewTrade.symbol} 
-                                        <span className="text-sm font-normal text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full">{viewTrade.setup}</span>
+                                        <span className="text-sm font-normal text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full dark:text-slate-400">{viewTrade.setup}</span>
                                     </h4>
                                     <span className={`text-xl font-mono font-bold ${viewTrade.pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                                         ${viewTrade.pnl.toFixed(2)}
@@ -183,18 +183,18 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                                     {/* Price Data */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                            <span className="text-xs text-slate-500 uppercase">Entry</span>
+                                            <span className="text-xs text-slate-500 uppercase dark:text-slate-400">Entry</span>
                                             <p className="font-mono font-medium dark:text-slate-200">${viewTrade.entryPrice}</p>
                                         </div>
                                         <div className="p-3 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                                            <span className="text-xs text-slate-500 uppercase">Exit</span>
+                                            <span className="text-xs text-slate-500 uppercase dark:text-slate-400">Exit</span>
                                             <p className="font-mono font-medium dark:text-slate-200">${viewTrade.exitPrice}</p>
                                         </div>
                                     </div>
 
                                     {/* Notes */}
                                     <div>
-                                        <h5 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1">
+                                        <h5 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1 dark:text-slate-400">
                                             <StickyNote className="w-3 h-3" /> Notes
                                         </h5>
                                         <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
@@ -204,7 +204,7 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
 
                                     {/* Review Notes */}
                                     <div>
-                                        <h5 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1">
+                                        <h5 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1 dark:text-slate-400">
                                             <Activity className="w-3 h-3" /> Review
                                         </h5>
                                         <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
@@ -215,7 +215,7 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                                     {/* Images */}
                                     {viewTrade.images && viewTrade.images.length > 0 && (
                                         <div>
-                                            <h5 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1">
+                                            <h5 className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-1 dark:text-slate-400">
                                                 <ImageIcon className="w-3 h-3" /> Screenshots
                                             </h5>
                                             <div className="grid grid-cols-1 gap-2">
@@ -228,7 +228,7 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
                                 </div>
                             </div>
                         ) : (
-                            <div className="flex flex-col items-center justify-center h-full text-slate-400">
+                            <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-slate-400">
                                 <ChevronRight className="w-12 h-12 mb-4 opacity-20" />
                                 <p className="text-sm">{t.reviewSession.clickForDetails}</p>
                             </div>

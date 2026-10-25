@@ -59,7 +59,7 @@ const PricingModal: React.FC = () => {
             <div className={`mt-0.5 p-0.5 rounded-full flex-shrink-0 ${highlight ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-emerald-400'}`}>
                 <Check className="w-2.5 h-2.5" strokeWidth={4} />
             </div>
-            <span className={`text-sm leading-tight ${highlight ? 'text-white font-medium' : 'text-slate-400'}`}>{text}</span>
+            <span className={`text-sm leading-tight ${highlight ? 'text-white font-medium' : 'text-slate-400 dark:text-slate-400'}`}>{text}</span>
         </div>
     );
 
@@ -76,7 +76,7 @@ const PricingModal: React.FC = () => {
                         {/* Close button */}
                         <button
                             onClick={() => setShowEarlyBirdModal(false)}
-                            className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800"
+                            className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800 dark:text-slate-400"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -98,7 +98,7 @@ const PricingModal: React.FC = () => {
                             {/* Price */}
                             <div className="flex items-baseline gap-2 mb-6">
                                 <span className="text-5xl font-black text-white">¥1,999</span>
-                                <span className="text-slate-500 line-through text-lg">¥7,188</span>
+                                <span className="text-slate-500 line-through text-lg dark:text-slate-400">¥7,188</span>
                             </div>
 
                             {/* Features */}
@@ -127,7 +127,7 @@ const PricingModal: React.FC = () => {
                             <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-slate-700/50">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider">{language === 'cn' ? '添加微信预约' : 'WeChat ID'}</p>
+                                        <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider dark:text-slate-400">{language === 'cn' ? '添加微信预约' : 'WeChat ID'}</p>
                                         <p className="text-lg font-bold text-white tracking-wide">Timetravel_0</p>
                                     </div>
                                     <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
@@ -146,7 +146,7 @@ const PricingModal: React.FC = () => {
                                     disabled={user.tier === 'elite'}
                                     className={`w-full py-4 rounded-xl font-bold text-base transition-all ${
                                         user.tier === 'elite'
-                                            ? 'bg-slate-700 text-slate-500 cursor-default'
+                                            ? 'bg-slate-700 text-slate-500 cursor-default dark:text-slate-400'
                                             : 'bg-amber-500 hover:bg-amber-600 text-black'
                                     }`}
                                 >
@@ -155,7 +155,7 @@ const PricingModal: React.FC = () => {
                                         : (language === 'cn' ? '立即购买 ¥1,999' : 'Buy Now ¥1,999')
                                     }
                                 </button>
-                                <p className="text-center text-xs text-slate-500">
+                                <p className="text-center text-xs text-slate-500 dark:text-slate-400">
                                     {language === 'cn'
                                         ? '支持支付宝和微信支付 · 或添加微信 Timetravel_0 咨询'
                                         : 'Alipay & WeChat Pay · Or add WeChat Timetravel_0'}
@@ -175,7 +175,7 @@ const PricingModal: React.FC = () => {
                 <div className="text-center mb-8 relative z-10 w-full">
                     <button 
                         onClick={closePricing}
-                        className="absolute top-0 right-0 p-2 text-slate-500 hover:text-white transition-colors"
+                        className="absolute top-0 right-0 p-2 text-slate-500 hover:text-white transition-colors dark:text-slate-400"
                     >
                         <X className="w-8 h-8" />
                     </button>
@@ -183,7 +183,7 @@ const PricingModal: React.FC = () => {
                     <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
                         {language === 'cn' ? '解锁全套交易工具' : 'Unlock Your Trading Edge'}
                     </h2>
-                    <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-4">
+                    <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-4 dark:text-slate-400">
                         {language === 'cn' ? '加入前 5% 的盈利交易员行列，用专业数据武装自己。' : 'Stop guessing. Start trading with institutional-grade data and AI coaching.'}
                     </p>
 
@@ -210,7 +210,7 @@ const PricingModal: React.FC = () => {
                         </button>
                         
                         {/* Discount Badge */}
-                        <div className="absolute -right-24 top-1/2 -translate-y-1/2 bg-emerald-500 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-bounce hidden md:block">
+                        <div className="absolute -right-24 top-1/2 -translate-y-1/2 bg-emerald-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-bounce hidden md:block">
                             {language === 'cn' ? '省 30%' : 'SAVE 30%'}
                         </div>
                     </div>
@@ -222,31 +222,31 @@ const PricingModal: React.FC = () => {
                     {/* 1. Free Plan */}
                     <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 hover:border-slate-700 transition-all duration-300 relative group">
                         <div className="mb-6">
-                            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4 text-slate-400 group-hover:text-white transition-colors">
+                            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4 text-slate-400 group-hover:text-white transition-colors dark:text-slate-400">
                                 <Star className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-white">{language === 'cn' ? "基础版" : "Basic"}</h3>
-                            <p className="text-sm text-slate-500 mt-1">{language === 'cn' ? "适合刚开始的新手" : "For beginners just starting out"}</p>
+                            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{language === 'cn' ? "适合刚开始的新手" : "For beginners just starting out"}</p>
                         </div>
                         
                         <div className="mb-8">
                             <div className="flex items-baseline">
                                 <span className="text-4xl font-black text-white">{currency}0</span>
-                                <span className="text-slate-500 ml-1">{language === 'cn' ? '/ 月' : '/ mo'}</span>
+                                <span className="text-slate-500 ml-1 dark:text-slate-400">{language === 'cn' ? '/ 月' : '/ mo'}</span>
                             </div>
-                            <p className="text-xs text-slate-600 mt-2 h-4"></p>
+                            <p className="text-xs text-slate-600 mt-2 h-4 dark:text-slate-300"></p>
                         </div>
 
                         <button 
                             onClick={() => { if(user.tier === 'free') closePricing(); }}
                             disabled={user.tier === 'free'}
-                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border border-slate-700 ${user.tier === 'free' ? 'bg-slate-800 text-slate-500 cursor-default' : 'bg-transparent text-white hover:bg-slate-800'}`}
+                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border border-slate-700 ${user.tier === 'free' ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400' : 'bg-transparent text-white hover:bg-slate-800'}`}
                         >
                             {user.tier === 'free' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (language === 'cn' ? '降级' : 'Downgrade')}
                         </button>
 
                         <div className="mt-8 space-y-4">
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Features</p>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Features</p>
                             <FeatureItem text={language === 'cn' ? "手动记录交易" : "Manual Trade Logging"} />
                             <FeatureItem text={language === 'cn' ? "基础数据统计" : "Basic Analytics"} />
                             <FeatureItem text={language === 'cn' ? "仅限 100 条历史" : "Last 100 Trades Only"} />
@@ -281,9 +281,9 @@ const PricingModal: React.FC = () => {
                                             <span className="text-5xl font-black text-white tracking-tight">
                                                 {currency}{pricing.yearly.totalPro}
                                             </span>
-                                            <span className="text-slate-400 font-medium">{language === 'cn' ? '/ 年' : '/ year'}</span>
+                                            <span className="text-slate-400 font-medium dark:text-slate-400">{language === 'cn' ? '/ 年' : '/ year'}</span>
                                         </div>
-                                        <div className="text-sm text-slate-400 font-medium mt-1">
+                                        <div className="text-sm text-slate-400 font-medium mt-1 dark:text-slate-400">
                                             {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.avgMonthlyPro}` : `${currency}${pricing.yearly.avgMonthlyPro}/mo average`}
                                         </div>
                                         <div className="mt-3 inline-flex items-center gap-2 bg-indigo-900/30 px-2 py-1 rounded border border-indigo-500/30">
@@ -297,7 +297,7 @@ const PricingModal: React.FC = () => {
                                             <span className="text-5xl font-black text-white tracking-tight">
                                                 {currency}{pricing.monthly.pro}
                                             </span>
-                                            <span className="text-slate-400 font-medium">{language === 'cn' ? '/ 月' : '/ mo'}</span>
+                                            <span className="text-slate-400 font-medium dark:text-slate-400">{language === 'cn' ? '/ 月' : '/ mo'}</span>
                                         </div>
                                         <div className="h-9"></div>
                                     </>
@@ -313,7 +313,7 @@ const PricingModal: React.FC = () => {
                                 disabled={user.tier === 'pro' || user.tier === 'elite'}
                                 className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
                                     user.tier === 'pro' || user.tier === 'elite'
-                                        ? 'bg-slate-800 text-slate-500 cursor-default'
+                                        ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400'
                                         : 'bg-indigo-600 hover:bg-indigo-700 text-white'
                                 }`}
                             >
@@ -322,7 +322,7 @@ const PricingModal: React.FC = () => {
                                  (language === 'cn' ? '立即购买' : 'Buy Now')}
                             </button>
 
-                            {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3">{language === 'cn' ? '支持支付宝和微信支付' : 'Alipay & WeChat Pay supported'}</p>}
+                            {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3 dark:text-slate-400">{language === 'cn' ? '支持支付宝和微信支付' : 'Alipay & WeChat Pay supported'}</p>}
 
                             <div className="mt-8 space-y-5">
                                 <div>
@@ -351,7 +351,7 @@ const PricingModal: React.FC = () => {
                                 <Sparkles className="w-6 h-6" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Elite</h3>
-                            <p className="text-sm text-slate-500 mt-1">{language === 'cn' ? "全职交易员/机构" : "For full-time scalpers"}</p>
+                            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{language === 'cn' ? "全职交易员/机构" : "For full-time scalpers"}</p>
                         </div>
                         
                         <div className="mb-8">
@@ -361,9 +361,9 @@ const PricingModal: React.FC = () => {
                                         <span className="text-4xl font-black text-white">
                                             {currency}{pricing.yearly.totalElite}
                                         </span>
-                                        <span className="text-slate-500 font-medium">{language === 'cn' ? '/ 年' : '/ year'}</span>
+                                        <span className="text-slate-500 font-medium dark:text-slate-400">{language === 'cn' ? '/ 年' : '/ year'}</span>
                                     </div>
-                                    <p className="text-sm text-slate-400 font-medium mt-1">
+                                    <p className="text-sm text-slate-400 font-medium mt-1 dark:text-slate-400">
                                         {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.avgMonthlyElite}` : `${currency}${pricing.yearly.avgMonthlyElite}/mo average`}
                                     </p>
                                     <p className="text-xs text-amber-500 mt-2 bg-amber-900/20 inline-block px-2 py-0.5 rounded">
@@ -376,7 +376,7 @@ const PricingModal: React.FC = () => {
                                         <span className="text-4xl font-black text-white">
                                             {currency}{pricing.monthly.elite}
                                         </span>
-                                        <span className="text-slate-500 font-medium">{language === 'cn' ? '/ 月' : '/ mo'}</span>
+                                        <span className="text-slate-500 font-medium dark:text-slate-400">{language === 'cn' ? '/ 月' : '/ mo'}</span>
                                     </div>
                                     <div className="h-10"></div>
                                 </>
@@ -392,7 +392,7 @@ const PricingModal: React.FC = () => {
                             disabled={user.tier === 'elite'}
                             className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border ${
                                 user.tier === 'elite'
-                                    ? 'bg-slate-800 border-slate-800 text-slate-500 cursor-default'
+                                    ? 'bg-slate-800 border-slate-800 text-slate-500 cursor-default dark:text-slate-400'
                                     : 'bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black'
                             }`}
                         >
@@ -408,7 +408,7 @@ const PricingModal: React.FC = () => {
                         </button>
 
                         <div className="mt-8 space-y-4">
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">VIP Access</p>
+                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">VIP Access</p>
                             <FeatureItem text={language === 'cn' ? "包含 Pro 版所有功能" : "Everything in Pro"} />
                             <FeatureItem text={language === 'cn' ? "专属导师交流群" : "Private Mentor Group Access"} />
                             <FeatureItem text={language === 'cn' ? "实时交易信号" : "Live Trading Signals"} />
@@ -421,15 +421,15 @@ const PricingModal: React.FC = () => {
 
                 {/* Footer Trust Indicators */}
                 <div className="mt-12 flex flex-col md:flex-row items-center gap-6 md:gap-12 opacity-60">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
                         <ShieldCheck className="w-4 h-4" /> 
                         {language === 'cn' ? 'SSL 安全支付' : 'Secure SSL Payment'}
                     </div>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
                         <HelpCircle className="w-4 h-4" />
                         {language === 'cn' ? '7天无理由退款' : '7-Day Money-Back Guarantee'}
                     </div>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide">
+                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
                         <div className="flex -space-x-2">
                             <div className="w-5 h-5 rounded-full bg-slate-600 border border-slate-900"></div>
                             <div className="w-5 h-5 rounded-full bg-slate-500 border border-slate-900"></div>

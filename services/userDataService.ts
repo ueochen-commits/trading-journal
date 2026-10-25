@@ -3,6 +3,8 @@ import { Trade, Strategy, ChecklistItem, TrackerRule, DailyPlan, Notification, D
 import { normalizeTagCategories } from '../utils/tagCategories';
 import { MOCK_TRADES } from '../constants';
 
+const defaultAccountRequests = new Map<string, Promise<{ account: TradingAccount; isNew: boolean } | null>>();
+
 // 获取当前用户ID
 async function getCurrentUserId(): Promise<string | null> {
   const { data: { user } } = await supabase.auth.getUser();
@@ -878,49 +880,26 @@ export const userDataService = {
     return { error, data: inserted };
   },
 
-  // 确保用户有一个 Demo Account，并将 account_id 为 NULL 的旧交易迁移到 Demo Account
-  // 返回 { account, isNew }，isNew=true 表示本次调用刚创建了账户（用于触发 seed）
+  // The database serializes creation across clients and matches account_type,
+  // so renamed demos and concurrent first-login effects reuse the same account.
   async ensureDefaultAccount(): Promise<{ account: TradingAccount; isNew: boolean } | null> {
     const userId = await getCurrentUserId();
     if (!userId) return null;
-
-    // 查找是否已有 Demo Account（按 name 匹配）
-    const { data: demoAccounts } = await supabase.from('trading_accounts')
-      .select('*').eq('user_id', userId).eq('name', 'Demo Account').limit(1);
-
-    let demoAccount = demoAccounts && demoAccounts.length > 0 ? demoAccounts[0] : null;
-    let isNew = false;
-
-    if (!demoAccount) {
-      // 创建 Demo Account
-      const { data: newAccount, error } = await supabase.from('trading_accounts').insert({
-        user_id: userId,
-        name: 'Demo Account',
-        account_type: 'demo',
-        balance: 10000,
-        currency: 'USD',
-      }).select().single();
-
-      if (error || !newAccount) {
-        console.error('[ensureDefaultAccount] Error creating Demo Account:', error);
-        return null;
-      }
-      demoAccount = newAccount;
-      isNew = true;
+    const pending = defaultAccountRequests.get(userId);
+    if (pending) return pending;
+    const request = (async () => {
+      const { data, error } = await supabase.rpc('ensure_default_trading_account');
+      if (error || !data?.account) throw error || new Error('Default account initialization failed');
+      const account = dbToTradingAccount(data.account);
+      const isNew = data.is_new === true;
+      if (isNew) await seedDemoTrades(userId, account.id);
+      return { account, isNew };
+    })();
+    defaultAccountRequests.set(userId, request);
+    try {
+      return await request;
+    } finally {
+      defaultAccountRequests.delete(userId);
     }
-
-    // 将所有 account_id 为 NULL 的旧交易迁移到 Demo Account
-    await supabase.from('trading_journals')
-      .update({ account_id: demoAccount.id })
-      .eq('user_id', userId)
-      .is('account_id', null);
-
-    const account = dbToTradingAccount(demoAccount);
-
-    if (isNew) {
-      await seedDemoTrades(userId, account.id);
-    }
-
-    return { account, isNew };
   },
 };

@@ -24,7 +24,7 @@ const ExchangeLogo: React.FC<{ exchange: Exchange; size: number }> = ({ exchange
     const [failed, setFailed] = useState(false);
     if (failed) {
         return (
-            <span style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.45, fontWeight: 700, color: '#6366f1', flexShrink: 0 }}>
+            <span style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: size * 0.45, fontWeight: 700, color: 'var(--tg-accent, #6366f1)', flexShrink: 0 }}>
                 {exchange.name[0]}
             </span>
         );
@@ -39,10 +39,11 @@ const ExchangeLogo: React.FC<{ exchange: Exchange; size: number }> = ({ exchange
 
 interface ConnectExchangePageProps {
     onClose: () => void;
+    onCustomAccount?: () => void;
     onContinue?: (exchange: { id: string; name: string; logoUrl?: string; brandColor?: string }) => void;
 }
 
-const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onContinue }) => {
+const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onContinue, onCustomAccount }) => {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<string | null>(null);
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -89,7 +90,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
     return (
         <div style={{
             position: 'fixed', inset: 0, zIndex: 9999,
-            background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)',
+            background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)',
             display: 'flex', flexDirection: 'column', alignItems: 'center',
             overflowY: 'auto', padding: '0 24px',
         }}>
@@ -98,7 +99,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                 {[1, 2].map(step => (
                     <div key={step} style={{
                         flex: 1, height: 4,
-                        background: step === 1 ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : '#e0e0ea',
+                        background: step === 1 ? 'linear-gradient(90deg, #6366f1, #8b5cf6)' : 'var(--tg-accent-soft, #e0e0ea)',
                     }}/>
                 ))}
             </div>
@@ -109,12 +110,12 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                 style={{
                     position: 'fixed', top: 20, right: 24,
                     background: 'transparent', border: 'none',
-                    cursor: 'pointer', color: '#9396aa', padding: 4,
+                    cursor: 'pointer', color: 'var(--tg-muted, #9396aa)', padding: 4,
                     zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'color 0.15s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#1a1d2e'; }}
-                onMouseLeave={e => { e.currentTarget.style.color = '#9396aa'; }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--tg-text, #1a1d2e)'; }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--tg-muted, #9396aa)'; }}
             >
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <path d="M18 6L6 18M6 6l12 12"/>
@@ -126,10 +127,10 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
 
                 {/* Title */}
                 <div style={{ textAlign: 'center', marginBottom: 36 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: '#6366f1', marginBottom: 10, letterSpacing: '0.04em' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-accent, #6366f1)', marginBottom: 10, letterSpacing: '0.04em' }}>
                         添加交易
                     </div>
-                    <h1 style={{ fontSize: 34, fontWeight: 700, color: '#1a1d2e', letterSpacing: '-0.6px', lineHeight: 1.25, margin: '0 auto', maxWidth: 480 }}>
+                    <h1 style={{ fontSize: 34, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', letterSpacing: '-0.6px', lineHeight: 1.25, margin: '0 auto', maxWidth: 480 }}>
                         选择经纪商、自营交易公司<br/>或交易平台
                     </h1>
                 </div>
@@ -138,15 +139,15 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                 <div style={{ position: 'relative', marginBottom: 32 }}>
                     <div ref={inputRef} style={{
                         position: 'relative',
-                        border: dropdownOpen ? '1px solid #e0e0ea' : '1px solid #e8e8f0',
-                        background: '#ffffff',
+                        border: dropdownOpen ? '1px solid var(--tg-border, #e0e0ea)' : '1px solid var(--tg-border, #e8e8f0)',
+                        background: 'var(--tg-surface, #ffffff)',
                         borderRadius: dropdownOpen ? '10px 10px 0 0' : 10,
                         boxShadow: dropdownOpen
                             ? '0 2px 8px rgba(0,0,0,0.08)'
                             : '0 1px 4px rgba(0,0,0,0.06)',
                         transition: 'border-color 0.15s, box-shadow 0.15s',
                     }}>
-                        <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#b0b3c6', pointerEvents: 'none' }}>
+                        <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--tg-muted, #b0b3c6)', pointerEvents: 'none' }}>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                                 <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
                             </svg>
@@ -161,7 +162,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                                 width: '100%', height: 50, background: 'transparent',
                                 border: 'none', outline: 'none',
                                 paddingLeft: 42, paddingRight: 16,
-                                fontSize: 14, color: '#1a1d2e', boxSizing: 'border-box',
+                                fontSize: 14, color: 'var(--tg-text, #1a1d2e)', boxSizing: 'border-box',
                             }}
                         />
                     </div>
@@ -169,13 +170,13 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                     {dropdownOpen && (
                         <div ref={dropdownRef} style={{
                             position: 'absolute', top: '100%', left: 0, right: 0,
-                            background: '#ffffff',
-                            border: '1px solid #e0e0ea', borderTop: 'none',
+                            background: 'var(--tg-surface, #ffffff)',
+                            border: '1px solid var(--tg-border, #e0e0ea)', borderTop: 'none',
                             borderRadius: '0 0 10px 10px',
                             boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
                             zIndex: 50, overflow: 'hidden', maxHeight: 360, overflowY: 'auto',
                         }}>
-                            <div style={{ padding: '8px 16px 4px', fontSize: 11, fontWeight: 600, color: '#b0b3c6', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                            <div style={{ padding: '8px 16px 4px', fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #b0b3c6)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                                 已支持
                             </div>
                             {filtered.filter(e => e.available).map(e => (
@@ -183,14 +184,14 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                                     style={{
                                         display: 'flex', alignItems: 'center', gap: 12,
                                         padding: '10px 16px', cursor: 'pointer',
-                                        background: selected === e.id ? '#f5f5ff' : 'transparent',
+                                        background: selected === e.id ? 'var(--tg-accent-soft, #f5f5ff)' : 'transparent',
                                         transition: 'background 0.1s',
                                     }}
-                                    onMouseEnter={ev => { if (selected !== e.id) ev.currentTarget.style.background = '#f8f8ff'; }}
-                                    onMouseLeave={ev => { ev.currentTarget.style.background = selected === e.id ? '#f5f5ff' : 'transparent'; }}
+                                    onMouseEnter={ev => { if (selected !== e.id) ev.currentTarget.style.background = 'var(--tg-surface, #f8f8ff)'; }}
+                                    onMouseLeave={ev => { ev.currentTarget.style.background = selected === e.id ? 'var(--tg-accent-soft, #f5f5ff)' : 'transparent'; }}
                                 >
                                     <ExchangeLogo exchange={e} size={24} />
-                                    <span style={{ fontSize: 14, color: '#1a1d2e', fontWeight: 500 }}>{e.name}</span>
+                                    <span style={{ fontSize: 14, color: 'var(--tg-text, #1a1d2e)', fontWeight: 500 }}>{e.name}</span>
                                     {selected === e.id && (
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2.5" strokeLinecap="round" style={{ marginLeft: 'auto' }}>
                                             <path d="M20 6L9 17l-5-5"/>
@@ -198,26 +199,26 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                                     )}
                                 </div>
                             ))}
-                            <div style={{ padding: '10px 16px 4px', fontSize: 11, fontWeight: 600, color: '#b0b3c6', letterSpacing: '0.08em', textTransform: 'uppercase', borderTop: '1px solid #f0f0f6', marginTop: 4 }}>
+                            <div style={{ padding: '10px 16px 4px', fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #b0b3c6)', letterSpacing: '0.08em', textTransform: 'uppercase', borderTop: '1px solid var(--tg-border, #f0f0f6)', marginTop: 4 }}>
                                 即将支持
                             </div>
                             {filtered.filter(e => !e.available).map(e => (
                                 <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', opacity: 0.4, cursor: 'default' }}>
                                     <ExchangeLogo exchange={e} size={24} />
-                                    <span style={{ fontSize: 14, color: '#9396aa' }}>{e.name}</span>
+                                    <span style={{ fontSize: 14, color: 'var(--tg-muted, #9396aa)' }}>{e.name}</span>
                                 </div>
                             ))}
 
                             {/* Divider */}
-                            <div style={{ height: 1, background: '#f0f0f6', margin: '4px 0' }}/>
+                            <div style={{ height: 1, background: 'var(--tg-accent-soft, #f0f0f6)', margin: '4px 0' }}/>
 
                             {/* Fallback row */}
                             <div style={{
                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                padding: '12px 16px', background: '#fafafa', transition: 'background 0.1s',
+                                padding: '12px 16px', background: 'var(--tg-surface-muted, #fafafa)', transition: 'background 0.1s',
                             }}
-                                onMouseEnter={e => { e.currentTarget.style.background = '#f5f5ff'; }}
-                                onMouseLeave={e => { e.currentTarget.style.background = '#fafafa'; }}
+                                onMouseEnter={e => { e.currentTarget.style.background = 'var(--tg-accent-soft, #f5f5ff)'; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = 'var(--tg-surface-muted, #fafafa)'; }}
                             >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                 <div style={{
@@ -235,22 +236,22 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                                         <line x1="12" y1="17" x2="12.01" y2="17"/>
                                       </svg>
                                     </div>
-                                    <span style={{ fontSize: 13, fontWeight: 500, color: '#4a4d6a' }}>找不到你的交易所？</span>
+                                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-secondary, #4a4d6a)' }}>找不到你的交易所？</span>
                                 </div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                     <button
-                                        onClick={e => { e.stopPropagation(); setDropdownOpen(false); }}
-                                        style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 5, transition: 'background 0.1s', whiteSpace: 'nowrap' }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = '#eef0ff'; }}
+                                        onClick={e => { e.stopPropagation(); setDropdownOpen(false); onCustomAccount?.(); }}
+                                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--tg-accent, #6366f1)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 5, transition: 'background 0.1s', whiteSpace: 'nowrap' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--tg-accent-soft, #eef0ff)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                                     >
-                                        使用通用模板
+                                        创建自定义账户
                                     </button>
-                                    <span style={{ color: '#d0d3e0', fontSize: 12 }}>或</span>
+                                    <span style={{ color: 'var(--tg-muted, #d0d3e0)', fontSize: 12 }}>或</span>
                                     <button
-                                        onClick={e => { e.stopPropagation(); setDropdownOpen(false); }}
-                                        style={{ fontSize: 12, fontWeight: 600, color: '#6366f1', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 5, transition: 'background 0.1s', whiteSpace: 'nowrap' }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = '#eef0ff'; }}
+                                        onClick={e => { e.stopPropagation(); setDropdownOpen(false); onCustomAccount?.(); }}
+                                        style={{ fontSize: 12, fontWeight: 600, color: 'var(--tg-accent, #6366f1)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '4px 8px', borderRadius: 5, transition: 'background 0.1s', whiteSpace: 'nowrap' }}
+                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--tg-accent-soft, #eef0ff)'; }}
                                         onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
                                     >
                                         手动添加交易
@@ -262,7 +263,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                 </div>
 
                 {/* Section label */}
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#4a4d6a', marginBottom: 20 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--tg-secondary, #4a4d6a)', marginBottom: 20 }}>
                     热门经纪商
                 </div>
 
@@ -288,13 +289,13 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                             <div style={{ flex: 1 }}>
                                 <div style={{
                                     fontSize: 15, fontWeight: 500,
-                                    color: selected === exchange.id ? '#6366f1' : '#1a1d2e',
+                                    color: selected === exchange.id ? 'var(--tg-accent, #6366f1)' : 'var(--tg-text, #1a1d2e)',
                                     transition: 'color 0.15s',
                                 }}>
                                     {exchange.name}
                                 </div>
                                 {!exchange.available && (
-                                    <div style={{ fontSize: 12, color: '#b0b3c6', marginTop: 2 }}>即将支持</div>
+                                    <div style={{ fontSize: 12, color: 'var(--tg-muted, #b0b3c6)', marginTop: 2 }}>即将支持</div>
                                 )}
                             </div>
                             {selected === exchange.id && (
@@ -312,14 +313,21 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                     ))}
                 </div>
 
+                {onCustomAccount && (
+                  <button type="button" onClick={onCustomAccount} className="mt-6 w-full rounded-xl border border-indigo-200 bg-indigo-50 px-5 py-4 text-left text-sm font-semibold text-indigo-700 hover:bg-indigo-100 dark:border-indigo-500/40 dark:bg-indigo-500/10 dark:text-indigo-300 dark:hover:bg-indigo-500/20">
+                    未找到您的平台？创建手动 / 自定义账户 →
+                    <span className="mt-1 block text-xs font-normal text-slate-500 dark:text-slate-400">支持任意经纪商，也可不关联平台，无需 API 密钥。</span>
+                  </button>
+                )}
+
                 {/* Continue button */}
                 <button
                     onClick={handleContinue}
                     disabled={!selected}
                     style={{
                         width: '100%', height: 50, marginTop: 32, borderRadius: 10, border: 'none',
-                        background: selected ? '#3730a3' : '#e8e8f0',
-                        color: selected ? '#fff' : '#b0b3c6',
+                        background: selected ? '#3730a3' : 'var(--tg-accent-soft, #e8e8f0)',
+                        color: selected ? '#fff' : 'var(--tg-muted, #b0b3c6)',
                         fontSize: 15, fontWeight: 700,
                         cursor: selected ? 'pointer' : 'not-allowed',
                         transition: 'all 0.2s', letterSpacing: '0.02em',

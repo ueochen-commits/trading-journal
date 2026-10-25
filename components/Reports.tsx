@@ -858,7 +858,7 @@ const Reports: React.FC<ReportsProps> = ({
               options: [],
               type: 'multi',
               iconKey: 'tag',
-              color: '#f59e0b',
+              color: 'var(--tg-warning, #f59e0b)',
           });
       }
 
@@ -869,7 +869,7 @@ const Reports: React.FC<ReportsProps> = ({
               options: [],
               type: 'multi',
               iconKey: 'tag',
-              color: '#10b981',
+              color: 'var(--tg-positive, #10b981)',
           });
       }
 
@@ -881,7 +881,7 @@ const Reports: React.FC<ReportsProps> = ({
               options: [],
               type: 'multi',
               iconKey: 'tag',
-              color: '#10b981',
+              color: 'var(--tg-positive, #10b981)',
           });
       });
 
@@ -1546,8 +1546,8 @@ const Reports: React.FC<ReportsProps> = ({
   }, [calendarMonthViewData]);
 
   const calendarDonutData = useMemo(() => ([
-      { name: language === 'cn' ? '盈利' : 'winners', value: calendarMonthViewData.summary.winningTrades, color: '#55c39e' },
-      { name: language === 'cn' ? '亏损' : 'losers', value: calendarMonthViewData.summary.losingTrades, color: '#f45f63' },
+      { name: language === 'cn' ? '盈利' : 'winners', value: calendarMonthViewData.summary.winningTrades, color: 'var(--tg-positive, #55c39e)' },
+      { name: language === 'cn' ? '亏损' : 'losers', value: calendarMonthViewData.summary.losingTrades, color: 'var(--tg-negative, #f45f63)' },
   ]), [calendarMonthViewData, language]);
 
   // --- 3. Duration Statistics (For Detailed View - TRADE DURATION) ---
@@ -2862,60 +2862,60 @@ const Reports: React.FC<ReportsProps> = ({
   };
 
   const dayTimeMetricOptions: Array<{ id: DayTimeMetricId; category: 'time' | 'profitability' | 'risk' | 'activity' | 'streaks'; label: string; shortLabel: string; color: string; visual: ChartMetricVisual; format: ChartMetricFormat }> = [
-      { id: 'avgTradingDaysDuration', category: 'time', label: language === 'cn' ? '平均交易日跨度' : 'Average trading days duration', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', color: '#6b55cf', visual: 'area', format: 'duration' },
-      { id: 'avgHoldTime', category: 'time', label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', shortLabel: language === 'cn' ? '平均持仓' : 'Avg hold time', color: '#6b55cf', visual: 'area', format: 'duration' },
-      { id: 'longestTradeDuration', category: 'time', label: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', shortLabel: language === 'cn' ? '最长持仓' : 'Longest trade duration', color: '#6b55cf', visual: 'area', format: 'duration' },
-      { id: 'maxTradingDaysDuration', category: 'time', label: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', color: '#6b55cf', visual: 'area', format: 'duration' },
-      { id: 'avgDailyNetDrawdown', category: 'risk', label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', shortLabel: language === 'cn' ? '平均日回撤' : 'Avg daily drawdown', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgPlannedR', category: 'risk', label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', shortLabel: language === 'cn' ? '计划 R' : 'Planned R', color: '#d89d18', visual: 'line', format: 'number' },
-      { id: 'avgRealizedR', category: 'risk', label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', shortLabel: language === 'cn' ? '实现 R' : 'Realized R', color: '#d89d18', visual: 'line', format: 'number' },
-      { id: 'breakevenDays', category: 'risk', label: language === 'cn' ? '打平天数' : 'Breakeven days', shortLabel: language === 'cn' ? '打平天数' : 'Breakeven days', color: '#8f98a6', visual: 'bar', format: 'number' },
-      { id: 'breakevenTrades', category: 'risk', label: language === 'cn' ? '打平交易数' : 'Breakeven trades', shortLabel: language === 'cn' ? '打平交易' : 'Breakeven trades', color: '#8f98a6', visual: 'bar', format: 'number' },
-      { id: 'losingDays', category: 'risk', label: language === 'cn' ? '亏损天数' : 'Losing days', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', color: '#ff6468', visual: 'bar', format: 'number' },
-      { id: 'maxDailyNetDrawdown', category: 'risk', label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', shortLabel: language === 'cn' ? '最大日回撤' : 'Max daily drawdown', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgDailyNetPnl', category: 'profitability', label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', shortLabel: language === 'cn' ? '平均日净盈亏' : 'Avg daily net P&L', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgDailyWinLoss', category: 'profitability', label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', shortLabel: language === 'cn' ? '日盈亏比' : 'Daily win/loss', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'avgLoss', category: 'profitability', label: language === 'cn' ? '平均亏损' : 'Avg loss', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgMaxTradeLoss', category: 'profitability', label: language === 'cn' ? '平均最大单笔亏损' : 'Avg max trade loss', shortLabel: language === 'cn' ? '最大亏损' : 'Max trade loss', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgMaxTradeProfit', category: 'profitability', label: language === 'cn' ? '平均最大单笔盈利' : 'Avg max trade profit', shortLabel: language === 'cn' ? '最大盈利' : 'Max trade profit', color: '#55c39e', visual: 'area', format: 'money' },
-      { id: 'avgNetTradePnl', category: 'profitability', label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', shortLabel: language === 'cn' ? '单笔净盈亏' : 'Avg trade P&L', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgTradeWinLoss', category: 'profitability', label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', shortLabel: language === 'cn' ? '单笔盈亏比' : 'Trade win/loss', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'avgWin', category: 'profitability', label: language === 'cn' ? '平均盈利' : 'Avg win', shortLabel: language === 'cn' ? '平均盈利' : 'Avg win', color: '#55c39e', visual: 'area', format: 'money' },
-      { id: 'largestLosingTrade', category: 'profitability', label: language === 'cn' ? '最大亏损交易' : 'Largest losing trade', shortLabel: language === 'cn' ? '最大亏损' : 'Largest loss', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'largestProfitableTrade', category: 'profitability', label: language === 'cn' ? '最大盈利交易' : 'Largest profitable trade', shortLabel: language === 'cn' ? '最大盈利' : 'Largest win', color: '#55c39e', visual: 'area', format: 'money' },
-      { id: 'netPnl', category: 'profitability', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), shortLabel: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), color: '#ff6468', visual: 'bar', format: 'money' },
-      { id: 'profitFactor', category: 'profitability', label: language === 'cn' ? '盈利因子' : 'Profit factor', shortLabel: language === 'cn' ? '盈利因子' : 'Profit factor', color: '#55c39e', visual: 'area', format: 'number' },
-      { id: 'tradeExpectancy', category: 'profitability', label: language === 'cn' ? '交易期望值' : 'Trade expectancy', shortLabel: language === 'cn' ? '期望值' : 'Expectancy', color: '#ff6468', visual: 'area', format: 'money' },
-      { id: 'avgDailyVolume', category: 'activity', label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', shortLabel: language === 'cn' ? '平均成交额' : 'Avg daily volume', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'dailyNetDrawdown', category: 'activity', label: language === 'cn' ? '每日净回撤' : 'Daily net drawdown', shortLabel: language === 'cn' ? '每日回撤' : 'Daily drawdown', color: '#ff6468', visual: 'bar', format: 'money' },
-      { id: 'loggedDays', category: 'activity', label: language === 'cn' ? '记录天数' : 'Logged days', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', color: '#6b55cf', visual: 'bar', format: 'number' },
-      { id: 'longBreakevenTrades', category: 'activity', label: language === 'cn' ? '多头打平交易数' : 'Longs # of breakeven trades', shortLabel: language === 'cn' ? '多头打平' : 'Long breakevens', color: '#8f98a6', visual: 'bar', format: 'number' },
-      { id: 'longLosingTrades', category: 'activity', label: language === 'cn' ? '多头亏损交易数' : 'Longs # of losing trades', shortLabel: language === 'cn' ? '多头亏损' : 'Long losses', color: '#ff6468', visual: 'bar', format: 'number' },
-      { id: 'longOpenTrades', category: 'activity', label: language === 'cn' ? '多头持仓交易数' : 'Longs # of open trades', shortLabel: language === 'cn' ? '多头持仓' : 'Long open', color: '#d89d18', visual: 'bar', format: 'number' },
-      { id: 'longTrades', category: 'activity', label: language === 'cn' ? '多头交易数' : 'Longs # of trades', shortLabel: language === 'cn' ? '多头交易' : 'Long trades', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'longWinningTrades', category: 'activity', label: language === 'cn' ? '多头盈利交易数' : 'Longs # of winning trades', shortLabel: language === 'cn' ? '多头盈利' : 'Long wins', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'lossTrades', category: 'activity', label: language === 'cn' ? '亏损交易数' : 'Loss # of trades', shortLabel: language === 'cn' ? '亏损交易' : 'Loss trades', color: '#ff6468', visual: 'bar', format: 'number' },
-      { id: 'netAccountBalance', category: 'activity', label: language === 'cn' ? '账户净值' : 'Net account balance', shortLabel: language === 'cn' ? '账户净值' : 'Account balance', color: '#6b55cf', visual: 'area', format: 'money' },
-      { id: 'openTrades', category: 'activity', label: language === 'cn' ? '未平仓交易数' : 'Open trades', shortLabel: language === 'cn' ? '未平仓' : 'Open trades', color: '#d89d18', visual: 'bar', format: 'number' },
-      { id: 'shortBreakevenTrades', category: 'activity', label: language === 'cn' ? '空头打平交易数' : 'Shorts # of breakeven trades', shortLabel: language === 'cn' ? '空头打平' : 'Short breakevens', color: '#8f98a6', visual: 'bar', format: 'number' },
-      { id: 'shortLosingTrades', category: 'activity', label: language === 'cn' ? '空头亏损交易数' : 'Shorts # of losing trades', shortLabel: language === 'cn' ? '空头亏损' : 'Short losses', color: '#ff6468', visual: 'bar', format: 'number' },
-      { id: 'shortOpenTrades', category: 'activity', label: language === 'cn' ? '空头持仓交易数' : 'Shorts # of open trades', shortLabel: language === 'cn' ? '空头持仓' : 'Short open', color: '#d89d18', visual: 'bar', format: 'number' },
-      { id: 'shortTrades', category: 'activity', label: language === 'cn' ? '空头交易数' : 'Shorts # of trades', shortLabel: language === 'cn' ? '空头交易' : 'Short trades', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'shortWinningTrades', category: 'activity', label: language === 'cn' ? '空头盈利交易数' : 'Shorts # of winning trades', shortLabel: language === 'cn' ? '空头盈利' : 'Short wins', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'tradeCount', category: 'activity', label: language === 'cn' ? '交易总数' : 'Trade count', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', color: '#3d63dd', visual: 'line', format: 'number' },
-      { id: 'volume', category: 'activity', label: language === 'cn' ? '成交额' : 'Volume', shortLabel: language === 'cn' ? '成交额' : 'Volume', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'winTrades', category: 'activity', label: language === 'cn' ? '盈利交易数' : 'Win # of trades', shortLabel: language === 'cn' ? '盈利交易' : 'Win trades', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'avgDailyWinPct', category: 'streaks', label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', shortLabel: language === 'cn' ? '平均日胜率' : 'Avg daily win %', color: '#55c39e', visual: 'bar', format: 'percent' },
-      { id: 'longWinPct', category: 'streaks', label: language === 'cn' ? '多头胜率' : 'Longs win %', shortLabel: language === 'cn' ? '多头胜率' : 'Long win %', color: '#55c39e', visual: 'line', format: 'percent' },
-      { id: 'maxConsecutiveLosingDays', category: 'streaks', label: language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', shortLabel: language === 'cn' ? '连续亏损天数' : 'Losing day streak', color: '#ff6468', visual: 'bar', format: 'number' },
-      { id: 'maxConsecutiveLosses', category: 'streaks', label: language === 'cn' ? '最大连续亏损交易' : 'Max consecutive losses', shortLabel: language === 'cn' ? '连续亏损交易' : 'Loss streak', color: '#ff6468', visual: 'bar', format: 'number' },
-      { id: 'maxConsecutiveWinningDays', category: 'streaks', label: language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', shortLabel: language === 'cn' ? '连续盈利天数' : 'Winning day streak', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'maxConsecutiveWins', category: 'streaks', label: language === 'cn' ? '最大连续盈利交易' : 'Max consecutive wins', shortLabel: language === 'cn' ? '连续盈利交易' : 'Win streak', color: '#55c39e', visual: 'bar', format: 'number' },
-      { id: 'sharpeRatio', category: 'streaks', label: language === 'cn' ? '夏普比率' : 'Sharpe ratio', shortLabel: language === 'cn' ? '夏普比率' : 'Sharpe ratio', color: '#6b55cf', visual: 'line', format: 'number' },
-      { id: 'shortWinPct', category: 'streaks', label: language === 'cn' ? '空头胜率' : 'Shorts win %', shortLabel: language === 'cn' ? '空头胜率' : 'Short win %', color: '#55c39e', visual: 'line', format: 'percent' },
-      { id: 'sortinoRatio', category: 'streaks', label: language === 'cn' ? '索提诺比率' : 'Sortino ratio', shortLabel: language === 'cn' ? '索提诺' : 'Sortino ratio', color: '#6b55cf', visual: 'line', format: 'number' },
-      { id: 'winPct', category: 'streaks', label: language === 'cn' ? '胜率' : 'Win %', shortLabel: language === 'cn' ? '胜率' : 'Win %', color: '#3d63dd', visual: 'line', format: 'percent' },
-      { id: 'winningDays', category: 'streaks', label: language === 'cn' ? '盈利天数' : 'Winning days', shortLabel: language === 'cn' ? '盈利天数' : 'Winning days', color: '#55c39e', visual: 'bar', format: 'number' },
+      { id: 'avgTradingDaysDuration', category: 'time', label: language === 'cn' ? '平均交易日跨度' : 'Average trading days duration', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', color: 'var(--tg-accent, #6b55cf)', visual: 'area', format: 'duration' },
+      { id: 'avgHoldTime', category: 'time', label: language === 'cn' ? '平均持仓时间' : 'Avg hold time', shortLabel: language === 'cn' ? '平均持仓' : 'Avg hold time', color: 'var(--tg-accent, #6b55cf)', visual: 'area', format: 'duration' },
+      { id: 'longestTradeDuration', category: 'time', label: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', shortLabel: language === 'cn' ? '最长持仓' : 'Longest trade duration', color: 'var(--tg-accent, #6b55cf)', visual: 'area', format: 'duration' },
+      { id: 'maxTradingDaysDuration', category: 'time', label: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', color: 'var(--tg-accent, #6b55cf)', visual: 'area', format: 'duration' },
+      { id: 'avgDailyNetDrawdown', category: 'risk', label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', shortLabel: language === 'cn' ? '平均日回撤' : 'Avg daily drawdown', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgPlannedR', category: 'risk', label: language === 'cn' ? '平均计划 R 倍数' : 'Avg. planned r-multiple', shortLabel: language === 'cn' ? '计划 R' : 'Planned R', color: 'var(--tg-warning, #d89d18)', visual: 'line', format: 'number' },
+      { id: 'avgRealizedR', category: 'risk', label: language === 'cn' ? '平均实现 R 倍数' : 'Avg. realized r-multiple', shortLabel: language === 'cn' ? '实现 R' : 'Realized R', color: 'var(--tg-warning, #d89d18)', visual: 'line', format: 'number' },
+      { id: 'breakevenDays', category: 'risk', label: language === 'cn' ? '打平天数' : 'Breakeven days', shortLabel: language === 'cn' ? '打平天数' : 'Breakeven days', color: 'var(--tg-muted, #8f98a6)', visual: 'bar', format: 'number' },
+      { id: 'breakevenTrades', category: 'risk', label: language === 'cn' ? '打平交易数' : 'Breakeven trades', shortLabel: language === 'cn' ? '打平交易' : 'Breakeven trades', color: 'var(--tg-muted, #8f98a6)', visual: 'bar', format: 'number' },
+      { id: 'losingDays', category: 'risk', label: language === 'cn' ? '亏损天数' : 'Losing days', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'number' },
+      { id: 'maxDailyNetDrawdown', category: 'risk', label: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', shortLabel: language === 'cn' ? '最大日回撤' : 'Max daily drawdown', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgDailyNetPnl', category: 'profitability', label: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', shortLabel: language === 'cn' ? '平均日净盈亏' : 'Avg daily net P&L', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgDailyWinLoss', category: 'profitability', label: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', shortLabel: language === 'cn' ? '日盈亏比' : 'Daily win/loss', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'avgLoss', category: 'profitability', label: language === 'cn' ? '平均亏损' : 'Avg loss', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgMaxTradeLoss', category: 'profitability', label: language === 'cn' ? '平均最大单笔亏损' : 'Avg max trade loss', shortLabel: language === 'cn' ? '最大亏损' : 'Max trade loss', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgMaxTradeProfit', category: 'profitability', label: language === 'cn' ? '平均最大单笔盈利' : 'Avg max trade profit', shortLabel: language === 'cn' ? '最大盈利' : 'Max trade profit', color: 'var(--tg-positive, #55c39e)', visual: 'area', format: 'money' },
+      { id: 'avgNetTradePnl', category: 'profitability', label: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', shortLabel: language === 'cn' ? '单笔净盈亏' : 'Avg trade P&L', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgTradeWinLoss', category: 'profitability', label: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', shortLabel: language === 'cn' ? '单笔盈亏比' : 'Trade win/loss', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'avgWin', category: 'profitability', label: language === 'cn' ? '平均盈利' : 'Avg win', shortLabel: language === 'cn' ? '平均盈利' : 'Avg win', color: 'var(--tg-positive, #55c39e)', visual: 'area', format: 'money' },
+      { id: 'largestLosingTrade', category: 'profitability', label: language === 'cn' ? '最大亏损交易' : 'Largest losing trade', shortLabel: language === 'cn' ? '最大亏损' : 'Largest loss', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'largestProfitableTrade', category: 'profitability', label: language === 'cn' ? '最大盈利交易' : 'Largest profitable trade', shortLabel: language === 'cn' ? '最大盈利' : 'Largest win', color: 'var(--tg-positive, #55c39e)', visual: 'area', format: 'money' },
+      { id: 'netPnl', category: 'profitability', label: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), shortLabel: pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'Net P&L') : (language === 'cn' ? '总盈亏' : 'Gross P&L'), color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'money' },
+      { id: 'profitFactor', category: 'profitability', label: language === 'cn' ? '盈利因子' : 'Profit factor', shortLabel: language === 'cn' ? '盈利因子' : 'Profit factor', color: 'var(--tg-positive, #55c39e)', visual: 'area', format: 'number' },
+      { id: 'tradeExpectancy', category: 'profitability', label: language === 'cn' ? '交易期望值' : 'Trade expectancy', shortLabel: language === 'cn' ? '期望值' : 'Expectancy', color: 'var(--tg-negative, #ff6468)', visual: 'area', format: 'money' },
+      { id: 'avgDailyVolume', category: 'activity', label: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', shortLabel: language === 'cn' ? '平均成交额' : 'Avg daily volume', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'dailyNetDrawdown', category: 'activity', label: language === 'cn' ? '每日净回撤' : 'Daily net drawdown', shortLabel: language === 'cn' ? '每日回撤' : 'Daily drawdown', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'money' },
+      { id: 'loggedDays', category: 'activity', label: language === 'cn' ? '记录天数' : 'Logged days', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', color: 'var(--tg-accent, #6b55cf)', visual: 'bar', format: 'number' },
+      { id: 'longBreakevenTrades', category: 'activity', label: language === 'cn' ? '多头打平交易数' : 'Longs # of breakeven trades', shortLabel: language === 'cn' ? '多头打平' : 'Long breakevens', color: 'var(--tg-muted, #8f98a6)', visual: 'bar', format: 'number' },
+      { id: 'longLosingTrades', category: 'activity', label: language === 'cn' ? '多头亏损交易数' : 'Longs # of losing trades', shortLabel: language === 'cn' ? '多头亏损' : 'Long losses', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'number' },
+      { id: 'longOpenTrades', category: 'activity', label: language === 'cn' ? '多头持仓交易数' : 'Longs # of open trades', shortLabel: language === 'cn' ? '多头持仓' : 'Long open', color: 'var(--tg-warning, #d89d18)', visual: 'bar', format: 'number' },
+      { id: 'longTrades', category: 'activity', label: language === 'cn' ? '多头交易数' : 'Longs # of trades', shortLabel: language === 'cn' ? '多头交易' : 'Long trades', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'longWinningTrades', category: 'activity', label: language === 'cn' ? '多头盈利交易数' : 'Longs # of winning trades', shortLabel: language === 'cn' ? '多头盈利' : 'Long wins', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'lossTrades', category: 'activity', label: language === 'cn' ? '亏损交易数' : 'Loss # of trades', shortLabel: language === 'cn' ? '亏损交易' : 'Loss trades', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'number' },
+      { id: 'netAccountBalance', category: 'activity', label: language === 'cn' ? '账户净值' : 'Net account balance', shortLabel: language === 'cn' ? '账户净值' : 'Account balance', color: 'var(--tg-accent, #6b55cf)', visual: 'area', format: 'money' },
+      { id: 'openTrades', category: 'activity', label: language === 'cn' ? '未平仓交易数' : 'Open trades', shortLabel: language === 'cn' ? '未平仓' : 'Open trades', color: 'var(--tg-warning, #d89d18)', visual: 'bar', format: 'number' },
+      { id: 'shortBreakevenTrades', category: 'activity', label: language === 'cn' ? '空头打平交易数' : 'Shorts # of breakeven trades', shortLabel: language === 'cn' ? '空头打平' : 'Short breakevens', color: 'var(--tg-muted, #8f98a6)', visual: 'bar', format: 'number' },
+      { id: 'shortLosingTrades', category: 'activity', label: language === 'cn' ? '空头亏损交易数' : 'Shorts # of losing trades', shortLabel: language === 'cn' ? '空头亏损' : 'Short losses', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'number' },
+      { id: 'shortOpenTrades', category: 'activity', label: language === 'cn' ? '空头持仓交易数' : 'Shorts # of open trades', shortLabel: language === 'cn' ? '空头持仓' : 'Short open', color: 'var(--tg-warning, #d89d18)', visual: 'bar', format: 'number' },
+      { id: 'shortTrades', category: 'activity', label: language === 'cn' ? '空头交易数' : 'Shorts # of trades', shortLabel: language === 'cn' ? '空头交易' : 'Short trades', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'shortWinningTrades', category: 'activity', label: language === 'cn' ? '空头盈利交易数' : 'Shorts # of winning trades', shortLabel: language === 'cn' ? '空头盈利' : 'Short wins', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'tradeCount', category: 'activity', label: language === 'cn' ? '交易总数' : 'Trade count', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', color: 'var(--tg-accent, #3d63dd)', visual: 'line', format: 'number' },
+      { id: 'volume', category: 'activity', label: language === 'cn' ? '成交额' : 'Volume', shortLabel: language === 'cn' ? '成交额' : 'Volume', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'winTrades', category: 'activity', label: language === 'cn' ? '盈利交易数' : 'Win # of trades', shortLabel: language === 'cn' ? '盈利交易' : 'Win trades', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'avgDailyWinPct', category: 'streaks', label: language === 'cn' ? '平均日胜率' : 'Avg daily win %', shortLabel: language === 'cn' ? '平均日胜率' : 'Avg daily win %', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'percent' },
+      { id: 'longWinPct', category: 'streaks', label: language === 'cn' ? '多头胜率' : 'Longs win %', shortLabel: language === 'cn' ? '多头胜率' : 'Long win %', color: 'var(--tg-positive, #55c39e)', visual: 'line', format: 'percent' },
+      { id: 'maxConsecutiveLosingDays', category: 'streaks', label: language === 'cn' ? '最大连续亏损天数' : 'Max consecutive losing days', shortLabel: language === 'cn' ? '连续亏损天数' : 'Losing day streak', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'number' },
+      { id: 'maxConsecutiveLosses', category: 'streaks', label: language === 'cn' ? '最大连续亏损交易' : 'Max consecutive losses', shortLabel: language === 'cn' ? '连续亏损交易' : 'Loss streak', color: 'var(--tg-negative, #ff6468)', visual: 'bar', format: 'number' },
+      { id: 'maxConsecutiveWinningDays', category: 'streaks', label: language === 'cn' ? '最大连续盈利天数' : 'Max consecutive winning days', shortLabel: language === 'cn' ? '连续盈利天数' : 'Winning day streak', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'maxConsecutiveWins', category: 'streaks', label: language === 'cn' ? '最大连续盈利交易' : 'Max consecutive wins', shortLabel: language === 'cn' ? '连续盈利交易' : 'Win streak', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
+      { id: 'sharpeRatio', category: 'streaks', label: language === 'cn' ? '夏普比率' : 'Sharpe ratio', shortLabel: language === 'cn' ? '夏普比率' : 'Sharpe ratio', color: 'var(--tg-accent, #6b55cf)', visual: 'line', format: 'number' },
+      { id: 'shortWinPct', category: 'streaks', label: language === 'cn' ? '空头胜率' : 'Shorts win %', shortLabel: language === 'cn' ? '空头胜率' : 'Short win %', color: 'var(--tg-positive, #55c39e)', visual: 'line', format: 'percent' },
+      { id: 'sortinoRatio', category: 'streaks', label: language === 'cn' ? '索提诺比率' : 'Sortino ratio', shortLabel: language === 'cn' ? '索提诺' : 'Sortino ratio', color: 'var(--tg-accent, #6b55cf)', visual: 'line', format: 'number' },
+      { id: 'winPct', category: 'streaks', label: language === 'cn' ? '胜率' : 'Win %', shortLabel: language === 'cn' ? '胜率' : 'Win %', color: 'var(--tg-accent, #3d63dd)', visual: 'line', format: 'percent' },
+      { id: 'winningDays', category: 'streaks', label: language === 'cn' ? '盈利天数' : 'Winning days', shortLabel: language === 'cn' ? '盈利天数' : 'Winning days', color: 'var(--tg-positive, #55c39e)', visual: 'bar', format: 'number' },
   ];
 
   const getDayTimeMetricOption = (id: DayTimeMetricId) => dayTimeMetricOptions.find(option => option.id === id) || dayTimeMetricOptions[0];
@@ -2978,33 +2978,33 @@ const Reports: React.FC<ReportsProps> = ({
       getDailyValue: (day: typeof performanceDailyData[number]) => number;
       includeDay?: (day: typeof performanceDailyData[number]) => boolean;
   }>> = {
-      avgTradingDaysDuration: { category: 'time', label: language === 'cn' ? '平均交易日跨度 - 累计' : 'Average trading days duration - cumulative', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.periodDurationMs },
-      avgHoldTime: { category: 'time', label: language === 'cn' ? '平均持仓时间 - 累计' : 'Avg hold time - cumulative', shortLabel: language === 'cn' ? '平均持仓时间' : 'Avg hold time', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.closedTradeCount > 0 ? day.holdDurationTotal / day.closedTradeCount : 0 },
-      longestTradeDuration: { category: 'time', label: language === 'cn' ? '最长持仓时间 - 累计' : 'Longest trade duration - cumulative', shortLabel: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.longestTradeDuration },
-      maxTradingDaysDuration: { category: 'time', label: language === 'cn' ? '最大交易日跨度 - 累计' : 'Max trading days duration - cumulative', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: '#6b55cf', getDailyValue: (day) => day.periodDurationMs },
-      avgDailyNetPnl: { category: 'profitability', label: language === 'cn' ? '平均每日净盈亏 - 累计' : 'Avg daily net P&L - cumulative', shortLabel: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl },
-      avgDailyWinLoss: { category: 'profitability', label: language === 'cn' ? '平均每日盈亏比 - 累计' : 'Avg daily win/loss - cumulative', shortLabel: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', mode: 'daily', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
-      avgLoss: { category: 'profitability', label: language === 'cn' ? '平均亏损 - 累计' : 'Avg loss - cumulative', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.losses > 0 ? day.lossPnl / day.losses : 0 },
-      avgNetTradePnl: { category: 'profitability', label: language === 'cn' ? '平均单笔净盈亏 - 累计' : 'Avg net trade P&L - cumulative', shortLabel: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.count > 0 ? day.pnl / day.count : 0 },
-      avgTradeWinLoss: { category: 'profitability', label: language === 'cn' ? '平均单笔盈亏比 - 累计' : 'Avg trade win/loss - cumulative', shortLabel: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', mode: 'daily', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
-      avgWin: { category: 'profitability', label: language === 'cn' ? '平均盈利 - 累计' : 'Avg win - cumulative', shortLabel: language === 'cn' ? '平均盈利' : 'Avg win', mode: 'cumulative', format: 'money', visual: 'area', color: '#55c39e', getDailyValue: (day) => day.wins > 0 ? day.winPnl / day.wins : 0 },
-      dailyNetPnl: { category: 'profitability', label: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', shortLabel: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', mode: 'daily', format: 'money', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.pnl },
-      netPnl: { category: 'profitability', label: language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative', shortLabel: language === 'cn' ? '净盈亏' : 'Net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl },
-      profitFactor: { category: 'profitability', label: language === 'cn' ? '盈利因子 - 累计' : 'Profit factor - cumulative', shortLabel: language === 'cn' ? '盈利因子' : 'Profit factor', mode: 'cumulative', format: 'number', visual: 'area', color: '#55c39e', getDailyValue: (day) => Math.abs(day.lossPnl) > 0 ? day.winPnl / Math.abs(day.lossPnl) : day.winPnl > 0 ? day.winPnl : 0 },
-      tradeExpectancy: { category: 'profitability', label: language === 'cn' ? '交易期望值 - 累计' : 'Trade expectancy - cumulative', shortLabel: language === 'cn' ? '交易期望值' : 'Trade expectancy', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.count > 0 ? day.pnl / day.count : 0 },
-      avgDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', shortLabel: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
-      breakevenDays: { category: 'risk', label: language === 'cn' ? '打平天数 - 累计' : 'Breakeven days - cumulative', shortLabel: language === 'cn' ? '打平天数' : 'Breakeven days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#9aa3ae', getDailyValue: (day) => day.pnl === 0 ? 1 : 0 },
-      losingDays: { category: 'risk', label: language === 'cn' ? '亏损天数 - 累计' : 'Losing days - cumulative', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? 1 : 0 },
-      maxDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '最大单日净回撤 - 累计' : 'Max daily net drawdown - cumulative', shortLabel: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: '#ff6468', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
-      avgDailyVolume: { category: 'activity', label: language === 'cn' ? '平均每日成交额 - 累计' : 'Avg daily volume - cumulative', shortLabel: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.volume },
-      loggedDays: { category: 'activity', label: language === 'cn' ? '记录天数 - 累计' : 'Logged days - cumulative', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#6b55cf', getDailyValue: (day) => day.loggedDayCount },
-      tradeCount: { category: 'activity', label: language === 'cn' ? '交易总数 - 累计' : 'Trade count - cumulative', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.count },
-      volume: { category: 'activity', label: language === 'cn' ? '成交额 - 累计' : 'Volume - cumulative', shortLabel: language === 'cn' ? '成交额' : 'Volume', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.volume },
-      winTrades: { category: 'activity', label: language === 'cn' ? '盈利交易数 - 累计' : 'Win # of trades - cumulative', shortLabel: language === 'cn' ? '盈利交易数' : 'Win trades', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.wins },
-      lossTrades: { category: 'activity', label: language === 'cn' ? '亏损交易数 - 累计' : 'Loss # of trades - cumulative', shortLabel: language === 'cn' ? '亏损交易数' : 'Loss trades', mode: 'cumulative', format: 'number', visual: 'bar', color: '#ff6468', getDailyValue: (day) => day.losses },
-      avgDailyWinPct: { category: 'streaks', label: language === 'cn' ? '平均日胜率 - 累计' : 'Avg daily win % - cumulative', shortLabel: language === 'cn' ? '平均日胜率' : 'Avg daily win %', mode: 'daily', format: 'percent', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.winRate },
-      winPct: { category: 'streaks', label: language === 'cn' ? '胜率 - 累计' : 'Win % - cumulative', shortLabel: language === 'cn' ? '胜率' : 'Win %', mode: 'cumulative', format: 'percent', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.winRate },
-      winningDays: { category: 'streaks', label: language === 'cn' ? '盈利天数 - 累计' : 'Winning days - cumulative', shortLabel: language === 'cn' ? '盈利天数' : 'Winning days', mode: 'cumulative', format: 'number', visual: 'bar', color: '#55c39e', getDailyValue: (day) => day.pnl > 0 ? 1 : 0 },
+      avgTradingDaysDuration: { category: 'time', label: language === 'cn' ? '平均交易日跨度 - 累计' : 'Average trading days duration - cumulative', shortLabel: language === 'cn' ? '交易日跨度' : 'Trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: 'var(--tg-accent, #6b55cf)', getDailyValue: (day) => day.periodDurationMs },
+      avgHoldTime: { category: 'time', label: language === 'cn' ? '平均持仓时间 - 累计' : 'Avg hold time - cumulative', shortLabel: language === 'cn' ? '平均持仓时间' : 'Avg hold time', mode: 'cumulative', format: 'duration', visual: 'area', color: 'var(--tg-accent, #6b55cf)', getDailyValue: (day) => day.closedTradeCount > 0 ? day.holdDurationTotal / day.closedTradeCount : 0 },
+      longestTradeDuration: { category: 'time', label: language === 'cn' ? '最长持仓时间 - 累计' : 'Longest trade duration - cumulative', shortLabel: language === 'cn' ? '最长持仓时间' : 'Longest trade duration', mode: 'cumulative', format: 'duration', visual: 'area', color: 'var(--tg-accent, #6b55cf)', getDailyValue: (day) => day.longestTradeDuration },
+      maxTradingDaysDuration: { category: 'time', label: language === 'cn' ? '最大交易日跨度 - 累计' : 'Max trading days duration - cumulative', shortLabel: language === 'cn' ? '最大交易日跨度' : 'Max trading days duration', mode: 'cumulative', format: 'duration', visual: 'area', color: 'var(--tg-accent, #6b55cf)', getDailyValue: (day) => day.periodDurationMs },
+      avgDailyNetPnl: { category: 'profitability', label: language === 'cn' ? '平均每日净盈亏 - 累计' : 'Avg daily net P&L - cumulative', shortLabel: language === 'cn' ? '平均每日净盈亏' : 'Avg daily net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.pnl },
+      avgDailyWinLoss: { category: 'profitability', label: language === 'cn' ? '平均每日盈亏比 - 累计' : 'Avg daily win/loss - cumulative', shortLabel: language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss', mode: 'daily', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
+      avgLoss: { category: 'profitability', label: language === 'cn' ? '平均亏损 - 累计' : 'Avg loss - cumulative', shortLabel: language === 'cn' ? '平均亏损' : 'Avg loss', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.losses > 0 ? day.lossPnl / day.losses : 0 },
+      avgNetTradePnl: { category: 'profitability', label: language === 'cn' ? '平均单笔净盈亏 - 累计' : 'Avg net trade P&L - cumulative', shortLabel: language === 'cn' ? '平均单笔净盈亏' : 'Avg net trade P&L', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.count > 0 ? day.pnl / day.count : 0 },
+      avgTradeWinLoss: { category: 'profitability', label: language === 'cn' ? '平均单笔盈亏比 - 累计' : 'Avg trade win/loss - cumulative', shortLabel: language === 'cn' ? '平均单笔盈亏比' : 'Avg trade win/loss', mode: 'daily', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.avgDailyWinLoss, includeDay: (day) => day.hasAvgDailyWinLoss && day.avgDailyWinLoss > 0 },
+      avgWin: { category: 'profitability', label: language === 'cn' ? '平均盈利 - 累计' : 'Avg win - cumulative', shortLabel: language === 'cn' ? '平均盈利' : 'Avg win', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.wins > 0 ? day.winPnl / day.wins : 0 },
+      dailyNetPnl: { category: 'profitability', label: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', shortLabel: language === 'cn' ? '每日净盈亏' : 'Daily net P&L', mode: 'daily', format: 'money', visual: 'bar', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.pnl },
+      netPnl: { category: 'profitability', label: language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative', shortLabel: language === 'cn' ? '净盈亏' : 'Net P&L', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.pnl },
+      profitFactor: { category: 'profitability', label: language === 'cn' ? '盈利因子 - 累计' : 'Profit factor - cumulative', shortLabel: language === 'cn' ? '盈利因子' : 'Profit factor', mode: 'cumulative', format: 'number', visual: 'area', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => Math.abs(day.lossPnl) > 0 ? day.winPnl / Math.abs(day.lossPnl) : day.winPnl > 0 ? day.winPnl : 0 },
+      tradeExpectancy: { category: 'profitability', label: language === 'cn' ? '交易期望值 - 累计' : 'Trade expectancy - cumulative', shortLabel: language === 'cn' ? '交易期望值' : 'Trade expectancy', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.count > 0 ? day.pnl / day.count : 0 },
+      avgDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', shortLabel: language === 'cn' ? '平均每日净回撤' : 'Avg daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
+      breakevenDays: { category: 'risk', label: language === 'cn' ? '打平天数 - 累计' : 'Breakeven days - cumulative', shortLabel: language === 'cn' ? '打平天数' : 'Breakeven days', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-muted, #9aa3ae)', getDailyValue: (day) => day.pnl === 0 ? 1 : 0 },
+      losingDays: { category: 'risk', label: language === 'cn' ? '亏损天数 - 累计' : 'Losing days - cumulative', shortLabel: language === 'cn' ? '亏损天数' : 'Losing days', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.pnl < 0 ? 1 : 0 },
+      maxDailyNetDrawdown: { category: 'risk', label: language === 'cn' ? '最大单日净回撤 - 累计' : 'Max daily net drawdown - cumulative', shortLabel: language === 'cn' ? '最大单日净回撤' : 'Max daily net drawdown', mode: 'cumulative', format: 'money', visual: 'area', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.pnl < 0 ? day.pnl : 0 },
+      avgDailyVolume: { category: 'activity', label: language === 'cn' ? '平均每日成交额 - 累计' : 'Avg daily volume - cumulative', shortLabel: language === 'cn' ? '平均每日成交额' : 'Avg daily volume', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.volume },
+      loggedDays: { category: 'activity', label: language === 'cn' ? '记录天数 - 累计' : 'Logged days - cumulative', shortLabel: language === 'cn' ? '记录天数' : 'Logged days', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-accent, #6b55cf)', getDailyValue: (day) => day.loggedDayCount },
+      tradeCount: { category: 'activity', label: language === 'cn' ? '交易总数 - 累计' : 'Trade count - cumulative', shortLabel: language === 'cn' ? '交易总数' : 'Trade count', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.count },
+      volume: { category: 'activity', label: language === 'cn' ? '成交额 - 累计' : 'Volume - cumulative', shortLabel: language === 'cn' ? '成交额' : 'Volume', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.volume },
+      winTrades: { category: 'activity', label: language === 'cn' ? '盈利交易数 - 累计' : 'Win # of trades - cumulative', shortLabel: language === 'cn' ? '盈利交易数' : 'Win trades', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.wins },
+      lossTrades: { category: 'activity', label: language === 'cn' ? '亏损交易数 - 累计' : 'Loss # of trades - cumulative', shortLabel: language === 'cn' ? '亏损交易数' : 'Loss trades', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-negative, #ff6468)', getDailyValue: (day) => day.losses },
+      avgDailyWinPct: { category: 'streaks', label: language === 'cn' ? '平均日胜率 - 累计' : 'Avg daily win % - cumulative', shortLabel: language === 'cn' ? '平均日胜率' : 'Avg daily win %', mode: 'daily', format: 'percent', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.winRate },
+      winPct: { category: 'streaks', label: language === 'cn' ? '胜率 - 累计' : 'Win % - cumulative', shortLabel: language === 'cn' ? '胜率' : 'Win %', mode: 'cumulative', format: 'percent', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.winRate },
+      winningDays: { category: 'streaks', label: language === 'cn' ? '盈利天数 - 累计' : 'Winning days - cumulative', shortLabel: language === 'cn' ? '盈利天数' : 'Winning days', mode: 'cumulative', format: 'number', visual: 'bar', color: 'var(--tg-positive, #55c39e)', getDailyValue: (day) => day.pnl > 0 ? 1 : 0 },
   };
 
   const performanceSummary = useMemo(() => {
@@ -3189,7 +3189,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
                       <div className="flex-1">
                           <h5 className="font-semibold text-slate-800 dark:text-slate-200 text-sm">{report.title}</h5>
-                          <p className="text-xs text-slate-500 mt-0.5">
+                          <p className="text-xs text-slate-500 mt-0.5 dark:text-slate-400">
                               {isPending ? (
                                   <span className="text-amber-600 dark:text-amber-400 flex items-center gap-1">
                                       {language === 'cn' ? '生成中...' : 'Generating...'}
@@ -3924,7 +3924,7 @@ const Reports: React.FC<ReportsProps> = ({
               style={{ borderRadius: radius, cursor: 'wait' }}
               aria-label="Loading report data"
           >
-              <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin" />
+              <div className="h-8 w-8 rounded-full border-[3px] border-indigo-200 border-t-indigo-600 animate-spin dark:border-indigo-500/30" />
           </div>
       );
   };
@@ -4040,7 +4040,7 @@ const Reports: React.FC<ReportsProps> = ({
                       isStart || isEnd
                           ? 'bg-indigo-600 font-bold text-white'
                           : isSelected
-                            ? 'bg-indigo-100 text-indigo-700'
+                            ? 'bg-indigo-100 text-indigo-700 dark:text-indigo-300 dark:bg-indigo-950/40'
                             : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
                   }`}
                   onClick={() => {
@@ -4065,7 +4065,7 @@ const Reports: React.FC<ReportsProps> = ({
               </div>
               <div className="grid grid-cols-7 justify-items-center gap-y-1">
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                      <div key={`${day}-${index}`} className="text-[10px] font-bold text-slate-400">{day}</div>
+                      <div key={`${day}-${index}`} className="text-[10px] font-bold text-slate-400 dark:text-slate-400">{day}</div>
                   ))}
                   {dayCells}
               </div>
@@ -4128,7 +4128,7 @@ const Reports: React.FC<ReportsProps> = ({
               </div>
               <div className="grid grid-cols-7 justify-items-center gap-y-1">
                   {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
-                      <div key={`compare-day-${day}-${index}`} className="text-[10px] font-bold text-slate-400">{day}</div>
+                      <div key={`compare-day-${day}-${index}`} className="text-[10px] font-bold text-slate-400 dark:text-slate-400">{day}</div>
                   ))}
                   {dayCells}
               </div>
@@ -4203,7 +4203,7 @@ const Reports: React.FC<ReportsProps> = ({
 
   const ReportRangeIcon = () => (
       <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
-          <rect x="2.7" y="4" width="14.6" height="13.7" rx="3.8" fill="#d8d0f2" />
+          <rect x="2.7" y="4" width="14.6" height="13.7" rx="3.8" fill="var(--tg-accent-soft, #d8d0f2)" />
           <path d="M2.7 7.6h14.6v-0.2c0-1.9-1.5-3.4-3.4-3.4H6.1C4.2 4 2.7 5.5 2.7 7.4v0.2Z" fill="#8674d6" />
           <rect x="5.5" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
           <rect x="12.6" y="2.8" width="1.9" height="3.9" rx="0.95" fill="#6f55d8" />
@@ -4217,10 +4217,10 @@ const Reports: React.FC<ReportsProps> = ({
 
   const ReportAccountIcon = () => (
       <svg width="20" height="20" viewBox="0 0 20 20" className="shrink-0" aria-hidden="true">
-          <path d="M3.6 7.6c0-1.4 1.1-2.5 2.5-2.5h7.6c1.4 0 2.5 1.1 2.5 2.5v0.5h-2.1c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 3.2 3.2h2.1v0.5c0 1.4-1.1 2.5-2.5 2.5H6.1c-1.4 0-2.5-1.1-2.5-2.5V7.6Z" fill="#d8d0f2" />
+          <path d="M3.6 7.6c0-1.4 1.1-2.5 2.5-2.5h7.6c1.4 0 2.5 1.1 2.5 2.5v0.5h-2.1c-1.8 0-3.2 1.4-3.2 3.2s1.4 3.2 3.2 3.2h2.1v0.5c0 1.4-1.1 2.5-2.5 2.5H6.1c-1.4 0-2.5-1.1-2.5-2.5V7.6Z" fill="var(--tg-accent-soft, #d8d0f2)" />
           <path d="M6.5 5.2 12 2.8c1-0.4 2.1 0.3 2.1 1.4v1H6.5Z" fill="#b8ace8" />
           <path d="M10.9 11.3c0-1.2 1-2.2 2.2-2.2h2.9c0.8 0 1.4 0.6 1.4 1.4v1.7c0 0.8-0.6 1.4-1.4 1.4h-2.9c-1.2 0-2.2-1-2.2-2.3Z" fill="#8674d6" />
-          <circle cx="13.5" cy="11.4" r="0.85" fill="#f8f6ff" />
+          <circle cx="13.5" cy="11.4" r="0.85" fill="var(--tg-accent-soft, #f8f6ff)" />
       </svg>
   );
 
@@ -4290,7 +4290,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenChartVisualDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900"
+                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-[var(--tg-border)]"
                                           aria-expanded={colorDropdownOpen}
                                           aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
                                       >
@@ -4330,7 +4330,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenChartColorDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
                                       >
                                           {chartVisualOptions.find(option => option.id === metric.visual)?.label}
                                           <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
@@ -4352,7 +4352,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       }}
                                                       className={`block w-full px-[12px] py-[8px] text-left text-[14px] font-medium transition-colors ${
                                                           selected
-                                                              ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                              ? 'bg-[#e8e4f4] text-[#2f255f] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                                               : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                       }`}
                                                   >
@@ -4374,7 +4374,7 @@ const Reports: React.FC<ReportsProps> = ({
                           setOpenChartVisualDropdown(null);
                           setOpenChartColorDropdown(null);
                       }}
-                      className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
+                      className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8] dark:text-[var(--tg-accent)] dark:hover:text-[var(--tg-accent)]"
                   >
                       {language === 'cn' ? '恢复默认' : 'Reset to default'}
                   </button>
@@ -4425,7 +4425,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenDayTimeChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenDayTimeChartVisualDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900"
+                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-[var(--tg-border)]"
                                           aria-expanded={colorDropdownOpen}
                                           aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
                                       >
@@ -4465,7 +4465,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenDayTimeChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenDayTimeChartColorDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
                                       >
                                           {chartVisualOptions.find(option => option.id === metric.visual)?.label}
                                           <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
@@ -4487,7 +4487,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       }}
                                                       className={`block w-full px-[12px] py-[8px] text-left text-[14px] font-medium transition-colors ${
                                                           selected
-                                                              ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                              ? 'bg-[#e8e4f4] text-[#2f255f] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                                               : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                       }`}
                                                   >
@@ -4509,7 +4509,7 @@ const Reports: React.FC<ReportsProps> = ({
                           setOpenDayTimeChartVisualDropdown(null);
                           setOpenDayTimeChartColorDropdown(null);
                       }}
-                      className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
+                      className="mt-[11px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8] dark:text-[var(--tg-accent)] dark:hover:text-[var(--tg-accent)]"
                   >
                       {language === 'cn' ? '恢复默认' : 'Reset to default'}
                   </button>
@@ -4580,7 +4580,7 @@ const Reports: React.FC<ReportsProps> = ({
           <XAxis
               dataKey="label"
               ticks={ticks}
-              tick={{ fontSize: 12, fill: '#1f2933', fontWeight: 400 }}
+              tick={{ fontSize: 12, fill: 'var(--tg-text, #1f2933)', fontWeight: 400 }}
               axisLine={false}
               tickLine={false}
               interval={0}
@@ -4591,7 +4591,7 @@ const Reports: React.FC<ReportsProps> = ({
       );
 
       const legend = (
-          <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[20px] text-[14px] font-medium text-[#666b72]">
+          <div className="absolute bottom-[6px] left-1/2 flex -translate-x-1/2 items-center gap-[20px] text-[14px] font-medium text-[#666b72] dark:text-[var(--tg-secondary)]">
               {metrics.map(metric => (
                   <div key={metric.slot} className="flex items-center gap-[7px]">
                       <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: metric.color }} />
@@ -4635,7 +4635,7 @@ const Reports: React.FC<ReportsProps> = ({
                       connectNulls
                       activeDot={{
                           r: 6,
-                          fill: '#ffffff',
+                          fill: 'var(--tg-surface, #ffffff)',
                           stroke: metric.color,
                           strokeWidth: 3,
                       }}
@@ -4659,7 +4659,7 @@ const Reports: React.FC<ReportsProps> = ({
                   connectNulls
                   activeDot={{
                       r: 6,
-                      fill: '#ffffff',
+                      fill: 'var(--tg-surface, #ffffff)',
                       stroke: metric.color,
                       strokeWidth: 3,
                   }}
@@ -4683,7 +4683,7 @@ const Reports: React.FC<ReportsProps> = ({
                           <CartesianGrid
                               vertical={false}
                               horizontal
-                              stroke="#dfe5eb"
+                              stroke="var(--tg-border, #dfe5eb)"
                               strokeOpacity={0.45}
                               strokeDasharray="4 4"
                           />
@@ -4712,7 +4712,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   key={`${side}-horizontal-grid-${tick}`}
                                   yAxisId={gridAxis.id}
                                   y={tick}
-                                  stroke="#dfe5eb"
+                                  stroke="var(--tg-border, #dfe5eb)"
                                   strokeOpacity={0.42}
                                   strokeDasharray="4 4"
                                   strokeWidth={1}
@@ -4868,7 +4868,7 @@ const Reports: React.FC<ReportsProps> = ({
           <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
-                      <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
+                      <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1] dark:text-[var(--tg-muted)]" />
                       <input
                           value={dayTimeMetricPickerSearch}
                           onChange={(event) => setDayTimeMetricPickerSearch(event.target.value)}
@@ -4886,10 +4886,10 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={() => setExpandedDayTimeMetricCategory(isExpanded && !normalizedDayTimeMetricPickerSearch ? null : category.id)}
-                                  className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200'}`}
+                                  className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6] dark:text-[var(--tg-accent)]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200 dark:hover:text-[var(--tg-accent)]'}`}
                               >
                                   {category.label}
-                                  <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
+                                  <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6] dark:text-[var(--tg-accent)]' : 'text-[#727b86] dark:text-[var(--tg-secondary)]'}`} />
                               </button>
                               <div
                                   className={`report-metric-category-panel ${isExpanded ? 'is-open' : ''}`}
@@ -4905,7 +4905,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   onClick={() => handleSelectMetric(option.id)}
                                                   className={`report-metric-option block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
                                                       selected
-                                                          ? 'bg-[#ebe7f8] text-[#2f255f]'
+                                                          ? 'bg-[#ebe7f8] text-[#2f255f] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                                           : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                   }`}
                                                   style={{ '--option-index': index } as React.CSSProperties}
@@ -4920,7 +4920,7 @@ const Reports: React.FC<ReportsProps> = ({
                       );
                   })}
                   {visibleCategories.length === 0 && (
-                      <div className="px-[4px] py-[18px] text-center text-[13px] font-medium text-[#7b828c]">
+                      <div className="px-[4px] py-[18px] text-center text-[13px] font-medium text-[#7b828c] dark:text-[var(--tg-secondary)]">
                           {language === 'cn' ? '没有匹配指标' : 'No matching metrics'}
                       </div>
                   )}
@@ -4958,7 +4958,7 @@ const Reports: React.FC<ReportsProps> = ({
                           return next;
                       });
                   }}
-                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-[8px] overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-[8px] overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
               >
                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
                       <span className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]" style={{ backgroundColor: selected.color }} />
@@ -4974,7 +4974,7 @@ const Reports: React.FC<ReportsProps> = ({
                           onRemove?.();
                           setOpenDayTimeMetricPicker(null);
                       }}
-                      className="pointer-events-none ml-0 inline-flex h-[22px] w-0 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#dfe4ec] bg-white text-[#858d99] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-[width,margin,opacity,background-color,color,border-color] duration-150 ease-out hover:border-[#ccd3de] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/day-time-metric:pointer-events-auto group-hover/day-time-metric:ml-[6px] group-hover/day-time-metric:w-[22px] group-hover/day-time-metric:opacity-100 focus-visible:pointer-events-auto focus-visible:ml-[6px] focus-visible:w-[22px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                      className="pointer-events-none ml-0 inline-flex h-[22px] w-0 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#dfe4ec] bg-white text-[#858d99] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-[width,margin,opacity,background-color,color,border-color] duration-150 ease-out hover:border-[#ccd3de] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/day-time-metric:pointer-events-auto group-hover/day-time-metric:ml-[6px] group-hover/day-time-metric:w-[22px] group-hover/day-time-metric:opacity-100 focus-visible:pointer-events-auto focus-visible:ml-[6px] focus-visible:w-[22px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-muted)] dark:hover:border-[var(--tg-border)] dark:hover:bg-[var(--tg-surface-muted)] dark:hover:text-[var(--tg-text)]"
                       aria-label={language === 'cn' ? '移除指标' : 'Remove metric'}
                   >
                       <X className="h-[13px] w-[13px]" />
@@ -5004,7 +5004,7 @@ const Reports: React.FC<ReportsProps> = ({
                       if (!next) setDayTimeMetricPickerSearch('');
                       return next;
                   })}
-                  className="h-[32px] whitespace-nowrap rounded-[7px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:bg-[#ebe7f8] hover:text-[#4b35b8]"
+                  className="h-[32px] whitespace-nowrap rounded-[7px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:bg-[#ebe7f8] hover:text-[#4b35b8] dark:text-[var(--tg-accent)] dark:hover:bg-[var(--tg-accent-soft)] dark:hover:text-[var(--tg-accent)]"
               >
                   + {language === 'cn' ? '添加指标' : 'Add metric'}
               </button>
@@ -5073,7 +5073,7 @@ const Reports: React.FC<ReportsProps> = ({
                       strokeWidth={2}
                       fill={`url(#${chartId}-${metric.id}-fill)`}
                       dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
-                      activeDot={{ r: 5, fill: '#fff', stroke: metric.color, strokeWidth: 2.4 }}
+                      activeDot={{ r: 5, fill: 'var(--tg-surface, #fff)', stroke: metric.color, strokeWidth: 2.4 }}
                       isAnimationActive={shouldAnimateDayTimeCharts}
                       animationDuration={560}
                       animationBegin={animationDelayMs}
@@ -5091,7 +5091,7 @@ const Reports: React.FC<ReportsProps> = ({
                   stroke={metric.color}
                   strokeWidth={2}
                   dot={{ r: 2.4, fill: metric.color, stroke: metric.color, strokeWidth: 1 }}
-                  activeDot={{ r: 5, fill: '#fff', stroke: metric.color, strokeWidth: 2.4 }}
+                  activeDot={{ r: 5, fill: 'var(--tg-surface, #fff)', stroke: metric.color, strokeWidth: 2.4 }}
                   isAnimationActive={shouldAnimateDayTimeCharts}
                   animationDuration={560}
                   animationBegin={animationDelayMs}
@@ -5115,8 +5115,8 @@ const Reports: React.FC<ReportsProps> = ({
                               </linearGradient>
                           ))}
                       </defs>
-                      <CartesianGrid vertical={false} horizontal stroke="#dfe5eb" strokeOpacity={0.45} strokeDasharray="4 4" />
-                      <XAxis dataKey="label" ticks={xTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#4a5563', fontWeight: 500 }} dy={15} padding={{ left: 18, right: 28 }} />
+                      <CartesianGrid vertical={false} horizontal stroke="var(--tg-border, #dfe5eb)" strokeOpacity={0.45} strokeDasharray="4 4" />
+                      <XAxis dataKey="label" ticks={xTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #4a5563)', fontWeight: 500 }} dy={15} padding={{ left: 18, right: 28 }} />
                       {axisGroups.map(axis => (
                           <YAxis
                               key={axis.id}
@@ -5143,12 +5143,12 @@ const Reports: React.FC<ReportsProps> = ({
                           }))} />}
                       />
                       {gridAxis?.ticks.map(tick => (
-                          <ReferenceLine key={`${chartId}-grid-${tick}`} yAxisId={gridAxis.id} y={tick} stroke="#dfe5eb" strokeOpacity={0.42} strokeDasharray="4 4" strokeWidth={1} ifOverflow="extendDomain" />
+                          <ReferenceLine key={`${chartId}-grid-${tick}`} yAxisId={gridAxis.id} y={tick} stroke="var(--tg-border, #dfe5eb)" strokeOpacity={0.42} strokeDasharray="4 4" strokeWidth={1} ifOverflow="extendDomain" />
                       ))}
                       {visibleMetrics.map(renderSeries)}
                   </ComposedChart>
               </ResponsiveContainer>
-              <div className="absolute bottom-[8px] left-1/2 flex -translate-x-1/2 items-center gap-[22px] text-[14px] font-medium text-[#666b72]">
+              <div className="absolute bottom-[8px] left-1/2 flex -translate-x-1/2 items-center gap-[22px] text-[14px] font-medium text-[#666b72] dark:text-[var(--tg-secondary)]">
                   {visibleMetrics.map(metric => (
                       <div key={metric.id} className="flex items-center gap-[7px]">
                           <span className="h-[14px] w-[14px] rounded-full" style={{ backgroundColor: metric.color }} />
@@ -5172,13 +5172,13 @@ const Reports: React.FC<ReportsProps> = ({
       if (type === 'best') {
           return (
               <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-                  <path d="M4.2 7.2c0-2 1.6-3.6 3.6-3.6h4.1c.7 0 1.3.2 1.9.6l1 .7c.3.2.6.3 1 .3h.5c2 0 3.6 1.6 3.6 3.6v7.4c0 2.2-1.8 4-4 4H8.2c-2.2 0-4-1.8-4-4V7.2Z" fill="#DDF7EC" />
+                  <path d="M4.2 7.2c0-2 1.6-3.6 3.6-3.6h4.1c.7 0 1.3.2 1.9.6l1 .7c.3.2.6.3 1 .3h.5c2 0 3.6 1.6 3.6 3.6v7.4c0 2.2-1.8 4-4 4H8.2c-2.2 0-4-1.8-4-4V7.2Z" fill="var(--tg-positive-soft, #DDF7EC)" />
                   <path d="M4.2 8.6c0-1.9 1.5-3.4 3.4-3.4h4.2c.6 0 1.1.2 1.6.5l1.1.7c.3.2.7.3 1 .3h4.1v1.8c0 1.1-.9 2-2 2H6.2c-.7 0-1.4.2-2 .6V8.6Z" fill="#67D1A7" />
-                  <rect x="6.8" y="11.8" width="10.8" height="6.1" rx="1.8" fill="#F8FFFB" />
+                  <rect x="6.8" y="11.8" width="10.8" height="6.1" rx="1.8" fill="var(--tg-surface, #F8FFFB)" />
                   <rect x="8.2" y="14.1" width="1.8" height="2.4" rx="0.7" fill="#35B883" />
                   <rect x="11.2" y="12.7" width="1.8" height="3.8" rx="0.7" fill="#35B883" />
                   <rect x="14.2" y="11.2" width="1.8" height="5.3" rx="0.7" fill="#35B883" />
-                  <circle cx="18.1" cy="6.6" r="2.15" fill="#ECFFF5" />
+                  <circle cx="18.1" cy="6.6" r="2.15" fill="var(--tg-positive-soft, #ECFFF5)" />
                   <path d="M17.1 6.7c0-.4.3-.7.7-.7h.6c.4 0 .7.3.7.7v1.2c0 .4-.3.7-.7.7h-.6a.7.7 0 0 1-.7-.7V6.7Z" fill="#35B883" />
               </svg>
           );
@@ -5187,12 +5187,12 @@ const Reports: React.FC<ReportsProps> = ({
       if (type === 'worst') {
           return (
               <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-                  <path d="M4.6 8.1c0-2 1.6-3.6 3.6-3.6h7.6c2 0 3.6 1.6 3.6 3.6v8c0 2.1-1.7 3.8-3.8 3.8H8.4c-2.1 0-3.8-1.7-3.8-3.8V8.1Z" fill="#FFE1E6" />
+                  <path d="M4.6 8.1c0-2 1.6-3.6 3.6-3.6h7.6c2 0 3.6 1.6 3.6 3.6v8c0 2.1-1.7 3.8-3.8 3.8H8.4c-2.1 0-3.8-1.7-3.8-3.8V8.1Z" fill="var(--tg-negative-soft, #FFE1E6)" />
                   <path d="M6.7 6.2h10.5c1.2 0 2.2 1 2.2 2.2v1H4.6v-.6c0-1.5 1-2.6 2.1-2.6Z" fill="#FF7F8D" />
-                  <rect x="6.7" y="10.8" width="10.6" height="5.7" rx="1.8" fill="#FFF7F8" />
+                  <rect x="6.7" y="10.8" width="10.6" height="5.7" rx="1.8" fill="var(--tg-negative-soft, #FFF7F8)" />
                   <path d="M8.5 13.2c0-.7.6-1.2 1.2-1.2h4.7c.7 0 1.2.5 1.2 1.2s-.5 1.2-1.2 1.2H9.7c-.6 0-1.2-.5-1.2-1.2Z" fill="#FFB6C0" />
                   <path d="M14.8 11.1h1.2c.5 0 .9.4.9.9v3.4c0 .5-.4.9-.9.9h-1.2V11.1Z" fill="#F45C6B" />
-                  <circle cx="17.5" cy="6.3" r="2.05" fill="#FFF0F3" />
+                  <circle cx="17.5" cy="6.3" r="2.05" fill="var(--tg-negative-soft, #FFF0F3)" />
                   <path d="M16.75 6.35c0-.22.18-.4.4-.4h.7c.22 0 .4.18.4.4v.5c0 .22-.18.4-.4.4h-.7a.4.4 0 0 1-.4-.4v-.5Z" fill="#F45C6B" />
               </svg>
           );
@@ -5204,18 +5204,18 @@ const Reports: React.FC<ReportsProps> = ({
                   <path d="M12 3.2c1.2 0 2 .9 2.9 1.2.9.3 2.2 0 2.9.7.7.7.4 2 .7 2.9.3.9 1.2 1.7 1.2 2.9s-.9 2-1.2 2.9c-.3.9 0 2.2-.7 2.9-.7.7-2 .4-2.9.7-.9.3-1.7 1.2-2.9 1.2s-2-.9-2.9-1.2c-.9-.3-2.2 0-2.9-.7-.7-.7-.4-2-.7-2.9-.3-.9-1.2-1.7-1.2-2.9s.9-2 1.2-2.9c.3-.9 0-2.2.7-2.9.7-.7 2-.4 2.9-.7.9-.3 1.7-1.2 2.9-1.2Z" fill="#FFE4A8" />
                   <circle cx="12" cy="12" r="6.2" fill="#FFC652" />
                   <path d="M11.1 7.8c.2-.5.9-.5 1.1 0l.8 2.1c.1.2.2.3.4.4l2.1.8c.5.2.5.9 0 1.1l-2.1.8c-.2.1-.3.2-.4.4l-.8 2.1c-.2.5-.9.5-1.1 0l-.8-2.1a.8.8 0 0 0-.4-.4l-2.1-.8c-.5-.2-.5-.9 0-1.1l2.1-.8c.2-.1.3-.2.4-.4l.8-2.1Z" fill="#F5A100" />
-                  <circle cx="17.5" cy="6.7" r="1.35" fill="#FFF6DE" />
+                  <circle cx="17.5" cy="6.7" r="1.35" fill="var(--tg-warning-soft, #FFF6DE)" />
               </svg>
           );
       }
 
       return (
           <svg viewBox="0 0 24 24" className="h-[23px] w-[23px]" aria-hidden="true">
-              <path d="M5 7.6c0-2 1.6-3.6 3.6-3.6h6.8c2 0 3.6 1.6 3.6 3.6v8.2c0 2.2-1.8 4-4 4H9c-2.2 0-4-1.8-4-4V7.6Z" fill="#E6DEFF" />
+              <path d="M5 7.6c0-2 1.6-3.6 3.6-3.6h6.8c2 0 3.6 1.6 3.6 3.6v8.2c0 2.2-1.8 4-4 4H9c-2.2 0-4-1.8-4-4V7.6Z" fill="var(--tg-accent-soft, #E6DEFF)" />
               <path d="M5 8.2c0-1.9 1.5-3.4 3.4-3.4h7.2c1.9 0 3.4 1.5 3.4 3.4v1.6H5V8.2Z" fill="#8166E4" />
               <rect x="7.4" y="3.1" width="1.8" height="3.7" rx="0.9" fill="#8166E4" />
               <rect x="14.8" y="3.1" width="1.8" height="3.7" rx="0.9" fill="#8166E4" />
-              <rect x="7.3" y="11.4" width="9.4" height="5.7" rx="1.8" fill="#F7F4FF" />
+              <rect x="7.3" y="11.4" width="9.4" height="5.7" rx="1.8" fill="var(--tg-accent-soft, #F7F4FF)" />
               <path d="M9.2 14.3c0-1.3 1-2.3 2.3-2.3h.9c1.3 0 2.3 1 2.3 2.3 0 1.2-1 2.2-2.3 2.2h-.9c-1.3 0-2.3-1-2.3-2.2Z" fill="#A28AF0" />
               <circle cx="11.2" cy="14.3" r="0.9" fill="#8166E4" />
               <path d="M13.2 13.6h1.3a.8.8 0 0 1 0 1.6h-1.3v-1.6Z" fill="#8166E4" />
@@ -5244,16 +5244,16 @@ const Reports: React.FC<ReportsProps> = ({
   }) => {
       const toneColor = tone === 'good' ? '#4dbd96' : tone === 'bad' ? '#f05258' : tone === 'accent' ? '#f59f00' : '#6b55cf';
       const valueClass = tone === 'bad'
-          ? 'bg-[#ffe5e8] text-[#f05258]'
+          ? 'bg-[#ffe5e8] text-[#f05258] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-negative)]'
           : tone === 'good'
-              ? 'bg-[#e0f5ee] text-[#31a77e]'
-              : 'bg-[#eeeaf8] text-[#6b55cf]';
+              ? 'bg-[#e0f5ee] text-[#31a77e] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-positive)]'
+              : 'bg-[#eeeaf8] text-[#6b55cf] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]';
       return (
           <div
               className={`min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900 ${animate ? 'animate-fade-in-up' : ''}`}
               style={animate ? { animationDelay: `${animationDelayMs}ms`, animationDuration: '420ms', animationFillMode: 'both' } : undefined}
           >
-              <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b]">
+              <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b] dark:text-[var(--tg-secondary)]">
                   <span
                       className={`inline-flex h-[24px] w-[24px] shrink-0 items-center justify-center ${animate ? 'animate-fade-in' : ''}`}
                       style={animate ? { color: toneColor, animationDelay: `${animationDelayMs + 70}ms`, animationDuration: '320ms', animationFillMode: 'both' } : { color: toneColor }}
@@ -5263,7 +5263,7 @@ const Reports: React.FC<ReportsProps> = ({
                   <span>{eyebrow}</span>
               </div>
               <div className="text-[19px] font-bold leading-none text-[#28313c] dark:text-slate-100">{title}</div>
-              <div className="mt-[12px] flex items-center gap-[7px] text-[13px] font-bold text-[#3f4854]">
+              <div className="mt-[12px] flex items-center gap-[7px] text-[13px] font-bold text-[#3f4854] dark:text-[var(--tg-secondary)]">
                   <span>{detail}</span>
                   {value && (
                       <span className={`rounded-[4px] px-[5px] py-[2px] text-[13px] font-bold tabular-nums ${valueClass}`}>
@@ -5378,7 +5378,7 @@ const Reports: React.FC<ReportsProps> = ({
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
+                          className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
                           aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                       >
                           <FilledChartStyleIcon className={accent} />
@@ -5400,7 +5400,7 @@ const Reports: React.FC<ReportsProps> = ({
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'report-chart-metric-trigger relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          className={`${featured ? 'report-chart-metric-trigger relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -5411,7 +5411,7 @@ const Reports: React.FC<ReportsProps> = ({
                               </span>
                           )}
                           <span className="truncate">{metricLabel}</span>
-                          <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
+                          <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] dark:text-[var(--tg-text)]' : 'w-3.5 h-3.5 text-slate-400 dark:text-slate-400'} flex-shrink-0`} />
                       </button>
                       {metricPicker}
                   </div>
@@ -5426,7 +5426,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'report-chart-metric-trigger relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'report-chart-metric-trigger relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -5437,7 +5437,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   </span>
                               )}
                               <span className="truncate">{metric.label}</span>
-                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827]' : 'w-3.5 h-3.5 text-slate-400'} flex-shrink-0`} />
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] dark:text-[var(--tg-text)]' : 'w-3.5 h-3.5 text-slate-400 dark:text-slate-400'} flex-shrink-0`} />
                           </button>
                           <button
                               type="button"
@@ -5446,7 +5446,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   metric.onRemove?.();
                                   setOpenChartColorDropdown(null);
                               }}
-                              className="pointer-events-none ml-0 inline-flex h-[22px] w-0 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#dfe4ec] bg-white text-[#858d99] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-[width,margin,opacity,background-color,color,border-color] duration-150 ease-out hover:border-[#ccd3de] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:ml-[6px] group-hover/metric:w-[22px] group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:ml-[6px] focus-visible:w-[22px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                              className="pointer-events-none ml-0 inline-flex h-[22px] w-0 flex-shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#dfe4ec] bg-white text-[#858d99] opacity-0 shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-[width,margin,opacity,background-color,color,border-color] duration-150 ease-out hover:border-[#ccd3de] hover:bg-[#f5f6f8] hover:text-[#2f3742] group-hover/metric:pointer-events-auto group-hover/metric:ml-[6px] group-hover/metric:w-[22px] group-hover/metric:opacity-100 focus-visible:pointer-events-auto focus-visible:ml-[6px] focus-visible:w-[22px] focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-muted)] dark:hover:border-[var(--tg-border)] dark:hover:bg-[var(--tg-surface-muted)] dark:hover:text-[var(--tg-text)]"
                               aria-label={language === 'cn' ? '移除指标' : 'Remove metric'}
                           >
                               <X className="h-[13px] w-[13px]" />
@@ -5464,7 +5464,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'rounded-[7px] px-[12px] py-[7px] text-[14px] font-semibold text-[#5b45b6] transition-colors hover:bg-[#ebe7f8]' : 'text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'}`}
+                              className={`${featured ? 'rounded-[7px] px-[12px] py-[7px] text-[14px] font-semibold text-[#5b45b6] transition-colors hover:bg-[#ebe7f8] dark:text-[var(--tg-accent)] dark:hover:bg-[var(--tg-accent-soft)]' : 'text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white'}`}
                           >
                               + {language === 'cn' ? '添加指标' : 'Add metric'}
                           </button>
@@ -5484,12 +5484,12 @@ const Reports: React.FC<ReportsProps> = ({
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'h-[32px] w-[84px] sm:w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
+                              className={`${featured ? 'h-[32px] w-[84px] sm:w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
                               aria-expanded={timeframeMenuOpen}
                               aria-label={language === 'cn' ? '选择图表时间粒度' : 'Choose chart timeframe'}
                           >
                               {selectedTimeframeLabel}
-                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] transition-transform' : 'w-3.5 h-3.5 text-slate-400 transition-transform'} ${timeframeMenuOpen ? 'rotate-180' : ''}`} />
+                              <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] transition-transform dark:text-[var(--tg-text)]' : 'w-3.5 h-3.5 text-slate-400 transition-transform dark:text-slate-400'} ${timeframeMenuOpen ? 'rotate-180' : ''}`} />
                           </button>
                           <div
                               className={`absolute right-0 top-full z-[70] mt-[6px] w-[96px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
@@ -5508,7 +5508,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           }}
                                           className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium transition-colors ${
                                               selected
-                                                  ? 'bg-[#e8e4f4] text-[#2f255f]'
+                                                  ? 'bg-[#e8e4f4] text-[#2f255f] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                                   : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                           }`}
                                       >
@@ -5519,7 +5519,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </div>
                   )}
-                  <button className={`${featured ? 'h-[32px] w-[36px] rounded-[7px] border-[#dfe4ec] text-[#5f636b]' : 'h-8 w-8 rounded-md border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-center border bg-white dark:bg-slate-900 transition-colors`}>
+                  <button className={`${featured ? 'h-[32px] w-[36px] rounded-[7px] border-[#dfe4ec] text-[#5f636b] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)]' : 'h-8 w-8 rounded-md border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 dark:text-slate-400'} inline-flex items-center justify-center border bg-white dark:bg-slate-900 transition-colors`}>
                       <MoreVertical className={`${featured ? 'h-[18px] w-[18px]' : 'w-4 h-4'}`} />
                   </button>
               </div>
@@ -5529,11 +5529,11 @@ const Reports: React.FC<ReportsProps> = ({
                 <div className="flex items-start justify-between gap-4 mb-3">
                     <div>
                         <h3 className="text-sm font-semibold text-slate-850 dark:text-slate-100">{title}</h3>
-                        <p className="text-[11px] text-slate-400 dark:text-slate-500">{language === 'cn' ? '当前筛选范围' : 'Current filter range'}</p>
+                        <p className="text-[11px] text-slate-400 dark:text-slate-400">{language === 'cn' ? '当前筛选范围' : 'Current filter range'}</p>
                     </div>
                     {summaryValue && (
                       <div className="text-right">
-                          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Net</div>
+                          <div className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-400">Net</div>
                           <div className={`text-sm font-semibold tabular-nums ${summaryTone === 'good' ? 'text-emerald-600 dark:text-emerald-400' : summaryTone === 'bad' ? 'text-rose-600 dark:text-rose-400' : 'text-slate-800 dark:text-slate-100'}`}>
                               {summaryValue}
                           </div>
@@ -5556,11 +5556,11 @@ const Reports: React.FC<ReportsProps> = ({
       const tone = value >= 0 ? 'text-emerald-500' : 'text-rose-500';
 
       return (
-          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.24)]">
-              <div className="text-[12px] font-bold text-[#20232a]">{label}</div>
+          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.24)] dark:border-slate-700 dark:bg-slate-900">
+              <div className="text-[12px] font-bold text-[#20232a] dark:text-[var(--tg-text)]">{label}</div>
               <div className="mt-1 flex items-center gap-2">
                   <span className={`h-[6px] w-[6px] rounded-full ${value >= 0 ? 'bg-emerald-500' : 'bg-[#ff6468]'}`} />
-                  <span className="text-[12px] text-[#3f4650]">{language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative'}: {formatSignedMoney(value)}</span>
+                  <span className="text-[12px] text-[#3f4650] dark:text-[var(--tg-secondary)]">{language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative'}: {formatSignedMoney(value)}</span>
               </div>
           </div>
       );
@@ -5571,11 +5571,11 @@ const Reports: React.FC<ReportsProps> = ({
       const value = Number(payload[0]?.value || 0);
 
       return (
-          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.18)]">
-              <div className="text-[12px] font-bold text-[#20232a]">{label}</div>
+          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900">
+              <div className="text-[12px] font-bold text-[#20232a] dark:text-[var(--tg-text)]">{label}</div>
               <div className="mt-1 flex items-center gap-2">
                   <span className="h-[6px] w-[6px] rounded-full bg-[#55c39e]" />
-                  <span className="text-[12px] text-[#3f4650]">{language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}: {value.toFixed(2)}</span>
+                  <span className="text-[12px] text-[#3f4650] dark:text-[var(--tg-secondary)]">{language === 'cn' ? '平均每日盈亏比' : 'Avg daily win/loss'}: {value.toFixed(2)}</span>
               </div>
           </div>
       );
@@ -5586,7 +5586,7 @@ const Reports: React.FC<ReportsProps> = ({
 
       const tooltipMetrics = metrics || (config ? [{
           config,
-          color: overrideColor || config.color || '#55c39e',
+          color: overrideColor || config.color || 'var(--tg-positive, #55c39e)',
           dataKey: 'value',
       }] : []);
       const rows = tooltipMetrics
@@ -5611,13 +5611,13 @@ const Reports: React.FC<ReportsProps> = ({
           : label;
 
       return (
-          <div className="min-w-[236px] max-w-[360px] rounded-[4px] border border-[#d7dce4] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.18)]">
-              <div className="text-[12px] font-semibold leading-[16px] text-[#20232a]">{title}</div>
+          <div className="min-w-[236px] max-w-[360px] rounded-[4px] border border-[#d7dce4] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.18)] dark:border-[var(--tg-border)] dark:bg-slate-900">
+              <div className="text-[12px] font-semibold leading-[16px] text-[#20232a] dark:text-[var(--tg-text)]">{title}</div>
               <div className="mt-[5px] space-y-[3px]">
                   {rows.map((row: any) => (
                       <div key={row.key} className="flex items-start gap-[6px]">
                           <span className="mt-[5px] h-[6px] w-[6px] flex-shrink-0 rounded-full" style={{ backgroundColor: row.color }} />
-                          <span className="text-[12px] font-medium leading-[16px] text-[#303844]">
+                          <span className="text-[12px] font-medium leading-[16px] text-[#303844] dark:text-[var(--tg-text)]">
                               {row.label}: {row.value}
                           </span>
                       </div>
@@ -5643,11 +5643,11 @@ const Reports: React.FC<ReportsProps> = ({
       const tooltipTitle = payload[0]?.payload?.tooltipLabel || '';
 
       return (
-          <div className="min-w-[188px] rounded-[4px] border border-[#d7dce4] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.18)]">
-              <div className="text-[12px] font-semibold leading-[16px] text-[#20232a]">{tooltipTitle}</div>
+          <div className="min-w-[188px] rounded-[4px] border border-[#d7dce4] bg-white px-[10px] py-[8px] shadow-[0_2px_8px_rgba(15,23,42,0.18)] dark:border-[var(--tg-border)] dark:bg-slate-900">
+              <div className="text-[12px] font-semibold leading-[16px] text-[#20232a] dark:text-[var(--tg-text)]">{tooltipTitle}</div>
               <div className="mt-[5px] flex items-center gap-[6px]">
                   <span className="h-[6px] w-[6px] rounded-full" style={{ backgroundColor: color }} />
-                  <span className="text-[12px] font-medium leading-[16px] text-[#303844]">
+                  <span className="text-[12px] font-medium leading-[16px] text-[#303844] dark:text-[var(--tg-text)]">
                       {title}: {formatSignedMoney(value)}
                   </span>
               </div>
@@ -5686,14 +5686,14 @@ const Reports: React.FC<ReportsProps> = ({
                               <stop offset="100%" stopColor={gradientStops.end} stopOpacity={0.02} />
                           </linearGradient>
                       </defs>
-                      <CartesianGrid vertical={false} horizontal stroke="#dfe5eb" strokeOpacity={0.48} strokeDasharray="4 4" />
+                      <CartesianGrid vertical={false} horizontal stroke="var(--tg-border, #dfe5eb)" strokeOpacity={0.48} strokeDasharray="4 4" />
                       <XAxis
                           dataKey="label"
                           ticks={ticks}
                           interval={0}
                           axisLine={false}
                           tickLine={false}
-                          tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 500 }}
+                          tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 500 }}
                           dy={16}
                           padding={{ left: 14, right: 24 }}
                       />
@@ -5713,7 +5713,7 @@ const Reports: React.FC<ReportsProps> = ({
                           <ReferenceLine
                               key={`${chartId}-tick-${tick}`}
                               y={tick}
-                              stroke="#dfe5eb"
+                              stroke="var(--tg-border, #dfe5eb)"
                               strokeOpacity={0.42}
                               strokeDasharray="4 4"
                               strokeWidth={1}
@@ -5730,7 +5730,7 @@ const Reports: React.FC<ReportsProps> = ({
                           animationDuration={620}
                           animationEasing="ease-out"
                           dot={false}
-                          activeDot={{ r: 4.8, fill: '#fff', stroke: color, strokeWidth: 2 }}
+                          activeDot={{ r: 4.8, fill: 'var(--tg-surface, #fff)', stroke: color, strokeWidth: 2 }}
                       />
                   </AreaChart>
               </ResponsiveContainer>
@@ -5776,7 +5776,7 @@ const Reports: React.FC<ReportsProps> = ({
           <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
-                      <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
+                      <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1] dark:text-[var(--tg-muted)]" />
                       <input
                           value={chartMetricPickerSearch}
                           onChange={(event) => setChartMetricPickerSearch(event.target.value)}
@@ -5795,10 +5795,10 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={() => setExpandedChartMetricCategory(isExpanded ? null : category.id)}
-                                  className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200'}`}
+                                  className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6] dark:text-[var(--tg-accent)]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200 dark:hover:text-[var(--tg-accent)]'}`}
                               >
                                   {category.label}
-                                  <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
+                                  <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6] dark:text-[var(--tg-accent)]' : 'text-[#727b86] dark:text-[var(--tg-secondary)]'}`} />
                               </button>
                               <div
                                   className={`report-metric-category-panel ${isExpanded ? 'is-open' : ''}`}
@@ -5813,7 +5813,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       key={metricId}
                                                       type="button"
                                                       onClick={() => handleSelectMetric(metricId)}
-                                                      className={`report-metric-option block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
+                                                      className={`report-metric-option block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${isSelected ? 'bg-[#ebe7f8] text-[#2f255f] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'}`}
                                                       style={{ '--option-index': index } as React.CSSProperties}
                                                   >
                                                       {config.label}
@@ -5849,14 +5849,14 @@ const Reports: React.FC<ReportsProps> = ({
           <div
               className={`group/summary-metric relative min-h-[64px] transition-all ${
                   isEditing
-                      ? 'rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] shadow-[0_1px_0_rgba(15,23,42,0.03)] hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900/80'
+                      ? 'rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] shadow-[0_1px_0_rgba(15,23,42,0.03)] hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900/80 dark:hover:border-[var(--tg-border)]'
                       : ''
               } ${draggableClassName}`}
               {...dragAttributes}
           >
               {isEditing && (
                   <>
-                      <div className="absolute left-[9px] top-[12px] text-[#9aa3ae]">
+                      <div className="absolute left-[9px] top-[12px] text-[#9aa3ae] dark:text-[var(--tg-muted)]">
                           <GripVertical className="h-[15px] w-[15px]" />
                       </div>
                       <button
@@ -5877,7 +5877,7 @@ const Reports: React.FC<ReportsProps> = ({
                           <span className="group/metric-info relative inline-flex">
                               <button
                                   type="button"
-                                  className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                  className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:text-[var(--tg-secondary)] dark:hover:text-[var(--tg-secondary)]"
                                   aria-label={tooltip}
                               >
                                   <Info className="h-[14px] w-[14px]" />
@@ -5898,7 +5898,7 @@ const Reports: React.FC<ReportsProps> = ({
 
   const ReportTabMark = ({ type, active }: { type: string; active: boolean }) => {
       const iconBase = `relative inline-flex h-[20px] w-[20px] flex-shrink-0 items-center justify-center rounded-[8px] transition-[background-color,color,transform] duration-150 ${
-          active ? 'bg-[#6f55d8]/10 text-[#6f55d8]' : 'text-[#7e8793] group-hover:bg-[#eef1f5] group-hover:text-[#4d5663]'
+          active ? 'bg-[#6f55d8]/10 text-[#6f55d8] dark:text-[var(--tg-accent)]' : 'text-[#7e8793] group-hover:bg-[#eef1f5] group-hover:text-[#4d5663] dark:text-[var(--tg-secondary)] dark:group-hover:bg-[var(--tg-accent-soft)] dark:group-hover:text-[var(--tg-secondary)]'
       }`;
       const svgBase = "h-[16px] w-[16px]";
       const strokeProps = {
@@ -6678,14 +6678,14 @@ const Reports: React.FC<ReportsProps> = ({
           const dayData = calendarData.dailyMap[dateKey];
           const isToday = isSameCalendarDay(currentDate, today);
 
-          let cellClass = 'border border-transparent bg-[#f4f5f7] text-[#7d8793]';
+          let cellClass = 'border border-transparent bg-[#f4f5f7] text-[#7d8793] dark:bg-[var(--tg-surface-muted)] dark:text-[var(--tg-secondary)]';
           if (dayData) {
               if (dayData.pnl > 0) {
-                  cellClass = 'border border-[#d6ecdf] bg-[#e8f6ee] text-[#2d3945]';
+                  cellClass = 'border border-[#d6ecdf] bg-[#e8f6ee] text-[#2d3945] dark:border-[var(--tg-border)] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-text)]';
               } else if (dayData.pnl < 0) {
-                  cellClass = 'border border-[#f5d8da] bg-[#fee8e8] text-[#2d3945]';
+                  cellClass = 'border border-[#f5d8da] bg-[#fee8e8] text-[#2d3945] dark:border-[var(--tg-border)] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-text)]';
               } else {
-                  cellClass = 'border border-[#e3e7ed] bg-[#eef2f5] text-[#66717e]';
+                  cellClass = 'border border-[#e3e7ed] bg-[#eef2f5] text-[#66717e] dark:border-[var(--tg-border)] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]';
               }
           }
 
@@ -6710,18 +6710,18 @@ const Reports: React.FC<ReportsProps> = ({
                   <span
                       className={`relative z-[1] inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-full px-[3px] leading-none ${
                           isToday
-                              ? 'border border-[#6d5cd5] bg-white text-[#4f3dc1] shadow-[0_1px_2px_rgba(109,92,213,0.18)]'
+                              ? 'border border-[#6d5cd5] bg-white text-[#4f3dc1] shadow-[0_1px_2px_rgba(109,92,213,0.18)] dark:bg-slate-900 dark:text-[var(--tg-accent)]'
                               : ''
                       }`}
                   >
                       {d}
                   </span>
                   {dayData && (
-                      <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-[6px] border border-[#dfe4ec] bg-white px-[8px] py-[6px] text-[11px] shadow-[0_10px_24px_rgba(15,23,42,0.12)] group-hover:block">
-                          <div className={`font-semibold tabular-nums ${dayData.pnl >= 0 ? 'text-[#3baa86]' : 'text-[#f15f63]'}`}>
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden -translate-x-1/2 whitespace-nowrap rounded-[6px] border border-[#dfe4ec] bg-white px-[8px] py-[6px] text-[11px] shadow-[0_10px_24px_rgba(15,23,42,0.12)] group-hover:block dark:border-[var(--tg-border)] dark:bg-slate-900">
+                          <div className={`font-semibold tabular-nums ${dayData.pnl >= 0 ? 'text-[#3baa86] dark:text-[var(--tg-positive)]' : 'text-[#f15f63] dark:text-[var(--tg-negative)]'}`}>
                               {formatSignedMoney(dayData.pnl)}
                           </div>
-                          <div className="mt-[2px] text-[#7b828c]">
+                          <div className="mt-[2px] text-[#7b828c] dark:text-[var(--tg-secondary)]">
                               {dayData.count} {language === 'cn' ? '笔交易' : 'trades'}
                           </div>
                       </div>
@@ -6915,12 +6915,12 @@ const Reports: React.FC<ReportsProps> = ({
                     <button
                         type="button"
                         onClick={() => setIsDatePickerOpen(current => !current)}
-                        className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                        className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                     >
                         <div className="flex min-w-0 items-center gap-3">
                             <ReportRangeIcon />
                             <div className="min-w-0 text-left">
-                                <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">
+                                <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-400">
                                     {getActiveDatePresetLabel()}
                                 </p>
                                 <p className="truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
@@ -6928,7 +6928,7 @@ const Reports: React.FC<ReportsProps> = ({
                                 </p>
                             </div>
                         </div>
-                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isDatePickerOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isDatePickerOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
@@ -6939,7 +6939,7 @@ const Reports: React.FC<ReportsProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))}
-                                    className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
                                 >
                                     <ChevronLeft className="h-4 w-4" />
                                 </button>
@@ -6950,7 +6950,7 @@ const Reports: React.FC<ReportsProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))}
-                                    className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="rounded p-1 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 dark:text-slate-400"
                                 >
                                     <ChevronRight className="h-4 w-4" />
                                 </button>
@@ -6979,18 +6979,18 @@ const Reports: React.FC<ReportsProps> = ({
                     <button
                         type="button"
                         onClick={() => setIsAccountSwitcherOpen(current => !current)}
-                        className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70"
+                        className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                     >
                         <div className="flex min-w-0 items-center gap-3">
                             <ReportAccountIcon />
                             <div className="min-w-0 flex-1 text-left">
-                                <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400">Trading Account</p>
+                                <p className="mb-0.5 text-[10px] font-medium uppercase tracking-[0.18em] text-slate-400 dark:text-slate-400">Trading Account</p>
                                 <p className="max-w-[130px] truncate text-[14px] font-semibold leading-none text-slate-800 dark:text-white">
                                     {currentAccountName}
                                 </p>
                             </div>
                         </div>
-                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
+                        <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
                     </button>
 
                     <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
@@ -7073,12 +7073,12 @@ const Reports: React.FC<ReportsProps> = ({
                                 <ReportTabMark type={tab.id} active={isActive || isMenuHighlighted} />
                                 <span className="leading-none">{tab.label}</span>
                                 {tab.isNew && (
-                                    <span className="ml-[1px] rounded-[3px] bg-[#e7e9f0] px-[6px] py-[3px] text-[10px] font-bold leading-none text-[#4f5664]">
+                                    <span className="ml-[1px] rounded-[3px] bg-[#e7e9f0] px-[6px] py-[3px] text-[10px] font-bold leading-none text-[#4f5664] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                         NEW
                                     </span>
                                 )}
                                 {tab.hasMenu && (
-                                    <ChevronDown className={`h-[12px] w-[12px] transition-transform duration-200 ${isReportMenuOpen ? 'rotate-180' : ''} ${isActive || isMenuHighlighted ? 'text-[#6f55d8]' : 'text-[#7f8792]'}`} />
+                                    <ChevronDown className={`h-[12px] w-[12px] transition-transform duration-200 ${isReportMenuOpen ? 'rotate-180' : ''} ${isActive || isMenuHighlighted ? 'text-[#6f55d8] dark:text-[var(--tg-accent)]' : 'text-[#7f8792] dark:text-[var(--tg-secondary)]'}`} />
                                 )}
                             </button>
                             {isReportMenuTab && (
@@ -7105,7 +7105,7 @@ const Reports: React.FC<ReportsProps> = ({
                     );
                 })}
             </div>
-            <button className="group hidden shrink-0 items-center gap-[7px] text-[14px] font-medium tracking-[-0.01em] text-[#707783] transition-colors hover:text-[#3e4652] xl:inline-flex">
+            <button className="group hidden shrink-0 items-center gap-[7px] text-[14px] font-medium tracking-[-0.01em] text-[#707783] transition-colors hover:text-[#3e4652] xl:inline-flex dark:text-[var(--tg-secondary)] dark:hover:text-[var(--tg-secondary)]">
                 <ReportTabMark type="guide" active={false} />
                 {language === 'cn' ? '阅读指南' : 'Read guide'}
             </button>
@@ -7126,7 +7126,7 @@ const Reports: React.FC<ReportsProps> = ({
                           aria-label={language === 'cn' ? '选择盈亏显示口径' : 'Choose P&L display mode'}
                       >
                           <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
-                          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform  dark:text-slate-400 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
                       <div
                           className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
@@ -7148,7 +7148,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       }}
                                       className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                           selected
-                                              ? 'bg-[#e8e4f4] text-[#303044]'
+                                              ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                               : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                       }`}
                                   >
@@ -7201,7 +7201,7 @@ const Reports: React.FC<ReportsProps> = ({
                           setOpenChartColorDropdown(null);
                           setChartStyleSettings(current => ({ ...current, left: { ...current.left, tertiary: undefined } }));
                       },
-                      accent: 'text-[#5f636b]',
+                      accent: 'text-[#5f636b] dark:text-[var(--tg-secondary)]',
                       timeframeSide: 'left',
                       featured: true,
                       children: leftChartContent,
@@ -7272,14 +7272,14 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={resetSummaryLayout}
-                                  className="h-[32px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8]"
+                                  className="h-[32px] px-[10px] text-[13px] font-semibold text-[#6b55cf] transition-colors hover:text-[#4b35b8] dark:text-[var(--tg-accent)] dark:hover:text-[var(--tg-accent)]"
                               >
                                   {language === 'cn' ? '恢复默认' : 'Reset to default'}
                               </button>
                               <button
                                   type="button"
                                   onClick={cancelSummaryEditing}
-                                  className="h-[32px] rounded-[7px] border border-[#dfe4ec] bg-white px-[13px] text-[13px] font-semibold text-[#1f2933] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                                  className="h-[32px] rounded-[7px] border border-[#dfe4ec] bg-white px-[13px] text-[13px] font-semibold text-[#1f2933] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[var(--tg-border)]"
                               >
                                   {language === 'cn' ? '取消' : 'Cancel'}
                               </button>
@@ -7298,7 +7298,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   if (summaryTab !== 'summary') setSummaryTab('summary');
                                   startSummaryEditing();
                               }}
-                              className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
+                              className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[var(--tg-border)] dark:hover:text-[var(--tg-accent)]"
                               aria-label={language === 'cn' ? '编辑摘要模块' : 'Edit summary modules'}
                           >
                               <Settings className="h-[17px] w-[17px]" />
@@ -7344,17 +7344,17 @@ const Reports: React.FC<ReportsProps> = ({
                                               <button
                                                   type="button"
                                                   onClick={() => setIsAddMetricMenuOpen(open => !open)}
-                                                  className="flex min-h-[64px] w-full items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] text-[15px] font-semibold text-[#20232a] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-800"
+                                                  className="flex min-h-[64px] w-full items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] text-[15px] font-semibold text-[#20232a] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:border-[var(--tg-border)]"
                                               >
                                                   {language === 'cn' ? '新增模块' : 'Add new'}
-                                                  <ChevronDown className="h-[15px] w-[15px] text-[#6b55cf]" />
+                                                  <ChevronDown className="h-[15px] w-[15px] text-[#6b55cf] dark:text-[var(--tg-accent)]" />
                                               </button>
 
                                               {isAddMetricMenuOpen && (
                                                   <div className="absolute bottom-full right-[-18px] z-40 mb-[10px] flex max-h-[420px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900 xl:right-0">
                                                       <div className="p-[12px] pb-[8px]">
                                                           <div className="relative">
-                                                              <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1]" />
+                                                              <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1] dark:text-[var(--tg-muted)]" />
                                                               <input
                                                                   value={metricPickerSearch}
                                                                   onChange={(event) => setMetricPickerSearch(event.target.value)}
@@ -7373,10 +7373,10 @@ const Reports: React.FC<ReportsProps> = ({
                                                                       <button
                                                                           type="button"
                                                                           onClick={() => setExpandedMetricCategory(isExpanded ? null : category.id)}
-                                                                          className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200'}`}
+                                                                          className={`flex w-full items-center justify-between py-[10px] text-left text-[14px] font-semibold transition-colors ${isExpanded ? 'text-[#5b45d6] dark:text-[var(--tg-accent)]' : 'text-[#26303b] hover:text-[#5b45d6] dark:text-slate-200 dark:hover:text-[var(--tg-accent)]'}`}
                                                                       >
                                                                           {category.label}
-                                                                          <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6]' : 'text-[#727b86]'}`} />
+                                                                          <ChevronDown className={`h-[17px] w-[17px] transition-transform ${isExpanded ? 'rotate-180 text-[#5b45d6] dark:text-[var(--tg-accent)]' : 'text-[#727b86] dark:text-[var(--tg-secondary)]'}`} />
                                                                       </button>
 
                                                                       <div className={`overflow-hidden transition-[max-height,padding] duration-200 ease-out ${isExpanded ? 'max-h-[520px] pb-[6px]' : 'max-h-0 pb-0'}`}>
@@ -7394,7 +7394,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                                                       onClick={() => addSummaryMetric(metric.id)}
                                                                                       className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium leading-[1.45] transition-colors ${
                                                                                           isDisabled
-                                                                                              ? 'cursor-not-allowed text-[#b4bac2]'
+                                                                                              ? 'cursor-not-allowed text-[#b4bac2] dark:text-[var(--tg-muted)]'
                                                                                               : 'text-[#26303b] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                                                       }`}
                                                                                   >
@@ -7413,15 +7413,15 @@ const Reports: React.FC<ReportsProps> = ({
                                                           )}
                                                       </div>
 
-                                                      <div className="border-t border-[#e5e7eb] px-[14px] py-[12px]">
+                                                      <div className="border-t border-[#e5e7eb] px-[14px] py-[12px] dark:border-[var(--tg-border)]">
                                                           <label className="flex cursor-pointer items-center gap-[12px] text-[14px] font-semibold text-[#20232a] dark:text-slate-100">
                                                               <button
                                                                   type="button"
                                                                   onClick={() => setShowMetricDifference(value => !value)}
-                                                                  className={`relative h-[26px] w-[46px] flex-shrink-0 rounded-full transition-colors duration-200 ${showMetricDifference ? 'bg-[#5b45d6]' : 'bg-[#e2e4e8]'}`}
+                                                                  className={`relative h-[26px] w-[46px] flex-shrink-0 rounded-full transition-colors duration-200 ${showMetricDifference ? 'bg-[#5b45d6]' : 'bg-[#e2e4e8] dark:bg-[var(--tg-surface-muted)]'}`}
                                                                   aria-pressed={showMetricDifference}
                                                               >
-                                                                  <span className={`absolute top-[3px] h-[20px] w-[20px] rounded-full bg-white shadow-sm transition-transform duration-200 ${showMetricDifference ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
+                                                                  <span className={`absolute top-[3px] h-[20px] w-[20px] rounded-full bg-white shadow-sm transition-transform duration-200  dark:bg-slate-900 ${showMetricDifference ? 'translate-x-[22px]' : 'translate-x-[3px]'}`} />
                                                               </button>
                                                               <span className="min-w-0 whitespace-nowrap">{language === 'cn' ? '显示差值' : 'Show difference'}</span>
                                                           </label>
@@ -7483,7 +7483,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <span className="group/metric-info relative inline-flex">
                                           <button
                                               type="button"
-                                              className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:text-[var(--tg-secondary)] dark:hover:text-[var(--tg-secondary)]"
                                               aria-label={language === 'cn' ? '盈利日、打平日与亏损日的真实占比，用来替代专有评分。' : 'The real distribution of winning, breakeven, and losing days. Used instead of a proprietary score.'}
                                           >
                                               <Info className="h-[14px] w-[14px]" />
@@ -7495,10 +7495,10 @@ const Reports: React.FC<ReportsProps> = ({
                                   </div>
                                   <div className="mt-[17px] flex h-[8px] overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                                       <div className="bg-[#ff6468]" style={{ width: `${daysSummary.lossDayPct}%` }} />
-                                      <div className="bg-[#d6dae1]" style={{ width: `${daysSummary.breakevenDayPct}%` }} />
+                                      <div className="bg-[#d6dae1] dark:bg-[var(--tg-track)]" style={{ width: `${daysSummary.breakevenDayPct}%` }} />
                                       <div className="bg-[#55c39e]" style={{ width: `${daysSummary.winDayPct}%` }} />
                                   </div>
-                                  <div className="mt-[9px] flex items-center justify-between text-[11px] font-semibold text-[#7b8490]">
+                                  <div className="mt-[9px] flex items-center justify-between text-[11px] font-semibold text-[#7b8490] dark:text-[var(--tg-secondary)]">
                                       <span>{daysSummary.lossDayPct.toFixed(0)}%</span>
                                       <span>{daysSummary.winDayPct.toFixed(0)}%</span>
                                   </div>
@@ -7583,7 +7583,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <span className="group/metric-info relative inline-flex">
                                           <button
                                               type="button"
-                                              className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[15px] w-[15px] items-center justify-center rounded-full text-[#7b8490] outline-none transition-colors hover:text-[#4f5662] focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:text-[var(--tg-secondary)] dark:hover:text-[var(--tg-secondary)]"
                                               aria-label={language === 'cn' ? '盈利、打平、亏损交易占比，用真实交易结果替代专有评分。' : 'Winning, breakeven, and losing trade mix using real trade outcomes.'}
                                           >
                                               <Info className="h-[14px] w-[14px]" />
@@ -7595,10 +7595,10 @@ const Reports: React.FC<ReportsProps> = ({
                                   </div>
                                   <div className="mt-[17px] flex h-[8px] overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
                                       <div className="bg-[#ff6468]" style={{ width: `${tradesSummary.lossTradePct}%` }} />
-                                      <div className="bg-[#d6dae1]" style={{ width: `${tradesSummary.breakevenTradePct}%` }} />
+                                      <div className="bg-[#d6dae1] dark:bg-[var(--tg-track)]" style={{ width: `${tradesSummary.breakevenTradePct}%` }} />
                                       <div className="bg-[#55c39e]" style={{ width: `${tradesSummary.winTradePct}%` }} />
                                   </div>
-                                  <div className="mt-[9px] flex items-center justify-between text-[11px] font-semibold text-[#7b8490]">
+                                  <div className="mt-[9px] flex items-center justify-between text-[11px] font-semibold text-[#7b8490] dark:text-[var(--tg-secondary)]">
                                       <span>{tradesSummary.lossTradePct.toFixed(0)}%</span>
                                       <span>{tradesSummary.winTradePct.toFixed(0)}%</span>
                                   </div>
@@ -7632,14 +7632,14 @@ const Reports: React.FC<ReportsProps> = ({
       {stats && activeTab === 'overview' && (
         <div className="space-y-[14px] animate-fade-in">
             <div className="flex items-center gap-[10px]">
-                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#73808e]">
+                <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#73808e] dark:text-[var(--tg-secondary)]">
                     {language === 'cn' ? '盈亏显示' : 'P&L showing'}
                 </span>
                 <div className="relative" data-pnl-display-menu>
                     <button
                         type="button"
                         onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                        className="inline-flex h-[36px] min-w-[104px] items-center justify-between gap-[12px] rounded-[6px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-[#cbd3df] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                        className="inline-flex h-[36px] min-w-[104px] items-center justify-between gap-[12px] rounded-[6px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-[#cbd3df] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                         aria-expanded={isPnlDisplayMenuOpen}
                         aria-label={language === 'cn' ? '选择盈亏显示口径' : 'Choose P&L display mode'}
                     >
@@ -7666,7 +7666,7 @@ const Reports: React.FC<ReportsProps> = ({
                                     }}
                                     className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                         selected
-                                            ? 'bg-[#e8e4f4] text-[#303044]'
+                                            ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                             : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                     }`}
                                 >
@@ -7686,7 +7686,7 @@ const Reports: React.FC<ReportsProps> = ({
                         </h3>
                         <OverviewInfoBadge />
                     </div>
-                    <div className="mt-[7px] text-[13px] font-bold uppercase leading-none text-[#7a818b]">
+                    <div className="mt-[7px] text-[13px] font-bold uppercase leading-none text-[#7a818b] dark:text-[var(--tg-secondary)]">
                         {language === 'cn' ? '（全部日期）' : '(All dates)'}
                     </div>
 
@@ -7711,13 +7711,13 @@ const Reports: React.FC<ReportsProps> = ({
                             <div key={item.label}>
                                 <div className="text-[13px] font-bold leading-none text-[#3f454d] dark:text-slate-300">{item.label}</div>
                                 <div className="mt-[8px] text-[19px] font-bold leading-none text-[#20232a] tabular-nums dark:text-slate-100">{item.value}</div>
-                                <div className="mt-[5px] text-[13px] font-semibold leading-none text-[#7b828c]">{item.detail}</div>
+                                <div className="mt-[5px] text-[13px] font-semibold leading-none text-[#7b828c] dark:text-[var(--tg-secondary)]">{item.detail}</div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-x-[44px] border-t border-[#e2e5ea] px-[18px] pb-[20px] lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-x-[44px] border-t border-[#e2e5ea] px-[18px] pb-[20px] lg:grid-cols-2 dark:border-[var(--tg-border)]">
                     {[
                         [
                             [language === 'cn' ? '总盈亏' : 'Total P&L', formatSignedMoney(stats.netPnl)],
@@ -7767,9 +7767,9 @@ const Reports: React.FC<ReportsProps> = ({
                     ].map((column, columnIndex) => (
                         <div key={columnIndex} className="pt-[8px]">
                             {column.map(([label, value]) => (
-                                <div key={String(label)} className="flex min-h-[30px] items-center justify-between border-b border-[#e6e8ec] px-[4px] text-[13px] font-semibold leading-none last:border-b-0">
-                                    <span className="text-[#737a83]">{label}</span>
-                                    <span className="text-right text-[#737a83] tabular-nums">{value}</span>
+                                <div key={String(label)} className="flex min-h-[30px] items-center justify-between border-b border-[#e6e8ec] px-[4px] text-[13px] font-semibold leading-none last:border-b-0 dark:border-[var(--tg-border)]">
+                                    <span className="text-[#737a83] dark:text-[var(--tg-secondary)]">{label}</span>
+                                    <span className="text-right text-[#737a83] tabular-nums dark:text-[var(--tg-secondary)]">{value}</span>
                                 </div>
                             ))}
                         </div>
@@ -7780,14 +7780,14 @@ const Reports: React.FC<ReportsProps> = ({
 
             <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
                 <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                    <div className="flex h-[58px] items-center justify-between border-b border-[#e6e8ec] px-[18px]">
+                    <div className="flex h-[58px] items-center justify-between border-b border-[#e6e8ec] px-[18px] dark:border-[var(--tg-border)]">
                         <div className="flex items-center gap-[13px]">
                             <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
                                 {pnlDisplayMode === 'net'
                                     ? (language === 'cn' ? '每日净累计盈亏' : 'Daily net cumulative P&L')
                                     : (language === 'cn' ? '每日总累计盈亏' : 'Daily gross cumulative P&L')}
                             </h3>
-                            <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
+                            <span className="text-[13px] font-bold uppercase text-[#7b828c] dark:text-[var(--tg-secondary)]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
                         </div>
                         <OverviewInfoBadge />
                     </div>
@@ -7801,12 +7801,12 @@ const Reports: React.FC<ReportsProps> = ({
                                         <stop offset="100%" stopColor={isPnlTrendingDown ? '#ff6468' : '#6b55cf'} stopOpacity={0.02} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5eb" strokeOpacity={0.82} />
-                                <XAxis dataKey="label" ticks={performancePnlXAxisTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} dy={16} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
-                                <Tooltip content={<PnlTooltip />} cursor={{ stroke: '#9aa3ae', strokeDasharray: '3 3' }} />
-                                <ReferenceLine y={0} stroke="#dfe5eb" strokeDasharray="3 3" />
-                                <Area type="monotone" dataKey="cumulativePnl" stroke="#7b68d9" strokeWidth={1.8} fill="url(#overviewCumulativePnlFill)" dot={false} activeDot={{ r: 4, fill: '#fff', stroke: '#7b68d9', strokeWidth: 2 }} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--tg-border, #dfe5eb)" strokeOpacity={0.82} />
+                                <XAxis dataKey="label" ticks={performancePnlXAxisTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 600 }} dy={16} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
+                                <Tooltip content={<PnlTooltip />} cursor={{ stroke: 'var(--tg-border, #9aa3ae)', strokeDasharray: '3 3' }} />
+                                <ReferenceLine y={0} stroke="var(--tg-border, #dfe5eb)" strokeDasharray="3 3" />
+                                <Area type="monotone" dataKey="cumulativePnl" stroke="var(--tg-accent-border, #7b68d9)" strokeWidth={1.8} fill="url(#overviewCumulativePnlFill)" dot={false} activeDot={{ r: 4, fill: 'var(--tg-surface, #fff)', stroke: 'var(--tg-accent-border, #7b68d9)', strokeWidth: 2 }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -7814,24 +7814,24 @@ const Reports: React.FC<ReportsProps> = ({
                 </section>
 
                 <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                    <div className="flex h-[58px] items-center border-b border-[#e6e8ec] px-[18px]">
+                    <div className="flex h-[58px] items-center border-b border-[#e6e8ec] px-[18px] dark:border-[var(--tg-border)]">
                         <div className="flex items-center gap-[13px]">
                             <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
                                 {pnlDisplayMode === 'net'
                                     ? (language === 'cn' ? '每日净盈亏' : 'Net daily P&L')
                                     : (language === 'cn' ? '每日总盈亏' : 'Gross daily P&L')}
                             </h3>
-                            <span className="text-[13px] font-bold uppercase text-[#7b828c]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
+                            <span className="text-[13px] font-bold uppercase text-[#7b828c] dark:text-[var(--tg-secondary)]">{language === 'cn' ? '（全部日期）' : '(All dates)'}</span>
                         </div>
                     </div>
                     <div className="h-[330px] px-[18px] pb-[22px] pt-[22px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={performancePnlDisplayData} margin={{ top: 8, right: 18, left: 16, bottom: 24 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5eb" strokeOpacity={0.82} />
-                                <XAxis dataKey="label" ticks={performancePnlXAxisTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} dy={16} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--tg-border, #dfe5eb)" strokeOpacity={0.82} />
+                                <XAxis dataKey="label" ticks={performancePnlXAxisTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 600 }} dy={16} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
                                 <Tooltip cursor={{ fill: 'transparent' }} content={<PnlTooltip />} />
-                                <ReferenceLine y={0} stroke="#dfe5eb" strokeDasharray="3 3" />
+                                <ReferenceLine y={0} stroke="var(--tg-border, #dfe5eb)" strokeDasharray="3 3" />
                                 <Bar dataKey="pnl" barSize={24} radius={[2, 2, 0, 0]}>
                                     {performancePnlDisplayData.map((entry, index) => (
                                         <Cell key={`overview-pnl-cell-${index}`} fill={entry.pnl >= 0 ? '#55c39e' : '#f15f63'} />
@@ -7865,7 +7865,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       onClick={() => setDayTimeReportView(option.id)}
                                       className={`h-[38px] min-w-[78px] px-[18px] text-[13px] font-semibold transition-colors ${
                                           dayTimeReportView === option.id
-                                              ? 'bg-[#e8e4f4] text-[#5f47c9]'
+                                              ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                               : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-slate-300 dark:hover:bg-slate-800'
                                       }`}
                                   >
@@ -7878,7 +7878,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                               >
                                   <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                   <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -7901,7 +7901,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           }}
                                           className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                               pnlDisplayMode === option.id
-                                                  ? 'bg-[#e8e4f4] text-[#303044]'
+                                                  ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                   : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                           }`}
                                       >
@@ -7966,7 +7966,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -8006,7 +8006,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -8042,7 +8042,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -8082,7 +8082,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -8108,31 +8108,31 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
-                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
                                   <Settings className="h-[15px] w-[15px]" />
                               </button>
                           </div>
                           <div className="overflow-x-auto">
                               <table className="w-full min-w-[980px] text-left text-[13px]">
-                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                       <tr>
                                           {dayTimeSummaryColumns.map(column => (
-                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px]  dark:border-[var(--tg-border)] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
                                           ))}
                                       </tr>
                                   </thead>
                                   <tbody>
                                       {dayTimeReportRows.map(row => (
-                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
-                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
-                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:hover:bg-[var(--tg-accent-soft)]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468] dark:text-[var(--tg-negative)]' : row.netPnl > 0 ? 'text-[#3baa86] dark:text-[var(--tg-positive)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums dark:text-[var(--tg-positive)]">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums dark:text-[var(--tg-negative)]">{formatSignedMoney(row.avgLoss)}</td>
                                           </tr>
                                       ))}
                                   </tbody>
@@ -8141,14 +8141,14 @@ const Reports: React.FC<ReportsProps> = ({
                       </section>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
                                   <div className="relative" data-day-time-symbol-limit-menu>
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeDayTimeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -8168,7 +8168,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   }}
                                                   className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                       dayTimeSymbolLimit === option.id
-                                                          ? 'bg-[#e8e4f4] text-[#303044]'
+                                                          ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                           : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                   }`}
                                               >
@@ -8177,7 +8177,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           ))}
                                       </div>
                                   </div>
-                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold dark:border-[var(--tg-border)] dark:bg-slate-900">
                                       {([
                                           { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
                                           { id: 'pnl' as const, label: 'P&L' },
@@ -8187,7 +8187,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               key={option.id}
                                               type="button"
                                               onClick={() => setDayTimeCrossMetric(option.id)}
-                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]'}`}
                                           >
                                               {option.label}
                                           </button>
@@ -8197,23 +8197,23 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                           <div className="overflow-x-auto">
                               {topCrossSymbols.length === 0 ? (
-                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c] dark:text-[var(--tg-secondary)]">
                                       {language === 'cn' ? '暂无可用于交叉分析的交易品种' : 'No symbols available for cross analysis'}
                                   </div>
                               ) : (
                                   <table className="w-full min-w-[1120px] text-left text-[13px]">
-                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                           <tr>
-                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px] dark:border-[var(--tg-border)]"></th>
                                               {topCrossSymbols.map(symbol => (
-                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{symbol}</th>
+                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right dark:border-[var(--tg-border)]">{symbol}</th>
                                               ))}
                                           </tr>
                                       </thead>
                                       <tbody>
                                           {dayTimeCrossAnalysisRows.map(({ row, cells }) => (
-                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
-                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 dark:border-[var(--tg-border)]">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
                                                   {topCrossSymbols.map(symbol => {
                                                       const cell = cells.get(symbol);
                                                       const value = dayTimeCrossMetric === 'pnl'
@@ -8225,8 +8225,8 @@ const Reports: React.FC<ReportsProps> = ({
                                                       return (
                                                           <td
                                                               key={`${row.key}-${symbol}`}
-                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
-                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums  dark:border-[var(--tg-border)] ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-secondary)]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-secondary)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'
                                                               }`}
                                                           >
                                                               {dayTimeCrossMetric === 'pnl'
@@ -8260,7 +8260,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       onClick={() => setSymbolReportView(option.id)}
                                       className={`h-[38px] min-w-[92px] px-[18px] text-[13px] font-semibold transition-colors ${
                                           symbolReportView === option.id
-                                              ? 'bg-[#e8e4f4] text-[#5f47c9]'
+                                              ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                               : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-slate-300 dark:hover:bg-slate-800'
                                       }`}
                                   >
@@ -8274,7 +8274,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{activeSymbolLimitLabel}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -8294,7 +8294,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   dayTimeSymbolLimit === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -8308,7 +8308,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -8331,7 +8331,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   pnlDisplayMode === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -8397,7 +8397,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -8437,7 +8437,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -8474,7 +8474,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -8514,7 +8514,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -8541,31 +8541,31 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
-                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
                                   <Settings className="h-[15px] w-[15px]" />
                               </button>
                           </div>
                           <div className="overflow-x-auto">
                               <table className="w-full min-w-[980px] text-left text-[13px]">
-                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                       <tr>
                                           {symbolSummaryColumns.map(column => (
-                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px]  dark:border-[var(--tg-border)] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
                                           ))}
                                       </tr>
                                   </thead>
                                   <tbody>
                                       {visibleSymbolRows.map(row => (
-                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
-                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
-                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:hover:bg-[var(--tg-accent-soft)]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468] dark:text-[var(--tg-negative)]' : row.netPnl > 0 ? 'text-[#3baa86] dark:text-[var(--tg-positive)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums dark:text-[var(--tg-positive)]">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums dark:text-[var(--tg-negative)]">{formatSignedMoney(row.avgLoss)}</td>
                                           </tr>
                                       ))}
                                   </tbody>
@@ -8574,13 +8574,13 @@ const Reports: React.FC<ReportsProps> = ({
                       </section>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
-                                  <div className="inline-flex h-[32px] items-center rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844]">
+                                  <div className="inline-flex h-[32px] items-center rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)]">
                                       {language === 'cn' ? '月份' : 'Month'}
                                   </div>
-                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold dark:border-[var(--tg-border)] dark:bg-slate-900">
                                       {([
                                           { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
                                           { id: 'pnl' as const, label: 'P&L' },
@@ -8590,7 +8590,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               key={option.id}
                                               type="button"
                                               onClick={() => setDayTimeCrossMetric(option.id)}
-                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]'}`}
                                           >
                                               {option.label}
                                           </button>
@@ -8600,23 +8600,23 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                           <div className="overflow-x-auto">
                               {visibleSymbolRows.length === 0 ? (
-                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c] dark:text-[var(--tg-secondary)]">
                                       {language === 'cn' ? '暂无可用于交叉分析的交易数据' : 'No rows available for cross analysis'}
                                   </div>
                               ) : (
                                   <table className="w-full min-w-[1120px] text-left text-[13px]">
-                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                           <tr>
-                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px] dark:border-[var(--tg-border)]"></th>
                                               {symbolCrossColumns.map(column => (
-                                                  <th key={column} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{column}</th>
+                                                  <th key={column} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right dark:border-[var(--tg-border)]">{column}</th>
                                               ))}
                                           </tr>
                                       </thead>
                                       <tbody>
                                           {symbolCrossAnalysisRows.map(({ row, cells }) => (
-                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
-                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 dark:border-[var(--tg-border)]">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
                                                   {symbolCrossColumns.map(column => {
                                                       const cell = cells.get(column);
                                                       const value = dayTimeCrossMetric === 'pnl'
@@ -8628,8 +8628,8 @@ const Reports: React.FC<ReportsProps> = ({
                                                       return (
                                                           <td
                                                               key={`${row.key}-${column}`}
-                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
-                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums  dark:border-[var(--tg-border)] ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-secondary)]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-secondary)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'
                                                               }`}
                                                           >
                                                               {dayTimeCrossMetric === 'pnl'
@@ -8652,14 +8652,14 @@ const Reports: React.FC<ReportsProps> = ({
                   <div className="space-y-[14px]">
                       <div className="flex flex-col gap-[10px] lg:flex-row lg:items-center lg:justify-between">
                           <div className="flex items-center gap-[12px]">
-                              <span className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#7b828c]">
+                              <span className="text-[12px] font-bold uppercase tracking-[0.12em] text-[#7b828c] dark:text-[var(--tg-secondary)]">
                                   {language === 'cn' ? '盈亏显示' : 'P&L Showing'}
                               </span>
                               <div className="relative" data-pnl-display-menu>
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[116px] items-center justify-between gap-[10px] rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[116px] items-center justify-between gap-[10px] rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -8682,7 +8682,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   pnlDisplayMode === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -8750,20 +8750,20 @@ const Reports: React.FC<ReportsProps> = ({
 
                               return (
                                   <section key={section.key} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px]">
+                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">{section.heading}</h3>
-                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">{section.subtitle}</div>
+                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">{section.subtitle}</div>
                                       </div>
                                       <div>
                                           {rows.map(([label, value], index) => (
                                               <div
                                                   key={`${section.key}-${label}`}
                                                   className={`flex items-center justify-between gap-[18px] px-[24px] py-[11px] text-[13px] ${
-                                                      index < rows.length - 1 ? 'border-b border-[#eceff3]' : ''
+                                                      index < rows.length - 1 ? 'border-b border-[#eceff3] dark:border-[var(--tg-border)]' : ''
                                                   }`}
                                               >
-                                                  <span className="font-semibold text-[#6b7280]">{label}</span>
-                                                  <span className="font-semibold tabular-nums text-[#4d5560]">{value}</span>
+                                                  <span className="font-semibold text-[#6b7280] dark:text-[var(--tg-secondary)]">{label}</span>
+                                                  <span className="font-semibold tabular-nums text-[#4d5560] dark:text-[var(--tg-secondary)]">{value}</span>
                                               </div>
                                           ))}
                                       </div>
@@ -8774,14 +8774,14 @@ const Reports: React.FC<ReportsProps> = ({
 
                       <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
                           <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px]">
+                              <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                   <div className="flex items-center gap-[10px]">
                                       <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                           {pnlDisplayMode === 'net'
                                               ? (language === 'cn' ? '每日净累计盈亏（盈利）' : 'DAILY NET CUMULATIVE P&L (WINS)')
                                               : (language === 'cn' ? '每日总累计盈亏（盈利）' : 'DAILY GROSS CUMULATIVE P&L (WINS)')}
                                       </h3>
-                                      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">
                                           {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
                                       </span>
                                   </div>
@@ -8789,13 +8789,13 @@ const Reports: React.FC<ReportsProps> = ({
                               </div>
                               <div className="h-[392px] px-[12px] pb-[12px] pt-[8px]">
                                   {winsLossesSummary.wins.chartData.length === 0 ? (
-                                      <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d]">
+                                      <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d] dark:border-[var(--tg-border)] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-muted)]">
                                           {language === 'cn' ? '暂无盈利交易数据' : 'No winning trade data'}
                                       </div>
                                   ) : renderWinLossDetailedChart({
                                       chartId: 'wins-losses-wins',
                                       data: winsLossesSummary.wins.chartData,
-                                      color: '#5d53d8',
+                                      color: 'var(--tg-accent, #5d53d8)',
                                       gradientStops: { start: '#6bd1a4', end: '#eef8f4' },
                                       title: pnlDisplayMode === 'net'
                                           ? (language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative')
@@ -8807,14 +8807,14 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
 
                           <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px]">
+                              <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                   <div className="flex items-center gap-[10px]">
                                       <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                           {pnlDisplayMode === 'net'
                                               ? (language === 'cn' ? '每日净累计盈亏（亏损）' : 'DAILY NET CUMULATIVE P&L (LOSSES)')
                                               : (language === 'cn' ? '每日总累计盈亏（亏损）' : 'DAILY GROSS CUMULATIVE P&L (LOSSES)')}
                                       </h3>
-                                      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                      <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">
                                           {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
                                       </span>
                                   </div>
@@ -8822,13 +8822,13 @@ const Reports: React.FC<ReportsProps> = ({
                               </div>
                               <div className="h-[392px] px-[12px] pb-[12px] pt-[8px]">
                                   {winsLossesSummary.losses.chartData.length === 0 ? (
-                                      <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d]">
+                                      <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d] dark:border-[var(--tg-border)] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-muted)]">
                                           {language === 'cn' ? '暂无亏损交易数据' : 'No losing trade data'}
                                       </div>
                                   ) : renderWinLossDetailedChart({
                                       chartId: 'wins-losses-losses',
                                       data: winsLossesSummary.losses.chartData,
-                                      color: '#5d53d8',
+                                      color: 'var(--tg-accent, #5d53d8)',
                                       gradientStops: { start: '#ff7b86', end: '#fff0f1' },
                                       title: pnlDisplayMode === 'net'
                                           ? (language === 'cn' ? '净盈亏 - 累计' : 'Net P&L - cumulative')
@@ -8851,7 +8851,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       onClick={() => setTagReportCategoryId(category.id)}
                                       className={`h-[38px] min-w-[92px] px-[18px] text-[13px] font-semibold transition-colors ${
                                           activeTagReportCategory?.id === category.id
-                                              ? 'bg-[#e8e4f4] text-[#5f47c9]'
+                                              ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                               : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-slate-300 dark:hover:bg-slate-800'
                                       }`}
                                   >
@@ -8865,7 +8865,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{activeSymbolLimitLabel}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -8885,7 +8885,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   dayTimeSymbolLimit === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -8899,7 +8899,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -8922,7 +8922,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   pnlDisplayMode === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -8988,7 +8988,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -9028,7 +9028,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -9065,7 +9065,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -9105,7 +9105,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -9132,31 +9132,31 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
-                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
                                   <Settings className="h-[15px] w-[15px]" />
                               </button>
                           </div>
                           <div className="overflow-x-auto">
                               <table className="w-full min-w-[980px] text-left text-[13px]">
-                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                       <tr>
                                           {tagSummaryColumns.map(column => (
-                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px]  dark:border-[var(--tg-border)] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
                                           ))}
                                       </tr>
                                   </thead>
                                   <tbody>
                                       {visibleTagRows.map(row => (
-                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
-                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
-                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:hover:bg-[var(--tg-accent-soft)]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468] dark:text-[var(--tg-negative)]' : row.netPnl > 0 ? 'text-[#3baa86] dark:text-[var(--tg-positive)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums dark:text-[var(--tg-positive)]">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums dark:text-[var(--tg-negative)]">{formatSignedMoney(row.avgLoss)}</td>
                                           </tr>
                                       ))}
                                   </tbody>
@@ -9165,14 +9165,14 @@ const Reports: React.FC<ReportsProps> = ({
                       </section>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
                                   <div className="relative" data-day-time-symbol-limit-menu>
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -9192,7 +9192,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   }}
                                                   className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                       dayTimeSymbolLimit === option.id
-                                                          ? 'bg-[#e8e4f4] text-[#303044]'
+                                                          ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                           : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                   }`}
                                               >
@@ -9201,7 +9201,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           ))}
                                       </div>
                                   </div>
-                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold dark:border-[var(--tg-border)] dark:bg-slate-900">
                                       {([
                                           { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
                                           { id: 'pnl' as const, label: 'P&L' },
@@ -9211,7 +9211,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               key={option.id}
                                               type="button"
                                               onClick={() => setDayTimeCrossMetric(option.id)}
-                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]'}`}
                                           >
                                               {option.label}
                                           </button>
@@ -9221,23 +9221,23 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                           <div className="overflow-x-auto">
                               {tagCrossSymbols.length === 0 ? (
-                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c] dark:text-[var(--tg-secondary)]">
                                       {language === 'cn' ? '暂无可用于交叉分析的交易品种' : 'No symbols available for cross analysis'}
                                   </div>
                               ) : (
                                   <table className="w-full min-w-[1120px] text-left text-[13px]">
-                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                           <tr>
-                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px] dark:border-[var(--tg-border)]"></th>
                                               {tagCrossSymbols.map(symbol => (
-                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{symbol}</th>
+                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right dark:border-[var(--tg-border)]">{symbol}</th>
                                               ))}
                                           </tr>
                                       </thead>
                                       <tbody>
                                           {tagCrossAnalysisRows.map(({ row, cells }) => (
-                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
-                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 dark:border-[var(--tg-border)]">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
                                                   {tagCrossSymbols.map(symbol => {
                                                       const cell = cells.get(symbol);
                                                       const value = dayTimeCrossMetric === 'pnl'
@@ -9249,8 +9249,8 @@ const Reports: React.FC<ReportsProps> = ({
                                                       return (
                                                           <td
                                                               key={`${row.key}-${symbol}`}
-                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
-                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums  dark:border-[var(--tg-border)] ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-secondary)]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-secondary)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'
                                                               }`}
                                                           >
                                                               {dayTimeCrossMetric === 'pnl'
@@ -9275,7 +9275,7 @@ const Reports: React.FC<ReportsProps> = ({
                           <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
                               <button
                                   type="button"
-                                  className="h-[38px] min-w-[92px] bg-[#e8e4f4] px-[18px] text-[13px] font-semibold text-[#5f47c9]"
+                                  className="h-[38px] min-w-[92px] bg-[#e8e4f4] px-[18px] text-[13px] font-semibold text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]"
                               >
                                   {language === 'cn' ? '策略' : 'Strategies'}
                               </button>
@@ -9286,7 +9286,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{activeSymbolLimitLabel}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -9306,7 +9306,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   dayTimeSymbolLimit === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -9320,7 +9320,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -9343,7 +9343,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               }}
                                               className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                   pnlDisplayMode === option.id
-                                                      ? 'bg-[#e8e4f4] text-[#303044]'
+                                                      ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                       : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                               }`}
                                           >
@@ -9409,7 +9409,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -9449,7 +9449,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -9486,7 +9486,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -9526,7 +9526,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -9553,31 +9553,31 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
-                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
                                   <Settings className="h-[15px] w-[15px]" />
                               </button>
                           </div>
                           <div className="overflow-x-auto">
                               <table className="w-full min-w-[980px] text-left text-[13px]">
-                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                       <tr>
                                           {strategySummaryColumns.map(column => (
-                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px]  dark:border-[var(--tg-border)] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
                                           ))}
                                       </tr>
                                   </thead>
                                   <tbody>
                                       {visibleStrategyRows.map(row => (
-                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
-                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
-                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:hover:bg-[var(--tg-accent-soft)]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468] dark:text-[var(--tg-negative)]' : row.netPnl > 0 ? 'text-[#3baa86] dark:text-[var(--tg-positive)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums dark:text-[var(--tg-positive)]">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums dark:text-[var(--tg-negative)]">{formatSignedMoney(row.avgLoss)}</td>
                                           </tr>
                                       ))}
                                   </tbody>
@@ -9586,14 +9586,14 @@ const Reports: React.FC<ReportsProps> = ({
                       </section>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
                                   <div className="relative" data-day-time-symbol-limit-menu>
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -9613,7 +9613,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   }}
                                                   className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                       dayTimeSymbolLimit === option.id
-                                                          ? 'bg-[#e8e4f4] text-[#303044]'
+                                                          ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                           : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                   }`}
                                               >
@@ -9622,7 +9622,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           ))}
                                       </div>
                                   </div>
-                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold dark:border-[var(--tg-border)] dark:bg-slate-900">
                                       {([
                                           { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
                                           { id: 'pnl' as const, label: 'P&L' },
@@ -9632,7 +9632,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               key={option.id}
                                               type="button"
                                               onClick={() => setDayTimeCrossMetric(option.id)}
-                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]'}`}
                                           >
                                               {option.label}
                                           </button>
@@ -9642,23 +9642,23 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                           <div className="overflow-x-auto">
                               {strategyCrossSymbols.length === 0 ? (
-                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c] dark:text-[var(--tg-secondary)]">
                                       {language === 'cn' ? '暂无可用于交叉分析的交易品种' : 'No symbols available for cross analysis'}
                                   </div>
                               ) : (
                                   <table className="w-full min-w-[1120px] text-left text-[13px]">
-                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                           <tr>
-                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px] dark:border-[var(--tg-border)]"></th>
                                               {strategyCrossSymbols.map(symbol => (
-                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{symbol}</th>
+                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right dark:border-[var(--tg-border)]">{symbol}</th>
                                               ))}
                                           </tr>
                                       </thead>
                                       <tbody>
                                           {strategyCrossAnalysisRows.map(({ row, cells }) => (
-                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
-                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 dark:border-[var(--tg-border)]">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
                                                   {strategyCrossSymbols.map(symbol => {
                                                       const cell = cells.get(symbol);
                                                       const value = dayTimeCrossMetric === 'pnl'
@@ -9670,8 +9670,8 @@ const Reports: React.FC<ReportsProps> = ({
                                                       return (
                                                           <td
                                                               key={`${row.key}-${symbol}`}
-                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
-                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums  dark:border-[var(--tg-border)] ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-secondary)]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-secondary)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'
                                                               }`}
                                                           >
                                                               {dayTimeCrossMetric === 'pnl'
@@ -9705,7 +9705,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       onClick={() => setRiskReportView(option.id)}
                                       className={`h-[38px] min-w-[92px] px-[18px] text-[13px] font-semibold transition-colors ${
                                           riskReportView === option.id
-                                              ? 'bg-[#e8e4f4] text-[#5f47c9]'
+                                              ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]'
                                               : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-slate-300 dark:hover:bg-slate-800'
                                       }`}
                                   >
@@ -9718,7 +9718,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                               >
                                   <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                   <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
@@ -9741,7 +9741,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           }}
                                           className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                               pnlDisplayMode === option.id
-                                                  ? 'bg-[#e8e4f4] text-[#303044]'
+                                                  ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                   : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                           }`}
                                       >
@@ -9806,7 +9806,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -9846,7 +9846,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="left" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -9883,7 +9883,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   setOpenDayTimeChartColorDropdown(null);
                                                   setOpenDayTimeMetricPicker(null);
                                               }}
-                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35"
+                                              className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#5f636b] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]"
                                               aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                                           >
                                               <FilledChartStyleIcon />
@@ -9923,7 +9923,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       <DayTimeAddMetricButton side="right" />
                                   </div>
                                   <button
-                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8]"
+                                      className="inline-flex h-[34px] w-[34px] flex-none items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] transition-colors hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]"
                                       type="button"
                                       aria-label={language === 'cn' ? '更多图表选项' : 'More chart options'}
                                       onClick={() => {
@@ -9950,31 +9950,31 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px]">
+                          <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
-                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8]" type="button" aria-label="Summary settings">
+                              <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
                                   <Settings className="h-[15px] w-[15px]" />
                               </button>
                           </div>
                           <div className="overflow-x-auto">
                               <table className="w-full min-w-[980px] text-left text-[13px]">
-                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c]">
+                                  <thead className="bg-[#f4f2fa] text-[12px] font-semibold text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                       <tr>
                                           {riskSummaryColumns.map(column => (
-                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
+                                              <th key={column.id} className={`border-b border-[#e1e5ec] px-[18px] py-[12px]  dark:border-[var(--tg-border)] ${column.id === 'label' ? 'text-left' : 'text-right'}`}>{column.label}</th>
                                           ))}
                                       </tr>
                                   </thead>
                                   <tbody>
                                       {riskCrossRows.map(row => (
-                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc]">
-                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
-                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468]' : row.netPnl > 0 ? 'text-[#3baa86]' : 'text-[#4d5560]'}`}>{formatSignedMoney(row.netPnl)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.count}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums">{row.avgDailyVolume.toFixed(2)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums">{formatSignedMoney(row.avgWin)}</td>
-                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums">{formatSignedMoney(row.avgLoss)}</td>
+                                          <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:hover:bg-[var(--tg-accent-soft)]">
+                                              <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.winRate.toFixed(row.winRate % 1 === 0 ? 0 : 2)}%</td>
+                                              <td className={`px-[18px] py-[12px] text-right font-semibold tabular-nums ${row.netPnl < 0 ? 'text-[#ff6468] dark:text-[var(--tg-negative)]' : row.netPnl > 0 ? 'text-[#3baa86] dark:text-[var(--tg-positive)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'}`}>{formatSignedMoney(row.netPnl)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.count}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#4d5560] tabular-nums dark:text-[var(--tg-secondary)]">{row.avgDailyVolume.toFixed(2)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#3baa86] tabular-nums dark:text-[var(--tg-positive)]">{formatSignedMoney(row.avgWin)}</td>
+                                              <td className="px-[18px] py-[12px] text-right font-semibold text-[#ff6468] tabular-nums dark:text-[var(--tg-negative)]">{formatSignedMoney(row.avgLoss)}</td>
                                           </tr>
                                       ))}
                                   </tbody>
@@ -9983,14 +9983,14 @@ const Reports: React.FC<ReportsProps> = ({
                       </section>
 
                       <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px]">
+                          <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
                                   <div className="relative" data-day-time-symbol-limit-menu>
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
@@ -10010,7 +10010,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                   }}
                                                   className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
                                                       dayTimeSymbolLimit === option.id
-                                                          ? 'bg-[#e8e4f4] text-[#303044]'
+                                                          ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]'
                                                           : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-slate-200 dark:hover:bg-slate-800'
                                                   }`}
                                               >
@@ -10019,7 +10019,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           ))}
                                       </div>
                                   </div>
-                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold">
+                                  <div className="inline-flex overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white text-[13px] font-semibold dark:border-[var(--tg-border)] dark:bg-slate-900">
                                       {([
                                           { id: 'winRate' as const, label: language === 'cn' ? '胜率' : 'Win rate' },
                                           { id: 'pnl' as const, label: 'P&L' },
@@ -10029,7 +10029,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               key={option.id}
                                               type="button"
                                               onClick={() => setDayTimeCrossMetric(option.id)}
-                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9]' : 'text-[#4d5560] hover:bg-[#f5f6f8]'}`}
+                                              className={`h-[32px] px-[15px] transition-colors ${dayTimeCrossMetric === option.id ? 'bg-[#e8e4f4] text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#4d5560] hover:bg-[#f5f6f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]'}`}
                                           >
                                               {option.label}
                                           </button>
@@ -10039,23 +10039,23 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                           <div className="overflow-x-auto">
                               {riskCrossSymbols.length === 0 ? (
-                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c]">
+                                  <div className="flex min-h-[156px] items-center justify-center text-[14px] font-semibold text-[#7b828c] dark:text-[var(--tg-secondary)]">
                                       {language === 'cn' ? '暂无可用于交叉分析的交易品种' : 'No symbols available for cross analysis'}
                                   </div>
                               ) : (
                                   <table className="w-full min-w-[1120px] text-left text-[13px]">
-                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c]">
+                                      <thead className="bg-[#f4f2fa] text-[12px] font-semibold uppercase text-[#7b828c] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]">
                                           <tr>
-                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px]"></th>
+                                              <th className="w-[170px] border-b border-[#e1e5ec] px-[18px] py-[12px] dark:border-[var(--tg-border)]"></th>
                                               {riskCrossSymbols.map(symbol => (
-                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right">{symbol}</th>
+                                                  <th key={symbol} className="border-b border-l border-[#e1e5ec] px-[18px] py-[12px] text-right dark:border-[var(--tg-border)]">{symbol}</th>
                                               ))}
                                           </tr>
                                       </thead>
                                       <tbody>
                                           {riskCrossAnalysisRows.map(({ row, cells }) => (
-                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0">
-                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560]">{row.label}</td>
+                                              <tr key={row.key} className="border-b border-[#eceff3] last:border-b-0 dark:border-[var(--tg-border)]">
+                                                  <td className="px-[18px] py-[12px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">{row.label}</td>
                                                   {riskCrossSymbols.map(symbol => {
                                                       const cell = cells.get(symbol);
                                                       const value = dayTimeCrossMetric === 'pnl'
@@ -10067,8 +10067,8 @@ const Reports: React.FC<ReportsProps> = ({
                                                       return (
                                                           <td
                                                               key={`${row.key}-${symbol}`}
-                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums ${
-                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560]' : 'text-[#4d5560]'
+                                                              className={`border-l border-[#eceff3] px-[18px] py-[12px] text-right font-semibold tabular-nums  dark:border-[var(--tg-border)] ${
+                                                                  tone > 0 ? 'bg-[#eaf7f2] text-[#4d5560] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-secondary)]' : tone < 0 ? 'bg-[#fdebec] text-[#4d5560] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-secondary)]' : 'text-[#4d5560] dark:text-[var(--tg-secondary)]'
                                                               }`}
                                                           >
                                                               {dayTimeCrossMetric === 'pnl'
@@ -10092,7 +10092,7 @@ const Reports: React.FC<ReportsProps> = ({
               {/* Filter Bar */}
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                   <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
-                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase px-3 whitespace-nowrap">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase px-3 whitespace-nowrap dark:text-slate-400">
                           {t.reports.filters.label}
                       </div>
                       {detailedFilterOptions.map((filter, i) => (
@@ -10110,11 +10110,11 @@ const Reports: React.FC<ReportsProps> = ({
               {/* Time Interval Selector - Placed here above charts */}
               {detailedFilter === 'TIME' && (
                   <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{t.reports.filters.timeInterval}</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">{t.reports.filters.timeInterval}</span>
                       <div className="relative group z-30">
                           <button className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-sm">
                               {timeInterval}
-                              <ChevronDown className="w-3 h-3 text-slate-400" />
+                              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400" />
                           </button>
                           <div className="absolute top-full left-0 mt-1 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-1 hidden group-hover:block animate-fade-in-up origin-top-left">
                               {['1 Hour', '30 Minutes', '15 Minutes', '5 Minutes'].map(opt => (
@@ -10138,11 +10138,11 @@ const Reports: React.FC<ReportsProps> = ({
                       <div className="flex justify-between items-start mb-6">
                           <div>
                               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{distChartTitle}</h3>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase">{t.reports.charts.allDates}</p>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase dark:text-slate-400">{t.reports.charts.allDates}</p>
                           </div>
                           <div className="flex gap-2">
                               <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                              <Info className="w-4 h-4 text-slate-400" />
+                              <Info className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                           </div>
                       </div>
                       <div className="h-80">
@@ -10157,17 +10157,17 @@ const Reports: React.FC<ReportsProps> = ({
                                 layout={chartLayout}
                                 margin={chartLayout === 'horizontal' ? { top: 5, right: 0, left: 0, bottom: 0 } : { top: 5, right: 30, left: 20, bottom: 20 }}
                               >
-                                  <CartesianGrid strokeDasharray="3 3" vertical={chartLayout === 'horizontal'} horizontal={chartLayout === 'vertical'} stroke="#e2e8f0" opacity={0.3} />
+                                  <CartesianGrid strokeDasharray="3 3" vertical={chartLayout === 'horizontal'} horizontal={chartLayout === 'vertical'} stroke="var(--tg-border, #e2e8f0)" opacity={0.3} />
                                   
                                   {chartLayout === 'horizontal' ? (
                                       <>
-                                        <XAxis dataKey="label" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} interval={xInterval} />
-                                        <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} />
+                                        <XAxis dataKey="label" tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} interval={xInterval} />
+                                        <YAxis tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} />
                                       </>
                                   ) : (
                                       <>
-                                        <XAxis type="number" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} />
-                                        <YAxis dataKey="label" type="category" width={90} tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} />
+                                        <XAxis type="number" tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} />
+                                        <YAxis dataKey="label" type="category" width={90} tick={{fontSize: 11, fill: 'var(--tg-secondary, #64748b)', fontWeight: 600}} axisLine={false} tickLine={false} />
                                       </>
                                   )}
                                   
@@ -10183,11 +10183,11 @@ const Reports: React.FC<ReportsProps> = ({
                       <div className="flex justify-between items-start mb-6">
                           <div>
                               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{pnlChartTitle}</h3>
-                              <p className="text-[10px] text-slate-400 font-bold uppercase">{t.reports.charts.allDates}</p>
+                              <p className="text-[10px] text-slate-400 font-bold uppercase dark:text-slate-400">{t.reports.charts.allDates}</p>
                           </div>
                           <div className="flex gap-2">
                               <Star className="w-4 h-4 text-slate-300 hover:text-amber-400 transition-colors" />
-                              <Info className="w-4 h-4 text-slate-400" />
+                              <Info className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                           </div>
                       </div>
                       <div className="h-80">
@@ -10197,19 +10197,19 @@ const Reports: React.FC<ReportsProps> = ({
                                 layout={chartLayout}
                                 margin={chartLayout === 'horizontal' ? { top: 5, right: 0, left: 0, bottom: 0 } : { top: 5, right: 30, left: 20, bottom: 20 }}
                               >
-                                  <CartesianGrid strokeDasharray="3 3" vertical={chartLayout === 'horizontal'} horizontal={chartLayout === 'vertical'} stroke="#e2e8f0" opacity={0.3} />
+                                  <CartesianGrid strokeDasharray="3 3" vertical={chartLayout === 'horizontal'} horizontal={chartLayout === 'vertical'} stroke="var(--tg-border, #e2e8f0)" opacity={0.3} />
                                   
                                   {chartLayout === 'horizontal' ? (
                                       <>
-                                        <XAxis dataKey="label" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} interval={xInterval} />
-                                        <YAxis tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
-                                        <ReferenceLine y={0} stroke="#94a3b8" />
+                                        <XAxis dataKey="label" tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} interval={xInterval} />
+                                        <YAxis tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                                        <ReferenceLine y={0} stroke="var(--tg-border, #94a3b8)" />
                                       </>
                                   ) : (
                                       <>
-                                        <XAxis type="number" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
-                                        <YAxis dataKey="label" type="category" width={90} tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} />
-                                        <ReferenceLine x={0} stroke="#94a3b8" />
+                                        <XAxis type="number" tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                                        <YAxis dataKey="label" type="category" width={90} tick={{fontSize: 11, fill: 'var(--tg-secondary, #64748b)', fontWeight: 600}} axisLine={false} tickLine={false} />
+                                        <ReferenceLine x={0} stroke="var(--tg-border, #94a3b8)" />
                                       </>
                                   )}
 
@@ -10279,14 +10279,14 @@ const Reports: React.FC<ReportsProps> = ({
               {/* Header with P&L Toggle (Static for now) & Filter Bar */}
               <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">P&L SHOWING</span>
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">P&L SHOWING</span>
                       <button className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-sm">
-                          NET P&L <ChevronDown className="w-3 h-3 text-slate-400" />
+                          NET P&L <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400" />
                       </button>
                   </div>
 
                   <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
-                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase px-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase px-3 dark:text-slate-400">
                           {t.reports.filters.label}
                       </div>
                       <button 
@@ -10312,11 +10312,11 @@ const Reports: React.FC<ReportsProps> = ({
                           <div className="flex justify-between items-start mb-6">
                               <div>
                                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{t.reports.charts.distTitle} R-Multiple</h3>
-                                  <p className="text-[10px] text-slate-400 font-bold uppercase">{t.reports.charts.allDates}</p>
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase dark:text-slate-400">{t.reports.charts.allDates}</p>
                               </div>
                               <div className="flex gap-2">
                                   <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                                  <Info className="w-4 h-4 text-slate-400" />
+                                  <Info className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                               </div>
                           </div>
                           <div className="h-80">
@@ -10326,9 +10326,9 @@ const Reports: React.FC<ReportsProps> = ({
                                     layout="vertical"
                                     margin={{ top: 5, right: 30, left: 20, bottom: 20 }}
                                   >
-                                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" opacity={0.3} />
-                                      <XAxis type="number" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} />
-                                      <YAxis dataKey="label" type="category" width={100} tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} />
+                                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--tg-border, #e2e8f0)" opacity={0.3} />
+                                      <XAxis type="number" tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} />
+                                      <YAxis dataKey="label" type="category" width={100} tick={{fontSize: 11, fill: 'var(--tg-secondary, #64748b)', fontWeight: 600}} axisLine={false} tickLine={false} />
                                       <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', borderRadius: '8px', fontSize: '12px' }} />
                                       <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
                                   </BarChart>
@@ -10341,11 +10341,11 @@ const Reports: React.FC<ReportsProps> = ({
                           <div className="flex justify-between items-start mb-6">
                               <div>
                                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{t.reports.charts.perfTitle} R-Multiple</h3>
-                                  <p className="text-[10px] text-slate-400 font-bold uppercase">{t.reports.charts.allDates}</p>
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase dark:text-slate-400">{t.reports.charts.allDates}</p>
                               </div>
                               <div className="flex gap-2">
                                   <Star className="w-4 h-4 text-slate-300 hover:text-amber-400 transition-colors" />
-                                  <Info className="w-4 h-4 text-slate-400" />
+                                  <Info className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                               </div>
                           </div>
                           <div className="h-80">
@@ -10355,10 +10355,10 @@ const Reports: React.FC<ReportsProps> = ({
                                     layout="vertical"
                                     margin={{ top: 5, right: 30, left: 20, bottom: 20 }}
                                   >
-                                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e2e8f0" opacity={0.3} />
-                                      <XAxis type="number" tick={{fontSize: 10, fill: '#64748b'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
-                                      <YAxis dataKey="label" type="category" width={100} tick={{fontSize: 11, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} />
-                                      <ReferenceLine x={0} stroke="#94a3b8" />
+                                      <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="var(--tg-border, #e2e8f0)" opacity={0.3} />
+                                      <XAxis type="number" tick={{fontSize: 10, fill: 'var(--tg-secondary, #64748b)'}} axisLine={false} tickLine={false} tickFormatter={(val) => `$${val}`} />
+                                      <YAxis dataKey="label" type="category" width={100} tick={{fontSize: 11, fill: 'var(--tg-secondary, #64748b)', fontWeight: 600}} axisLine={false} tickLine={false} />
+                                      <ReferenceLine x={0} stroke="var(--tg-border, #94a3b8)" />
                                       <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc', borderRadius: '8px', fontSize: '12px' }} formatter={(val: number) => [`$${val.toFixed(2)}`, 'Net P&L']} />
                                       
                                       <Bar dataKey="netPnl" radius={[0, 4, 4, 0]} barSize={20}>
@@ -10423,18 +10423,18 @@ const Reports: React.FC<ReportsProps> = ({
           <div className="space-y-[16px] animate-fade-in">
               <div className="flex flex-wrap items-start justify-between gap-[12px]">
                   <div className="relative" data-pnl-display-menu>
-                      <div className="mb-[6px] text-[12px] font-bold uppercase tracking-[0.02em] text-[#6f7e8e]">
+                      <div className="mb-[6px] text-[12px] font-bold uppercase tracking-[0.02em] text-[#6f7e8e] dark:text-[var(--tg-secondary)]">
                           {language === 'cn' ? '盈亏显示' : 'P&L showing'}
                       </div>
                       <button
                           type="button"
                           onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                          className="inline-flex h-[32px] items-center gap-[8px] rounded-[8px] border border-[#dde3ea] bg-white px-[12px] text-[14px] font-medium text-[#2c3138]"
+                          className="inline-flex h-[32px] items-center gap-[8px] rounded-[8px] border border-[#dde3ea] bg-white px-[12px] text-[14px] font-medium text-[#2c3138] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)]"
                       >
                           <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
-                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform  dark:text-[var(--tg-text)] ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
-                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-[136px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-[136px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                           isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                       }`}>
                           {([
@@ -10451,7 +10451,7 @@ const Reports: React.FC<ReportsProps> = ({
                                           setIsPnlDisplayMenuOpen(false);
                                       }}
                                       className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[14px] font-medium transition-colors ${
-                                          selected ? 'bg-[#e8e4f4] text-[#2f255f]' : 'text-[#303844] hover:bg-[#f1f2f4]'
+                                          selected ? 'bg-[#e8e4f4] text-[#2f255f] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]' : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]'
                                       }`}
                                   >
                                       {option.label}
@@ -10462,9 +10462,9 @@ const Reports: React.FC<ReportsProps> = ({
                   </div>
               </div>
 
-              <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
-                  <div className="border-b border-[#edf1f5] px-[22px] py-[16px]">
-                      <h2 className="text-[18px] font-bold tracking-[-0.01em] text-[#2d3139]">{language === 'cn' ? '年度' : 'YEAR'}</h2>
+              <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                  <div className="border-b border-[#edf1f5] px-[22px] py-[16px] dark:border-[var(--tg-border)]">
+                      <h2 className="text-[18px] font-bold tracking-[-0.01em] text-[#2d3139] dark:text-[var(--tg-text)]">{language === 'cn' ? '年度' : 'YEAR'}</h2>
                   </div>
                   <div className="px-[24px] pb-[22px] pt-[26px]">
                       <div className="mx-auto flex max-w-[860px] items-center justify-between pb-[22px]">
@@ -10474,18 +10474,18 @@ const Reports: React.FC<ReportsProps> = ({
                                   setCalendarYear(current => current - 1);
                                   setCalendarMonthDate(current => new Date(current.getFullYear() - 1, current.getMonth(), 1));
                               }}
-                              className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#6d7b89] transition-colors hover:bg-[#f2f4f7]"
+                              className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#6d7b89] transition-colors hover:bg-[#f2f4f7] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-accent-soft)]"
                           >
                               <ChevronLeft className="h-[22px] w-[22px]" />
                           </button>
-                          <div className="text-[32px] font-semibold tracking-[-0.02em] text-[#2c3138]">{calendarYear}</div>
+                          <div className="text-[32px] font-semibold tracking-[-0.02em] text-[#2c3138] dark:text-[var(--tg-text)]">{calendarYear}</div>
                           <button
                               type="button"
                               onClick={() => {
                                   setCalendarYear(current => current + 1);
                                   setCalendarMonthDate(current => new Date(current.getFullYear() + 1, current.getMonth(), 1));
                               }}
-                              className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#6d7b89] transition-colors hover:bg-[#f2f4f7]"
+                              className="inline-flex h-[32px] w-[32px] items-center justify-center rounded-full text-[#6d7b89] transition-colors hover:bg-[#f2f4f7] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-accent-soft)]"
                           >
                               <ChevronRight className="h-[22px] w-[22px]" />
                           </button>
@@ -10497,18 +10497,18 @@ const Reports: React.FC<ReportsProps> = ({
                                   key={monthIndex}
                                   type="button"
                                   onClick={() => setCalendarMonthDate(new Date(calendarYear, monthIndex, 1))}
-                                  className={`rounded-[12px] border-[1.5px] bg-white px-[8px] py-[10px] text-left transition-[border-color,box-shadow,transform] duration-200 ${
+                                  className={`rounded-[12px] border-[1.5px] bg-white px-[8px] py-[10px] text-left transition-[border-color,box-shadow,transform] duration-200  dark:bg-slate-900 ${
                                       calendarMonthStart.getFullYear() === calendarYear && calendarMonthStart.getMonth() === monthIndex
                                           ? 'border-[#6d5cd5] shadow-[0_0_0_1px_rgba(109,92,213,0.06)]'
-                                          : 'border-transparent hover:border-[#e7ebf1]'
+                                          : 'border-transparent hover:border-[#e7ebf1] dark:hover:border-[var(--tg-border)]'
                                   }`}
                               >
-                                  <div className="pb-[10px] text-center text-[16px] font-semibold text-[#303844]">
+                                  <div className="pb-[10px] text-center text-[16px] font-semibold text-[#303844] dark:text-[var(--tg-text)]">
                                       {new Date(calendarYear, monthIndex).toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long' })}
                                   </div>
                                   <div className="grid grid-cols-7 gap-[4px]">
                                       {calendarWeekdayHeaders.map(label => (
-                                          <div key={`${monthIndex}-${label}`} className="flex h-[20px] items-center justify-center rounded-[6px] bg-white text-[10px] font-medium text-[#a2aab6]">
+                                          <div key={`${monthIndex}-${label}`} className="flex h-[20px] items-center justify-center rounded-[6px] bg-white text-[10px] font-medium text-[#a2aab6] dark:bg-slate-900 dark:text-[var(--tg-muted)]">
                                               {language === 'cn' ? label.replace('周', '') : label}
                                           </div>
                                       ))}
@@ -10520,34 +10520,34 @@ const Reports: React.FC<ReportsProps> = ({
                   </div>
               </section>
 
-              <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
-                  <div className="flex flex-wrap items-center justify-between gap-[12px] border-b border-[#edf1f5] px-[12px] py-[12px] sm:px-[18px]">
+              <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                  <div className="flex flex-wrap items-center justify-between gap-[12px] border-b border-[#edf1f5] px-[12px] py-[12px] sm:px-[18px] dark:border-[var(--tg-border)]">
                       <div className="flex flex-wrap items-center gap-[10px]">
                           <button
                               type="button"
                               onClick={() => setCalendarMonthDate(current => new Date(current.getFullYear(), current.getMonth() - 1, 1))}
-                              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#6f7c89] hover:bg-[#f3f5f8]"
+                              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#6f7c89] hover:bg-[#f3f5f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-accent-soft)]"
                           >
                               <ChevronLeft className="h-[16px] w-[16px]" />
                           </button>
-                          <div className="text-[15px] font-bold text-[#2d3139]">{calendarMonthLabel}</div>
+                          <div className="text-[15px] font-bold text-[#2d3139] dark:text-[var(--tg-text)]">{calendarMonthLabel}</div>
                           <button
                               type="button"
                               onClick={() => setCalendarMonthDate(current => new Date(current.getFullYear(), current.getMonth() + 1, 1))}
-                              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#6f7c89] hover:bg-[#f3f5f8]"
+                              className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#6f7c89] hover:bg-[#f3f5f8] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-accent-soft)]"
                           >
                               <ChevronRight className="h-[16px] w-[16px]" />
                           </button>
                           <button
                               type="button"
                               onClick={() => setCalendarMonthDate(new Date(new Date().getFullYear(), new Date().getMonth(), 1))}
-                              className="ml-[6px] inline-flex h-[30px] items-center rounded-[8px] border border-[#dfe4ec] px-[14px] text-[14px] font-medium text-[#303844]"
+                              className="ml-[6px] inline-flex h-[30px] items-center rounded-[8px] border border-[#dfe4ec] px-[14px] text-[14px] font-medium text-[#303844] dark:border-[var(--tg-border)] dark:text-[var(--tg-text)]"
                           >
                               {language === 'cn' ? '本月' : 'This month'}
                           </button>
                       </div>
-                      <div className="flex items-center gap-[10px] px-[6px] text-[#7e8895]">
-                          <CalendarIcon className="h-[15px] w-[15px] text-[#7b68d9]" />
+                      <div className="flex items-center gap-[10px] px-[6px] text-[#7e8895] dark:text-[var(--tg-secondary)]">
+                          <CalendarIcon className="h-[15px] w-[15px] text-[#7b68d9] dark:text-[var(--tg-accent)]" />
                           <Info className="h-[15px] w-[15px]" />
                       </div>
                   </div>
@@ -10558,7 +10558,7 @@ const Reports: React.FC<ReportsProps> = ({
                               {calendarWeekdayHeaders.map(label => (
                                   <div
                                       key={label}
-                                      className="flex h-[32px] items-center justify-center rounded-[10px] border border-[#e8edf2] bg-white text-[14px] font-semibold text-[#20232a]"
+                                      className="flex h-[32px] items-center justify-center rounded-[10px] border border-[#e8edf2] bg-white text-[14px] font-semibold text-[#20232a] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)]"
                                   >
                                       {language === 'cn' ? label : label}
                                   </div>
@@ -10568,21 +10568,21 @@ const Reports: React.FC<ReportsProps> = ({
                                   const dayPnl = summary?.pnl || 0;
                                   const isToday = isSameCalendarDay(cell.date, new Date());
                                   const cellTone = !cell.inMonth
-                                      ? 'bg-white text-[#c3cad3]'
+                                      ? 'bg-white text-[#c3cad3] dark:bg-slate-900 dark:text-[var(--tg-muted)]'
                                       : !summary
-                                          ? 'bg-[#f1f3f5] text-[#535f6d]'
+                                          ? 'bg-[#f1f3f5] text-[#535f6d] dark:bg-[var(--tg-surface-muted)] dark:text-[var(--tg-secondary)]'
                                           : dayPnl > 0
-                                              ? 'bg-[#dff2e7] text-[#26303b]'
+                                              ? 'bg-[#dff2e7] text-[#26303b] dark:bg-[var(--tg-positive-soft)] dark:text-[var(--tg-text)]'
                                               : dayPnl < 0
-                                                  ? 'bg-[#ffe1e1] text-[#26303b]'
-                                                  : 'bg-[#eef1f4] text-[#26303b]';
+                                                  ? 'bg-[#ffe1e1] text-[#26303b] dark:bg-[var(--tg-negative-soft)] dark:text-[var(--tg-text)]'
+                                                  : 'bg-[#eef1f4] text-[#26303b] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]';
                                   const borderTone = !summary
-                                      ? 'border-[#e9edf2]'
+                                      ? 'border-[#e9edf2] dark:border-[var(--tg-border)]'
                                       : dayPnl > 0
                                           ? 'border-[#55c39e]'
                                           : dayPnl < 0
-                                              ? 'border-[#ff7d7d]'
-                                              : 'border-[#d9e0e8]';
+                                              ? 'border-[#ff7d7d] dark:border-[var(--tg-negative)]'
+                                              : 'border-[#d9e0e8] dark:border-[var(--tg-border)]';
 
                                   return (
                                       <div
@@ -10602,7 +10602,7 @@ const Reports: React.FC<ReportsProps> = ({
                                               <span
                                                   className={`inline-flex h-[24px] min-w-[24px] items-center justify-center rounded-full px-[6px] leading-none ${
                                                       isToday
-                                                          ? 'border border-[#6d5cd5] bg-white text-[#4f3dc1] shadow-[0_2px_6px_rgba(109,92,213,0.14)]'
+                                                          ? 'border border-[#6d5cd5] bg-white text-[#4f3dc1] shadow-[0_2px_6px_rgba(109,92,213,0.14)] dark:bg-slate-900 dark:text-[var(--tg-accent)]'
                                                           : ''
                                                   }`}
                                               >
@@ -10611,16 +10611,16 @@ const Reports: React.FC<ReportsProps> = ({
                                           </div>
                                           {summary && cell.inMonth && (
                                               <div className="mt-auto flex flex-col items-end text-right">
-                                                  <div className={`text-[14px] font-bold leading-none tabular-nums ${dayPnl > 0 ? 'text-[#26303b]' : dayPnl < 0 ? 'text-[#26303b]' : 'text-[#46515c]'}`}>
+                                                  <div className={`text-[14px] font-bold leading-none tabular-nums ${dayPnl > 0 ? 'text-[#26303b] dark:text-[var(--tg-text)]' : dayPnl < 0 ? 'text-[#26303b] dark:text-[var(--tg-text)]' : 'text-[#46515c] dark:text-[var(--tg-secondary)]'}`}>
                                                       {formatSignedMoney(dayPnl)}
                                                   </div>
-                                                  <div className="mt-[5px] text-[12px] font-medium text-[#7f8995]">
+                                                  <div className="mt-[5px] text-[12px] font-medium text-[#7f8995] dark:text-[var(--tg-secondary)]">
                                                       {summary.count} {language === 'cn' ? '笔交易' : summary.count === 1 ? 'trade' : 'trades'}
                                                   </div>
                                               </div>
                                           )}
                                           {summary?.hasOpenTrade && cell.inMonth && (
-                                              <span className="absolute bottom-[8px] left-[8px] inline-flex h-[18px] w-[18px] items-center justify-center rounded-[6px] border border-current text-[#38414a]">
+                                              <span className="absolute bottom-[8px] left-[8px] inline-flex h-[18px] w-[18px] items-center justify-center rounded-[6px] border border-current text-[#38414a] dark:text-[var(--tg-text)]">
                                                   <CalendarCheck className="h-[11px] w-[11px]" />
                                               </span>
                                           )}
@@ -10630,21 +10630,21 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </div>
 
-                      <aside className="border-t border-[#edf1f5] px-[24px] pb-[20px] pt-[28px] xl:border-l xl:border-t-0">
-                          <div className="text-center text-[16px] font-bold uppercase tracking-[0.01em] text-[#39424f]">
+                      <aside className="border-t border-[#edf1f5] px-[24px] pb-[20px] pt-[28px] xl:border-l xl:border-t-0 dark:border-[var(--tg-border)]">
+                          <div className="text-center text-[16px] font-bold uppercase tracking-[0.01em] text-[#39424f] dark:text-[var(--tg-text)]">
                               {language === 'cn' ? '每周盈亏' : 'P&L PER WEEK'}
                           </div>
                           <div className="mt-[26px] space-y-[18px]">
                               {calendarMonthViewData.weeks.map(week => (
                                   <div key={`calendar-week-${week.index}`} className="text-center">
-                                      <div className={`text-[20px] font-bold tabular-nums ${week.pnl > 0 ? 'text-[#55c39e]' : week.pnl < 0 ? 'text-[#f15f63]' : 'text-[#2f3943]'}`}>
+                                      <div className={`text-[20px] font-bold tabular-nums ${week.pnl > 0 ? 'text-[#55c39e] dark:text-[var(--tg-positive)]' : week.pnl < 0 ? 'text-[#f15f63] dark:text-[var(--tg-negative)]' : 'text-[#2f3943] dark:text-[var(--tg-text)]'}`}>
                                           {week.pnl === 0 ? '$0' : formatSignedMoney(week.pnl)}
                                       </div>
-                                      <div className="mt-[2px] text-[12px] font-bold uppercase tracking-[0.03em] text-[#7b8794]">
+                                      <div className="mt-[2px] text-[12px] font-bold uppercase tracking-[0.03em] text-[#7b8794] dark:text-[var(--tg-secondary)]">
                                           {language === 'cn' ? `第 ${week.index} 周` : `WEEK ${week.index}`}
                                       </div>
                                       {week.index !== calendarMonthViewData.weeks.length && (
-                                          <div className="mx-auto mt-[16px] h-px w-[112px] bg-[#edf1f5]" />
+                                          <div className="mx-auto mt-[16px] h-px w-[112px] bg-[#edf1f5] dark:bg-[var(--tg-accent-soft)]" />
                                       )}
                                   </div>
                               ))}
@@ -10654,13 +10654,13 @@ const Reports: React.FC<ReportsProps> = ({
               </section>
 
               <div className="grid grid-cols-1 gap-[12px] xl:grid-cols-[1fr_1fr]">
-                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
-                      <div className="flex items-center justify-between border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px]">
+                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                      <div className="flex items-center justify-between border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px] dark:border-[var(--tg-border)]">
                           <div className="flex items-baseline gap-[10px]">
-                              <h3 className="text-[15px] font-bold uppercase text-[#20232a]">
+                              <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-[var(--tg-text)]">
                                   {language === 'cn' ? '每日累计净盈亏' : 'DAILY NET CUMULATIVE P&L'}
                               </h3>
-                              <span className="text-[13px] font-bold uppercase text-[#7b828c]">{calendarRangeLabel}</span>
+                              <span className="text-[13px] font-bold uppercase text-[#7b828c] dark:text-[var(--tg-secondary)]">{calendarRangeLabel}</span>
                           </div>
                           <OverviewInfoBadge />
                       </div>
@@ -10674,34 +10674,34 @@ const Reports: React.FC<ReportsProps> = ({
                                           <stop offset="100%" stopColor={calendarMonthViewData.summary.totalPnl < 0 ? '#ff7d7d' : '#7b68d9'} stopOpacity={0.02} />
                                       </linearGradient>
                                   </defs>
-                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#dfe5eb" strokeOpacity={0.82} />
-                                  <XAxis dataKey="label" ticks={calendarCumulativeTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} dy={16} />
-                                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#7b828c', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
-                                  <Tooltip content={<PnlTooltip />} cursor={{ stroke: '#9aa3ae', strokeDasharray: '3 3' }} />
-                                  <ReferenceLine y={0} stroke="#dfe5eb" strokeDasharray="3 3" />
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--tg-border, #dfe5eb)" strokeOpacity={0.82} />
+                                  <XAxis dataKey="label" ticks={calendarCumulativeTicks} interval={0} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 600 }} dy={16} />
+                                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--tg-secondary, #7b828c)', fontWeight: 600 }} tickFormatter={(value) => formatMoney(Number(value), true)} width={58} />
+                                  <Tooltip content={<PnlTooltip />} cursor={{ stroke: 'var(--tg-border, #9aa3ae)', strokeDasharray: '3 3' }} />
+                                  <ReferenceLine y={0} stroke="var(--tg-border, #dfe5eb)" strokeDasharray="3 3" />
                                   <Area
                                       type="monotone"
                                       dataKey="cumulativePnl"
-                                      stroke="#7b68d9"
+                                      stroke="var(--tg-accent-border, #7b68d9)"
                                       strokeWidth={1.8}
                                       fill="url(#calendarCumulativeFill)"
                                       dot={false}
                                       isAnimationActive={shouldAnimateWinLossesCharts}
                                       animationDuration={760}
-                                      activeDot={{ r: 4, fill: '#fff', stroke: '#7b68d9', strokeWidth: 2 }}
+                                      activeDot={{ r: 4, fill: 'var(--tg-surface, #fff)', stroke: 'var(--tg-accent-border, #7b68d9)', strokeWidth: 2 }}
                                   />
                               </AreaChart>
                           </ResponsiveContainer>
                       </div>
                   </section>
 
-                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
-                      <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px]">
+                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                      <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px] dark:border-[var(--tg-border)]">
                           <div className="flex items-baseline gap-[10px]">
-                              <h3 className="text-[15px] font-bold uppercase text-[#20232a]">
+                              <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-[var(--tg-text)]">
                                   {language === 'cn' ? '整体评估' : 'OVERALL EVALUATION'}
                               </h3>
-                              <span className="text-[13px] font-bold uppercase text-[#7b828c]">{calendarRangeLabel}</span>
+                              <span className="text-[13px] font-bold uppercase text-[#7b828c] dark:text-[var(--tg-secondary)]">{calendarRangeLabel}</span>
                           </div>
                       </div>
                       <div className="grid h-[338px] grid-cols-1 items-center gap-[24px] px-[22px] py-[22px] md:grid-cols-[1fr_240px]">
@@ -10728,11 +10728,11 @@ const Reports: React.FC<ReportsProps> = ({
                                       </PieChart>
                                   </ResponsiveContainer>
                                   <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-                                      <div className="flex items-start gap-[4px] text-[#55c39e]">
+                                      <div className="flex items-start gap-[4px] text-[#55c39e] dark:text-[var(--tg-positive)]">
                                           <span className="text-[46px] font-bold leading-none">{Math.round(calendarWinRate)}</span>
                                           <span className="pt-[7px] text-[20px] font-bold">%</span>
                                       </div>
-                                      <div className="mt-[8px] text-[13px] font-bold uppercase tracking-[0.04em] text-[#55c39e]">
+                                      <div className="mt-[8px] text-[13px] font-bold uppercase tracking-[0.04em] text-[#55c39e] dark:text-[var(--tg-positive)]">
                                           {language === 'cn' ? '胜率' : 'WINRATE'}
                                       </div>
                                   </div>
@@ -10743,8 +10743,8 @@ const Reports: React.FC<ReportsProps> = ({
                                   <div key={`calendar-donut-legend-${entry.name}`} className="flex items-start gap-[12px]">
                                       <span className="mt-[3px] inline-flex h-[22px] w-[22px] rounded-[4px]" style={{ backgroundColor: entry.color }} />
                                       <div>
-                                          <div className="text-[20px] font-bold leading-none text-[#2d3139]">{entry.value}</div>
-                                          <div className="mt-[4px] text-[13px] font-medium text-[#7c8591]">{entry.name}</div>
+                                          <div className="text-[20px] font-bold leading-none text-[#2d3139] dark:text-[var(--tg-text)]">{entry.value}</div>
+                                          <div className="mt-[4px] text-[13px] font-medium text-[#7c8591] dark:text-[var(--tg-secondary)]">{entry.name}</div>
                                       </div>
                                   </div>
                               ))}
@@ -10753,13 +10753,13 @@ const Reports: React.FC<ReportsProps> = ({
                   </section>
               </div>
 
-              <section className="overflow-hidden rounded-[16px] bg-white shadow-none">
-                  <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px]">
+              <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                  <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px] dark:border-[var(--tg-border)]">
                       <div className="flex items-baseline gap-[10px]">
-                          <h3 className="text-[15px] font-bold uppercase text-[#20232a]">
+                          <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-[var(--tg-text)]">
                               {language === 'cn' ? '统计' : 'STATISTICS'}
                           </h3>
-                          <span className="text-[13px] font-bold uppercase text-[#7b828c]">{calendarRangeLabel}</span>
+                          <span className="text-[13px] font-bold uppercase text-[#7b828c] dark:text-[var(--tg-secondary)]">{calendarRangeLabel}</span>
                       </div>
                   </div>
                   <div className="grid grid-cols-1 gap-0 px-[14px] pb-[18px] pt-[18px] lg:grid-cols-2 lg:gap-[28px] lg:px-[18px]">
@@ -10768,10 +10768,10 @@ const Reports: React.FC<ReportsProps> = ({
                               {column.map(([label, value]) => (
                                   <div
                                       key={`${columnIndex}-${String(label)}`}
-                                      className="flex min-h-[30px] items-center justify-between border-b border-[#e6e8ec] px-[8px] text-[13px] font-semibold leading-none last:border-b-0"
+                                      className="flex min-h-[30px] items-center justify-between border-b border-[#e6e8ec] px-[8px] text-[13px] font-semibold leading-none last:border-b-0 dark:border-[var(--tg-border)]"
                                   >
-                                      <span className="pr-[16px] text-[#737a83]">{label}</span>
-                                      <span className="text-right text-[#737a83] tabular-nums">{value}</span>
+                                      <span className="pr-[16px] text-[#737a83] dark:text-[var(--tg-secondary)]">{label}</span>
+                                      <span className="text-right text-[#737a83] tabular-nums dark:text-[var(--tg-secondary)]">{value}</span>
                                   </div>
                               ))}
                           </div>
@@ -10804,7 +10804,7 @@ const Reports: React.FC<ReportsProps> = ({
                           : `${group.summary.matchedTradeCount} Trades Matched`;
 
                       const renderChipButton = (value: string, field: CompareMultiSelectField) => (
-                          <span className="inline-flex max-w-full items-center rounded-full bg-[#ece8f7] px-[10px] py-[3px] text-[12px] font-semibold text-[#4b35b8]">
+                          <span className="inline-flex max-w-full items-center rounded-full bg-[#ece8f7] px-[10px] py-[3px] text-[12px] font-semibold text-[#4b35b8] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]">
                               <span className="truncate">{value}</span>
                               <button
                                   type="button"
@@ -10812,7 +10812,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       event.stopPropagation();
                                       toggleCompareMultiValue(group.key, field, value);
                                   }}
-                                  className="ml-[6px] inline-flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#d8d0f2] text-[#6a55cf]"
+                                  className="ml-[6px] inline-flex h-[16px] w-[16px] items-center justify-center rounded-full bg-[#d8d0f2] text-[#6a55cf] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]"
                               >
                                   <X className="h-[10px] w-[10px]" />
                               </button>
@@ -10821,13 +10821,13 @@ const Reports: React.FC<ReportsProps> = ({
 
                       return (
                           <section key={group.key} className="overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                              <div className="border-b border-[#eceff3] px-[22px] py-[14px]">
+                              <div className="border-b border-[#eceff3] px-[22px] py-[14px] dark:border-[var(--tg-border)]">
                                   <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                       {group.title}{compareHasGenerated ? ` (${matchedLabel})` : ''}
                                   </h3>
                               </div>
                               <div className="grid grid-cols-1 gap-[12px] px-[22px] py-[22px] md:grid-cols-[112px_minmax(0,1fr)_112px_minmax(0,1fr)] md:items-start md:gap-x-[20px]">
-                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '标的' : 'Symbol'}</div>
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843] dark:text-[var(--tg-text)]">{language === 'cn' ? '标的' : 'Symbol'}</div>
                                   <div className="relative min-w-0" data-compare-field-root>
                                       <button
                                           type="button"
@@ -10836,22 +10836,22 @@ const Reports: React.FC<ReportsProps> = ({
                                               setActiveCompareSelect(null);
                                               setActiveCompareCalendar(null);
                                           }}
-                                          className="flex min-h-[38px] w-full items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[10px] py-[6px] text-left text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                          className="flex min-h-[38px] w-full items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[10px] py-[6px] text-left text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]"
                                       >
                                           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-[6px]">
                                               {filters.symbols.length === 0 ? (
-                                                  <span className="text-[#9aa3af]">{language === 'cn' ? '选择标的' : 'Select symbols'}</span>
+                                                  <span className="text-[#9aa3af] dark:text-[var(--tg-muted)]">{language === 'cn' ? '选择标的' : 'Select symbols'}</span>
                                               ) : filters.symbols.length === 1 ? (
                                                   renderChipButton(filters.symbols[0], 'symbols')
                                               ) : (
                                                   <>
                                                       {renderChipButton(filters.symbols[0], 'symbols')}
-                                                      <span className="text-[13px] font-semibold text-[#4d5560]">+{filters.symbols.length - 1}</span>
+                                                      <span className="text-[13px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">+{filters.symbols.length - 1}</span>
                                                   </>
                                               )}
                                           </div>
                                       </button>
-                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[6px] shadow-[0_12px_32px_rgba(15,23,42,0.12)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[6px] shadow-[0_12px_32px_rgba(15,23,42,0.12)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           activeCompareMultiSelect?.group === group.key && activeCompareMultiSelect.field === 'symbols'
                                               ? 'max-h-[320px] scale-100 opacity-100'
                                               : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
@@ -10863,27 +10863,27 @@ const Reports: React.FC<ReportsProps> = ({
                                                   [group.key]: { ...current[group.key], symbols: event.target.value },
                                               }))}
                                               placeholder={language === 'cn' ? '搜索标的' : 'Search symbols'}
-                                              className="mb-[6px] h-[34px] w-full rounded-[7px] border border-[#dfe4ec] px-[10px] text-[13px] text-[#20232a] outline-none placeholder:text-[#9aa3af] focus:border-[#6a55cf]"
+                                              className="mb-[6px] h-[34px] w-full rounded-[7px] border border-[#dfe4ec] px-[10px] text-[13px] text-[#20232a] outline-none placeholder:text-[#9aa3af] focus:border-[#6a55cf] dark:border-[var(--tg-border)] dark:text-[var(--tg-text)]"
                                           />
                                           <div className="max-h-[240px] overflow-y-auto">
                                               {visibleSymbolSuggestions.length === 0 ? (
-                                                  <div className="px-[8px] py-[10px] text-[12px] font-medium text-[#9aa3af]">{language === 'cn' ? '没有可选标的' : 'No symbols found'}</div>
+                                                  <div className="px-[8px] py-[10px] text-[12px] font-medium text-[#9aa3af] dark:text-[var(--tg-muted)]">{language === 'cn' ? '没有可选标的' : 'No symbols found'}</div>
                                               ) : visibleSymbolSuggestions.map(item => (
                                                   <button
                                                       key={`${group.key}-symbol-${item}`}
                                                       type="button"
                                                       onClick={() => toggleCompareMultiValue(group.key, 'symbols', item)}
-                                                      className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-medium text-[#303844] transition-colors hover:bg-[#f4f5f7]"
+                                                      className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-medium text-[#303844] transition-colors hover:bg-[#f4f5f7] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"
                                                   >
                                                       <span>{item}</span>
-                                                      {filters.symbols.includes(item) && <Check className="h-[14px] w-[14px] text-[#5f47c9]" />}
+                                                      {filters.symbols.includes(item) && <Check className="h-[14px] w-[14px] text-[#5f47c9] dark:text-[var(--tg-accent)]" />}
                                                   </button>
                                               ))}
                                           </div>
                                       </div>
                                   </div>
 
-                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '标签' : 'Tags'}</div>
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843] dark:text-[var(--tg-text)]">{language === 'cn' ? '标签' : 'Tags'}</div>
                                   <div className="relative min-w-0" data-compare-field-root>
                                       <button
                                           type="button"
@@ -10892,22 +10892,22 @@ const Reports: React.FC<ReportsProps> = ({
                                               setActiveCompareSelect(null);
                                               setActiveCompareCalendar(null);
                                           }}
-                                          className="flex min-h-[38px] w-full items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[10px] py-[6px] text-left text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                          className="flex min-h-[38px] w-full items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[10px] py-[6px] text-left text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]"
                                       >
                                           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-[6px]">
                                               {filters.tags.length === 0 ? (
-                                                  <span className="text-[#9aa3af]">{language === 'cn' ? '选择标签' : 'Select tags'}</span>
+                                                  <span className="text-[#9aa3af] dark:text-[var(--tg-muted)]">{language === 'cn' ? '选择标签' : 'Select tags'}</span>
                                               ) : filters.tags.length === 1 ? (
                                                   renderChipButton(filters.tags[0], 'tags')
                                               ) : (
                                                   <>
                                                       {renderChipButton(filters.tags[0], 'tags')}
-                                                      <span className="text-[13px] font-semibold text-[#4d5560]">+{filters.tags.length - 1}</span>
+                                                      <span className="text-[13px] font-semibold text-[#4d5560] dark:text-[var(--tg-secondary)]">+{filters.tags.length - 1}</span>
                                                   </>
                                               )}
                                           </div>
                                       </button>
-                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[6px] shadow-[0_12px_32px_rgba(15,23,42,0.12)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[6px] shadow-[0_12px_32px_rgba(15,23,42,0.12)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           activeCompareMultiSelect?.group === group.key && activeCompareMultiSelect.field === 'tags'
                                               ? 'max-h-[320px] scale-100 opacity-100'
                                               : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
@@ -10919,27 +10919,27 @@ const Reports: React.FC<ReportsProps> = ({
                                                   [group.key]: { ...current[group.key], tags: event.target.value },
                                               }))}
                                               placeholder={language === 'cn' ? '搜索标签' : 'Search tags'}
-                                              className="mb-[6px] h-[34px] w-full rounded-[7px] border border-[#dfe4ec] px-[10px] text-[13px] text-[#20232a] outline-none placeholder:text-[#9aa3af] focus:border-[#6a55cf]"
+                                              className="mb-[6px] h-[34px] w-full rounded-[7px] border border-[#dfe4ec] px-[10px] text-[13px] text-[#20232a] outline-none placeholder:text-[#9aa3af] focus:border-[#6a55cf] dark:border-[var(--tg-border)] dark:text-[var(--tg-text)]"
                                           />
                                           <div className="max-h-[240px] overflow-y-auto">
                                               {visibleTagSuggestions.length === 0 ? (
-                                                  <div className="px-[8px] py-[10px] text-[12px] font-medium text-[#9aa3af]">{language === 'cn' ? '没有可选标签' : 'No tags found'}</div>
+                                                  <div className="px-[8px] py-[10px] text-[12px] font-medium text-[#9aa3af] dark:text-[var(--tg-muted)]">{language === 'cn' ? '没有可选标签' : 'No tags found'}</div>
                                               ) : visibleTagSuggestions.map(item => (
                                                   <button
                                                       key={`${group.key}-tag-${item}`}
                                                       type="button"
                                                       onClick={() => toggleCompareMultiValue(group.key, 'tags', item)}
-                                                      className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-medium text-[#303844] transition-colors hover:bg-[#f4f5f7]"
+                                                      className="flex w-full items-center justify-between rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-medium text-[#303844] transition-colors hover:bg-[#f4f5f7] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"
                                                   >
                                                       <span>{item}</span>
-                                                      {filters.tags.includes(item) && <Check className="h-[14px] w-[14px] text-[#5f47c9]" />}
+                                                      {filters.tags.includes(item) && <Check className="h-[14px] w-[14px] text-[#5f47c9] dark:text-[var(--tg-accent)]" />}
                                                   </button>
                                               ))}
                                           </div>
                                       </div>
                                   </div>
 
-                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '多空方向' : 'Side'}</div>
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843] dark:text-[var(--tg-text)]">{language === 'cn' ? '多空方向' : 'Side'}</div>
                                   <div className="relative" data-compare-field-root>
                                       <button
                                           type="button"
@@ -10948,12 +10948,12 @@ const Reports: React.FC<ReportsProps> = ({
                                               setActiveCompareMultiSelect(null);
                                               setActiveCompareCalendar(null);
                                           }}
-                                          className="inline-flex h-[38px] w-full items-center justify-between rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                          className="inline-flex h-[38px] w-full items-center justify-between rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{compareSideOptions.find(option => option.id === filters.side)?.label}</span>
-                                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform ${activeCompareSelect?.group === group.key && activeCompareSelect.field === 'side' ? 'rotate-180' : ''}`} />
+                                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform  dark:text-[var(--tg-text)] ${activeCompareSelect?.group === group.key && activeCompareSelect.field === 'side' ? 'rotate-180' : ''}`} />
                                       </button>
-                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           activeCompareSelect?.group === group.key && activeCompareSelect.field === 'side'
                                               ? 'max-h-[180px] scale-100 opacity-100'
                                               : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
@@ -10967,7 +10967,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       setActiveCompareSelect(null);
                                                   }}
                                                   className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
-                                                      filters.side === option.id ? 'bg-[#e8e4f4] text-[#303044]' : 'text-[#303844] hover:bg-[#f1f2f4]'
+                                                      filters.side === option.id ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]' : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]'
                                                   }`}
                                               >
                                                   {option.label}
@@ -10976,7 +10976,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       </div>
                                   </div>
 
-                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '开始日期' : 'Start date'}</div>
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843] dark:text-[var(--tg-text)]">{language === 'cn' ? '开始日期' : 'Start date'}</div>
                                   <div className="relative" data-compare-field-root>
                                       <button
                                           type="button"
@@ -10985,13 +10985,13 @@ const Reports: React.FC<ReportsProps> = ({
                                               setActiveCompareMultiSelect(null);
                                               setActiveCompareSelect(null);
                                           }}
-                                          className="inline-flex h-[38px] w-full items-center justify-start rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                          className="inline-flex h-[38px] w-full items-center justify-start rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]"
                                       >
-                                          <span className={filters.startDate ? 'text-[#20232a]' : 'text-[#9aa3af]'}>
+                                          <span className={filters.startDate ? 'text-[#20232a] dark:text-[var(--tg-text)]' : 'text-[#9aa3af] dark:text-[var(--tg-muted)]'}>
                                               {filters.startDate ? formatCompareDateValue(filters.startDate) : 'MM/DD/YY'}
                                           </span>
                                       </button>
-                                      <div className={`absolute left-0 top-full z-[90] mt-[8px] w-[280px] origin-top-left overflow-hidden rounded-[12px] border border-[#e3e7ee] bg-white p-[14px] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                      <div className={`absolute left-0 top-full z-[90] mt-[8px] w-[280px] origin-top-left overflow-hidden rounded-[12px] border border-[#e3e7ee] bg-white p-[14px] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           activeCompareCalendar?.group === group.key && activeCompareCalendar.field === 'startDate'
                                               ? 'max-h-[360px] scale-100 opacity-100'
                                               : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
@@ -11003,11 +11003,11 @@ const Reports: React.FC<ReportsProps> = ({
                                                       ...current,
                                                       [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() - 1, 1),
                                                   }))}
-                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"
                                               >
                                                   <ChevronLeft className="h-[16px] w-[16px]" />
                                               </button>
-                                              <div className="text-[14px] font-bold text-[#20232a]">
+                                              <div className="text-[14px] font-bold text-[#20232a] dark:text-[var(--tg-text)]">
                                                   {compareCalendarViewDate[group.key].toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' })}
                                               </div>
                                               <button
@@ -11016,7 +11016,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       ...current,
                                                       [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() + 1, 1),
                                                   }))}
-                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"
                                               >
                                                   <ChevronRight className="h-[16px] w-[16px]" />
                                               </button>
@@ -11025,7 +11025,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       </div>
                                   </div>
 
-                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '盈亏状态' : 'Trade P&L'}</div>
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843] dark:text-[var(--tg-text)]">{language === 'cn' ? '盈亏状态' : 'Trade P&L'}</div>
                                   <div className="relative" data-compare-field-root>
                                       <button
                                           type="button"
@@ -11034,12 +11034,12 @@ const Reports: React.FC<ReportsProps> = ({
                                               setActiveCompareMultiSelect(null);
                                               setActiveCompareCalendar(null);
                                           }}
-                                          className="inline-flex h-[38px] w-full items-center justify-between rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                          className="inline-flex h-[38px] w-full items-center justify-between rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{comparePnlOptions.find(option => option.id === filters.pnl)?.label}</span>
-                                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform ${activeCompareSelect?.group === group.key && activeCompareSelect.field === 'pnl' ? 'rotate-180' : ''}`} />
+                                          <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform  dark:text-[var(--tg-text)] ${activeCompareSelect?.group === group.key && activeCompareSelect.field === 'pnl' ? 'rotate-180' : ''}`} />
                                       </button>
-                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                      <div className={`absolute left-0 top-full z-[90] mt-[6px] w-full origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           activeCompareSelect?.group === group.key && activeCompareSelect.field === 'pnl'
                                               ? 'max-h-[180px] scale-100 opacity-100'
                                               : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
@@ -11053,7 +11053,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       setActiveCompareSelect(null);
                                                   }}
                                                   className={`block w-full rounded-[6px] px-[10px] py-[8px] text-left text-[13px] font-semibold transition-colors ${
-                                                      filters.pnl === option.id ? 'bg-[#e8e4f4] text-[#303044]' : 'text-[#303844] hover:bg-[#f1f2f4]'
+                                                      filters.pnl === option.id ? 'bg-[#e8e4f4] text-[#303044] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-text)]' : 'text-[#303844] hover:bg-[#f1f2f4] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]'
                                                   }`}
                                               >
                                                   {option.label}
@@ -11062,7 +11062,7 @@ const Reports: React.FC<ReportsProps> = ({
                                       </div>
                                   </div>
 
-                                  <div className="flex items-center text-[15px] font-medium text-[#313843]">{language === 'cn' ? '结束日期' : 'End date'}</div>
+                                  <div className="flex items-center text-[15px] font-medium text-[#313843] dark:text-[var(--tg-text)]">{language === 'cn' ? '结束日期' : 'End date'}</div>
                                   <div className="relative" data-compare-field-root>
                                       <button
                                           type="button"
@@ -11071,13 +11071,13 @@ const Reports: React.FC<ReportsProps> = ({
                                               setActiveCompareMultiSelect(null);
                                               setActiveCompareSelect(null);
                                           }}
-                                          className="inline-flex h-[38px] w-full items-center justify-start rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df]"
+                                          className="inline-flex h-[38px] w-full items-center justify-start rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]"
                                       >
-                                          <span className={filters.endDate ? 'text-[#20232a]' : 'text-[#9aa3af]'}>
+                                          <span className={filters.endDate ? 'text-[#20232a] dark:text-[var(--tg-text)]' : 'text-[#9aa3af] dark:text-[var(--tg-muted)]'}>
                                               {filters.endDate ? formatCompareDateValue(filters.endDate) : 'MM/DD/YY'}
                                           </span>
                                       </button>
-                                      <div className={`absolute left-0 top-full z-[90] mt-[8px] w-[280px] origin-top-left overflow-hidden rounded-[12px] border border-[#e3e7ee] bg-white p-[14px] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-[opacity,transform,max-height] duration-200 ease-out ${
+                                      <div className={`absolute left-0 top-full z-[90] mt-[8px] w-[280px] origin-top-left overflow-hidden rounded-[12px] border border-[#e3e7ee] bg-white p-[14px] shadow-[0_18px_40px_rgba(15,23,42,0.14)] transition-[opacity,transform,max-height] duration-200 ease-out  dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           activeCompareCalendar?.group === group.key && activeCompareCalendar.field === 'endDate'
                                               ? 'max-h-[360px] scale-100 opacity-100'
                                               : 'pointer-events-none max-h-0 scale-[0.98] opacity-0'
@@ -11089,11 +11089,11 @@ const Reports: React.FC<ReportsProps> = ({
                                                       ...current,
                                                       [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() - 1, 1),
                                                   }))}
-                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"
                                               >
                                                   <ChevronLeft className="h-[16px] w-[16px]" />
                                               </button>
-                                              <div className="text-[14px] font-bold text-[#20232a]">
+                                              <div className="text-[14px] font-bold text-[#20232a] dark:text-[var(--tg-text)]">
                                                   {compareCalendarViewDate[group.key].toLocaleString(language === 'cn' ? 'zh-CN' : 'en-US', { month: 'long', year: 'numeric' })}
                                               </div>
                                               <button
@@ -11102,7 +11102,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       ...current,
                                                       [group.key]: new Date(current[group.key].getFullYear(), current[group.key].getMonth() + 1, 1),
                                                   }))}
-                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7]"
+                                                  className="inline-flex h-[28px] w-[28px] items-center justify-center rounded-full text-[#313843] transition-colors hover:bg-[#f4f5f7] dark:text-[var(--tg-text)] dark:hover:bg-[var(--tg-surface-muted)]"
                                               >
                                                   <ChevronRight className="h-[16px] w-[16px]" />
                                               </button>
@@ -11120,7 +11120,7 @@ const Reports: React.FC<ReportsProps> = ({
                   <button
                       type="button"
                       onClick={resetCompareFilters}
-                      className="inline-flex h-[38px] items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[16px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc]"
+                      className="inline-flex h-[38px] items-center rounded-[8px] border border-[#dfe4ec] bg-white px-[16px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)] dark:hover:bg-[var(--tg-accent-soft)]"
                   >
                       {language === 'cn' ? '重置' : 'Reset'}
                   </button>
@@ -11154,11 +11154,11 @@ const Reports: React.FC<ReportsProps> = ({
 
                               return (
                                   <section key={`${group.key}-stats`} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px]">
+                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                               {language === 'cn' ? `统计（${group.title}）` : `STATISTICS (${group.title.toUpperCase()})`}
                                           </h3>
-                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">
                                               {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
                                           </div>
                                       </div>
@@ -11167,11 +11167,11 @@ const Reports: React.FC<ReportsProps> = ({
                                               <div
                                                   key={`${group.key}-${label}`}
                                                   className={`flex items-center justify-between gap-[18px] px-[24px] py-[11px] text-[13px] ${
-                                                      index < rows.length - 1 ? 'border-b border-[#eceff3]' : ''
+                                                      index < rows.length - 1 ? 'border-b border-[#eceff3] dark:border-[var(--tg-border)]' : ''
                                                   }`}
                                               >
-                                                  <span className="font-semibold text-[#6b7280]">{label}</span>
-                                                  <span className="font-semibold tabular-nums text-[#4d5560]">{value}</span>
+                                                  <span className="font-semibold text-[#6b7280] dark:text-[var(--tg-secondary)]">{label}</span>
+                                                  <span className="font-semibold tabular-nums text-[#4d5560] dark:text-[var(--tg-secondary)]">{value}</span>
                                               </div>
                                           ))}
                                       </div>
@@ -11192,18 +11192,18 @@ const Reports: React.FC<ReportsProps> = ({
 
                               return (
                                   <section key={`${group.key}-evaluation`} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px]">
+                                      <div className="border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                               {language === 'cn' ? `综合评估（${group.title}）` : `OVERALL EVALUATION (${group.title.toUpperCase()})`}
                                           </h3>
-                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                          <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">
                                               {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
                                           </div>
                                       </div>
                                       <div className="flex flex-col items-center justify-between gap-[24px] px-[24px] py-[18px] md:flex-row">
                                           <div className="relative flex h-[180px] w-[180px] items-center justify-center">
                                               <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-                                                  <circle cx="60" cy="60" r="44" fill="none" stroke="#edf1f5" strokeWidth="10" />
+                                                  <circle cx="60" cy="60" r="44" fill="none" stroke="var(--tg-border, #edf1f5)" strokeWidth="10" />
                                                   <circle
                                                       cx="60"
                                                       cy="60"
@@ -11220,7 +11220,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                       cy="60"
                                                       r="44"
                                                       fill="none"
-                                                      stroke="#ff6468"
+                                                      stroke="var(--tg-negative, #ff6468)"
                                                       strokeWidth="10"
                                                       strokeLinecap="round"
                                                       strokeDasharray={`${100 - winPercent} ${winPercent}`}
@@ -11229,8 +11229,8 @@ const Reports: React.FC<ReportsProps> = ({
                                                   />
                                               </svg>
                                               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                                  <div className="text-[22px] font-bold text-[#52c69a]">{group.summary.winRate.toFixed(0)}<span className="ml-[2px] text-[12px]">%</span></div>
-                                                  <div className="mt-[4px] text-[11px] font-bold uppercase tracking-[0.08em] text-[#86d8b8]">
+                                                  <div className="text-[22px] font-bold text-[#52c69a] dark:text-[var(--tg-positive)]">{group.summary.winRate.toFixed(0)}<span className="ml-[2px] text-[12px]">%</span></div>
+                                                  <div className="mt-[4px] text-[11px] font-bold uppercase tracking-[0.08em] text-[#86d8b8] dark:text-[var(--tg-positive)]">
                                                       {language === 'cn' ? '胜率' : 'WINRATE'}
                                                   </div>
                                               </div>
@@ -11239,15 +11239,15 @@ const Reports: React.FC<ReportsProps> = ({
                                               <div className="flex items-center gap-[12px]">
                                                   <span className="h-[22px] w-[22px] rounded-[5px] bg-[#52c69a]" />
                                                   <div>
-                                                      <div className="text-[30px] font-bold leading-none text-[#2f3742]">{winCount}</div>
-                                                      <div className="mt-[4px] text-[14px] font-medium text-[#7b828c]">{language === 'cn' ? '盈利' : 'winners'}</div>
+                                                      <div className="text-[30px] font-bold leading-none text-[#2f3742] dark:text-[var(--tg-text)]">{winCount}</div>
+                                                      <div className="mt-[4px] text-[14px] font-medium text-[#7b828c] dark:text-[var(--tg-secondary)]">{language === 'cn' ? '盈利' : 'winners'}</div>
                                                   </div>
                                               </div>
                                               <div className="flex items-center gap-[12px]">
                                                   <span className="h-[22px] w-[22px] rounded-[5px] bg-[#ff6468]" />
                                                   <div>
-                                                      <div className="text-[30px] font-bold leading-none text-[#2f3742]">{lossCount}</div>
-                                                      <div className="mt-[4px] text-[14px] font-medium text-[#7b828c]">{language === 'cn' ? '亏损' : 'losers'}</div>
+                                                      <div className="text-[30px] font-bold leading-none text-[#2f3742] dark:text-[var(--tg-text)]">{lossCount}</div>
+                                                      <div className="mt-[4px] text-[14px] font-medium text-[#7b828c] dark:text-[var(--tg-secondary)]">{language === 'cn' ? '亏损' : 'losers'}</div>
                                                   </div>
                                               </div>
                                           </div>
@@ -11277,10 +11277,10 @@ const Reports: React.FC<ReportsProps> = ({
                               },
                           ]).map(group => (
                               <section key={`${group.key}-chart`} className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                                  <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px]">
+                                  <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                       <div className="flex items-center gap-[10px]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">{group.title}</h3>
-                                          <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d]">
+                                          <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">
                                               {language === 'cn' ? '（全部日期）' : '(ALL DATES)'}
                                           </span>
                                       </div>
@@ -11288,13 +11288,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   </div>
                                   <div className="h-[392px] px-[12px] pb-[12px] pt-[8px]">
                                       {group.summary.chartData.length === 0 ? (
-                                          <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d]">
+                                          <div className="flex h-full items-center justify-center rounded-[8px] border border-dashed border-[#e4e7ec] bg-[#fafbfc] text-[14px] font-semibold text-[#8a919d] dark:border-[var(--tg-border)] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-muted)]">
                                               {language === 'cn' ? '暂无可用图表数据' : 'No chart data available'}
                                           </div>
                                       ) : renderWinLossDetailedChart({
                                           chartId: group.chartId,
                                           data: group.summary.chartData,
-                                          color: '#5d53d8',
+                                          color: 'var(--tg-accent, #5d53d8)',
                                           gradientStops: {
                                               start: group.summary.totalPnl >= 0 ? '#6bd1a4' : '#ff7b86',
                                               end: group.summary.totalPnl >= 0 ? '#eef8f4' : '#fff0f1',
@@ -11326,7 +11326,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   <Sparkles className="w-5 h-5 text-indigo-500" />
                                   {language === 'cn' ? '智能分析中心' : 'Intelligent Analysis Center'}
                               </h3>
-                              <p className="text-sm text-slate-500 mt-1">
+                              <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">
                                   {language === 'cn' 
                                     ? '基于您最近的交易日记，生成深度复盘报告。' 
                                     : 'Generate deep dive reports based on your recent journal entries.'}
@@ -11371,11 +11371,11 @@ const Reports: React.FC<ReportsProps> = ({
 
                           {/* Current Report Display */}
                           {isGeneratingReport ? (
-                              <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-4">
+                              <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-4 dark:text-slate-400">
                                   <div className="relative">
                                       <div className="w-16 h-16 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
                                       <div className="absolute inset-0 flex items-center justify-center">
-                                          <Bot className="w-6 h-6 text-indigo-600" />
+                                          <Bot className="w-6 h-6 text-indigo-600 dark:text-indigo-300" />
                                       </div>
                                   </div>
                                   <p className="animate-pulse font-medium">
@@ -11401,9 +11401,9 @@ const Reports: React.FC<ReportsProps> = ({
                                   </div>
                               </div>
                           ) : savedReports.filter(r => r.status === 'pending').length === 0 && (
-                              <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+                              <div className="flex flex-col items-center justify-center py-16 text-slate-400 dark:text-slate-400">
                                   <div className="w-20 h-20 bg-slate-200 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                                      <Bot className="w-8 h-8 text-slate-400" />
+                                      <Bot className="w-8 h-8 text-slate-400 dark:text-slate-400" />
                                   </div>
                                   <p className="text-lg font-medium text-slate-600 dark:text-slate-300">
                                       {language === 'cn' ? '准备好生成您的第一份智能报告了吗？' : 'Ready to generate your first intelligent report?'}
@@ -11418,11 +11418,11 @@ const Reports: React.FC<ReportsProps> = ({
                           {savedReports.filter(r => r.status !== 'pending').length > 0 && (
                               <div className="max-w-4xl mx-auto">
                                   <div className="flex items-center gap-2 mb-4">
-                                      <History className="w-5 h-5 text-slate-500" />
+                                      <History className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                       <h4 className="text-lg font-bold text-slate-700 dark:text-slate-200">
                                           {language === 'cn' ? '历史报告' : 'Report History'}
                                       </h4>
-                                      <span className="text-sm text-slate-400">({savedReports.filter(r => r.status !== 'pending').length})</span>
+                                      <span className="text-sm text-slate-400 dark:text-slate-400">({savedReports.filter(r => r.status !== 'pending').length})</span>
                                   </div>
                                   <div className="grid gap-3">
                                       {savedReports.filter(r => r.status !== 'pending').map(report => renderReportCard(report))}
@@ -11437,7 +11437,7 @@ const Reports: React.FC<ReportsProps> = ({
 
       {/* Placeholders for tabs not yet fully implemented */}
       {['options', 'wins_losses'].includes(activeTab) && (
-           <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 border-dashed text-slate-400">
+           <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 border-dashed text-slate-400 dark:text-slate-400">
                <Activity className="w-16 h-16 mb-4 opacity-20" />
                <p className="font-medium">This report view is coming soon.</p>
                <p className="text-sm mt-2 opacity-60">We are building this feature.</p>

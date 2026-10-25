@@ -97,7 +97,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                 {/* Close Button */}
                 <button 
                     onClick={onClose}
-                    className="absolute -top-12 right-0 p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full"
+                    className="absolute -top-12 right-0 p-2 text-slate-400 hover:text-white transition-colors bg-white/5 rounded-full dark:text-slate-400"
                 >
                     <X className="w-6 h-6" />
                 </button>
@@ -119,7 +119,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                             <Logo mode="dark" iconClassName="w-8 h-8" textClassName="text-sm tracking-[0.3em] text-white" />
                             <div className="text-right">
                                 <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest opacity-80">Verified Trade</p>
-                                <p className="text-[10px] text-slate-400 font-mono">{new Date().toISOString().split('T')[0]}</p>
+                                <p className="text-[10px] text-slate-400 font-mono dark:text-slate-400">{new Date().toISOString().split('T')[0]}</p>
                             </div>
                         </div>
 
@@ -136,7 +136,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                                     {trade.direction === Direction.LONG ? 'Long' : 'Short'}
                                 </span>
                                 <span className="w-1 h-1 rounded-full bg-slate-700"></span>
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Perpetual</span>
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest dark:text-slate-400">Perpetual</span>
                             </div>
                         </div>
 
@@ -155,11 +155,11 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                         {/* Detail Grid */}
                         <div className="grid grid-cols-2 gap-y-6 border-t border-white/5 pt-8 mb-4">
                             <div>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Entry Price</p>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 dark:text-slate-400">Entry Price</p>
                                 <p className="text-sm font-bold text-white font-mono">{trade.entryPrice.toLocaleString()}</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1">Last Price</p>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1 dark:text-slate-400">Last Price</p>
                                 <p className="text-sm font-bold text-white font-mono">{trade.exitPrice.toLocaleString()}</p>
                             </div>
                         </div>
@@ -167,10 +167,10 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                         {/* Footer Branding */}
                         <div className="flex justify-between items-end pt-4 border-t border-white/5 mt-auto">
                             <div className="space-y-1">
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none">Journaled at</p>
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none dark:text-slate-400">Journaled at</p>
                                 <p className="text-lg font-bold text-white tracking-tighter">TradeGrail.com</p>
                             </div>
-                            <div className="w-16 h-16 bg-white p-1.5 rounded-xl shadow-lg shadow-black/50 overflow-hidden">
+                            <div className="w-16 h-16 bg-white p-1.5 rounded-xl shadow-lg shadow-black/50 overflow-hidden dark:bg-slate-900">
                                 <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center">
                                     <QrCode className="w-8 h-8 text-white opacity-40" />
                                 </div>
@@ -187,7 +187,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                     
                     {/* Share Link Field */}
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 flex items-center shadow-xl">
-                        <div className="pl-3 text-slate-400">
+                        <div className="pl-3 text-slate-400 dark:text-slate-400">
                             <LinkIcon className="w-4 h-4" />
                         </div>
                         <input 
@@ -198,7 +198,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                         />
                         <button 
                             onClick={handleCopyLink}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${isCopied ? 'bg-emerald-500 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20'}`}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${isCopied ? 'bg-emerald-700 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20'}`}
                         >
                             {isCopied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy Link</>}
                         </button>

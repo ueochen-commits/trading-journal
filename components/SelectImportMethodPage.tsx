@@ -110,8 +110,8 @@ const SelectImportMethodPage: React.FC<Props> = ({
       cursor: 'pointer',
       transition: 'all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1)',
       background: isSelected
-        ? 'linear-gradient(160deg, #ffffff 60%, #f3f1ff 100%)'
-        : '#ffffff',
+        ? 'linear-gradient(160deg, var(--tg-surface, #ffffff) 60%, var(--tg-accent-soft, #f3f1ff) 100%)'
+        : 'var(--tg-surface, #ffffff)',
       border: '1px solid transparent',
       boxShadow: isSelected
         ? '0 0 0 3px rgba(99,91,255,0.13), 0 0 20px 6px rgba(99,91,255,0.10), 0 8px 24px rgba(99,91,255,0.10)'
@@ -125,14 +125,14 @@ const SelectImportMethodPage: React.FC<Props> = ({
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)',
+      background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)',
       display: 'flex', flexDirection: 'column', alignItems: 'center',
       overflowY: 'auto', paddingBottom: 48,
     }}>
       {/* Progress bar */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, display: 'flex', zIndex: 100, height: 3 }}>
         <div style={{ flex: 2, background: '#5b5bd6' }} />
-        <div style={{ flex: 1, background: '#dcd8f0' }} />
+        <div style={{ flex: 1, background: 'var(--tg-accent-soft, #dcd8f0)' }} />
       </div>
 
       {/* Back button */}
@@ -141,7 +141,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
         style={{
           position: 'fixed', top: 28, left: 32,
           background: 'transparent', border: 'none', cursor: 'pointer',
-          color: backHovered ? '#3a3ab8' : '#6b6b9a',
+          color: backHovered ? 'var(--tg-accent, #3a3ab8)' : 'var(--tg-secondary, #6b6b9a)',
           padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'color 0.15s', zIndex: 100,
         }}
@@ -159,7 +159,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
         style={{
           position: 'fixed', top: 28, right: 32,
           background: 'transparent', border: 'none', cursor: 'pointer',
-          color: closeHovered ? '#3a3ab8' : '#6b6b9a',
+          color: closeHovered ? 'var(--tg-accent, #3a3ab8)' : 'var(--tg-secondary, #6b6b9a)',
           padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'color 0.15s', zIndex: 100,
         }}
@@ -175,10 +175,10 @@ const SelectImportMethodPage: React.FC<Props> = ({
 
         {/* Title */}
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <div style={{ fontSize: 13, color: '#8888b0', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>
+          <div style={{ fontSize: 13, color: 'var(--tg-muted, #8888b0)', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>
             添加交易
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a3a', margin: 0 }}>
+          <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', margin: 0 }}>
             选择导入方式
           </h1>
         </div>
@@ -196,8 +196,8 @@ const SelectImportMethodPage: React.FC<Props> = ({
               : <span style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>{exchangeName[0]}</span>
             }
           </div>
-          <div style={{ fontSize: 13, color: '#8888b0' }}>
-            您正在连接到 <strong style={{ fontWeight: 700, color: '#1a1a3a' }}>{exchangeName}</strong>
+          <div style={{ fontSize: 13, color: 'var(--tg-muted, #8888b0)' }}>
+            您正在连接到 <strong style={{ fontWeight: 700, color: 'var(--tg-text, #1a1a3a)' }}>{exchangeName}</strong>
           </div>
         </div>
 
@@ -223,16 +223,16 @@ const SelectImportMethodPage: React.FC<Props> = ({
                 )}
                 <div style={{
                   width: 72, height: 72, borderRadius: '50%',
-                  background: isSelected ? '#e4e0ff' : '#f0eefb',
+                  background: isSelected ? 'var(--tg-accent-soft, #e4e0ff)' : 'var(--tg-accent-soft, #f0eefb)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   marginBottom: 18, transition: 'background 0.2s ease',
                 }}>
                   {icon}
                 </div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a', marginBottom: 8, textAlign: 'center' }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', marginBottom: 8, textAlign: 'center' }}>
                   {title}
                 </div>
-                <div style={{ fontSize: 12, color: '#9090b8', lineHeight: 1.65, textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--tg-muted, #9090b8)', lineHeight: 1.65, textAlign: 'center' }}>
                   {desc}
                 </div>
               </div>
@@ -250,7 +250,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
           visibility: selectedMethod ? 'visible' : 'hidden',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1a3a)' }}>
               支持的资产类型：
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '8px 20px' }}>
@@ -262,7 +262,7 @@ const SelectImportMethodPage: React.FC<Props> = ({
                     <span style={{
                       fontSize: 13,
                       fontWeight: supported ? 500 : 400,
-                      color: supported ? '#1a1a3a' : '#b0b0c8',
+                      color: supported ? 'var(--tg-text, #1a1a3a)' : 'var(--tg-muted, #b0b0c8)',
                       transition: 'color 0.2s ease',
                     }}>
                       {asset}
@@ -283,8 +283,8 @@ const SelectImportMethodPage: React.FC<Props> = ({
           style={{
             width: '100%', maxWidth: '92vw', height: 50,
             borderRadius: 12, border: 'none',
-            background: selectedMethod ? (btnHovered ? '#312e81' : '#3730a3') : '#e8e8f0',
-            color: selectedMethod ? '#ffffff' : '#b0b3c6',
+            background: selectedMethod ? (btnHovered ? '#312e81' : '#3730a3') : 'var(--tg-accent-soft, #e8e8f0)',
+            color: selectedMethod ? '#ffffff' : 'var(--tg-muted, #b0b3c6)',
             fontSize: 16, fontWeight: 700,
             cursor: selectedMethod ? 'pointer' : 'not-allowed',
             transition: 'all 0.18s ease',

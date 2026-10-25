@@ -159,7 +159,7 @@ const EmptyCircle = ({ size = 18 }: { size?: number }) => (
 );
 
 const BigCheck = () => (
-  <div style={{ width: 64, height: 64, borderRadius: '50%', background: '#dcfce7', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+  <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--tg-positive-soft, #dcfce7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
     <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
       <polyline points="4,12 9,17 20,6" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
     </svg>
@@ -762,18 +762,18 @@ const CsvImportPage: React.FC<Props> = ({
       `}</style>
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, display: 'flex', zIndex: 100, height: 3 }}>
         <div style={{ flex: progressFill, background: '#5b5bd6', transition: 'flex 0.4s ease' }} />
-        <div style={{ flex: 5 - progressFill, background: '#dcd8f0' }} />
+        <div style={{ flex: 5 - progressFill, background: 'var(--tg-accent-soft, #dcd8f0)' }} />
       </div>
       {showBack && (
         <button onClick={onBack} onMouseEnter={() => setBackHovered(true)} onMouseLeave={() => setBackHovered(false)}
-          style={{ position: 'fixed', top: 28, left: 32, zIndex: 100, background: 'transparent', border: 'none', cursor: 'pointer', color: backHovered ? '#3a3ab8' : '#6b6b9a', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}>
+          style={{ position: 'fixed', top: 28, left: 32, zIndex: 100, background: 'transparent', border: 'none', cursor: 'pointer', color: backHovered ? 'var(--tg-accent, #3a3ab8)' : 'var(--tg-secondary, #6b6b9a)', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
           </svg>
         </button>
       )}
       <button onClick={onClose} onMouseEnter={() => setCloseHovered(true)} onMouseLeave={() => setCloseHovered(false)}
-        style={{ position: 'fixed', top: 28, right: 32, zIndex: 100, background: 'transparent', border: 'none', cursor: 'pointer', color: closeHovered ? '#3a3ab8' : '#6b6b9a', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}>
+        style={{ position: 'fixed', top: 28, right: 32, zIndex: 100, background: 'transparent', border: 'none', cursor: 'pointer', color: closeHovered ? 'var(--tg-accent, #3a3ab8)' : 'var(--tg-secondary, #6b6b9a)', padding: 4, display: 'flex', alignItems: 'center', transition: 'color 0.15s' }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
           <path d="M18 6L6 18M6 6l12 12"/>
         </svg>
@@ -783,15 +783,15 @@ const CsvImportPage: React.FC<Props> = ({
 
   const pageTitle = (kicker: string, title: string) => (
     <div style={{ textAlign: 'center', marginBottom: 36 }}>
-      <div style={{ fontSize: 13, color: '#8888b0', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>{kicker}</div>
-      <h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a3a', margin: 0 }}>{title}</h1>
+      <div style={{ fontSize: 13, color: 'var(--tg-muted, #8888b0)', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>{kicker}</div>
+      <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', margin: 0 }}>{title}</h1>
     </div>
   );
 
   // ── Step 1: Upload ─────────────────────────────────────────────────────────
 
   if (step === 'upload') return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
       {navChrome()}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', '上传文件')}
@@ -804,20 +804,20 @@ const CsvImportPage: React.FC<Props> = ({
 
             {/* Timezone */}
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#8888b0', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>时区</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #8888b0)', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>时区</label>
               <div style={{ position: 'relative' }}>
                 <button onClick={() => setTzOpen(v => !v)}
-                  style={{ width: '100%', height: 46, background: '#fff', border: '1px solid #d8d4ee', borderRadius: 10, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: 14, color: '#1a1a3a', fontFamily: 'inherit', boxShadow: 'none' }}>
+                  style={{ width: '100%', height: 46, background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #d8d4ee)', borderRadius: 10, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: 14, color: 'var(--tg-text, #1a1a3a)', fontFamily: 'inherit', boxShadow: 'none' }}>
                   <span>{TIMEZONES.find(t => t.value === timezone)?.label}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8888b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 {tzOpen && (
                   <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setTzOpen(false)} />
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 2, background: '#fff', border: '1px solid #d8d4ee', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 2, background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #d8d4ee)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
                       {TIMEZONES.map(tz => (
                         <button key={tz.value} onClick={() => { setTimezone(tz.value); setTzOpen(false); }}
-                          style={{ width: '100%', padding: '10px 14px', textAlign: 'left', background: tz.value === timezone ? '#f0f0ff' : 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, color: tz.value === timezone ? '#5b5bd6' : '#1a1a3a', fontFamily: 'inherit', fontWeight: tz.value === timezone ? 600 : 400 }}>
+                          style={{ width: '100%', padding: '10px 14px', textAlign: 'left', background: tz.value === timezone ? 'var(--tg-accent-soft, #f0f0ff)' : 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, color: tz.value === timezone ? 'var(--tg-accent, #5b5bd6)' : 'var(--tg-text, #1a1a3a)', fontFamily: 'inherit', fontWeight: tz.value === timezone ? 600 : 400 }}>
                           {tz.label}
                         </button>
                       ))}
@@ -825,12 +825,12 @@ const CsvImportPage: React.FC<Props> = ({
                   </>
                 )}
               </div>
-              <p style={{ fontSize: 12, color: '#9396aa', marginTop: 6, lineHeight: 1.6 }}>请选择数据文件的时区。想在应用中以其他时区查看数据请到设置修改</p>
+              <p style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginTop: 6, lineHeight: 1.6 }}>请选择数据文件的时区。想在应用中以其他时区查看数据请到设置修改</p>
             </div>
 
             {/* Drop zone — fixed 140px height, two states */}
             <div>
-              <label style={{ fontSize: 11, fontWeight: 600, color: '#8888b0', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>上传文件</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #8888b0)', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>上传文件</label>
               <div
                 onDragOver={e => { e.preventDefault(); if (!selectedFile) setDragOver(true); }}
                 onDragLeave={() => setDragOver(false)}
@@ -840,11 +840,11 @@ const CsvImportPage: React.FC<Props> = ({
                   height: 170, boxSizing: 'border-box', borderRadius: 10,
                   transition: 'border-color 200ms ease, background-color 200ms ease',
                   ...(selectedFile ? {
-                    border: '1px solid #C7D2FE', background: '#FAFBFF',
+                    border: '1px solid var(--tg-border, #C7D2FE)', background: 'var(--tg-surface, #FAFBFF)',
                     padding: 14, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'default',
                   } : {
-                    border: `1.5px dashed ${dragOver ? '#5b5bd6' : '#c8c4e8'}`,
-                    background: dragOver ? '#f4f2ff' : 'transparent',
+                    border: `1.5px dashed ${dragOver ? '#5b5bd6' : 'var(--tg-border, #c8c4e8)'}`,
+                    background: dragOver ? 'var(--tg-accent-soft, #f4f2ff)' : 'transparent',
                     display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, cursor: 'pointer',
                   }),
                 }}
@@ -853,24 +853,24 @@ const CsvImportPage: React.FC<Props> = ({
                   <>
                     {/* File card */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ width: 34, height: 34, background: '#EEF2FF', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: 34, height: 34, background: 'var(--tg-accent-soft, #EEF2FF)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="#4338CA">
                           <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-6-6H7Zm6 1.5V8h4.5L13 3.5Z"/>
                         </svg>
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }} title={selectedFile.name}>
+                        <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }} title={selectedFile.name}>
                           {selectedFile.name}
                         </div>
-                        <div style={{ fontSize: 11.5, color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
+                        <div style={{ fontSize: 11.5, color: 'var(--tg-muted, #94A3B8)', fontVariantNumeric: 'tabular-nums' }}>
                           {selectedFile.size < 1024 * 1024 ? `${(selectedFile.size / 1024).toFixed(1)} KB` : `${(selectedFile.size / 1024 / 1024).toFixed(1)} MB`}
                           {' · '}{selectedFile.name.split('.').pop()?.toUpperCase()}
                         </div>
                       </div>
                       <button onClick={e => { e.stopPropagation(); handleRemoveFile(); }}
-                        style={{ width: 22, height: 22, background: 'transparent', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, flexShrink: 0, padding: 0, transition: 'all 150ms ease' }}
-                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = '#FEE2E2'; (e.currentTarget as HTMLButtonElement).style.color = '#DC2626'; }}
-                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = '#94A3B8'; }}
+                        style={{ width: 22, height: 22, background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--tg-muted, #94A3B8)', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 4, flexShrink: 0, padding: 0, transition: 'all 150ms ease' }}
+                        onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-negative-soft, #FEE2E2)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-negative, #DC2626)'; }}
+                        onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--tg-muted, #94A3B8)'; }}
                         title="移除文件">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
@@ -878,13 +878,13 @@ const CsvImportPage: React.FC<Props> = ({
                       </button>
                     </div>
                     {/* Status bar */}
-                    <div style={{ borderTop: '1px solid #E0E7FF', paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: 11.5, color: '#64748B', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <div style={{ borderTop: '1px solid var(--tg-border, #E0E7FF)', paddingTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ fontSize: 11.5, color: 'var(--tg-secondary, #64748B)', display: 'flex', alignItems: 'center', gap: 5 }}>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="#6366F1"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01" stroke="white" strokeWidth="2" strokeLinecap="round"/></svg>
                         准备就绪
                       </div>
                       <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                        style={{ background: 'transparent', border: 'none', color: '#6366F1', fontSize: 11.5, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
+                        style={{ background: 'transparent', border: 'none', color: 'var(--tg-accent, #6366F1)', fontSize: 11.5, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', gap: 4, padding: 0 }}>
                         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"/>
                         </svg>
@@ -898,13 +898,13 @@ const CsvImportPage: React.FC<Props> = ({
                       <path d="M112 438.08L35.36 717.76V181.12a50.08 50.08 0 0 1 50.08-50.08h238.24a50.24 50.24 0 0 1 35.52 14.72l102.56 102.72a10.72 10.72 0 0 0 7.2 2.88h358.4a50.08 50.08 0 0 1 50.08 50.08v70.24H198.72A90.24 90.24 0 0 0 112 438.08zM978.24 432a49.92 49.92 0 0 0-39.84-19.84H198.72a50.24 50.24 0 0 0-48 37.12L46.4 829.76a50.08 50.08 0 0 0 35.2 61.44 53.12 53.12 0 0 0 13.28 1.76h739.68a50.24 50.24 0 0 0 48-36.96l104-380.96a49.92 49.92 0 0 0-8.32-43.04z" fill="#C7D2FE"/>
                     </svg>
                     <div style={{ textAlign: 'center' }}>
-                      <p style={{ fontSize: 13.5, fontWeight: 500, color: '#1a1a3a', margin: '0 0 3px' }}>拖拽文件到此处，或</p>
+                      <p style={{ fontSize: 13.5, fontWeight: 500, color: 'var(--tg-text, #1a1a3a)', margin: '0 0 3px' }}>拖拽文件到此处，或</p>
                       <button onClick={e => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                        style={{ fontSize: 13.5, fontWeight: 600, color: '#5b5bd6', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
+                        style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--tg-accent, #5b5bd6)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textDecoration: 'underline' }}>
                         点击选择文件
                       </button>
                     </div>
-                    <p style={{ fontSize: 12, color: '#a0a0c0', margin: 0 }}>支持 CSV、Excel（.xlsx/.xls）、TXT</p>
+                    <p style={{ fontSize: 12, color: 'var(--tg-muted, #a0a0c0)', margin: 0 }}>支持 CSV、Excel（.xlsx/.xls）、TXT</p>
                   </>
                 )}
               </div>
@@ -917,7 +917,7 @@ const CsvImportPage: React.FC<Props> = ({
             <button
               onClick={handleContinueClick}
               disabled={!selectedFile}
-              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: selectedFile ? '#3730a3' : '#e0ddf0', color: selectedFile ? '#fff' : '#a8a8c8', fontSize: 15, fontWeight: 600, cursor: selectedFile ? 'pointer' : 'not-allowed', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: selectedFile ? '0 4px 16px rgba(55,48,163,0.30)' : 'none' }}
+              style={{ width: '100%', height: 48, borderRadius: 10, border: 'none', background: selectedFile ? '#3730a3' : 'var(--tg-accent-soft, #e0ddf0)', color: selectedFile ? '#fff' : 'var(--tg-muted, #a8a8c8)', fontSize: 15, fontWeight: 600, cursor: selectedFile ? 'pointer' : 'not-allowed', marginTop: 4, fontFamily: 'inherit', transition: 'all 0.18s ease', boxShadow: selectedFile ? '0 4px 16px rgba(55,48,163,0.30)' : 'none' }}
               onMouseEnter={e => { if (selectedFile) { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#312e81'; b.style.boxShadow = '0 6px 20px rgba(55,48,163,0.40)'; b.style.transform = 'translateY(-1px)'; } }}
               onMouseLeave={e => { if (selectedFile) { const b = e.currentTarget as HTMLButtonElement; b.style.background = '#3730a3'; b.style.boxShadow = '0 4px 16px rgba(55,48,163,0.30)'; b.style.transform = 'translateY(0)'; } }}
             >
@@ -934,13 +934,13 @@ const CsvImportPage: React.FC<Props> = ({
                 {exchangeLogoUrl ? <img src={exchangeLogoUrl} alt={exchangeName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <span style={{ fontSize: 24, fontWeight: 900, color: '#fff' }}>{exchangeName[0]}</span>}
               </div>
               <div>
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>{exchangeName}</span>
+                <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)' }}>{exchangeName}</span>
               </div>
             </div>
 
             {/* Supported assets */}
             <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a3a', marginBottom: 8 }}>支持的资产类型：</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1a3a)', marginBottom: 8 }}>支持的资产类型：</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px 12px' }}>
                 {['股票', '期货', '期权', '外汇', '加密货币', '差价合约'].map(asset => {
                   const supported = tutorial.assets.includes(asset);
@@ -950,7 +950,7 @@ const CsvImportPage: React.FC<Props> = ({
                         ? <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#5b5bd6"/><polyline points="4,8 7,11 12,5" stroke="white" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round"/></svg>
                         : <svg width="14" height="14" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7" fill="none" stroke="#c8c8d8" strokeWidth="1.5"/><line x1="5" y1="5" x2="11" y2="11" stroke="#c0c0d0" strokeWidth="1.5" strokeLinecap="round"/><line x1="11" y1="5" x2="5" y2="11" stroke="#c0c0d0" strokeWidth="1.5" strokeLinecap="round"/></svg>
                       }
-                      <span style={{ fontSize: 12, fontWeight: supported ? 500 : 400, color: supported ? '#1a1a3a' : '#b8b8d0' }}>{asset}</span>
+                      <span style={{ fontSize: 12, fontWeight: supported ? 500 : 400, color: supported ? 'var(--tg-text, #1a1a3a)' : 'var(--tg-muted, #b8b8d0)' }}>{asset}</span>
                     </div>
                   );
                 })}
@@ -959,23 +959,23 @@ const CsvImportPage: React.FC<Props> = ({
 
             {/* Tutorial */}
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a3a', marginBottom: 6 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', marginBottom: 6 }}>
                 {isCustom ? 'AI 智能解析任何格式' : `如何从 ${exchangeName} 导出交易记录`}
               </div>
               {!isCustom && (
-                <p style={{ fontSize: 14, color: '#6b6b9a', lineHeight: 1.75, margin: '0 0 12px 0' }}>
+                <p style={{ fontSize: 14, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.75, margin: '0 0 12px 0' }}>
                   请按照以下步骤从 {exchangeName} 导出你的交易记录：
                 </p>
               )}
               {(tutorialExpanded ? tutorial.steps : tutorial.steps.slice(0, 4)).map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 10 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#5b5bd6', flexShrink: 0, marginTop: 6 }} />
-                  <p style={{ fontSize: 14, color: '#6b6b9a', margin: 0, lineHeight: 1.7 }}>{s}</p>
+                  <p style={{ fontSize: 14, color: 'var(--tg-secondary, #6b6b9a)', margin: 0, lineHeight: 1.7 }}>{s}</p>
                 </div>
               ))}
               {tutorial.steps.length > 4 && (
                 <button onClick={() => setTutorialExpanded(v => !v)}
-                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: '#5b5bd6', fontSize: 14, fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', padding: 0, marginTop: 2, fontFamily: 'inherit' }}>
+                  style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: 'var(--tg-accent, #5b5bd6)', fontSize: 14, fontWeight: 500, cursor: 'pointer', background: 'none', border: 'none', padding: 0, marginTop: 2, fontFamily: 'inherit' }}>
                   {tutorialExpanded ? '收起 ▴' : '展开完整指令 ▾'}
                 </button>
               )}
@@ -989,7 +989,7 @@ const CsvImportPage: React.FC<Props> = ({
   // ── Step 2: Parsing ────────────────────────────────────────────────────────
 
   if (step === 'parsing') return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
       {navChrome(false)}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', 'AI 解析中')}
@@ -999,18 +999,18 @@ const CsvImportPage: React.FC<Props> = ({
 
           {/* LEFT */}
           <div style={{ flex: 1, minWidth: 280, display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>正在处理你的文件</div>
+            <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 500 }}>正在处理你的文件</div>
 
             {/* File card — reuse upload page "selected" style */}
-            <div style={{ border: '1px solid #C7D2FE', background: '#FAFBFF', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 34, height: 34, background: '#EEF2FF', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ border: '1px solid var(--tg-border, #C7D2FE)', background: 'var(--tg-surface, #FAFBFF)', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 34, height: 34, background: 'var(--tg-accent-soft, #EEF2FF)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#4338CA">
                   <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-6-6H7Zm6 1.5V8h4.5L13 3.5Z"/>
                 </svg>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, color: '#0F172A', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }} title={file?.name}>{file?.name || 'trades.csv'}</div>
-                <div style={{ fontSize: 10.5, color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
+                <div style={{ fontSize: 12, color: 'var(--tg-text, #0F172A)', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: 2 }} title={file?.name}>{file?.name || 'trades.csv'}</div>
+                <div style={{ fontSize: 10.5, color: 'var(--tg-muted, #94A3B8)', fontVariantNumeric: 'tabular-nums' }}>
                   {file ? (file.size < 1024 * 1024 ? `${(file.size / 1024).toFixed(1)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`) : '—'}
                 </div>
               </div>
@@ -1025,22 +1025,22 @@ const CsvImportPage: React.FC<Props> = ({
                   <div key={s.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 13, opacity: (!done && !active) ? 0.4 : 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                       {done ? (
-                        <div style={{ width: 18, height: 18, background: '#DCFCE7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 18, height: 18, background: 'var(--tg-positive-soft, #DCFCE7)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <svg width="10" height="10" viewBox="0 0 24 24" fill="#15803D"><path d="M20.285 2 9 13.567 3.714 8.611 0 12.322 9 21 24 5.711Z"/></svg>
                         </div>
                       ) : active ? (
-                        <div style={{ width: 18, height: 18, background: '#EEF2FF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <div style={{ width: 18, height: 18, background: 'var(--tg-accent-soft, #EEF2FF)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6366F1" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.9s linear infinite', transformOrigin: 'center' }}>
                             <path d="M12 2a10 10 0 0 1 10 10"/>
                           </svg>
                         </div>
                       ) : (
-                        <div style={{ width: 18, height: 18, background: '#F1F5F9', borderRadius: '50%', flexShrink: 0 }} />
+                        <div style={{ width: 18, height: 18, background: 'var(--tg-accent-soft, #F1F5F9)', borderRadius: '50%', flexShrink: 0 }} />
                       )}
-                      <span style={{ color: '#0F172A', fontWeight: active ? 500 : 400 }}>{s.label}</span>
+                      <span style={{ color: 'var(--tg-text, #0F172A)', fontWeight: active ? 500 : 400 }}>{s.label}</span>
                     </div>
                     {(done || active) && (
-                      <span style={{ fontSize: 11.5, color: '#94A3B8', fontVariantNumeric: 'tabular-nums' }}>
+                      <span style={{ fontSize: 11.5, color: 'var(--tg-muted, #94A3B8)', fontVariantNumeric: 'tabular-nums' }}>
                         {done && i === 0 && file ? (file.size < 1024 * 1024 ? `${(file.size / 1024).toFixed(1)} KB` : `${(file.size / 1024 / 1024).toFixed(1)} MB`) : ''}
                       </span>
                     )}
@@ -1050,11 +1050,11 @@ const CsvImportPage: React.FC<Props> = ({
             </div>
 
             {/* Warning strip */}
-            <div style={{ padding: '12px 14px', background: '#FEF9E8', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ padding: '12px 14px', background: 'var(--tg-warning-soft, #FEF9E8)', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}>
                 <path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/>
               </svg>
-              <div style={{ fontSize: 11.5, color: '#713F12', lineHeight: 1.5 }}>通常需要 3-8 秒，请保持页面打开。</div>
+              <div style={{ fontSize: 11.5, color: 'var(--tg-warning, #713F12)', lineHeight: 1.5 }}>通常需要 3-8 秒，请保持页面打开。</div>
             </div>
           </div>
 
@@ -1063,12 +1063,12 @@ const CsvImportPage: React.FC<Props> = ({
             {/* Logo + brand — matches exchange logo area in upload page */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <img src="/lion-care.png" alt="TradeGrail" style={{ width: 42, height: 42, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
-              <span style={{ fontSize: 15, fontWeight: 700, color: '#1a1a3a' }}>TradeGrail AI</span>
+              <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)' }}>TradeGrail AI</span>
             </div>
 
-            <p style={{ fontSize: 13, color: '#6b6b9a', lineHeight: 1.75, margin: 0 }}>AI 不是简单做字段映射，而是逐行理解你的数据：识别日期时间格式、判断方向字段的表达方式、计算手续费扣除前后的盈亏差异、处理重复开平仓的合并。</p>
+            <p style={{ fontSize: 13, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.75, margin: 0 }}>AI 不是简单做字段映射，而是逐行理解你的数据：识别日期时间格式、判断方向字段的表达方式、计算手续费扣除前后的盈亏差异、处理重复开平仓的合并。</p>
 
-            <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 600 }}>正在理解什么</div>
+            <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 600 }}>正在理解什么</div>
 
             {[
               ['时间格式：', '识别 2026-04-15 05:40:58、2026/4/15 5:40 等多种写法'],
@@ -1078,8 +1078,8 @@ const CsvImportPage: React.FC<Props> = ({
             ].map(([label, content]) => (
               <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <span style={{ width: 5, height: 5, background: '#0F172A', borderRadius: '50%', marginTop: 7, flexShrink: 0 }} />
-                <div style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.65 }}>
-                  <span style={{ color: '#0F172A', fontWeight: 500 }}>{label}</span>{content}
+                <div style={{ fontSize: 12.5, color: 'var(--tg-secondary, #475569)', lineHeight: 1.65 }}>
+                  <span style={{ color: 'var(--tg-text, #0F172A)', fontWeight: 500 }}>{label}</span>{content}
                 </div>
               </div>
             ))}
@@ -1114,16 +1114,16 @@ const CsvImportPage: React.FC<Props> = ({
     const allDuplicate = newCount === 0;
 
     return (
-      <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
+      <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
         {navChrome()}
         <div style={{ width: '100%', maxWidth: 880, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {pageTitle('添加交易', '预览并确认')}
 
           {/* Low confidence extra warning */}
           {confidence < 60 && (
-            <div style={{ width: '100%', maxWidth: '97vw', marginBottom: 20, padding: '11px 14px', background: '#FEF9E8', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <div style={{ width: '100%', maxWidth: '97vw', marginBottom: 20, padding: '11px 14px', background: 'var(--tg-warning-soft, #FEF9E8)', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start' }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
-              <div style={{ fontSize: 11.5, color: '#713F12', lineHeight: 1.5 }}>AI 识别置信度较低，请仔细核对每一笔数据后再导入</div>
+              <div style={{ fontSize: 11.5, color: 'var(--tg-warning, #713F12)', lineHeight: 1.5 }}>AI 识别置信度较低，请仔细核对每一笔数据后再导入</div>
             </div>
           )}
 
@@ -1133,7 +1133,7 @@ const CsvImportPage: React.FC<Props> = ({
             <div>
               {/* Title row */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-                <div style={{ fontSize: 15, color: '#0F172A', fontWeight: 600 }}>导入摘要</div>
+                <div style={{ fontSize: 15, color: 'var(--tg-text, #0F172A)', fontWeight: 600 }}>导入摘要</div>
                 <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: badgeColor, fontSize: 11.5, fontWeight: 500 }}>
                   {badgeGreen
                     ? <svg width="12" height="12" viewBox="0 0 24 24" fill={badgeColor}><path d="M20.285 2 9 13.567 3.714 8.611 0 12.322 9 21 24 5.711Z"/></svg>
@@ -1150,7 +1150,7 @@ const CsvImportPage: React.FC<Props> = ({
                     label: '总交易数',
                     value: `${parseResult.total} 笔`,
                     big: true,
-                    color: '#0F172A',
+                    color: 'var(--tg-text, #0F172A)',
                     last: false,
                   },
                   {
@@ -1159,35 +1159,35 @@ const CsvImportPage: React.FC<Props> = ({
                       ? `${parseResult.netPnl >= 0 ? '+' : '−'}$${Math.abs(parseResult.netPnl).toFixed(2)}`
                       : `$${Math.abs(parseResult.netPnl).toFixed(2)}`,
                     big: true,
-                    color: isFutures ? (parseResult.netPnl >= 0 ? '#15803D' : '#DC2626') : '#0F172A',
+                    color: isFutures ? (parseResult.netPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-text, #0F172A)',
                     last: false,
                   },
                   {
                     label: '时间范围',
                     value: parseResult.dateRange,
                     big: false,
-                    color: '#0F172A',
+                    color: 'var(--tg-text, #0F172A)',
                     last: false,
                   },
                   {
                     label: '重复将跳过',
                     value: `${parseResult.duplicates} 笔`,
                     big: false,
-                    color: '#0F172A',
+                    color: 'var(--tg-text, #0F172A)',
                     last: true,
                   },
                 ].map(kpi => (
                   <div key={kpi.label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', paddingBottom: 14, paddingTop: 14, borderBottom: kpi.last ? 'none' : '1px solid rgba(148,163,184,0.2)' }}>
-                    <div style={{ fontSize: 13, color: '#64748B' }}>{kpi.label}</div>
+                    <div style={{ fontSize: 13, color: 'var(--tg-secondary, #64748B)' }}>{kpi.label}</div>
                     <div style={{ fontSize: kpi.big ? 22 : 14, fontWeight: kpi.big ? 600 : 500, color: kpi.color, letterSpacing: kpi.big ? '-0.02em' : 'normal', fontVariantNumeric: 'tabular-nums' }}>{kpi.value}</div>
                   </div>
                 ))}
               </div>
 
               {/* Warning strip */}
-              <div style={{ padding: '11px 13px', background: '#FEF9E8', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 24 }}>
+              <div style={{ padding: '11px 13px', background: 'var(--tg-warning-soft, #FEF9E8)', borderRadius: 6, display: 'flex', gap: 10, alignItems: 'flex-start', marginBottom: 24 }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}><path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/></svg>
-                <div style={{ fontSize: 11.5, color: '#713F12', lineHeight: 1.5 }}>
+                <div style={{ fontSize: 11.5, color: 'var(--tg-warning, #713F12)', lineHeight: 1.5 }}>
                   {parseResult.duplicates > 0
                     ? `检测到 ${parseResult.duplicates} 笔交易可能与已有记录重复（基于时间 + 品种 + 数量），导入时将自动跳过`
                     : `未检测到重复交易，${parseResult.total} 笔全部为新数据`}
@@ -1196,14 +1196,14 @@ const CsvImportPage: React.FC<Props> = ({
 
               {/* Large count warning */}
               {parseResult.total > 1000 && (
-                <div style={{ fontSize: 11.5, color: '#64748B', marginBottom: 16 }}>数据量较大，导入可能需要 10-30 秒</div>
+                <div style={{ fontSize: 11.5, color: 'var(--tg-secondary, #64748B)', marginBottom: 16 }}>数据量较大，导入可能需要 10-30 秒</div>
               )}
 
               {/* Buttons */}
               {allDuplicate ? (
                 <div>
-                  <div style={{ fontSize: 13, color: '#DC2626', marginBottom: 12 }}>所有 {parseResult.total} 笔交易均已存在，无需重复导入</div>
-                  <button onClick={onBack} style={{ width: '100%', padding: 13, background: 'transparent', color: '#64748B', border: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>返回重新上传</button>
+                  <div style={{ fontSize: 13, color: 'var(--tg-negative, #DC2626)', marginBottom: 12 }}>所有 {parseResult.total} 笔交易均已存在，无需重复导入</div>
+                  <button onClick={onBack} style={{ width: '100%', padding: 13, background: 'transparent', color: 'var(--tg-secondary, #64748B)', border: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>返回重新上传</button>
                 </div>
               ) : (
                 <>
@@ -1216,7 +1216,7 @@ const CsvImportPage: React.FC<Props> = ({
                       </>
                     ) : `确认导入 ${newCount} 笔 →`}
                   </button>
-                  <button onClick={onBack} style={{ width: '100%', padding: 10, background: 'transparent', color: '#64748B', border: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>取消</button>
+                  <button onClick={onBack} style={{ width: '100%', padding: 10, background: 'transparent', color: 'var(--tg-secondary, #64748B)', border: 'none', fontSize: 13, cursor: 'pointer', fontFamily: 'inherit' }}>取消</button>
                 </>
               )}
             </div>
@@ -1227,19 +1227,19 @@ const CsvImportPage: React.FC<Props> = ({
               <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 28 }}>
                 <img src="/lion-care.png" alt="TradeGrail" style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                 <div>
-                  <div style={{ fontSize: 16, color: '#0F172A', fontWeight: 700, letterSpacing: '-0.01em' }}>TradeGrail AI</div>
-                  <div style={{ fontSize: 11.5, color: '#64748B', marginTop: 1 }}>已解析 {parseResult.total} 笔交易</div>
+                  <div style={{ fontSize: 16, color: 'var(--tg-text, #0F172A)', fontWeight: 700, letterSpacing: '-0.01em' }}>TradeGrail AI</div>
+                  <div style={{ fontSize: 11.5, color: 'var(--tg-secondary, #64748B)', marginTop: 1 }}>已解析 {parseResult.total} 笔交易</div>
                 </div>
               </div>
 
               {/* Preview title row */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <div style={{ fontSize: 13, color: '#0F172A', fontWeight: 500 }}>前 5 笔预览</div>
-                <span style={{ fontSize: 11, color: '#94A3B8' }}>共 {parseResult.total} 笔</span>
+                <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 500 }}>前 5 笔预览</div>
+                <span style={{ fontSize: 11, color: 'var(--tg-muted, #94A3B8)' }}>共 {parseResult.total} 笔</span>
               </div>
 
               {/* Table header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '76px 1fr 44px 76px', gap: 10, paddingBottom: 10, borderBottom: '1px solid rgba(148,163,184,0.25)', fontSize: 11, color: '#94A3B8', fontWeight: 500, marginBottom: 4 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '76px 1fr 44px 76px', gap: 10, paddingBottom: 10, borderBottom: '1px solid rgba(148,163,184,0.25)', fontSize: 11, color: 'var(--tg-muted, #94A3B8)', fontWeight: 500, marginBottom: 4 }}>
                 <span>时间</span><span>品种</span><span>方向</span>
                 <span style={{ textAlign: 'right' }}>{isFutures ? '净盈亏' : '金额'}</span>
               </div>
@@ -1249,17 +1249,17 @@ const CsvImportPage: React.FC<Props> = ({
                 const isLast = i === parseResult.preview.length - 1;
                 return (
                   <div key={i} style={{ padding: '13px 0', borderBottom: isLast ? 'none' : '1px solid rgba(148,163,184,0.15)', display: 'grid', gridTemplateColumns: '76px 1fr 44px 76px', gap: 10, fontSize: 12.5, alignItems: 'center' }}>
-                    <span style={{ color: '#64748B', fontFamily: 'monospace', fontSize: 11 }}>{t.time}</span>
-                    <span><span style={{ padding: '2px 7px', background: '#EEF2FF', color: '#4338CA', borderRadius: 3, fontSize: 11, fontWeight: 500 }}>{t.symbol}</span></span>
-                    <span style={{ color: '#0F172A', fontSize: 12 }}>{t.direction}</span>
-                    <span style={{ textAlign: 'right', fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: isFutures ? (t.netPnl >= 0 ? '#15803D' : '#DC2626') : '#0F172A' }}>
+                    <span style={{ color: 'var(--tg-secondary, #64748B)', fontFamily: 'monospace', fontSize: 11 }}>{t.time}</span>
+                    <span><span style={{ padding: '2px 7px', background: 'var(--tg-accent-soft, #EEF2FF)', color: 'var(--tg-accent, #4338CA)', borderRadius: 3, fontSize: 11, fontWeight: 500 }}>{t.symbol}</span></span>
+                    <span style={{ color: 'var(--tg-text, #0F172A)', fontSize: 12 }}>{t.direction}</span>
+                    <span style={{ textAlign: 'right', fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: isFutures ? (t.netPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-text, #0F172A)' }}>
                       {isFutures ? `${t.netPnl >= 0 ? '+' : '−'}$${Math.abs(t.netPnl).toFixed(2)}` : `$${Math.abs(t.netPnl).toFixed(2)}`}
                     </span>
                   </div>
                 );
               })}
 
-              <div style={{ fontSize: 11.5, color: '#94A3B8', marginTop: 20, lineHeight: 1.6 }}>
+              <div style={{ fontSize: 11.5, color: 'var(--tg-muted, #94A3B8)', marginTop: 20, lineHeight: 1.6 }}>
                 如果数据看起来不对（如方向识别错误、{isFutures ? '盈亏' : '金额'}异常），请点击取消并重新检查源文件。
               </div>
             </div>
@@ -1275,18 +1275,18 @@ const CsvImportPage: React.FC<Props> = ({
   const skipped = parseResult?.duplicates ?? 12;
 
   return (
-    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, #ffffff 0%, #ffffff 20%, #ede9fe 55%, #ddd6fe 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
+    <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
       {navChrome(false)}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <div style={{ textAlign: 'center', marginBottom: 40 }}>
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}><BigCheck /></div>
-          <div style={{ fontSize: 56, fontWeight: 600, color: '#1a1a3a', letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 10 }}>{imported}</div>
-          <p style={{ fontSize: 15, color: '#6b6b9a', margin: 0 }}>笔交易已加入你的交易日志 · {skipped} 笔重复已跳过</p>
+          <div style={{ fontSize: 56, fontWeight: 600, color: 'var(--tg-text, #1a1a3a)', letterSpacing: '-0.03em', lineHeight: 1, fontVariantNumeric: 'tabular-nums', marginBottom: 10 }}>{imported}</div>
+          <p style={{ fontSize: 15, color: 'var(--tg-secondary, #6b6b9a)', margin: 0 }}>笔交易已加入你的交易日志 · {skipped} 笔重复已跳过</p>
         </div>
         <div style={{ width: '100%', display: 'flex', gap: 24 }}>
           {/* LEFT */}
-          <div style={{ flex: 1, background: '#fff', borderRadius: 16, border: '1px solid #e8e8f0', padding: '24px 24px 20px' }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#9396aa', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>导入摘要</p>
+          <div style={{ flex: 1, background: 'var(--tg-surface, #fff)', borderRadius: 16, border: '1px solid var(--tg-border, #e8e8f0)', padding: '24px 24px 20px' }}>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--tg-muted, #9396aa)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>导入摘要</p>
             {[
               ['数据来源', parseResult?.exchange ?? `${exchangeName} 衍生品`],
               ['时间范围', parseResult?.dateRange ?? '—'],
@@ -1294,34 +1294,34 @@ const CsvImportPage: React.FC<Props> = ({
               ['胜率', `${parseResult?.winRate.toFixed(1) ?? '—'}%`],
               ['盈利因子', `${parseResult?.profitFactor.toFixed(2) ?? '—'}`],
             ].map(([label, val], i) => (
-              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: i < 4 ? '1px solid #f4f4f8' : 'none' }}>
-                <span style={{ fontSize: 13, color: '#9396aa' }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: label === '累计净盈亏' ? '#15803d' : '#1a1a3a', fontVariantNumeric: 'tabular-nums' }}>{val}</span>
+              <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: i < 4 ? '1px solid var(--tg-border, #f4f4f8)' : 'none' }}>
+                <span style={{ fontSize: 13, color: 'var(--tg-muted, #9396aa)' }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: label === '累计净盈亏' ? 'var(--tg-positive, #15803d)' : 'var(--tg-text, #1a1a3a)', fontVariantNumeric: 'tabular-nums' }}>{val}</span>
               </div>
             ))}
           </div>
           {/* RIGHT */}
           <div style={{ width: 360, flexShrink: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, color: '#9396aa', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>下一步推荐</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--tg-muted, #9396aa)', margin: '0 0 4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>下一步推荐</p>
             {[
               { icon: '📅', title: '查看交易日历', desc: '在日历视图看每天的盈亏分布' },
               { icon: '📝', title: '写一份本月复盘', desc: '基于导入的数据记录交易心得' },
               { icon: '🏷️', title: '给交易打策略标签', desc: `${imported} 笔交易还没有策略标签` },
             ].map(card => (
-              <div key={card.title} style={{ background: '#fff', border: '1px solid #e8e8f0', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s' }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#a5b4fc'; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = '#e8e8f0'; }}>
-                <div style={{ width: 36, height: 36, borderRadius: 8, background: '#ede9fe', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{card.icon}</div>
+              <div key={card.title} style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s' }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--tg-border, #a5b4fc)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--tg-border, #e8e8f0)'; }}>
+                <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--tg-accent-soft, #ede9fe)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{card.icon}</div>
                 <div>
-                  <p style={{ fontSize: 13.5, fontWeight: 600, color: '#1a1a3a', margin: '0 0 2px' }}>{card.title}</p>
-                  <p style={{ fontSize: 12, color: '#9396aa', margin: 0 }}>{card.desc}</p>
+                  <p style={{ fontSize: 13.5, fontWeight: 600, color: 'var(--tg-text, #1a1a3a)', margin: '0 0 2px' }}>{card.title}</p>
+                  <p style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', margin: 0 }}>{card.desc}</p>
                 </div>
               </div>
             ))}
           </div>
         </div>
         <div style={{ display: 'flex', gap: 12, marginTop: 28 }}>
-          <button onClick={onBack} style={{ height: 44, padding: '0 24px', background: '#fff', border: '1.5px solid #e0e0f0', borderRadius: 10, fontSize: 14, fontWeight: 600, color: '#6b6b9a', cursor: 'pointer', fontFamily: 'inherit' }}>继续导入</button>
+          <button onClick={onBack} style={{ height: 44, padding: '0 24px', background: 'var(--tg-surface, #fff)', border: '1.5px solid var(--tg-border, #e0e0f0)', borderRadius: 10, fontSize: 14, fontWeight: 600, color: 'var(--tg-secondary, #6b6b9a)', cursor: 'pointer', fontFamily: 'inherit' }}>继续导入</button>
           <button onClick={onClose} style={{ height: 44, padding: '0 28px', background: '#6366f1', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: 700, color: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>查看完整报表 →</button>
         </div>
       </div>

@@ -49,7 +49,7 @@ const UserProfileModal: React.FC = () => {
         <div className="flex items-center gap-2 mb-7">
             <button
                 onClick={() => setPanel('main')}
-                className="p-1.5 -ml-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+                className="p-1.5 -ml-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors dark:text-slate-400"
             >
                 <ChevronLeft className="w-4 h-4" />
             </button>
@@ -120,7 +120,7 @@ const UserProfileModal: React.FC = () => {
                                         {typeof f[tier.key] === 'boolean' ? (
                                             f[tier.key]
                                                 ? <Check className="w-4 h-4 text-emerald-500 mx-auto" />
-                                                : <Minus className="w-4 h-4 text-slate-300 dark:text-slate-600 mx-auto" />
+                                                : <Minus className="w-4 h-4 text-slate-300 dark:text-slate-400 mx-auto" />
                                         ) : (
                                             <span className="font-mono text-xs text-slate-700 dark:text-slate-300">{f[tier.key] as string}</span>
                                         )}
@@ -151,7 +151,7 @@ const UserProfileModal: React.FC = () => {
         return (
             <div className="p-8">
                 <PanelHeader title={language === 'cn' ? '管理设备' : 'Manage Devices'} />
-                <p className="text-xs text-slate-400 mb-5 -mt-2">{language === 'cn' ? '以下设备当前已登录你的账户。' : 'Devices currently signed in to your account.'}</p>
+                <p className="text-xs text-slate-400 mb-5 -mt-2 dark:text-slate-400">{language === 'cn' ? '以下设备当前已登录你的账户。' : 'Devices currently signed in to your account.'}</p>
                 <div className="space-y-2.5">
                     {devices.map(device => (
                         <div key={device.id} className="flex items-center justify-between px-4 py-3.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40">
@@ -168,7 +168,7 @@ const UserProfileModal: React.FC = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <p className="text-xs text-slate-400 mt-0.5">{device.os} · {language === 'cn' ? '最近活跃：' : 'Last active: '}{device.lastActive}</p>
+                                    <p className="text-xs text-slate-400 mt-0.5 dark:text-slate-400">{device.os} · {language === 'cn' ? '最近活跃：' : 'Last active: '}{device.lastActive}</p>
                                 </div>
                             </div>
                             {!device.current && (
@@ -207,7 +207,7 @@ const UserProfileModal: React.FC = () => {
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-baseline justify-between gap-3 mb-1">
                                     <span className="text-sm font-semibold text-slate-800 dark:text-slate-200">{f.name}</span>
-                                    <span className="text-xs text-slate-400 font-mono flex-shrink-0">{f.limit}</span>
+                                    <span className="text-xs text-slate-400 font-mono flex-shrink-0 dark:text-slate-400">{f.limit}</span>
                                 </div>
                                 <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">{f.desc}</p>
                             </div>
@@ -236,7 +236,7 @@ const UserProfileModal: React.FC = () => {
                                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full transition-all ${tradePercent > 80 ? 'bg-rose-500' : tradePercent > 60 ? 'bg-amber-500' : 'bg-indigo-500'}`} style={{ width: `${tradePercent}%` }} />
                                 </div>
-                                <p className="text-xs text-slate-400 mt-1.5">{language === 'cn' ? `已使用 ${tradePercent}% · 剩余 ${(tradeLimit - tradeCount).toLocaleString()} 条` : `${tradePercent}% used · ${(tradeLimit - tradeCount).toLocaleString()} remaining`}</p>
+                                <p className="text-xs text-slate-400 mt-1.5 dark:text-slate-400">{language === 'cn' ? `已使用 ${tradePercent}% · 剩余 ${(tradeLimit - tradeCount).toLocaleString()} 条` : `${tradePercent}% used · ${(tradeLimit - tradeCount).toLocaleString()} remaining`}</p>
                             </>
                         )}
                     </div>
@@ -250,7 +250,7 @@ const UserProfileModal: React.FC = () => {
                                 <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
                                     <div className={`h-full rounded-full transition-all ${aiPercent > 80 ? 'bg-rose-500' : aiPercent > 60 ? 'bg-amber-500' : 'bg-violet-500'}`} style={{ width: `${aiPercent}%` }} />
                                 </div>
-                                <p className="text-xs text-slate-400 mt-1.5">{language === 'cn' ? `今日剩余 ${Math.max(0, aiLimit - aiUsed)} 次 · 每日 00:00 重置` : `${Math.max(0, aiLimit - aiUsed)} remaining today · Resets at midnight`}</p>
+                                <p className="text-xs text-slate-400 mt-1.5 dark:text-slate-400">{language === 'cn' ? `今日剩余 ${Math.max(0, aiLimit - aiUsed)} 次 · 每日 00:00 重置` : `${Math.max(0, aiLimit - aiUsed)} remaining today · Resets at midnight`}</p>
                             </>
                         )}
                     </div>
@@ -271,26 +271,26 @@ const UserProfileModal: React.FC = () => {
                 <div className="flex justify-between items-start">
                     <div>
                         <p className="font-bold text-slate-900 dark:text-white text-base mb-1">{user.email}</p>
-                        <p className="text-slate-400 text-xs">{joinedDate} {language === 'cn' ? '开始使用 TradeGrail' : 'Joined TradeGrail'}</p>
+                        <p className="text-slate-400 text-xs dark:text-slate-400">{joinedDate} {language === 'cn' ? '开始使用 TradeGrail' : 'Joined TradeGrail'}</p>
                     </div>
-                    <button onClick={() => setPanel('overview')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors">{language === 'cn' ? '账户一览' : 'Overview'}</button>
+                    <button onClick={() => setPanel('overview')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors dark:text-indigo-300">{language === 'cn' ? '账户一览' : 'Overview'}</button>
                 </div>
                 <div className="text-slate-500 dark:text-slate-400 font-medium self-start pt-1">{language === 'cn' ? '账户级别:' : 'Level:'}</div>
                 <div className="flex justify-between items-start">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
-                            <div className={`p-1.5 rounded-md ${isElite ? 'bg-amber-100 text-amber-600' : isPro ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-200 text-slate-600'}`}>
+                            <div className={`p-1.5 rounded-md ${isElite ? 'bg-amber-100 text-amber-600 dark:text-amber-300 dark:bg-amber-950/40' : isPro ? 'bg-indigo-100 text-indigo-600 dark:text-indigo-300 dark:bg-indigo-950/40' : 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-300'}`}>
                                 <Shield className="w-5 h-5" />
                             </div>
                             <span className="font-bold text-slate-700 dark:text-slate-200">TradeGrail {tierName}</span>
                         </div>
-                        <p className="text-slate-400 text-xs">
+                        <p className="text-slate-400 text-xs dark:text-slate-400">
                             {language === 'cn' ? '到期日：' : 'Expires: '}
                             {user.tier === 'free' ? (language === 'cn' ? '永久有效' : 'No expiry') : subEndDate ?? '--'}
                         </p>
                     </div>
                     <div className="flex items-center gap-4">
-                        <button onClick={() => setPanel('benefits')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors">{language === 'cn' ? '权益说明' : 'Benefits'}</button>
+                        <button onClick={() => setPanel('benefits')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors dark:text-indigo-300">{language === 'cn' ? '权益说明' : 'Benefits'}</button>
                         {!isElite && (
                             <button onClick={() => { handleClose(); openPricing(); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-xs font-bold transition-colors">
                                 {language === 'cn' ? '升级' : 'Upgrade'}
@@ -301,11 +301,11 @@ const UserProfileModal: React.FC = () => {
                 <div className="text-slate-500 dark:text-slate-400 font-medium self-start pt-1">{language === 'cn' ? '设备:' : 'Devices:'}</div>
                 <div className="flex justify-between items-start">
                     <div className="text-slate-700 dark:text-slate-300">{language === 'cn' ? '你的账户现在已在 3 台设备上登录' : 'Logged in on 3 devices currently'}</div>
-                    <button onClick={() => setPanel('devices')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors">{language === 'cn' ? '管理设备' : 'Manage'}</button>
+                    <button onClick={() => setPanel('devices')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors dark:text-indigo-300">{language === 'cn' ? '管理设备' : 'Manage'}</button>
                 </div>
                 <div className="text-slate-500 dark:text-slate-400 font-medium self-start pt-1">{language === 'cn' ? '专属邮箱:' : 'Email Gateway:'}</div>
                 <div>
-                    <span className="text-indigo-600 text-sm font-mono">upload.{user.name.replace(' ', '').toLowerCase()}@tradegrail.net</span>
+                    <span className="text-indigo-600 text-sm font-mono dark:text-indigo-300">upload.{user.name.replace(' ', '').toLowerCase()}@tradegrail.net</span>
                 </div>
             </div>
             <div className="h-px bg-slate-100 dark:bg-slate-800 w-full" />
@@ -317,14 +317,14 @@ const UserProfileModal: React.FC = () => {
                     <div className="flex justify-between items-start mb-2">
                         <h4 className="font-bold text-slate-800 dark:text-white">TradeGrail AI</h4>
                         <div className="text-right">
-                            <div className="text-xs text-slate-500">{language === 'cn' ? '今日已用: ' : 'Used today: '}<span className="text-slate-900 dark:text-white font-mono">{aiUsed}</span>{aiLimit !== null && <span className="text-slate-400"> / {aiLimit}</span>}</div>
-                            <div className="text-xs text-slate-500">{language === 'cn' ? '每日上限: ' : 'Daily limit: '}<span className="text-slate-900 dark:text-white font-mono">{isElite ? (language === 'cn' ? '无限制' : 'Unlimited') : limits.aiLabel}</span></div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{language === 'cn' ? '今日已用: ' : 'Used today: '}<span className="text-slate-900 dark:text-white font-mono">{aiUsed}</span>{aiLimit !== null && <span className="text-slate-400 dark:text-slate-400"> / {aiLimit}</span>}</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">{language === 'cn' ? '每日上限: ' : 'Daily limit: '}<span className="text-slate-900 dark:text-white font-mono">{isElite ? (language === 'cn' ? '无限制' : 'Unlimited') : limits.aiLabel}</span></div>
                         </div>
                     </div>
                     <div className="flex justify-between items-center">
                         <p className="text-xs text-slate-500 dark:text-slate-400">{language === 'cn' ? '包含 AI 教练对话、周报及月报生成。' : 'Includes AI coach, weekly and monthly reports.'}</p>
                         <div className="flex items-center gap-3">
-                            <button onClick={() => setPanel('features')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors">{language === 'cn' ? '功能说明' : 'Details'}</button>
+                            <button onClick={() => setPanel('features')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors dark:text-indigo-300">{language === 'cn' ? '功能说明' : 'Details'}</button>
                             {!isPro && (
                                 <button onClick={() => { handleClose(); openPricing(); }} className="border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-1 rounded text-xs font-bold transition-colors">
                                     {language === 'cn' ? '立即开通' : 'Subscribe'}
@@ -351,7 +351,7 @@ const UserProfileModal: React.FC = () => {
                     )}
                     <div className="flex justify-between items-center">
                         <p className="text-xs text-slate-500 dark:text-slate-400">{language === 'cn' ? '云端加密存储，支持多端同步。' : 'Encrypted cloud storage with multi-device sync.'}</p>
-                        <button onClick={() => setPanel('stats')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors">{language === 'cn' ? '详细统计' : 'Usage Stats'}</button>
+                        <button onClick={() => setPanel('stats')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors dark:text-indigo-300">{language === 'cn' ? '详细统计' : 'Usage Stats'}</button>
                     </div>
                 </div>
             </div>
@@ -384,7 +384,7 @@ const UserProfileModal: React.FC = () => {
             <div className="bg-white dark:bg-slate-900 rounded-lg w-full max-w-4xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 dark:border-slate-800">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-white">{language === 'cn' ? '账户信息' : 'Account Info'}</h2>
-                    <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"><X className="w-5 h-5" /></button>
+                    <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors dark:text-slate-400"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="flex flex-1 overflow-hidden">
                     <div className="w-64 border-r border-slate-100 dark:border-slate-800 p-6 flex flex-col items-center bg-slate-50/50 dark:bg-slate-950/30">
@@ -410,7 +410,7 @@ const UserProfileModal: React.FC = () => {
                                 <HelpCircle className="w-4 h-4" />
                                 {language === 'cn' ? '用户支持' : 'Support'}
                             </button>
-                            <button onClick={logout} className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/10 hover:text-rose-600 hover:border-rose-200 transition-colors flex items-center justify-center gap-2">
+                            <button onClick={logout} className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/10 hover:text-rose-600 hover:border-rose-200 transition-colors flex items-center justify-center gap-2 dark:hover:text-rose-300 dark:hover:border-rose-500/30">
                                 <LogOut className="w-4 h-4" />
                                 {language === 'cn' ? '退出登录' : 'Logout'}
                             </button>
