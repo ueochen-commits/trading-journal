@@ -726,7 +726,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     return Array.from({ length: firstDayOfMonth }, (_, i) => {
       const day = prevMonthDays - firstDayOfMonth + 1 + i;
       return (
-        <div key={`prev-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: 'var(--tg-surface-muted, #f3f4f6)', border: '1px solid var(--tg-border, #eef0f3)' }}>
+        <div key={`prev-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: 'var(--tg-surface-muted, #f3f4f6)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #eef0f3))' }}>
           <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: 'var(--tg-muted, #aeb5bf)' }}>{day}</span>
         </div>
       );
@@ -735,7 +735,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const renderNextMonthBlanks = () => {
     return Array.from({ length: trailingBlanks }, (_, i) => (
-      <div key={`next-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: 'var(--tg-surface, #ffffff)', border: '1px solid var(--tg-border, #eef0f3)' }}>
+      <div key={`next-${i}`} className="rounded-[12px] relative" style={{ minHeight: 128, background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #eef0f3))' }}>
         <span className="absolute text-[13px]" style={{ top: 10, right: 12, color: 'var(--tg-muted, #b7bec8)' }}>{i + 1}</span>
       </div>
     ));
@@ -850,7 +850,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   return (
     <div ref={calendarRef} className="space-y-4 relative">
       {/* Toolbar */}
-      <div style={{ background: 'var(--tg-surface, #ffffff)', border: '1px solid var(--tg-border, #edf0f4)', borderRadius: 16, overflow: 'hidden' }}>
+      <div style={{ background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #edf0f4))', borderRadius: 16, overflow: 'hidden' }}>
       <div className="flex items-center justify-between" style={{ padding: '14px 18px', borderBottom: '1px solid var(--tg-border, #edf0f4)' }}>
         <div className="flex items-center gap-2">
           <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-[#f4f6f8] text-[#6B7280] dark:hover:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-secondary)]" style={{ transition: 'all 150ms ease' }}>
@@ -925,7 +925,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         <div className="flex-1 min-w-0">
           <div className="grid grid-cols-7 gap-[6px] mb-[8px]">
             {t.calendar.weekdays.map(day => (
-              <div key={day} className="flex items-center justify-center rounded-[10px]" style={{ height: 34, border: '1px solid var(--tg-border, #e7eaee)', background: 'var(--tg-surface, #ffffff)' }}>
+              <div key={day} className="flex items-center justify-center rounded-[10px]" style={{ height: 34, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e7eaee))', background: 'var(--tg-surface, #ffffff)' }}>
                 <span className="text-[13px] font-semibold text-[#2f3640] dark:text-[var(--tg-text)]">{day}</span>
               </div>
             ))}
@@ -971,7 +971,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
             zIndex: 40,
             width: 320,
             background: 'var(--tg-surface, #ffffff)',
-            border: '1px solid var(--tg-border, #e6e9ef)',
+            border: 'var(--tg-module-border, 1px solid var(--tg-border, #e6e9ef))',
             borderRadius: 16,
             boxShadow: '0 18px 48px rgba(15,23,42,0.12)',
             overflow: 'hidden',
@@ -1076,7 +1076,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                           }
                           switchView('review');
                         }}
-                        style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: 'var(--tg-text, #334155)', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
+                        style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, height: 38, padding: '0 16px', background: 'var(--tg-surface, #FFFFFF)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #E2E8F0))', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: 'var(--tg-text, #334155)', cursor: 'pointer', outline: 'none', transition: 'background 150ms', flexShrink: 0 }}
                         onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #F8FAFC)'; }}
                         onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-surface, #FFFFFF)'; }}
                       >
@@ -1118,7 +1118,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                             <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="var(--tg-border, #F1F5F9)" />
                             <XAxis dataKey="i" axisLine={false} tickLine={false} tick={false} />
                             <YAxis axisLine={false} tickLine={false} tickCount={5} width={44} tick={{ fontSize: 10, fill: 'var(--tg-muted, #94A3B8)', fontFamily: 'Inter' } as any} tickFormatter={(v: number) => `${v < 0 ? '\u2212' : ''}$${Math.abs(v).toFixed(2)}`} />
-                            <Tooltip contentStyle={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
+                            <Tooltip contentStyle={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #E2E8F0))', borderRadius: 8, fontSize: 12, padding: '4px 10px' }} formatter={(v: any) => [`${v >= 0 ? '+' : ''}$${Number(v).toFixed(2)}`, 'P&L']} labelFormatter={(l: any) => `Trade ${l}`} />
                             <Area type="linear" dataKey="pnl" stroke={selectedDayStats.pnl >= 0 ? '#10B981' : 'var(--tg-negative, #F43F5E)'} strokeWidth={1.5} strokeLinecap="round" fill={selectedDayStats.pnl >= 0 ? 'url(#calPnlGreenGrad)' : 'url(#calPnlRedGrad)'} fillOpacity={1} dot={false} activeDot={{ r: 3 }} />
                           </AreaChart>
                         </ResponsiveContainer>
@@ -1206,7 +1206,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                                 </td>
                                 <td style={{ padding: '18px 44px 18px 16px' }}>
                                   {trade.setup
-                                    ? <span style={{ display: 'inline-block', padding: '3px 9px', background: 'var(--tg-accent-soft, #F8FAFC)', color: 'var(--tg-text, #334155)', border: '1px solid var(--tg-border, #CBD5E1)', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
+                                    ? <span style={{ display: 'inline-block', padding: '3px 9px', background: 'var(--tg-accent-soft, #F8FAFC)', color: 'var(--tg-text, #334155)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #CBD5E1))', borderRadius: 4, fontSize: 12.5, fontWeight: 500 }}>{trade.setup}</span>
                                     : <span style={{ color: 'var(--tg-muted, #CBD5E1)', fontSize: 13.5, letterSpacing: '0.05em' }}>--</span>
                                   }
                                 </td>
@@ -1221,7 +1221,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                   <div style={{ flexShrink: 0, borderTop: '1px solid var(--tg-border, #F1F5F9)', padding: '20px 44px 28px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
                     <button
                       onClick={() => { doSaveReview(reviewHtml); setSelectedDay(null); }}
-                      style={{ height: 40, padding: '0 22px', background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: 'var(--tg-secondary, #475569)', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
+                      style={{ height: 40, padding: '0 22px', background: 'var(--tg-surface, #FFFFFF)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #E2E8F0))', borderRadius: 9, fontSize: 13.5, fontWeight: 500, color: 'var(--tg-secondary, #475569)', cursor: 'pointer', outline: 'none', transition: 'background 150ms' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #F8FAFC)'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-surface, #FFFFFF)'; }}
                     >
@@ -1445,7 +1445,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       }}
                       onClick={() => { setShowTradePicker(true); setTradeSearchQuery(''); setTradeHighlightIdx(0); setTimeout(() => tradeSearchInputRef.current?.focus(), 50); }}
                       title="引用今日交易"
-                      style={{ height: 24, padding: '0 10px', background: 'var(--tg-accent-soft, #EEF2FF)', border: '1px solid var(--tg-border, #C7D2FE)', borderRadius: 5, color: 'var(--tg-accent, #4338CA)', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, transition: 'background 150ms' }}
+                      style={{ height: 24, padding: '0 10px', background: 'var(--tg-accent-soft, #EEF2FF)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #C7D2FE))', borderRadius: 5, color: 'var(--tg-accent, #4338CA)', fontSize: 12, fontWeight: 500, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4, flexShrink: 0, transition: 'background 150ms' }}
                       onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #E0E7FF)'; }}
                       onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--tg-accent-soft, #EEF2FF)'; }}
                     >
@@ -1459,8 +1459,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                       <div style={{ position: 'fixed', inset: 0, zIndex: 10099 }} onClick={() => setShowTradePicker(false)} />
                       <div onClick={e => e.stopPropagation()} className="trade-picker-dropdown" style={
                         tradePickerPos
-                          ? { position: 'fixed', top: Math.min(tradePickerPos.top, window.innerHeight - 400), left: Math.min(tradePickerPos.left, window.innerWidth - 440), width: 420, maxHeight: 380, background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
-                          : { position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: 'var(--tg-surface, #FFFFFF)', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+                          ? { position: 'fixed', top: Math.min(tradePickerPos.top, window.innerHeight - 400), left: Math.min(tradePickerPos.left, window.innerWidth - 440), width: 420, maxHeight: 380, background: 'var(--tg-surface, #FFFFFF)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #E2E8F0))', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
+                          : { position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)', width: 420, maxHeight: 380, background: 'var(--tg-surface, #FFFFFF)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #E2E8F0))', borderRadius: 10, boxShadow: '0 12px 40px rgba(15,23,42,0.15)', zIndex: 10100, display: 'flex', flexDirection: 'column', overflow: 'hidden' }
                       }>
                         {/* Search */}
                         <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--tg-border, #F1F5F9)', flexShrink: 0 }}>
@@ -1471,7 +1471,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                             <input ref={tradeSearchInputRef} type="text" placeholder="搜索品种或方向..." value={tradeSearchQuery}
                               onChange={e => { setTradeSearchQuery(e.target.value); setTradeHighlightIdx(0); }}
                               onKeyDown={handleSelectorKeyDown}
-                              style={{ width: '100%', padding: '7px 12px 7px 30px', border: '1px solid var(--tg-border, #E2E8F0)', borderRadius: 6, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                              style={{ width: '100%', padding: '7px 12px 7px 30px', border: 'var(--tg-module-border, 1px solid var(--tg-border, #E2E8F0))', borderRadius: 6, fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                           </div>
                           <div style={{ marginTop: 6, fontSize: 11, color: 'var(--tg-secondary, #64748B)' }}>{modalDateLabel} · {selectedDayTrades.length} 笔交易</div>
                         </div>

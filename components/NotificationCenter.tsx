@@ -47,7 +47,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
             </div>
 
             {/* Tabs & Actions Bar */}
-            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-0">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-[var(--tg-border)] pb-0">
                 <div className="flex gap-8">
                     <button 
                         onClick={() => setActiveTab('pending')}
@@ -77,7 +77,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
             {/* Notification List */}
             <div className="space-y-3">
                 {filteredNotifications.length === 0 ? (
-                    <div className="text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800">
+                    <div className="tg-module text-center py-20 bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-[var(--tg-border)]">
                         <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
                             <Bell className="w-8 h-8" />
                         </div>
@@ -88,7 +88,7 @@ const NotificationCenter: React.FC<NotificationCenterProps> = ({ notifications, 
                         <div 
                             key={notification.id} 
                             onClick={() => !notification.isRead && onMarkOneRead(notification.id)}
-                            className={`group relative flex items-start gap-4 p-5 bg-white dark:bg-slate-900 border rounded-2xl transition-all hover:shadow-md ${notification.isRead ? 'border-slate-100 dark:border-slate-800 opacity-80' : 'border-indigo-100 dark:border-indigo-900/50 shadow-sm bg-indigo-50/10 dark:bg-indigo-950/40'}`}
+                            className={`group relative flex items-start gap-4 p-5 bg-white dark:bg-slate-900 border rounded-2xl transition-all hover:shadow-md ${notification.isRead ? 'border-slate-100 dark:border-[var(--tg-border)] opacity-80' : 'border-indigo-100 dark:border-indigo-900/50 shadow-sm bg-indigo-50/10 dark:bg-indigo-950/40'}`}
                         >
                             {/* Icon Column */}
                             <div className="flex-shrink-0 pt-1">

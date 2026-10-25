@@ -80,7 +80,7 @@ const generateTimeOptions = () => {
 };
 
 const inputStyle: React.CSSProperties = {
-  height: 34, borderRadius: 7, border: '1px solid var(--tg-border, #e8e8f0)',
+  height: 34, borderRadius: 7, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))',
   padding: '0 10px', fontSize: 13, color: 'var(--tg-text, #1a1d2e)', background: 'var(--tg-surface, #fff)', outline: 'none',
 };
 
@@ -436,7 +436,7 @@ const Psychology: React.FC<PsychologyProps> = ({
     });
   }, [ruleSettings, manualRules, dbExecutionLogs, trades, language]);
 
-  const card: React.CSSProperties = { background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12 };
+  const card: React.CSSProperties = { background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))', borderRadius: 12 };
 
   return (
     <div style={{ background: 'var(--tg-accent-soft, #f8f9fc)', minHeight: '100vh', padding: '28px 32px', width: '100%' }}>
@@ -580,7 +580,7 @@ const Psychology: React.FC<PsychologyProps> = ({
       <div style={{ ...card, overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderBottom: '1px solid var(--tg-border, #f0f0f6)' }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '当前规则' : 'Current Rules'}</span>
-          <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 7, border: '1px solid var(--tg-border, #e0e0ea)', background: 'var(--tg-surface, #fff)', fontSize: 13, color: 'var(--tg-secondary, #4a4d6a)', fontWeight: 500, cursor: 'pointer' }}>
+          <button onClick={() => setShowModal(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 16px', borderRadius: 7, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e0e0ea))', background: 'var(--tg-surface, #fff)', fontSize: 13, color: 'var(--tg-secondary, #4a4d6a)', fontWeight: 500, cursor: 'pointer' }}>
             <Edit2 size={13} /> {language === 'cn' ? '编辑规则' : 'Edit rules'}
           </button>
         </div>
@@ -667,7 +667,7 @@ const RulesModal: React.FC<{
         <div style={{ padding: '22px 28px 14px', borderBottom: '1px solid var(--tg-border, #f0f0f6)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', margin: 0, letterSpacing: '-0.3px' }}>{language === 'cn' ? '规则设置' : 'Rules'}</h2>
-            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid var(--tg-border, #e8e8f0)', background: 'transparent', fontSize: 16, color: 'var(--tg-muted, #9396aa)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
+            <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: 8, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', background: 'transparent', fontSize: 16, color: 'var(--tg-muted, #9396aa)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>×</button>
           </div>
           <p style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginTop: 5, marginBottom: 0, lineHeight: 1.6 }}>{language === 'cn' ? '修改只会影响今天及以后的得分记录' : 'Changes you make will only update your scoring for today and for future days.'}</p>
         </div>
@@ -751,7 +751,7 @@ const RulesModal: React.FC<{
               <button onClick={addManualRule} disabled={!newRuleName.trim()} style={{ marginLeft: 'auto', padding: '0 14px', height: 28, borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: newRuleName.trim() ? 'pointer' : 'not-allowed', background: newRuleName.trim() ? '#6366f1' : 'var(--tg-accent-soft, #e8e8f0)', color: newRuleName.trim() ? '#fff' : 'var(--tg-muted, #b0b3c6)' }}>{language === 'cn' ? '+ 添加' : '+ Add'}</button>
             </div>
             {manualRules.map(rule => (
-              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--tg-surface-muted, #fafafa)', borderRadius: 8, marginBottom: 6, border: '1px solid var(--tg-border, #f0f0f6)' }}>
+              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'var(--tg-surface-muted, #fafafa)', borderRadius: 8, marginBottom: 6, border: 'var(--tg-module-border, 1px solid var(--tg-border, #f0f0f6))' }}>
                 <span style={{ flex: 1, fontSize: 13, color: 'var(--tg-text, #1a1d2e)' }}>{rule.name}</span>
                 <div style={{ display: 'flex', gap: 3 }}>
                   {DAYS.map(day => <span key={day} style={{ width: 24, height: 20, borderRadius: 3, fontSize: 10, fontWeight: 600, display: 'flex', alignItems: 'center', justifyContent: 'center', background: rule.active_days.includes(day) ? 'var(--tg-accent-soft, #eef0ff)' : 'var(--tg-accent-soft, #f5f5fa)', color: rule.active_days.includes(day) ? 'var(--tg-accent, #6366f1)' : 'var(--tg-muted, #d0d3e0)' }}>{day}</span>)}
@@ -773,7 +773,7 @@ const RulesModal: React.FC<{
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: 13, color: 'var(--tg-negative, #ff4d6a)', fontWeight: 500 }}>{language === 'cn' ? '确认重置？此操作不可撤销。' : 'Confirm reset? This cannot be undone.'}</span>
                 <button onClick={() => { setManualRules([]); setSettings(DEFAULT_SETTINGS); setShowResetConfirm(false); setIsDirty(true); }} style={{ padding: '6px 14px', borderRadius: 6, background: '#ff4d6a', color: '#fff', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>{language === 'cn' ? '确认' : 'Confirm'}</button>
-                <button onClick={() => setShowResetConfirm(false)} style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--tg-accent-soft, #f5f5fa)', color: 'var(--tg-secondary, #4a4d6a)', border: '1px solid var(--tg-border, #e8e8f0)', fontSize: 12, cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
+                <button onClick={() => setShowResetConfirm(false)} style={{ padding: '6px 14px', borderRadius: 6, background: 'var(--tg-accent-soft, #f5f5fa)', color: 'var(--tg-secondary, #4a4d6a)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', fontSize: 12, cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
               </div>
             )}
           </div>
@@ -781,7 +781,7 @@ const RulesModal: React.FC<{
 
         {/* Footer */}
         <div style={{ padding: '16px 28px', borderTop: '1px solid var(--tg-border, #f0f0f6)', display: 'flex', justifyContent: 'flex-end', gap: 10, flexShrink: 0 }}>
-          <button onClick={onClose} style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid var(--tg-border, #e0e0ea)', background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--tg-secondary, #4a4d6a)', cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
+          <button onClick={onClose} style={{ padding: '10px 24px', borderRadius: 8, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e0e0ea))', background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--tg-secondary, #4a4d6a)', cursor: 'pointer' }}>{language === 'cn' ? '取消' : 'Cancel'}</button>
           <button onClick={() => { onSave(settings, manualRules); setIsDirty(false); onClose(); }} disabled={!isDirty} style={{ padding: '10px 24px', borderRadius: 8, border: 'none', fontSize: 13, fontWeight: 600, cursor: isDirty ? 'pointer' : 'not-allowed', background: isDirty ? '#6366f1' : 'var(--tg-accent-soft, #e8e8f0)', color: isDirty ? '#fff' : 'var(--tg-muted, #b0b3c6)', letterSpacing: '0.02em' }}>{language === 'cn' ? '保存' : 'Save changes'}</button>
         </div>
       </div>

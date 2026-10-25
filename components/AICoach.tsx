@@ -70,7 +70,7 @@ const AICoach: React.FC<AICoachProps> = ({ trades }) => {
         {analysis && !loading && (
             <div className="space-y-6 animate-fade-in-up">
                 {/* Summary Section */}
-                <div className="bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-slate-700 relative overflow-hidden transition-colors">
+                <div className="tg-module bg-white dark:bg-slate-800 p-8 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] relative overflow-hidden transition-colors">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
                         <Bot className="w-32 h-32" />
                     </div>
@@ -81,7 +81,7 @@ const AICoach: React.FC<AICoachProps> = ({ trades }) => {
                 {/* Insights Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {analysis.insights.map((insight: any, idx: number) => (
-                        <div key={idx} className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col transition-colors">
+                        <div key={idx} className="tg-module bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] flex flex-col transition-colors">
                             <div className="flex items-center gap-2 mb-3">
                                 {insight.type === 'positive' && <CheckCircle className="w-5 h-5 text-emerald-500 dark:text-emerald-400" />}
                                 {insight.type === 'negative' && <AlertTriangle className="w-5 h-5 text-rose-500 dark:text-rose-400" />}

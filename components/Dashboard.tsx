@@ -84,7 +84,7 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
         ref={iconRef}
         onMouseEnter={handleEnter}
         onMouseLeave={handleLeave}
-        style={{ width: 14, height: 14, borderRadius: '50%', border: '1px solid var(--tg-border, #d1d5db)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: 'var(--tg-muted, #9ca3af)', flexShrink: 0, cursor: 'help', transition: 'border-color 0.15s, color 0.15s' }}
+        style={{ width: 14, height: 14, borderRadius: '50%', border: 'var(--tg-module-border, 1px solid var(--tg-border, #d1d5db))', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, color: 'var(--tg-muted, #9ca3af)', flexShrink: 0, cursor: 'help', transition: 'border-color 0.15s, color 0.15s' }}
         onMouseOver={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--tg-accent-border, #6366f1)'; (e.currentTarget as HTMLElement).style.color = 'var(--tg-accent, #6366f1)'; }}
         onMouseOut={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--tg-border, #d1d5db)'; (e.currentTarget as HTMLElement).style.color = 'var(--tg-muted, #9ca3af)'; }}
       >i</span>
@@ -136,7 +136,7 @@ const TZInfoIcon = ({ infoKey = 'default' }: { infoKey?: string }) => {
 const tzCardShell: React.CSSProperties = {
   position: 'relative',
   background: 'var(--tg-surface, #ffffff)',
-  border: '1px solid var(--tg-border, #edf0f6)',
+  border: 'var(--tg-module-border, 1px solid var(--tg-border, #edf0f6))',
   borderRadius: 16,
   padding: '16px 16px 14px',
   display: 'flex',
@@ -266,7 +266,7 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; wins: number; losse
   const pos = value >= 0;
   const formatted = Math.abs(value).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return (
-    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
+    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
       <div style={tzLabelRow} className="dark:text-slate-400">
         {label}<TZInfoIcon infoKey="netPnL" />
         <span style={tzMetaPill} className="dark:bg-slate-800 dark:text-slate-200">{total}</span>
@@ -283,7 +283,7 @@ const TZNetPnlCard: React.FC<{ value: number; total: number; wins: number; losse
 const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; breakEven: number; label: string }> = ({ winRate, wins, losses, breakEven, label }) => {
   const total = wins + losses + breakEven;
   return (
-    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
+    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="winRate" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flex: 1, minHeight: 52 }}>
         <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flex: '1 1 auto' }} className="dark:text-white">
@@ -299,7 +299,7 @@ const TZWinRateCard: React.FC<{ winRate: number; wins: number; losses: number; b
 
 const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
   return (
-    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
+    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="profitFactor" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flex: 1, minHeight: 52 }}>
         <div>
@@ -318,7 +318,7 @@ const TZProfitFactorCard: React.FC<{ value: number; label: string }> = ({ value,
 const TZDayWinCard: React.FC<{ dayWinRate: number; winDays: number; lossDays: number; breakEvenDays: number; label: string }> = ({ dayWinRate, winDays, lossDays, breakEvenDays, label }) => {
   const total = winDays + lossDays + breakEvenDays;
   return (
-    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
+    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="dailyWinRate" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, flex: 1, minHeight: 52 }}>
         <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flex: '1 1 auto' }} className="dark:text-white">
@@ -337,7 +337,7 @@ const TZAvgWinLossCard: React.FC<{ ratio: number; avgWin: number; avgLoss: numbe
   const total = avgWin + absLoss;
   const winPct = total > 0 ? (avgWin / total) * 100 : 50;
   return (
-    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-slate-700">
+    <div style={tzCardShell} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
       <div style={tzLabelRow} className="dark:text-slate-400">{label}<TZInfoIcon infoKey="profitLossRatio" /></div>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, flex: 1, minHeight: 52 }}>
         <div style={{ ...tzBigVal('var(--tg-text, #111827)'), flexShrink: 0 }} className="dark:text-white">
@@ -389,7 +389,7 @@ const DailyPnlTooltip = ({ active, payload, label }: any) => {
   const pos = val >= 0;
   const { currencySymbol } = useUser();
   return (
-    <div style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 }}>
+    <div style={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 }}>
       <div style={{ fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', marginBottom: 5 }}>{label}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
         <span style={{ width: 10, height: 10, background: pos ? '#00c896' : '#ff4d6a', borderRadius: 2, display: 'inline-block' }} />
@@ -452,7 +452,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
 
   const cardStyle: React.CSSProperties = {
     background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)',
-    border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #ededf3)'}`,
+    border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))',
     borderRadius: 12, padding: '16px 20px',
     boxShadow: isDark ? 'none' : '0 1px 3px rgba(0,0,0,0.06)',
   };
@@ -554,7 +554,7 @@ const PositionHeatCard: React.FC<{ trades: any[]; language: string }> = ({ trade
           const rColor = hp.rValue > 0 ? '#059669' : hp.rValue <= -2 ? '#dc2626' : '#f59e0b';
           return (
             <foreignObject x={toLeft ? tx - 128 : tx + 10} y={ty - 36} width="118" height="52" style={{ overflow: 'visible', pointerEvents: 'none' }}>
-              <div style={{ background: isDark ? '#1e293b' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#334155' : 'rgba(148,163,184,0.3)'}`, borderRadius: 8, padding: '7px 10px', boxShadow: '0 4px 12px rgba(15,23,42,0.1)', fontSize: 11, fontFamily: '-apple-system, Inter, sans-serif' }}>
+              <div style={{ background: isDark ? '#1e293b' : 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.3))', borderRadius: 8, padding: '7px 10px', boxShadow: '0 4px 12px rgba(15,23,42,0.1)', fontSize: 11, fontFamily: '-apple-system, Inter, sans-serif' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, marginBottom: 3 }}>
                   <span style={{ color: 'var(--tg-muted, #94a3b8)' }}>{language === 'cn' ? '仓位' : 'Size'}</span>
                   <span style={{ color: isDark ? '#f8fafc' : 'var(--tg-text, #0f172a)', fontWeight: 600, fontFamily: 'SF Mono, monospace' }}>{hp.sizeMultiple.toFixed(1)}x</span>
@@ -630,10 +630,10 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
   };
 
   const isDark = useIsDarkMode();
-  const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #e8e8f0)'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
+  const ttTooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ position: 'relative', background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #e8ecf3)'}`, borderRadius: 16, padding: '0 0 18px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 10px rgba(15, 23, 42, 0.02)' }}>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8ecf3))', borderRadius: 16, padding: '0 0 18px', height: 320, display: 'flex', flexDirection: 'column', boxShadow: isDark ? 'none' : '0 2px 10px rgba(15, 23, 42, 0.02)' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 16px', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: 17, fontWeight: 700, color: isDark ? '#f8fafc' : 'var(--tg-text, #1f2430)', letterSpacing: '-0.015em' }}>
@@ -653,7 +653,7 @@ const TradeTimeChart: React.FC<{ trades: any[]; language: string }> = ({ trades,
               <Settings className="h-[16px] w-[16px]" strokeWidth={1.85} />
             </button>
             {isConfigOpen && (
-              <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 132, background: isDark ? '#111827' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1f2937' : 'var(--tg-border, #e5e7eb)'}`, borderRadius: 12, boxShadow: '0 18px 36px rgba(15, 23, 42, 0.12)', padding: 6, zIndex: 20 }}>
+              <div style={{ position: 'absolute', top: 'calc(100% + 10px)', right: 0, minWidth: 132, background: isDark ? '#111827' : 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e5e7eb))', borderRadius: 12, boxShadow: '0 18px 36px rgba(15, 23, 42, 0.12)', padding: 6, zIndex: 20 }}>
                 {(['entry', 'exit'] as const).map(key => {
                   const active = mode === key;
                   return (
@@ -776,10 +776,10 @@ const TradeDurationChart: React.FC<{ trades: any[]; language: string }> = ({ tra
   };
 
   const isDark = useIsDarkMode();
-  const tooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #e8e8f0)'}`, borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
+  const tooltipStyle: React.CSSProperties = { background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12 };
 
   return (
-    <div style={{ position: 'relative', background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: `1px solid ${isDark ? '#1e293b' : 'var(--tg-border, #ededf3)'}`, borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', background: isDark ? '#0f172a' : 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))', borderRadius: 12, padding: '16px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 14, flexShrink: 0 }}>
         <span style={{ fontSize: 13, fontWeight: 600, color: isDark ? '#f8fafc' : 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '交易时长表现' : 'Trade Duration Performance'}</span>
         <TZInfoIcon infoKey="tradeTiming" />
@@ -982,7 +982,7 @@ const DashboardHeatmap: React.FC<{
   });
 
   return (
-    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-slate-800">
+    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))', borderRadius: 12, padding: '16px 20px' }} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
       {tip && <div style={{ position: 'fixed', left: tip.x + 8, top: tip.y - 36, background: '#1a1d2e', color: '#fff', fontSize: 10, padding: '4px 8px', borderRadius: 5, pointerEvents: 'none', zIndex: 999, whiteSpace: 'nowrap' }}>{tip.key}：{Math.round((heatmapData[tip.key] ?? 0) * 100)}%</div>}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -1056,7 +1056,7 @@ const DashboardHeatmap: React.FC<{
           </div>
         </div>
         <button onClick={() => setShowChecklist(v => !v)}
-          style={{ padding: '8px 14px', borderRadius: 8, border: '1px solid var(--tg-border, #e0e0ea)', background: 'var(--tg-surface, #fff)', fontSize: 12, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', cursor: 'pointer' }}
+          style={{ padding: '8px 14px', borderRadius: 8, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e0e0ea))', background: 'var(--tg-surface, #fff)', fontSize: 12, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)', cursor: 'pointer' }}
           onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--tg-accent-soft, #f5f5fa)'}
           onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'var(--tg-surface, #fff)'}
         >
@@ -1296,8 +1296,8 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 w-full max-w-md flex flex-col shadow-2xl overflow-hidden animate-fade-in-up" onClick={e => e.stopPropagation()}>
-                <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-950">
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-[var(--tg-border)] w-full max-w-md flex flex-col shadow-2xl overflow-hidden animate-fade-in-up" onClick={e => e.stopPropagation()}>
+                <div className="p-6 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-slate-50 dark:bg-slate-950">
                     <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                         <Trophy className="w-5 h-5 text-amber-500" />
                         {language === 'cn' ? '往期目标回顾' : 'Goal History'}
@@ -1307,7 +1307,7 @@ const GoalHistoryModal = ({ isOpen, onClose, history, language }: { isOpen: bool
                     </button>
                 </div>
                 <div className="p-6">
-                    <div className="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm">
+                    <div className="tg-module overflow-hidden rounded-2xl border border-slate-100 dark:border-[var(--tg-border)] bg-white dark:bg-slate-900 shadow-sm">
                         <table className="w-full text-left text-sm">
                             <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black text-[10px] uppercase tracking-wider">
                                 <tr>
@@ -1410,7 +1410,7 @@ const GrailScoreWidget: React.FC<{ composite: number; radarData: { subject: stri
   const labelDy = ['-0.3em', '0.35em', '0.35em', '1em', '0.35em', '0.35em'];
 
   return (
-    <div className="relative bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#f0f0f0] dark:border-slate-800 p-6">
+    <div className="tg-module relative bg-white dark:bg-slate-900 rounded-2xl shadow-[0_2px_12px_rgba(0,0,0,0.06)] border border-[#f0f0f0] dark:border-[var(--tg-border)] p-6">
       {/* Title row */}
       <div className="flex items-center justify-between">
         <span className="text-[15px] font-semibold" style={{ color: 'var(--tg-text, #1a1a2e)' }}>
@@ -2000,7 +2000,7 @@ const Dashboard: React.FC<DashboardProps> = ({
         {payload.map((entry: any, index: number) => {
           const isUser = entry.value === 'My Equity' || entry.dataKey === 'equity';
           return (
-            <div key={`legend-${index}`} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isUser ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/10' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'}`}>
+            <div key={`legend-${index}`} className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm border ${isUser ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-200 dark:border-indigo-500/30 text-indigo-700 dark:text-indigo-300 ring-2 ring-indigo-500/10' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-[var(--tg-border)] text-slate-600 dark:text-slate-300'}`}>
               <span className="w-2.5 h-2.5 rounded-full shadow-inner" style={{ backgroundColor: entry.color }}></span>
               <span className="opacity-90">{entry.value}</span>
             </div>
@@ -2062,7 +2062,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
-      <div className="w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 overflow-hidden py-2 relative group mb-6 -mt-2 rounded-xl shadow-sm">
+      <div className="tg-module w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-[var(--tg-border)] overflow-hidden py-2 relative group mb-6 -mt-2 rounded-xl shadow-sm">
          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10"></div>
          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10"></div>
          <div className="flex animate-scroll hover-pause whitespace-nowrap w-max">
@@ -2134,7 +2134,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsDatePickerOpen(current => !current)}
-                    className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
+                    className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                 >
                     <div className="flex min-w-0 items-center gap-3">
                         <ReportRangeIcon />
@@ -2152,10 +2152,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isDatePickerOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                     isDatePickerOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
                 }`}>
-                    <div className="flex-1 border-r border-slate-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                    <div className="flex-1 border-r border-slate-100 bg-white p-6 dark:border-[var(--tg-border)] dark:bg-slate-900">
                         <div className="mb-4 flex items-center justify-between">
                             <button
                                 type="button"
@@ -2199,7 +2199,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <button
                     type="button"
                     onClick={() => setIsAccountSwitcherOpen(current => !current)}
-                    className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
+                    className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                 >
                     <div className="flex min-w-0 items-center gap-3">
                         <ReportAccountIcon />
@@ -2213,7 +2213,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                     isAccountSwitcherOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
                 }`}>
                     <div className="space-y-1 p-2">
@@ -2255,7 +2255,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             </button>
                         ))}
                     </div>
-                    <div className="border-t border-slate-100 bg-slate-50 p-2 dark:border-slate-800 dark:bg-slate-950/50">
+                    <div className="border-t border-slate-100 bg-slate-50 p-2 dark:border-[var(--tg-border)] dark:bg-slate-950/50">
                         <button
                             type="button"
                             onClick={() => onManageAccounts?.()}
@@ -2276,11 +2276,11 @@ const Dashboard: React.FC<DashboardProps> = ({
                   <div style={{
                     display: 'flex',
                     flexWrap: 'nowrap',
-                    border: '0.5px solid var(--tg-border, #e4e4ec)',
+                    border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ec))',
                     borderRadius: 12,
                     overflow: 'hidden',
                     backgroundColor: 'var(--tg-surface, #ffffff)',
-                  }} className="dark:border-slate-700 dark:bg-slate-900">
+                  }} className="dark:border-[var(--tg-border)] dark:bg-slate-900">
                     {MARKET_OPTIONS.filter(m => selectedMarketIds.includes(m.id)).map((market, idx) => (
                       <MarketSessionCard
                         key={market.id}
@@ -2292,7 +2292,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                       />
                     ))}
                   </div>
-                  <button onClick={() => setIsMarketConfigOpen(true)} className="absolute -top-3 -right-2 p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-md border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-indigo-500 opacity-0 group-hover/config:opacity-100 transition-all hover:scale-110 z-10 dark:text-slate-400" title={t.dashboard.marketHours.configure}><Settings className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setIsMarketConfigOpen(true)} className="absolute -top-3 -right-2 p-1.5 bg-white dark:bg-slate-800 rounded-full shadow-md border border-slate-200 dark:border-[var(--tg-border)] text-slate-400 hover:text-indigo-500 opacity-0 group-hover/config:opacity-100 transition-all hover:scale-110 z-10 dark:text-slate-400" title={t.dashboard.marketHours.configure}><Settings className="w-3.5 h-3.5" /></button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
@@ -2327,10 +2327,10 @@ const Dashboard: React.FC<DashboardProps> = ({
                         ? { background: 'var(--tg-negative-soft, #FFF5F5)', border: '1px solid #E24B4A' }
                         : status === 'warn'
                         ? { background: 'var(--tg-warning-soft, #FFFBF5)', border: '1px solid #EF9F27' }
-                        : { background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e8e8f0)' }),
+                        : { background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e8e8f0))' }),
                     };
                     return (
-                      <div id="dashboard-risk" style={cardStyle} className={status === 'danger' ? 'dark:!bg-[rgba(226,75,74,0.08)]' : status === 'warn' ? 'dark:!bg-[rgba(239,159,39,0.08)]' : 'dark:!bg-slate-900 dark:!border-slate-700'}>
+                      <div id="dashboard-risk" style={cardStyle} className={status === 'danger' ? 'dark:!bg-[rgba(226,75,74,0.08)]' : status === 'warn' ? 'dark:!bg-[rgba(239,159,39,0.08)]' : 'dark:!bg-slate-900 dark:!border-[var(--tg-border)]'}>
                         <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={14} />
                         {/* Title row */}
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
@@ -2403,7 +2403,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(0,1fr)', gap: 16, width: '100%', alignItems: 'stretch' }}>
 
-              <div id="dashboard-equity" style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e8e8f0)', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-slate-800">
+              <div id="dashboard-equity" style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e8e8f0))', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column' }} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
                 <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
                 {/* Header */}
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, flexShrink: 0 }}>
@@ -2465,7 +2465,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                             const val = payload.find((p: any) => p.dataKey === 'cumulativePnl')?.value ?? payload[0]?.value ?? 0;
                             const sign = val >= 0 ? '+' : '';
                             return (
-                              <div style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: 'var(--tg-text, #1a1d2e)' }}>
+                              <div style={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: 'var(--tg-text, #1a1d2e)' }}>
                                 <div style={{ fontWeight: 600, marginBottom: 6 }}>{label}</div>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                   <span style={{ width: 10, height: 10, background: val >= 0 ? '#34D399' : '#FB7185', borderRadius: 2, display: 'inline-block' }} />
@@ -2534,7 +2534,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                 ];
                 const hasWinRateTrendData = winRateData.length > 0;
 	                return (
-	                  <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 420, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-slate-800">
+	                  <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))', borderRadius: 12, padding: '0 0 14px', display: 'flex', flexDirection: 'column', height: 420, overflow: 'hidden' }} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
 	                    <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
 	                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '16px 20px 14px', borderBottom: '1px solid var(--tg-border, #edf0f4)', flexShrink: 0 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }} className="dark:text-white">{language === 'cn' ? '胜率 · 平均胜场 · 平均负场' : 'Win % · Avg Win · Avg Loss'}</span>
@@ -2598,7 +2598,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                               content={({ active, payload, label }: any) => {
                                 if (!active || !payload?.length) return null;
                                 return (
-                                  <div style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: 'var(--tg-text, #1a1d2e)' }}>
+                                  <div style={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', borderRadius: 10, padding: '10px 14px', boxShadow: '0 4px 16px rgba(0,0,0,0.08)', fontSize: 12, color: 'var(--tg-text, #1a1d2e)' }}>
                                     <div style={{ fontWeight: 600, marginBottom: 6 }}>{formatShortDashboardDate(label)}</div>
                                     {payload.map((p: any) => (
                                       <div key={p.dataKey} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
@@ -2650,7 +2650,7 @@ const Dashboard: React.FC<DashboardProps> = ({
 
               <div id="dashboard-strategy" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, width: '100%', alignItems: 'stretch' }}>
 	                {/* Left: Daily P&L bar chart */}
-	                <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+	                <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))', borderRadius: 12, padding: '16px 20px', height: 420, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 	                  <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
 	                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, flexShrink: 0 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '每日净盈亏' : 'Net daily P&L'}</span>
@@ -2728,7 +2728,7 @@ const Dashboard: React.FC<DashboardProps> = ({
                     .slice(0, 10);
                   const fmtDate = (d: string) => { const dt = new Date(d); return `${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')}/${dt.getFullYear()}`; };
 	                  return (
-	                    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #ededf3)', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
+	                    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #ededf3))', borderRadius: 12, display: 'flex', flexDirection: 'column', overflow: 'hidden', height: 420 }}>
 	                      <DashboardCardLoadingOverlay isLoading={isDataLoading} radius={12} />
 	                      {/* Tab header */}
                       <div style={{ padding: '14px 20px 0', borderBottom: '1px solid var(--tg-border, #f0f0f6)', flexShrink: 0 }}>
@@ -2815,9 +2815,9 @@ const Dashboard: React.FC<DashboardProps> = ({
 	          </div>
       </div>
 
-      {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); const isDisabled = !isSelected && selectedMarketIds.length >= 4; return (<button key={market.id} onClick={() => toggleMarket(market.id)} disabled={isDisabled} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isDisabled ? 'opacity-40 cursor-not-allowed bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700' : isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}
+      {isMarketConfigOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Settings className="w-5 h-5 text-indigo-500" />{t.dashboard.marketHours.configure}</h3><button onClick={() => setIsMarketConfigOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-3"><p className="text-xs text-slate-500 dark:text-slate-400 mb-2">{t.dashboard.marketHours.limitError}</p>{MARKET_OPTIONS.map(market => { const isSelected = selectedMarketIds.includes(market.id); const isDisabled = !isSelected && selectedMarketIds.length >= 4; return (<button key={market.id} onClick={() => toggleMarket(market.id)} disabled={isDisabled} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isDisabled ? 'opacity-40 cursor-not-allowed bg-white dark:bg-slate-800 border-slate-200 dark:border-[var(--tg-border)]' : isSelected ? `bg-indigo-50 dark:bg-indigo-900/20 border-indigo-500 dark:border-indigo-500` : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-[var(--tg-border)] hover:bg-slate-50 dark:hover:bg-slate-700'}`}><div className="flex items-center gap-3"><div className={`tg-module p-2 rounded-lg ${isSelected ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400' : 'bg-slate-100 dark:bg-slate-900 text-slate-400 dark:text-slate-400'}`}><market.icon className="w-4 h-4" /></div><span className={`text-sm font-bold ${isSelected ? 'text-indigo-900 dark:text-indigo-100' : 'text-slate-600 dark:text-slate-400'}`}>{t.dashboard.marketHours[market.labelKey as keyof typeof t.dashboard.marketHours] || market.labelKey}</span></div>{isSelected && <CheckCircle2 className="w-5 h-5 text-indigo-500" />}</button>); })}<button onClick={() => setIsMarketConfigOpen(false)} className="w-full mt-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.dashboard.discipline.done}</button></div></div></div>)}
 
-      {isGoalModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Target className="w-5 h-5 text-pink-500" />{t.dashboard.goals.modalTitle}</h3><button onClick={() => setIsGoalModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-4"><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.type}</label><select value={tempGoal.type} onChange={(e) => setTempGoal({...tempGoal, type: e.target.value as any})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500"><option value="amount">{t.dashboard.goals.types.amount}</option><option value="percentage">{t.dashboard.goals.types.percentage}</option><option value="r_multiple">{t.dashboard.goals.types.r_multiple}</option></select></div><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.target}</label><input type="number" value={tempGoal.value} onChange={(e) => setTempGoal({...tempGoal, value: Number(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500 font-mono" /></div><div className="flex items-center gap-2 mt-2"><input type="checkbox" checked={tempGoal.isActive} onChange={(e) => setTempGoal({...tempGoal, isActive: e.target.checked})} className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500 border-gray-300 dark:border-slate-700 dark:text-pink-300" /><label className="text-sm text-slate-600 dark:text-slate-400">{t.dashboard.discipline.active}</label></div><button onClick={() => { if (onSetWeeklyGoal) onSetWeeklyGoal(tempGoal); setIsGoalModalOpen(false); }} className="w-full mt-4 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-bold transition-colors shadow-lg shadow-pink-500/20">{t.dashboard.tracker.save}</button></div></div></div>)}
+      {isGoalModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] w-full max-w-md flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><Target className="w-5 h-5 text-pink-500" />{t.dashboard.goals.modalTitle}</h3><button onClick={() => setIsGoalModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6 space-y-4"><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.type}</label><select value={tempGoal.type} onChange={(e) => setTempGoal({...tempGoal, type: e.target.value as any})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500"><option value="amount">{t.dashboard.goals.types.amount}</option><option value="percentage">{t.dashboard.goals.types.percentage}</option><option value="r_multiple">{t.dashboard.goals.types.r_multiple}</option></select></div><div><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.dashboard.goals.target}</label><input type="number" value={tempGoal.value} onChange={(e) => setTempGoal({...tempGoal, value: Number(e.target.value)})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-sm text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-pink-500 font-mono" /></div><div className="flex items-center gap-2 mt-2"><input type="checkbox" checked={tempGoal.isActive} onChange={(e) => setTempGoal({...tempGoal, isActive: e.target.checked})} className="w-4 h-4 text-pink-600 rounded focus:ring-pink-500 border-gray-300 dark:border-[var(--tg-border)] dark:text-pink-300" /><label className="text-sm text-slate-600 dark:text-slate-400">{t.dashboard.discipline.active}</label></div><button onClick={() => { if (onSetWeeklyGoal) onSetWeeklyGoal(tempGoal); setIsGoalModalOpen(false); }} className="w-full mt-4 py-2.5 bg-pink-500 hover:bg-pink-600 text-white rounded-lg font-bold transition-colors shadow-lg shadow-pink-500/20">{t.dashboard.tracker.save}</button></div></div></div>)}
 
       {isHistoryModalOpen && (
           <GoalHistoryModal 
@@ -2828,7 +2828,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           />
       )}
 
-      {isAddFriendModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><UserPlus className="w-5 h-5 text-indigo-500" />{t.social.addModalTitle}</h3><button onClick={() => setIsAddFriendModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6"><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.social.namePlaceholder}</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-400" /><input type="text" value={newFriendName} onChange={e => setNewFriendName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddFriend()} className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. TradingWiz" autoFocus /></div><p className="text-xs text-slate-400 mt-3 italic text-center dark:text-slate-400">{t.social.simulated}</p><button onClick={handleAddFriend} disabled={!newFriendName.trim()} className="w-full mt-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.social.addBtn}</button></div></div></div>)}
+      {isAddFriendModalOpen && (<div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"><div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] w-full max-w-sm flex flex-col shadow-2xl overflow-hidden"><div className="p-5 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-slate-50 dark:bg-slate-900"><h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2"><UserPlus className="w-5 h-5 text-indigo-500" />{t.social.addModalTitle}</h3><button onClick={() => setIsAddFriendModalOpen(false)} className="text-slate-400 hover:text-slate-900 dark:hover:text-white dark:text-slate-400"><X className="w-5 h-5"/></button></div><div className="p-6"><label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">{t.social.namePlaceholder}</label><div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-400" /><input type="text" value={newFriendName} onChange={e => setNewFriendName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddFriend()} className="w-full pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg outline-none focus:ring-2 focus:ring-indigo-500" placeholder="e.g. TradingWiz" autoFocus /></div><p className="text-xs text-slate-400 mt-3 italic text-center dark:text-slate-400">{t.social.simulated}</p><button onClick={handleAddFriend} disabled={!newFriendName.trim()} className="w-full mt-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-bold transition-colors shadow-lg shadow-indigo-500/20">{t.social.addBtn}</button></div></div></div>)}
     </div>
   );
 };

@@ -101,7 +101,7 @@ const StrategyLibrary: React.FC<StrategyLibraryProps> = ({ strategies, onSaveStr
             <div className="absolute -top-10 -left-10 w-48 h-48 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
             <div className="absolute -bottom-10 -right-10 w-48 h-48 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
 
-            <div className="relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-700/50 shadow-2xl backdrop-blur-xl">
+            <div className="tg-module relative overflow-hidden rounded-3xl bg-slate-900 border border-slate-700/50 shadow-2xl backdrop-blur-xl">
 
                 {/* Header Section */}
                 <div className="p-6 bg-gradient-to-br from-indigo-900/40 to-slate-900/40 border-b border-white/5">

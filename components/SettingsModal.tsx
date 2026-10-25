@@ -186,7 +186,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in" onClick={closeSettings}>
-            <div className="bg-white dark:bg-slate-900 rounded-lg w-full max-w-5xl h-[85vh] shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex relative" onClick={e => e.stopPropagation()}>
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-lg w-full max-w-5xl h-[85vh] shadow-2xl overflow-hidden border border-slate-200 dark:border-[var(--tg-border)] flex relative" onClick={e => e.stopPropagation()}>
                 
                 {showSuccessToast && (
                     <div className="absolute top-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg flex items-center gap-2 animate-fade-in-up">
@@ -195,7 +195,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                     </div>
                 )}
 
-                <div className="w-64 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 flex-shrink-0 flex flex-col hidden md:flex">
+                <div className="w-64 bg-slate-50 dark:bg-slate-950 border-r border-slate-200 dark:border-[var(--tg-border)] flex-shrink-0 flex flex-col hidden md:flex">
                     <div className="p-6"><h2 className="text-xl font-bold text-slate-900 dark:text-white">{t.settings.title}</h2></div>
                     <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-6 custom-scrollbar">
                         {menuItems.map((section, idx) => (
@@ -226,7 +226,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                                 <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">{t.settings.menu.account}</h2>
                                 <div className="space-y-6">
                                     {/* 交易前检查清单开关 */}
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-6 flex items-center justify-between">
+                                    <div className="tg-module bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl p-6 flex items-center justify-between">
                                         <div>
                                             <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-1">
                                                 {language === 'cn' ? '启用交易前检查清单' : 'Enable Pre-trade Checklist'}
@@ -257,7 +257,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                                     <div className="mb-10 space-y-4">
                                         <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">{t.settings.api.connected}</h3>
                                         {user.exchangeConnections.map(conn => (
-                                            <div key={conn.id} className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 flex items-center justify-between">
+                                            <div key={conn.id} className="tg-module bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl p-4 flex items-center justify-between">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center font-bold text-indigo-600 text-lg shadow-sm dark:text-indigo-300">{conn.exchange.slice(0,1)}</div>
                                                     <div>
@@ -275,27 +275,27 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                                     </div>
                                 )}
                                 <div className="space-y-6">
-                                    <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl p-6">
+                                    <div className="tg-module bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl p-6">
                                         <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><Key className="w-4 h-4 text-indigo-500" />{t.settings.api.addBtn}</h3>
                                         <div className="space-y-4">
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">{t.settings.api.exchangeLabel}</label>
-                                                <select value={selectedExchange} onChange={(e) => setSelectedExchange(e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors"><option value="Binance">Binance</option><option value="Bybit">Bybit</option><option value="OKX">OKX</option><option value="Coinbase">Coinbase</option></select>
+                                                <select value={selectedExchange} onChange={(e) => setSelectedExchange(e.target.value)} className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors"><option value="Binance">Binance</option><option value="Bybit">Bybit</option><option value="OKX">OKX</option><option value="Coinbase">Coinbase</option></select>
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">{t.settings.api.keyLabel}</label>
-                                                <input type="text" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="e.g. vmPUZE6mv9sd..." className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" />
+                                                <input type="text" value={apiKey} onChange={(e) => setApiKey(e.target.value)} placeholder="e.g. vmPUZE6mv9sd..." className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" />
                                             </div>
                                             <div>
                                                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">{t.settings.api.secretLabel}</label>
-                                                <input type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="•••••••••••••••••••••" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" />
+                                                <input type="password" value={apiSecret} onChange={(e) => setApiSecret(e.target.value)} placeholder="•••••••••••••••••••••" className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors font-mono" />
                                             </div>
                                             <button onClick={handleConnectExchange} disabled={isSyncing || !apiKey || !apiSecret} className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white font-bold rounded-lg transition-all shadow-md flex items-center justify-center gap-2">{isSyncing ? <><RefreshCw className="w-4 h-4 animate-spin" /> {t.settings.api.syncing}</> : t.settings.api.connect}</button>
                                             <p className="text-[10px] text-slate-400 flex items-start gap-1 mt-2 leading-tight dark:text-slate-400"><AlertCircle className="w-3 h-3 flex-shrink-0 mt-0.5" />{t.settings.api.disclaimer}</p>
                                         </div>
                                     </div>
                                     {syncLogs.length > 0 && (
-                                        <div className="bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-300 overflow-hidden shadow-inner">
+                                        <div className="tg-module bg-slate-950 rounded-xl border border-slate-800 p-4 font-mono text-xs text-slate-300 overflow-hidden shadow-inner">
                                             <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-800 text-slate-500 dark:text-slate-400"><Terminal className="w-3 h-3" /><span>Sync Logs</span></div>
                                             <div ref={logContainerRef} className="space-y-1 h-32 overflow-y-auto custom-scrollbar">{syncLogs.map((log, i) => (<p key={i} className="animate-fade-in-right">{log}</p>))}{isSyncing && <p className="animate-pulse">_</p>}</div>
                                         </div>
@@ -310,32 +310,32 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                                 <div className="mb-10">
                                     <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4">{t.settings.profile.photoTitle}</h3>
                                     <div className="flex items-center gap-6">
-                                        <div className="w-24 h-24 rounded-full bg-indigo-600 text-white flex items-center justify-center text-3xl font-bold border-4 border-white dark:border-slate-800 shadow-md overflow-hidden relative group">
+                                        <div className="w-24 h-24 rounded-full bg-indigo-600 text-white flex items-center justify-center text-3xl font-bold border-4 border-white dark:border-[var(--tg-border)] shadow-md overflow-hidden relative group">
                                             {user.avatarUrl ? <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" /> : user.name.slice(0, 2).toUpperCase()}
                                             <div onClick={() => fileInputRef.current?.click()} className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><Upload className="w-6 h-6 text-white" /></div>
                                         </div>
                                         <div>
                                             <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 max-w-xs leading-relaxed">{t.settings.profile.photoDesc}</p>
                                             <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                            <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">{t.settings.profile.uploadBtn}</button>
+                                            <button onClick={() => fileInputRef.current?.click()} className="px-4 py-2 border border-slate-300 dark:border-[var(--tg-border)] rounded-lg text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">{t.settings.profile.uploadBtn}</button>
                                         </div>
                                     </div>
-                                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                                    <div className="mt-6 pt-6 border-t border-slate-100 dark:border-[var(--tg-border)]">
                                         <label className="block text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">{t.settings.profile.usernameLabel}</label>
                                         <div className="flex gap-4">
-                                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-indigo-500" />
-                                            <button onClick={handleUsernameChange} className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-500 transition-colors whitespace-nowrap">{t.settings.profile.changeUserBtn}</button>
+                                            <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2 text-slate-900 dark:text-white font-medium outline-none focus:ring-2 focus:ring-indigo-500" />
+                                            <button onClick={handleUsernameChange} className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-500 transition-colors whitespace-nowrap">{t.settings.profile.changeUserBtn}</button>
                                         </div>
                                     </div>
                                 </div>
                                 <div>
                                     <div className="flex items-center gap-2 mb-6"><h3 className="text-sm font-bold text-slate-900 dark:text-white">{t.settings.profile.socialTitle}</h3><HelpCircle className="w-4 h-4 text-slate-400 cursor-help dark:text-slate-400" /></div>
                                     <div className="space-y-5">
-                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-300" /> {t.settings.profile.wechat}</label><input type="text" placeholder="wxid_..." value={socials.wechat} onChange={e => setSocials({...socials, wechat: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
-                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><Video className="w-4 h-4 text-sky-500" /> {t.settings.profile.bilibili}</label><input type="text" placeholder="space.bilibili.com/..." value={socials.bilibili} onChange={e => setSocials({...socials, bilibili: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
-                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><Share2 className="w-4 h-4 text-slate-900 dark:text-white" /> {t.settings.profile.douyin}</label><input type="text" placeholder="@username" value={socials.douyin} onChange={e => setSocials({...socials, douyin: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
-                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><EyeIcon className="w-4 h-4 text-rose-500" /> {t.settings.profile.weibo}</label><input type="text" placeholder="weibo.com/..." value={socials.weibo} onChange={e => setSocials({...socials, weibo: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
-                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><Globe className="w-4 h-4 text-slate-400 dark:text-slate-400" /> {t.settings.profile.website}</label><input type="text" placeholder="https://..." value={socials.website} onChange={e => setSocials({...socials, website: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
+                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><MessageCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-300" /> {t.settings.profile.wechat}</label><input type="text" placeholder="wxid_..." value={socials.wechat} onChange={e => setSocials({...socials, wechat: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
+                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><Video className="w-4 h-4 text-sky-500" /> {t.settings.profile.bilibili}</label><input type="text" placeholder="space.bilibili.com/..." value={socials.bilibili} onChange={e => setSocials({...socials, bilibili: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
+                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><Share2 className="w-4 h-4 text-slate-900 dark:text-white" /> {t.settings.profile.douyin}</label><input type="text" placeholder="@username" value={socials.douyin} onChange={e => setSocials({...socials, douyin: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
+                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><EyeIcon className="w-4 h-4 text-rose-500" /> {t.settings.profile.weibo}</label><input type="text" placeholder="weibo.com/..." value={socials.weibo} onChange={e => setSocials({...socials, weibo: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
+                                        <div><label className="block text-xs font-medium text-slate-500 mb-1.5 flex items-center gap-2 dark:text-slate-400"><Globe className="w-4 h-4 text-slate-400 dark:text-slate-400" /> {t.settings.profile.website}</label><input type="text" placeholder="https://..." value={socials.website} onChange={e => setSocials({...socials, website: e.target.value})} className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 transition-colors" /></div>
                                     </div>
                                     <div className="mt-10"><button onClick={handleSave} className="px-6 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">{t.settings.profile.saveBtn}</button></div>
                                 </div>

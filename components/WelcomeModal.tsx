@@ -154,7 +154,7 @@ const CustomSelect: React.FC<CustomSelectProps> = ({
                                 onChange={e => setSearch(e.target.value)}
                                 style={{
                                     width: '100%', height: 32, borderRadius: 6,
-                                    border: '1px solid var(--tg-border, #e8e8f0)', padding: '0 10px',
+                                    border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', padding: '0 10px',
                                     fontSize: 12, color: 'var(--tg-text, #1a1d2e)', outline: 'none',
                                     boxSizing: 'border-box', background: 'var(--tg-surface-muted, #fafafa)',
                                 }}

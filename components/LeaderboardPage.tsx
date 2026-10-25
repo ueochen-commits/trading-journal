@@ -107,10 +107,10 @@ const LeaderboardPage: React.FC<LeaderboardPageProps> = ({ onBack }) => {
                 </div>
 
                 {/* Leaderboard Section */}
-                <div className="bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm">
+                <div className="tg-module bg-slate-900/50 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm">
                     {/* Tabs */}
                     <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-                        <div className="flex bg-slate-950 p-1 rounded-xl">
+                        <div className="tg-module flex bg-slate-950 p-1 rounded-xl">
                             {(['daily', 'weekly', 'monthly'] as const).map(tab => (
                                 <button
                                     key={tab}

@@ -148,7 +148,7 @@ const HeatmapTooltip = ({ state, cardRef }: { state: TooltipState; cardRef: Reac
   return (
     <div style={{
       position: 'absolute', left, top,
-      background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
+      background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.25))',
       borderRadius: 8, padding: '12px 14px', minWidth: 180,
       boxShadow: '0 4px 16px -4px rgba(15,23,42,0.12)',
       pointerEvents: 'none', zIndex: 100,
@@ -228,7 +228,7 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
   // Empty state
   if (totalTrades < 10) {
     return (
-      <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
+      <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.2))', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 14, flexShrink: 0 }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--tg-text, #1a1d2e)' }}>{language === 'cn' ? '时段 × 星期' : 'Time × Day'}</span>
@@ -248,7 +248,7 @@ const TimeHeatmapCard: React.FC<TimeHeatmapCardProps> = ({ trades, language = 'c
   }
 
   return (
-    <div ref={cardRef} style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
+    <div ref={cardRef} style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.2))', borderRadius: 10, padding: '20px 24px', display: 'flex', flexDirection: 'column', height: 420 }}>
       <HeatmapTooltip state={tooltip} cardRef={cardRef} />
 
       {/* Header */}

@@ -145,7 +145,7 @@ const BubbleTooltip = ({ state }: { state: TooltipState }) => {
   return (
     <div style={{
       position: 'fixed', left: state.x, top: state.y,
-      background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
+      background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.25))',
       borderRadius: 8, padding: '12px 14px', minWidth: 180,
       boxShadow: '0 4px 16px -4px rgba(15,23,42,0.12)',
       pointerEvents: 'none', zIndex: 9999,
@@ -251,7 +251,7 @@ const SymbolMatrixCard: React.FC<SymbolMatrixCardProps> = ({ trades, language = 
   }, []);
 
   const cardStyle: React.CSSProperties = {
-    background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e8e8f0)', borderRadius: 12,
+    background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e8e8f0))', borderRadius: 12,
     padding: '16px 20px', display: 'flex', flexDirection: 'column',
     height: 420,
     overflow: 'hidden',

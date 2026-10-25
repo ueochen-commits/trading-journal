@@ -320,7 +320,7 @@ const ProfilePage: React.FC<{ user: any; updateProfile: (p: any) => void; showTo
         </FieldRow>
         <FieldRow label="邮箱地址" desc="登录邮箱，无法直接修改" last>
           <FieldInput value={user.email ?? 'user@example.com'} readOnly width={180} />
-          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--tg-positive, #1a7a42)', background: 'var(--tg-positive-soft, #eaf6f0)', border: '1px solid var(--tg-border, #bbf7d0)', padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>已验证</span>
+          <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--tg-positive, #1a7a42)', background: 'var(--tg-positive-soft, #eaf6f0)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #bbf7d0))', padding: '3px 9px', borderRadius: 20, whiteSpace: 'nowrap', letterSpacing: '0.01em' }}>已验证</span>
         </FieldRow>
       </div>
 
@@ -558,7 +558,7 @@ const TagsPage: React.FC<{
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '340px minmax(0, 1fr)', gap: 24, alignItems: 'start' }}>
-        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, overflow: 'hidden', background: 'var(--tg-surface, #fff)' }}>
+        <div style={{ border: `var(--tg-module-border, 1px solid ${T.border})`, borderRadius: 14, overflow: 'hidden', background: 'var(--tg-surface, #fff)' }}>
           <div style={{ padding: '14px 18px', borderBottom: `1px solid ${T.border}`, fontSize: 12, fontWeight: 600, color: T.textMuted, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
             分类列表
           </div>
@@ -592,7 +592,7 @@ const TagsPage: React.FC<{
           })}
         </div>
 
-        <div style={{ border: `1px solid ${T.border}`, borderRadius: 14, background: 'var(--tg-surface, #fff)', padding: 22 }}>
+        <div style={{ border: `var(--tg-module-border, 1px solid ${T.border})`, borderRadius: 14, background: 'var(--tg-surface, #fff)', padding: 22 }}>
           {selectedCategory ? (
             <>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, marginBottom: 20 }}>

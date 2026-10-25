@@ -107,7 +107,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-[var(--tg-border)] flex flex-col overflow-hidden max-h-[90vh]">
                 
                 {/* Header */}
                 <div className="p-6 pb-0">
@@ -140,7 +140,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                     type="number" 
                                     value={accountSize}
                                     onChange={e => setAccountSize(Number(e.target.value))}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-lg font-mono font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl px-4 py-3 text-lg font-mono font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                 />
                             </div>
 
@@ -160,7 +160,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                             className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
                                                 experience === opt.id 
                                                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-500/30'
+                                                : 'border-slate-200 dark:border-[var(--tg-border)] hover:border-indigo-300 dark:hover:border-indigo-500/30'
                                             }`}
                                         >
                                             <div className="flex justify-between items-center">
@@ -201,7 +201,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                             className={`flex-1 py-3 rounded-xl font-bold text-sm transition-all border-2 ${
                                                 riskTolerance === opt.id
                                                 ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300'
-                                                : 'border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-400'
+                                                : 'border-slate-200 dark:border-[var(--tg-border)] text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 dark:text-slate-400'
                                             }`}
                                         >
                                             {opt.label}
@@ -223,7 +223,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                         type="number" 
                                         value={drawdownPain}
                                         onChange={e => setDrawdownPain(Number(e.target.value))}
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-8 pr-4 py-3 text-lg font-mono font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl pl-8 pr-4 py-3 text-lg font-mono font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                                     />
                                 </div>
                             </div>
@@ -266,7 +266,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                             )}
 
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div className="tg-module p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-[var(--tg-border)]">
                                     <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Max Trade Risk <InfoTooltip text={t.risk.tooltips.maxTradeRisk} />
                                     </p>
@@ -274,7 +274,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                         ${recommendedSettings.maxTradeRisk}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div className="tg-module p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-[var(--tg-border)]">
                                     <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Max Daily Loss <InfoTooltip text={t.risk.tooltips.maxDailyLoss} />
                                     </p>
@@ -282,7 +282,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                         ${recommendedSettings.maxDailyLoss}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div className="tg-module p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-[var(--tg-border)]">
                                     <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Max Loss Streak <InfoTooltip text={t.risk.tooltips.maxConsecutiveLosses} />
                                     </p>
@@ -290,7 +290,7 @@ const RiskAssessmentModal: React.FC<RiskAssessmentModalProps> = ({ isOpen, onCom
                                         {recommendedSettings.maxConsecutiveLosses} Trades
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <div className="tg-module p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-[var(--tg-border)]">
                                     <p className="flex items-center text-xs text-slate-500 uppercase font-bold dark:text-slate-400">
                                         Daily Profit Target <InfoTooltip text={t.risk.tooltips.dailyProfitTarget} />
                                     </p>

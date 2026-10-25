@@ -158,7 +158,7 @@ const TourOverlay = () => {
             {/* Tooltip Card — needs pointer events */}
             <div
                 ref={cardRef}
-                className="absolute bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 transition-all duration-300 ease-out flex flex-col gap-3"
+                className="absolute bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-2xl border border-slate-200 dark:border-[var(--tg-border)] transition-all duration-300 ease-out flex flex-col gap-3"
                 style={{ ...getTooltipStyle(), pointerEvents: 'auto', maxWidth: 340 }}
             >
                 <div className="flex justify-between items-start">
@@ -179,7 +179,7 @@ const TourOverlay = () => {
                     {getTourText(currentStep.contentKey)}
                 </p>
 
-                <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex justify-between items-center mt-2 pt-2 border-t border-slate-100 dark:border-[var(--tg-border)]">
                     <button
                         onClick={closeTour}
                         className="text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 dark:text-slate-400"

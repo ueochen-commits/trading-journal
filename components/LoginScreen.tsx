@@ -34,7 +34,7 @@ const LoginScreen: React.FC = () => {
                 </div>
 
                 {/* Main Card */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-2xl overflow-hidden">
+                <div className="tg-module bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-3xl shadow-2xl overflow-hidden">
                     <div className="p-8 flex flex-col items-center text-center">
                         
                         {step === 'scan' && (
@@ -48,7 +48,7 @@ const LoginScreen: React.FC = () => {
 
                                 {/* QR Code Simulation */}
                                 <div 
-                                    className="relative w-48 h-48 bg-white p-2 rounded-xl shadow-inner mb-8 cursor-pointer group dark:bg-slate-900"
+                                    className="tg-module relative w-48 h-48 bg-white p-2 rounded-xl shadow-inner mb-8 cursor-pointer group dark:bg-slate-900"
                                     onClick={handleLogin}
                                 >
                                     <div className="w-full h-full border-2 border-slate-900 rounded-lg flex items-center justify-center relative overflow-hidden">
@@ -91,7 +91,7 @@ const LoginScreen: React.FC = () => {
                         {step === 'processing' && (
                             <div className="py-12 animate-fade-in flex flex-col items-center">
                                 <div className="relative mb-6">
-                                    <div className="w-16 h-16 border-4 border-slate-200 dark:border-slate-700 rounded-full"></div>
+                                    <div className="w-16 h-16 border-4 border-slate-200 dark:border-[var(--tg-border)] rounded-full"></div>
                                     <div className="absolute top-0 left-0 w-16 h-16 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
                                     <div className="absolute inset-0 flex items-center justify-center">
                                         <ScanLine className="w-6 h-6 text-indigo-500" />
@@ -114,7 +114,7 @@ const LoginScreen: React.FC = () => {
                     </div>
                     
                     {/* Footer */}
-                    <div className="bg-slate-50 dark:bg-slate-950/50 p-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
+                    <div className="bg-slate-50 dark:bg-slate-950/50 p-4 border-t border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center text-xs text-slate-500 dark:text-slate-400">
                         <div className="flex items-center gap-1.5">
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                             {t.login.secure}

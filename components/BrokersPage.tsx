@@ -161,7 +161,7 @@ const RowMenu: React.FC<{
       {open && (
         <div style={{
           position: 'absolute', top: '100%', right: 0, zIndex: 100,
-          background: 'var(--tg-surface, #ffffff)', border: '1px solid var(--tg-border, #e8e4f4)',
+          background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e4f4))',
           borderRadius: 10, boxShadow: '0 4px 20px rgba(80,80,160,0.12)',
           padding: 6, minWidth: 160, marginTop: 4,
         }}>
@@ -207,7 +207,7 @@ const DeleteAccountModal: React.FC<{
 
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(20,20,35,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ef))', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}>
         <style>{`@keyframes clearModalIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
 
         {/* Header */}
@@ -235,7 +235,7 @@ const DeleteAccountModal: React.FC<{
             onChange={e => setInputValue(e.target.value)}
             placeholder="我确认删除我的账户"
             onKeyDown={e => { if (e.key === 'Enter' && canConfirm) { onConfirm(accountId); onClose(); } }}
-            style={{ width: '100%', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none', background: 'var(--tg-surface, #fff)', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
+            style={{ width: '100%', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ef))', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none', background: 'var(--tg-surface, #fff)', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
             onFocus={e => (e.target.style.borderColor = 'var(--tg-accent-border, #9b8fde)')}
             onBlur={e => (e.target.style.borderColor = 'var(--tg-border, #e4e4ef)')}
           />
@@ -243,7 +243,7 @@ const DeleteAccountModal: React.FC<{
 
         {/* Buttons */}
         <div style={{ padding: '0 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: 'var(--tg-secondary, #666)', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ef))', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: 'var(--tg-secondary, #666)', cursor: 'pointer' }}>
             取消
           </button>
           <button
@@ -297,7 +297,7 @@ const ClearTradesModal: React.FC<{
     >
       <div
         onClick={e => e.stopPropagation()}
-        style={{ background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}
+        style={{ background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ef))', borderRadius: 10, width: 400, animation: 'clearModalIn 0.15s ease forwards' }}
       >
         <style>{`@keyframes clearModalIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }`}</style>
 
@@ -325,7 +325,7 @@ const ClearTradesModal: React.FC<{
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             placeholder="清除所有交易"
-            style={{ width: '100%', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none', background: 'var(--tg-surface, #fff)', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
+            style={{ width: '100%', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ef))', borderRadius: 6, padding: '8px 11px', fontSize: 13, color: 'var(--tg-text, #1a1a2e)', outline: 'none', background: 'var(--tg-surface, #fff)', transition: 'border-color 0.15s', boxSizing: 'border-box' }}
             onFocus={e => (e.target.style.borderColor = 'var(--tg-accent-border, #9b8fde)')}
             onBlur={e => (e.target.style.borderColor = 'var(--tg-border, #e4e4ef)')}
             onKeyDown={e => { if (e.key === 'Enter') handleConfirm(); }}
@@ -334,7 +334,7 @@ const ClearTradesModal: React.FC<{
 
         {/* Buttons */}
         <div style={{ padding: '0 22px 18px', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-          <button onClick={onClose} style={{ background: 'var(--tg-surface, #fff)', border: '0.5px solid var(--tg-border, #e4e4ef)', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: 'var(--tg-secondary, #666)', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e4e4ef))', borderRadius: 6, padding: '7px 14px', fontSize: 13, color: 'var(--tg-secondary, #666)', cursor: 'pointer' }}>
             取消
           </button>
           <button
@@ -455,7 +455,7 @@ const BrokersPage: React.FC<Props> = ({
             onClick={() => selectedIds.forEach(id => onSyncAccount?.(id))}
             style={{
               height: 34, padding: '0 14px', borderRadius: 8, fontSize: 13, fontWeight: 500,
-              border: '1px solid var(--tg-border, #e4e0f4)', transition: 'all 0.14s',
+              border: 'var(--tg-module-border, 1px solid var(--tg-border, #e4e0f4))', transition: 'all 0.14s',
               background: selectedIds.length > 0 ? (syncBtnHov ? 'var(--tg-accent-soft, #f5f2fc)' : 'var(--tg-surface, #ffffff)') : 'var(--tg-accent-soft, #f5f3fc)',
               color: selectedIds.length > 0 ? 'var(--tg-secondary, #5050a0)' : 'var(--tg-muted, #b0a8d0)',
               cursor: selectedIds.length > 0 ? 'pointer' : 'not-allowed',
@@ -466,7 +466,7 @@ const BrokersPage: React.FC<Props> = ({
           {isAtLimit && userPlan !== 'elite' && (
             <div style={{
               fontSize: 12, color: 'var(--tg-muted, #8080b8)', background: 'var(--tg-accent-soft, #f5f3fc)',
-              border: '1px solid var(--tg-border, #e4e0f4)', borderRadius: 8, padding: '5px 12px',
+              border: 'var(--tg-module-border, 1px solid var(--tg-border, #e4e0f4))', borderRadius: 8, padding: '5px 12px',
               display: 'flex', alignItems: 'center', gap: 6, whiteSpace: 'nowrap',
             }}>
               已达到 {limit} 个账户上限 —

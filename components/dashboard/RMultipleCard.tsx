@@ -136,7 +136,7 @@ const BinTooltip = ({
   return (
     <div style={{
       position: 'absolute', left, top, zIndex: 100, pointerEvents: 'none',
-      background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
+      background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.25))',
       borderRadius: 8, padding: '10px 12px', minWidth: 160,
       boxShadow: '0 4px 16px -4px rgba(15,23,42,0.12)',
       fontFamily: 'inherit', fontSize: 12,
@@ -204,7 +204,7 @@ const RMultipleCard: React.FC<RMultipleCardProps> = ({ trades, language = 'cn', 
   const cardStyle: React.CSSProperties = {
     position: 'relative',
     background: 'var(--tg-surface, #fff)',
-    border: '1px solid rgba(148,163,184,0.2)',
+    border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.2))',
     borderRadius: 10,
     padding: '20px 22px',
     display: 'flex',

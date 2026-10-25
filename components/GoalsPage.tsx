@@ -97,7 +97,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
             <div className="flex items-center gap-4">
                 <button 
                     onClick={onBack}
-                    className="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-indigo-600 dark:hover:text-white transition-colors dark:text-slate-400"
+                    className="p-2 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] text-slate-500 hover:text-indigo-600 dark:hover:text-white transition-colors dark:text-slate-400"
                 >
                     <ArrowLeft className="w-5 h-5" />
                 </button>
@@ -126,7 +126,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-[var(--tg-border)] shadow-sm relative overflow-hidden">
                     <div className="relative z-10">
                         <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{t.goalsPage.bestWeek}</p>
                         <h3 className="text-3xl font-bold text-emerald-500 font-mono">
@@ -139,7 +139,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm relative overflow-hidden">
+                <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-[var(--tg-border)] shadow-sm relative overflow-hidden">
                     <div className="relative z-10">
                         <p className="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{t.goalsPage.avgCompletion}</p>
                         <h3 className="text-3xl font-bold text-blue-500 font-mono">
@@ -156,7 +156,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
             </div>
 
             {/* Main Chart */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm">
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                 <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
                     <Target className="w-5 h-5 text-indigo-500" />
                     {t.goalsPage.chartTitle}
@@ -184,7 +184,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
             </div>
 
             {/* History List */}
-            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-50 dark:bg-slate-950 text-slate-500 dark:text-slate-400 font-semibold uppercase text-xs">
@@ -199,7 +199,7 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
                             {historicalData.map((week, idx) => (
                                 <tr key={idx} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                     <td className="px-6 py-4 flex items-center gap-3">
-                                        <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400">
+                                        <div className="tg-module p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 dark:text-slate-400">
                                             <Calendar className="w-4 h-4" />
                                         </div>
                                         <span>{week.fullDate}</span>

@@ -21,7 +21,8 @@ html.dark {
   --tg-text: #f1f5f9;
   --tg-secondary: #cbd5e1;
   --tg-muted: #94a3b8;
-  --tg-border: #334155;
+  --tg-border: #253148;
+  --tg-module-border: 0.5px solid var(--tg-border);
   --tg-grid: #293548;
   --tg-heat-1: #37305c;
   --tg-heat-2: #4c3d7d;
@@ -44,7 +45,7 @@ html.dark {
   --text-secondary: var(--tg-muted);
   --border-primary: var(--tg-border);
   --border-secondary: var(--tg-border);
-  --border-tertiary: #253148;
+  --border-tertiary: var(--tg-border);
 }
 
 html.dark body { background: var(--tg-page); color: var(--tg-text); }
@@ -53,3 +54,8 @@ html.dark textarea::placeholder,
 html.dark [contenteditable]:empty::before { color: var(--tg-muted); }
 html.dark select option { background: var(--tg-surface); color: var(--tg-text); }
 html.dark .notes-panel-editor .tiptap { color: var(--tg-text); }
+
+/* Match the Journal summary cards throughout the dark dashboard. Accent and
+   focus borders retain their own colors; light layouts use their existing style. */
+:where(html.dark) .tg-module { border-color: var(--tg-border); }
+html.dark .tg-module { border-style: solid; border-width: 0.5px; }

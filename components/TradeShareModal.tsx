@@ -105,7 +105,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                 {/* SECTION A: THE SHAREABLE CARD (Target for Screenshot) */}
                 <div 
                     ref={cardRef}
-                    className="w-full aspect-[4/5] max-w-[380px] bg-slate-950 rounded-xl overflow-hidden shadow-2xl relative border border-white/10"
+                    className="tg-module w-full aspect-[4/5] max-w-[380px] bg-slate-950 rounded-xl overflow-hidden shadow-2xl relative border border-white/10"
                 >
                     {/* Background Design */}
                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-950 to-slate-900"></div>
@@ -171,7 +171,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                                 <p className="text-lg font-bold text-white tracking-tighter">TradeGrail.com</p>
                             </div>
                             <div className="w-16 h-16 bg-white p-1.5 rounded-xl shadow-lg shadow-black/50 overflow-hidden dark:bg-slate-900">
-                                <div className="w-full h-full bg-slate-900 rounded-lg flex items-center justify-center">
+                                <div className="tg-module w-full h-full bg-slate-900 rounded-lg flex items-center justify-center">
                                     <QrCode className="w-8 h-8 text-white opacity-40" />
                                 </div>
                             </div>
@@ -186,7 +186,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                 <div className="w-full mt-6 space-y-6 animate-fade-in-up">
                     
                     {/* Share Link Field */}
-                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-1.5 flex items-center shadow-xl">
+                    <div className="tg-module bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-2xl p-1.5 flex items-center shadow-xl">
                         <div className="pl-3 text-slate-400 dark:text-slate-400">
                             <LinkIcon className="w-4 h-4" />
                         </div>
@@ -216,7 +216,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                     <button 
                         onClick={handleSaveToAlbum}
                         disabled={isGenerating}
-                        className={`w-full py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 hover:scale-[1.02] active:scale-[0.98] ${isGenerating ? 'opacity-50 cursor-wait' : ''}`}
+                        className={`w-full py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-2xl font-black text-sm transition-all shadow-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-[var(--tg-border)] hover:scale-[1.02] active:scale-[0.98] ${isGenerating ? 'opacity-50 cursor-wait' : ''}`}
                     >
                         {isGenerating ? (
                             /* Fix: added RefreshCw icon to imports from lucide-react */

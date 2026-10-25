@@ -131,7 +131,7 @@ const UserProfileModal: React.FC = () => {
                     </tbody>
                 </table>
                 {!isElite && (
-                    <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <div className="mt-6 pt-5 border-t border-slate-100 dark:border-[var(--tg-border)] flex justify-end">
                         <button onClick={() => { handleClose(); openPricing(); }} className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded text-sm font-semibold transition-colors">
                             {language === 'cn' ? '升级账户' : 'Upgrade Account'}
                         </button>
@@ -154,7 +154,7 @@ const UserProfileModal: React.FC = () => {
                 <p className="text-xs text-slate-400 mb-5 -mt-2 dark:text-slate-400">{language === 'cn' ? '以下设备当前已登录你的账户。' : 'Devices currently signed in to your account.'}</p>
                 <div className="space-y-2.5">
                     {devices.map(device => (
-                        <div key={device.id} className="flex items-center justify-between px-4 py-3.5 rounded-lg border border-slate-100 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/40">
+                        <div key={device.id} className="tg-module flex items-center justify-between px-4 py-3.5 rounded-lg border border-slate-100 dark:border-[var(--tg-border)] bg-slate-50/60 dark:bg-slate-950/40">
                             <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-md bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-500 dark:text-slate-400 flex-shrink-0">
                                     {device.type === 'mobile' ? <Smartphone className="w-4 h-4" /> : <Monitor className="w-4 h-4" />}
@@ -326,7 +326,7 @@ const UserProfileModal: React.FC = () => {
                         <div className="flex items-center gap-3">
                             <button onClick={() => setPanel('features')} className="text-indigo-600 hover:text-indigo-500 text-xs transition-colors dark:text-indigo-300">{language === 'cn' ? '功能说明' : 'Details'}</button>
                             {!isPro && (
-                                <button onClick={() => { handleClose(); openPricing(); }} className="border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-1 rounded text-xs font-bold transition-colors">
+                                <button onClick={() => { handleClose(); openPricing(); }} className="border border-slate-300 dark:border-[var(--tg-border)] hover:bg-slate-50 dark:hover:bg-slate-800 px-3 py-1 rounded text-xs font-bold transition-colors">
                                     {language === 'cn' ? '立即开通' : 'Subscribe'}
                                 </button>
                             )}
@@ -381,15 +381,15 @@ const UserProfileModal: React.FC = () => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in" onClick={handleClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-lg w-full max-w-4xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 dark:border-slate-800">
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-lg w-full max-w-4xl shadow-2xl overflow-hidden border border-slate-200 dark:border-[var(--tg-border)] flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+                <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 dark:border-[var(--tg-border)]">
                     <h2 className="text-lg font-bold text-slate-800 dark:text-white">{language === 'cn' ? '账户信息' : 'Account Info'}</h2>
                     <button onClick={handleClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors dark:text-slate-400"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="flex flex-1 overflow-hidden">
-                    <div className="w-64 border-r border-slate-100 dark:border-slate-800 p-6 flex flex-col items-center bg-slate-50/50 dark:bg-slate-950/30">
+                    <div className="w-64 border-r border-slate-100 dark:border-[var(--tg-border)] p-6 flex flex-col items-center bg-slate-50/50 dark:bg-slate-950/30">
                         <div className="relative mb-4">
-                            <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border-2 border-white dark:border-slate-700 shadow-md">
+                            <div className="w-24 h-24 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden border-2 border-white dark:border-[var(--tg-border)] shadow-md">
                                 {user.avatarUrl ? (
                                     <img src={user.avatarUrl} alt={user.name} className="w-full h-full object-cover" />
                                 ) : (
@@ -403,14 +403,14 @@ const UserProfileModal: React.FC = () => {
                             <h3 className="font-bold text-slate-900 dark:text-white text-lg truncate max-w-[140px]">{user.name}</h3>
                         </div>
                         <div className="mt-auto w-full space-y-3">
-                            <button className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-colors">
+                            <button className="w-full py-2 px-4 border border-slate-200 dark:border-[var(--tg-border)] rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-colors">
                                 {language === 'cn' ? '绑定微信 / Teams' : 'Connect Teams'}
                             </button>
-                            <button className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+                            <button className="w-full py-2 px-4 border border-slate-200 dark:border-[var(--tg-border)] rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
                                 <HelpCircle className="w-4 h-4" />
                                 {language === 'cn' ? '用户支持' : 'Support'}
                             </button>
-                            <button onClick={logout} className="w-full py-2 px-4 border border-slate-200 dark:border-slate-700 rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/10 hover:text-rose-600 hover:border-rose-200 transition-colors flex items-center justify-center gap-2 dark:hover:text-rose-300 dark:hover:border-rose-500/30">
+                            <button onClick={logout} className="w-full py-2 px-4 border border-slate-200 dark:border-[var(--tg-border)] rounded text-sm text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/10 hover:text-rose-600 hover:border-rose-200 transition-colors flex items-center justify-center gap-2 dark:hover:text-rose-300 dark:hover:border-rose-500/30">
                                 <LogOut className="w-4 h-4" />
                                 {language === 'cn' ? '退出登录' : 'Logout'}
                             </button>

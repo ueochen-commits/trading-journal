@@ -28,7 +28,7 @@ const LargeOption: React.FC<LargeOptionProps> = ({ icon, title, desc, badge, onC
         style={{
             width: '100%', display: 'flex', alignItems: 'center', gap: 14,
             padding: '14px 16px', borderRadius: 8,
-            border: '1px solid var(--tg-border, #e8e8f0)', background: 'var(--tg-accent-soft, #f9f9fb)',
+            border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', background: 'var(--tg-accent-soft, #f9f9fb)',
             cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s',
         }}
         onMouseEnter={e => {
@@ -49,7 +49,7 @@ const LargeOption: React.FC<LargeOptionProps> = ({ icon, title, desc, badge, onC
                 {badge && (
                     <span style={{
                         fontSize: 10, fontWeight: 600, color: 'var(--tg-muted, #9396aa)',
-                        background: 'var(--tg-accent-soft, #f0f0f6)', border: '1px solid var(--tg-border, #e0e0ea)',
+                        background: 'var(--tg-accent-soft, #f0f0f6)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e0e0ea))',
                         padding: '1px 6px', borderRadius: 3, letterSpacing: '0.03em', flexShrink: 0,
                     }}>{badge.text}</span>
                 )}
@@ -68,7 +68,7 @@ const SmallOption: React.FC<SmallOptionProps> = ({ icon, title, desc, badge, onC
         style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
             gap: 8, padding: '16px 12px', borderRadius: 8,
-            border: '1px solid var(--tg-border, #e8e8f0)', background: 'var(--tg-accent-soft, #f9f9fb)',
+            border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', background: 'var(--tg-accent-soft, #f9f9fb)',
             cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s',
             minHeight: 96, width: '100%',
         }}
@@ -90,7 +90,7 @@ const SmallOption: React.FC<SmallOptionProps> = ({ icon, title, desc, badge, onC
                 {badge && (
                     <span style={{
                         fontSize: 10, fontWeight: 600, color: 'var(--tg-muted, #9396aa)',
-                        background: 'var(--tg-accent-soft, #f0f0f6)', border: '1px solid var(--tg-border, #e0e0ea)',
+                        background: 'var(--tg-accent-soft, #f0f0f6)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e0e0ea))',
                         padding: '1px 5px', borderRadius: 3, marginLeft: 5, letterSpacing: '0.03em',
                     }}>{badge.text}</span>
                 )}
@@ -229,8 +229,8 @@ const WelcomeStep2: React.FC<WelcomeStep2Props> = ({ userName, onClose, onNaviga
                         <div style={{ fontSize: 12, color: 'var(--tg-muted, #9396aa)', marginBottom: 16, lineHeight: 1.6 }}>
                             扫描下方二维码加入群聊<br/>与其他交易者交流复盘经验
                         </div>
-                        <img src="/wechat-qr.png" alt="微信群二维码" style={{ width: 160, height: 160, borderRadius: 8, border: '1px solid var(--tg-border, #f0f0f6)', display: 'block', margin: '0 auto 16px' }} />
-                        <button onClick={() => setShowQR(false)} style={{ width: '100%', height: 38, borderRadius: 8, border: '1px solid var(--tg-border, #e8e8f0)', background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--tg-secondary, #4a4d6a)', cursor: 'pointer' }}>
+                        <img src="/wechat-qr.png" alt="微信群二维码" style={{ width: 160, height: 160, borderRadius: 8, border: 'var(--tg-module-border, 1px solid var(--tg-border, #f0f0f6))', display: 'block', margin: '0 auto 16px' }} />
+                        <button onClick={() => setShowQR(false)} style={{ width: '100%', height: 38, borderRadius: 8, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', background: 'transparent', fontSize: 13, fontWeight: 500, color: 'var(--tg-secondary, #4a4d6a)', cursor: 'pointer' }}>
                             关闭
                         </button>
                     </div>

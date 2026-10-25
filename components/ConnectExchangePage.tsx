@@ -171,7 +171,7 @@ const ConnectExchangePage: React.FC<ConnectExchangePageProps> = ({ onClose, onCo
                         <div ref={dropdownRef} style={{
                             position: 'absolute', top: '100%', left: 0, right: 0,
                             background: 'var(--tg-surface, #ffffff)',
-                            border: '1px solid var(--tg-border, #e0e0ea)', borderTop: 'none',
+                            border: 'var(--tg-module-border, 1px solid var(--tg-border, #e0e0ea))', borderTop: 'none',
                             borderRadius: '0 0 10px 10px',
                             boxShadow: '0 6px 20px rgba(0,0,0,0.08)',
                             zIndex: 50, overflow: 'hidden', maxHeight: 360, overflowY: 'auto',

@@ -302,7 +302,7 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, langua
   const uwDays = hoverIdx !== null ? daysUnderwaterAt(stats.points, hoverIdx) : null;
 
   return (
-    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.2)', borderRadius: 10, padding: '18px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
+    <div style={{ position: 'relative', background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.2))', borderRadius: 10, padding: '18px 20px', height: 320, display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 12, flexShrink: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -329,7 +329,7 @@ const DrawdownCard: React.FC<DrawdownCardProps> = ({ trades, accountSize, langua
           {hoverPoint && tooltipStyle && (
             <div style={{
               ...tooltipStyle,
-              background: 'var(--tg-surface, #fff)', border: '1px solid rgba(148,163,184,0.25)',
+              background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid rgba(148,163,184,0.25))',
               borderRadius: 8, padding: '10px 12px', minWidth: 148,
               boxShadow: '0 4px 12px rgba(15,23,42,0.08)',
               pointerEvents: 'none', zIndex: 10, fontFamily: 'inherit',

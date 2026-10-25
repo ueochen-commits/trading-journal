@@ -165,7 +165,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
     };
 
     const RenderAttachedTrade = ({ trade }: { trade: Trade }) => (
-        <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 relative group w-full">
+        <div className="tg-module flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] relative group w-full">
             <div className={`p-2 rounded-lg ${trade.pnl >= 0 ? 'bg-emerald-100 text-emerald-600 dark:text-emerald-300 dark:bg-emerald-950/40' : 'bg-rose-100 text-rose-600 dark:text-rose-300 dark:bg-rose-950/40'}`}>
                 {trade.pnl >= 0 ? <TrendingUp className="w-5 h-5"/> : <TrendingDown className="w-5 h-5"/>}
             </div>
@@ -206,7 +206,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
             <div className="lg:col-span-3 space-y-6">
                 
                 {/* Compose Box */}
-                <div className={`bg-white dark:bg-slate-900 rounded-2xl p-4 border transition-all duration-300 shadow-sm ${attachedTrade || attachedPlan ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-800'}`}>
+                <div className={`bg-white dark:bg-slate-900 rounded-2xl p-4 border transition-all duration-300 shadow-sm ${attachedTrade || attachedPlan ? 'border-indigo-500 ring-2 ring-indigo-500/10' : 'border-slate-200 dark:border-[var(--tg-border)]'}`}>
                     <div className="flex gap-4">
                         <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold flex-shrink-0">
                             {userProfile.initials}
@@ -223,14 +223,14 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                             {/* Attachments Previews */}
                             {selectedImage && (
                                 <div className="relative inline-block mt-2">
-                                    <img src={selectedImage} alt="Preview" className="h-32 w-auto rounded-lg object-cover border border-slate-200 dark:border-slate-700" />
+                                    <img src={selectedImage} alt="Preview" className="h-32 w-auto rounded-lg object-cover border border-slate-200 dark:border-[var(--tg-border)]" />
                                     <button onClick={() => setSelectedImage(null)} className="absolute -top-2 -right-2 bg-slate-800 text-white rounded-full p-1"><X className="w-3 h-3"/></button>
                                 </div>
                             )}
                             
                             {/* Quoted Post Preview */}
                             {quotedPost && (
-                                <div className="mt-3 relative p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/30">
+                                <div className="tg-module mt-3 relative p-4 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-950/30">
                                     <button onClick={() => setQuotedPost(null)} className="absolute top-2 right-2 text-slate-400 hover:text-rose-500 dark:text-slate-400"><X className="w-4 h-4"/></button>
                                     <div className="flex items-center gap-2 mb-2">
                                         <Repeat className="w-3 h-3 text-slate-400 dark:text-slate-400" />
@@ -259,7 +259,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                 </div>
                             )}
 
-                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100 dark:border-[var(--tg-border)]">
                                 <div className="flex gap-2">
                                     <label className="p-2 text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-full cursor-pointer transition-colors dark:text-slate-400" title="Image">
                                         <ImageIcon className="w-5 h-5" />
@@ -285,7 +285,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                 </div>
 
                 {/* Feed Tabs */}
-                <div className="flex items-center gap-6 border-b border-slate-200 dark:border-slate-800 px-2">
+                <div className="flex items-center gap-6 border-b border-slate-200 dark:border-[var(--tg-border)] px-2">
                     <button className="pb-3 border-b-2 border-indigo-500 text-indigo-600 dark:text-indigo-400 font-bold">{t.plaza.feed}</button>
                     <button className="pb-3 border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 font-medium">{t.plaza.following}</button>
                 </div>
@@ -295,7 +295,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                     {posts.map(post => {
                         const showComments = expandedComments.includes(post.id);
                         return (
-                            <div key={post.id} className="bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+                            <div key={post.id} className="tg-module bg-white dark:bg-slate-900 rounded-2xl p-6 border border-slate-200 dark:border-[var(--tg-border)] shadow-sm hover:shadow-md transition-shadow">
                                 {/* Author Header */}
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="flex items-center gap-3">
@@ -306,7 +306,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                             <div className="flex items-center gap-2">
                                                 <h4 className="font-bold text-slate-900 dark:text-white">{post.authorName}</h4>
                                                 {/* Tier Badge */}
-                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-slate-700 dark:text-slate-400">
+                                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 text-slate-500 border border-slate-200 dark:border-[var(--tg-border)] dark:text-slate-400">
                                                     {post.authorTier}
                                                 </span>
                                             </div>
@@ -325,7 +325,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
 
                                 {/* Quoted Post Display */}
                                 {post.quotedPost && (
-                                    <div className="mb-4 p-4 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-950/30 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors cursor-pointer">
+                                    <div className="tg-module mb-4 p-4 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-950/30 hover:bg-slate-100 dark:hover:bg-slate-900/50 transition-colors cursor-pointer">
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="w-5 h-5 rounded-full bg-indigo-500 flex items-center justify-center text-[8px] text-white font-bold">
                                                 {post.quotedPost.authorInitials}
@@ -341,7 +341,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
 
                                 {/* Image Attachment */}
                                 {post.image && (
-                                    <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800">
+                                    <div className="mb-4 rounded-xl overflow-hidden border border-slate-200 dark:border-[var(--tg-border)]">
                                         <img src={post.image} alt="Post attachment" className="w-full max-h-[400px] object-cover" />
                                     </div>
                                 )}
@@ -361,7 +361,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                 )}
 
                                 {/* Action Bar */}
-                                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-[var(--tg-border)]">
                                     <button 
                                         onClick={() => toggleLike(post.id)}
                                         className={`flex items-center gap-2 text-sm transition-colors group ${post.isLiked ? 'text-rose-500 font-medium' : 'text-slate-500 hover:text-rose-500 dark:text-slate-400'}`}
@@ -390,7 +390,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
 
                                 {/* Comments Section */}
                                 {showComments && (
-                                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 animate-fade-in">
+                                    <div className="mt-4 pt-4 border-t border-slate-100 dark:border-[var(--tg-border)] animate-fade-in">
                                         {/* Input */}
                                         <div className="flex gap-3 mb-6">
                                             <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
@@ -403,7 +403,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                                     value={commentInputs[post.id] || ''}
                                                     onChange={(e) => setCommentInputs({...commentInputs, [post.id]: e.target.value})}
                                                     onKeyDown={(e) => e.key === 'Enter' && handleCommentSubmit(post.id)}
-                                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full pl-4 pr-10 py-2 text-sm outline-none focus:border-indigo-500 transition-colors"
+                                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-full pl-4 pr-10 py-2 text-sm outline-none focus:border-indigo-500 transition-colors"
                                                 />
                                                 <button 
                                                     onClick={() => handleCommentSubmit(post.id)}
@@ -422,7 +422,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                                         <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 text-xs font-bold flex-shrink-0">
                                                             {comment.authorInitials}
                                                         </div>
-                                                        <div className="flex-1 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl rounded-tl-none">
+                                                        <div className="tg-module flex-1 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-2xl rounded-tl-none">
                                                             <div className="flex justify-between items-baseline mb-1">
                                                                 <span className="text-xs font-bold text-slate-900 dark:text-white">{comment.authorName}</span>
                                                                 <span className="text-[10px] text-slate-400 dark:text-slate-400">{comment.timestamp}</span>
@@ -453,12 +453,12 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                     <input 
                         type="text" 
                         placeholder="Search Plaza..."
-                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full pl-10 pr-4 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors"
+                        className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-full pl-10 pr-4 py-2.5 text-sm outline-none focus:border-indigo-500 transition-colors"
                     />
                 </div>
 
                 {/* Who to Follow */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+                <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] p-5 shadow-sm">
                     <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                         <UserPlus className="w-5 h-5 text-indigo-500" />
                         Who to Follow
@@ -479,7 +479,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                     onClick={() => toggleFollow(friend.id)}
                                     className={`text-xs px-3 py-1.5 rounded-full font-bold transition-all ${
                                         friend.isFollowing 
-                                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700' 
+                                        ? 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[var(--tg-border)]'
                                         : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-md shadow-indigo-500/20'
                                     }`}
                                 >
@@ -491,7 +491,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                 </div>
 
                 {/* Trending Topics (Static Mock) */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-sm">
+                <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] p-5 shadow-sm">
                     <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                         <Globe className="w-5 h-5 text-sky-500" />
                         Trending
@@ -519,8 +519,8 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
             {/* Trade Selection Modal */}
             {showTradeModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up border border-slate-200 dark:border-slate-700">
-                        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up border border-slate-200 dark:border-[var(--tg-border)]">
+                        <div className="p-4 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center">
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t.plaza.selectTrade}</h3>
                             <button onClick={() => setShowTradeModal(false)}><X className="w-5 h-5 text-slate-500 dark:text-slate-400" /></button>
                         </div>
@@ -529,7 +529,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                 <div 
                                     key={trade.id}
                                     onClick={() => { setAttachedTrade(trade); setShowTradeModal(false); }}
-                                    className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all flex justify-between items-center"
+                                    className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all flex justify-between items-center"
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2 rounded-lg ${trade.pnl >= 0 ? 'bg-emerald-100 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300' : 'bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-300'}`}>
@@ -553,8 +553,8 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
             {/* Plan Selection Modal */}
             {showPlanModal && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up border border-slate-200 dark:border-slate-700">
-                        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl w-full max-w-lg max-h-[80vh] flex flex-col shadow-2xl animate-fade-in-up border border-slate-200 dark:border-[var(--tg-border)]">
+                        <div className="p-4 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center">
                             <h3 className="font-bold text-lg text-slate-900 dark:text-white">{t.plaza.selectNote}</h3>
                             <button onClick={() => setShowPlanModal(false)}><X className="w-5 h-5 text-slate-500 dark:text-slate-400" /></button>
                         </div>
@@ -563,7 +563,7 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
                                 <div 
                                     key={plan.id}
                                     onClick={() => { setAttachedPlan(plan); setShowPlanModal(false); }}
-                                    className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
+                                    className="p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl cursor-pointer hover:border-indigo-500 hover:shadow-md transition-all"
                                 >
                                     <div className="flex justify-between items-start mb-1">
                                         <p className="font-bold text-slate-900 dark:text-white text-sm">{plan.title || 'Untitled'}</p>
@@ -582,13 +582,13 @@ const SocialPlaza: React.FC<SocialPlazaProps> = ({ userTrades, userPlans, userPr
             {/* View Plan Content Modal */}
             {viewPlan && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" onClick={() => setViewPlan(null)}>
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col border border-slate-200 dark:border-slate-700" onClick={e => e.stopPropagation()}>
-                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10">
+                    <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col border border-slate-200 dark:border-[var(--tg-border)]" onClick={e => e.stopPropagation()}>
+                        <div className="p-6 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-white dark:bg-slate-900 z-10">
                             <div>
                                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">{viewPlan.title || 'Untitled Note'}</h3>
                                 <p className="text-sm text-slate-500 flex items-center gap-2 mt-1 dark:text-slate-400">
                                     <span className="font-mono bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded text-xs">{viewPlan.date}</span>
-                                    {viewPlan.folder && <span className="capitalize px-2 py-0.5 border border-slate-200 dark:border-slate-700 rounded text-xs">{viewPlan.folder.replace('-', ' ')}</span>}
+                                    {viewPlan.folder && <span className="capitalize px-2 py-0.5 border border-slate-200 dark:border-[var(--tg-border)] rounded text-xs">{viewPlan.folder.replace('-', ' ')}</span>}
                                 </p>
                             </div>
                             <button onClick={() => setViewPlan(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"><X className="w-6 h-6 text-slate-500 dark:text-slate-400" /></button>

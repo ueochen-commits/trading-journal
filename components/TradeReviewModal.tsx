@@ -50,7 +50,7 @@ const RiskTooltipCard: React.FC<{ visible: boolean; top: number; left: number; d
         <div style={{
             position: 'fixed', top, left,
             width: '480px',
-            background: 'var(--tg-surface, #ffffff)', border: '0.5px solid var(--tg-border, #e8e8f0)', borderRadius: '10px',
+            background: 'var(--tg-surface, #ffffff)', border: 'var(--tg-module-border, 0.5px solid var(--tg-border, #e8e8f0))', borderRadius: '10px',
             padding: '16px 18px', boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
             zIndex: 100, opacity: visible ? 1 : 0,
             transform: visible ? 'translateY(0)' : 'translateY(4px)',
@@ -377,12 +377,12 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
     const Divider = () => <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1"></div>;
 
     return (
-        <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div className="tg-module flex flex-col h-full bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] overflow-hidden shadow-sm">
             
             {/* Header Section (Tabs & Quick Templates) */}
-            <div className="px-4 pt-4 pb-2 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div className="px-4 pt-4 pb-2 border-b border-slate-100 dark:border-[var(--tg-border)] bg-white dark:bg-slate-900">
                 <div className="flex justify-between items-center mb-3">
-                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                    <div className="tg-module flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
                         <button 
                             onClick={() => setActiveTab('trade')}
                             className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${activeTab === 'trade' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-400'}`}
@@ -412,7 +412,7 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
                         <button 
                             key={idx} 
                             onClick={() => handleInsertTemplate(t.content)} 
-                            className="px-3 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-[10px] font-medium text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap flex items-center gap-1 group"
+                            className="px-3 py-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-full text-[10px] font-medium text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors whitespace-nowrap flex items-center gap-1 group"
                         >
                             <span className="opacity-70 group-hover:opacity-100">{t.name}</span>
                             <span className="opacity-50">{t.icon}</span>
@@ -422,7 +422,7 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
             </div>
 
             {/* Formatting Toolbar */}
-            <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50 sticky top-0 z-10">
+            <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-950/50 sticky top-0 z-10">
                 
                 {/* History */}
                 <ToolbarButton onClick={() => execCmd('undo')} icon={RotateCcw} title="Undo" />
@@ -432,7 +432,7 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
                 {/* Typography Selects */}
                 <select 
                     onChange={(e) => execCmd('formatBlock', e.target.value)} 
-                    className="bg-transparent text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 rounded p-1 hover:bg-white dark:hover:bg-slate-800 transition-colors h-6 cursor-pointer w-16"
+                    className="bg-transparent text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-[var(--tg-border)] rounded p-1 hover:bg-white dark:hover:bg-slate-800 transition-colors h-6 cursor-pointer w-16"
                     onMouseDown={(e) => e.stopPropagation()}
                 >
                     <option value="P">Normal</option>
@@ -442,7 +442,7 @@ const ReviewEditor: React.FC<ReviewEditorProps> = ({ content, onChange, onSave, 
                 </select>
                 <select 
                     onChange={(e) => execCmd('fontName', e.target.value)} 
-                    className="bg-transparent text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 rounded p-1 hover:bg-white dark:hover:bg-slate-800 transition-colors h-6 cursor-pointer w-16"
+                    className="bg-transparent text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-[var(--tg-border)] rounded p-1 hover:bg-white dark:hover:bg-slate-800 transition-colors h-6 cursor-pointer w-16"
                     onMouseDown={(e) => e.stopPropagation()}
                 >
                     <option value="Arial">Arial</option>
@@ -689,7 +689,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         <MoreHorizontal className="w-4 h-4" />
                     </button>
                     {isMenuOpen && (
-                        <div className="absolute right-0 top-7 z-50 w-[214px] rounded-[16px] border border-slate-200 bg-white p-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] animate-fade-in-up dark:border-slate-700 dark:bg-slate-900">
+                        <div className="absolute right-0 top-7 z-50 w-[214px] rounded-[16px] border border-slate-200 bg-white p-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] animate-fade-in-up dark:border-[var(--tg-border)] dark:bg-slate-900">
                             <div className="mb-3 flex items-center gap-2 text-[13px] font-semibold text-slate-700 dark:text-slate-200">
                                 <Edit2 className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />
                                 <span>{language === 'cn' ? '重命名' : 'Rename'}</span>
@@ -728,7 +728,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                         setIsMenuOpen(false);
                                     }
                                 }}
-                                className="mb-3 w-full rounded-[11px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500/30"
+                                className="mb-3 w-full rounded-[11px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-[var(--tg-border)] dark:bg-slate-950 dark:text-slate-100 dark:focus:border-indigo-500/30"
                             />
 
                             <div className="flex items-center justify-between px-1">
@@ -760,14 +760,14 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                     relative min-h-[42px] bg-white dark:bg-slate-900 border rounded-xl px-2 py-1.5 flex flex-wrap gap-2 transition-all cursor-text
                     ${isFocused 
                         ? 'border-indigo-500 ring-1 ring-indigo-500/20 shadow-sm' 
-                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:border-slate-600 dark:hover:border-slate-700'
+                        : 'border-slate-200 dark:border-[var(--tg-border)] hover:border-slate-300 dark:border-[var(--tg-border)] dark:hover:border-slate-700'
                     }
                 `}
                 onClick={() => setIsFocused(true)}
             >
                 {/* Selected Tags (Pills) */}
                 {tags.map((tag, idx) => (
-                    <span key={idx} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-slate-700 animate-fade-in">
+                    <span key={idx} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold border border-slate-200 dark:border-[var(--tg-border)] animate-fade-in">
                         {tag}
                         <button 
                             onClick={(e) => { e.stopPropagation(); onRemove(tag); }}
@@ -798,7 +798,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
                 {/* Dropdown Menu Overlay */}
                 {isFocused && (
-                    <div className="absolute top-[105%] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-[14px] shadow-[0_12px_28px_rgba(15,23,42,0.08)] z-50 overflow-hidden max-h-56 overflow-y-auto animate-fade-in-up">
+                    <div className="absolute top-[105%] left-0 right-0 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-[14px] shadow-[0_12px_28px_rgba(15,23,42,0.08)] z-50 overflow-hidden max-h-56 overflow-y-auto animate-fade-in-up">
                         {filteredOptions.length > 0 ? (
                             filteredOptions.map((opt, i) => (
                                 <div
@@ -845,7 +845,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 </div>
                             ))
                         ) : (
-                            <div className="px-2 py-2 bg-[#f8f8fb] border-t border-slate-100 dark:border-slate-800 dark:bg-[var(--tg-accent-soft)]">
+                            <div className="px-2 py-2 bg-[#f8f8fb] border-t border-slate-100 dark:border-[var(--tg-border)] dark:bg-[var(--tg-accent-soft)]">
                                 {inputValue ? (
                                     <button 
                                         onMouseDown={(e) => {
@@ -853,7 +853,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                             onAdd(inputValue);
                                             setInputValue('');
                                         }}
-                                        className="w-full flex items-center gap-2 rounded-[10px] bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 px-3 py-2.5 transition-colors text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:bg-slate-900 dark:border-slate-700 dark:hover:border-indigo-500/30 dark:hover:bg-indigo-950/40"
+                                        className="w-full flex items-center gap-2 rounded-[10px] bg-white border border-slate-200 hover:border-indigo-200 hover:bg-indigo-50/30 px-3 py-2.5 transition-colors text-left shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:bg-slate-900 dark:border-[var(--tg-border)] dark:hover:border-indigo-500/30 dark:hover:bg-indigo-950/40"
                                     >
                                         <span className="text-[13px] font-semibold text-[#6c5ce7] tracking-[0.01em] dark:text-[var(--tg-accent)]">
                                             {language === 'cn' ? '+ 创建' : '+ Create'}
@@ -875,7 +875,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
 
             {activeTagMenu && tagMenuAnchor && (
                 <div
-                    className="fixed z-[120] w-[200px] rounded-[14px] border border-slate-200 bg-white px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900"
+                    className="fixed z-[120] w-[200px] rounded-[14px] border border-slate-200 bg-white px-3 py-3 shadow-[0_18px_40px_rgba(15,23,42,0.16)] dark:border-[var(--tg-border)] dark:bg-slate-900"
                     style={{ top: tagMenuAnchor.top, left: tagMenuAnchor.left }}
                 >
                     <input
@@ -897,7 +897,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 setTagMenuAnchor(null);
                             }
                         }}
-                        className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:focus:border-indigo-500/30"
+                        className="w-full rounded-[10px] border border-slate-200 bg-white px-3 py-2 text-[13px] text-slate-700 outline-none focus:border-indigo-300 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-300 dark:focus:border-indigo-500/30"
                     />
                     <div className="mt-3 flex items-center justify-between px-1">
                         <button
@@ -933,7 +933,7 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                         className="absolute inset-0 bg-slate-900/38 backdrop-blur-[2px]"
                         onClick={() => setIsDeleteConfirmOpen(false)}
                     />
-                    <div className="relative z-[141] w-[min(520px,calc(100vw-32px))] overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.24)] animate-fade-in-up dark:border-slate-700 dark:bg-slate-900">
+                    <div className="tg-module relative z-[141] w-[min(520px,calc(100vw-32px))] overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_24px_60px_rgba(15,23,42,0.24)] animate-fade-in-up dark:border-[var(--tg-border)] dark:bg-slate-900">
                         <div className="flex items-start justify-between px-6 pb-4 pt-6">
                             <div>
                                 <h3 className="text-[18px] font-semibold tracking-[-0.02em] text-slate-900 dark:text-slate-100">
@@ -956,10 +956,10 @@ const TagSelector: React.FC<TagSelectorProps> = ({
                                 : 'If you delete a category, all tags that belong to it will be deleted as well. This action cannot be undone.'}
                         </div>
 
-                        <div className="flex items-center gap-3 border-t border-slate-200 px-4 py-4 dark:border-slate-700">
+                        <div className="flex items-center gap-3 border-t border-slate-200 px-4 py-4 dark:border-[var(--tg-border)]">
                             <button
                                 onClick={() => setIsDeleteConfirmOpen(false)}
-                                className="flex-1 rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-[16px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+                                className="flex-1 rounded-[12px] border border-slate-200 bg-white px-4 py-3 text-[16px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
                             >
                                 {language === 'cn' ? '取消' : 'Cancel'}
                             </button>
@@ -1781,13 +1781,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
         <div className="flex flex-col h-full w-full bg-white dark:bg-slate-950 animate-fade-in overflow-hidden">
             
             {/* Header */}
-            <div className="h-16 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-6 bg-white dark:bg-slate-950 shrink-0 z-10">
+            <div className="h-16 border-b border-slate-200 dark:border-[var(--tg-border)] flex items-center justify-between px-6 bg-white dark:bg-slate-950 shrink-0 z-10">
                 <div className="flex items-center gap-6">
                     {/* Navigation Group */}
-                    <div className="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div className="flex items-center bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                         <button 
                             onClick={onClose}
-                            className="p-1.5 px-3 border-r border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors dark:text-slate-400"
+                            className="p-1.5 px-3 border-r border-slate-200 dark:border-[var(--tg-border)] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors dark:text-slate-400"
                             title="Trade List"
                         >
                             <Menu className="w-4 h-4" />
@@ -1795,7 +1795,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                         <button 
                             onClick={handlePrev}
                             disabled={!allTrades || currentIndex <= 0}
-                            className="p-1.5 px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-r border-slate-200 dark:border-slate-700 dark:text-slate-400"
+                            className="p-1.5 px-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors border-r border-slate-200 dark:border-[var(--tg-border)] dark:text-slate-400"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
@@ -1833,7 +1833,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                             className={`w-[18px] h-[18px] rounded-full border-2 flex items-center justify-center transition-all ${
                                 isReviewed
                                     ? 'bg-emerald-500 border-emerald-500'
-                                    : 'border-slate-300 dark:border-slate-600 group-hover:border-emerald-400'
+                                    : 'border-slate-300 dark:border-[var(--tg-border)] group-hover:border-emerald-400'
                             }`}
                         >
                             {isReviewed && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
@@ -2196,7 +2196,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                             bg-white dark:bg-slate-800 border transition-all duration-200 rounded-xl
                                             ${isStrategyMenuOpen 
                                                 ? 'border-indigo-500 ring-4 ring-indigo-500/10 shadow-lg' 
-                                                : 'border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:shadow-md'
+                                                : 'border-slate-200 dark:border-[var(--tg-border)] hover:border-indigo-400 hover:shadow-md'
                                             }
                                         `}
                                     >
@@ -2215,7 +2215,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     </button>
 
                                     {isStrategyMenuOpen && (
-                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden animate-fade-in-up origin-top max-h-64 overflow-y-auto custom-scrollbar">
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl shadow-2xl overflow-hidden animate-fade-in-up origin-top max-h-64 overflow-y-auto custom-scrollbar">
                                             {strategies?.map(s => (
                                                 <button
                                                     key={s.id}
@@ -2244,7 +2244,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
 
                                 {activeStrategy ? (
                                     <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar animate-fade-in">
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 mb-6 border border-slate-100 dark:border-slate-800">
+                                        <div className="tg-module bg-slate-50 dark:bg-slate-900/50 rounded-2xl p-5 mb-6 border border-slate-100 dark:border-[var(--tg-border)]">
                                             <div className="flex justify-between items-end mb-3">
                                                 <div>
                                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">{labels.playbook.rulesFollowed}</span>
@@ -2283,7 +2283,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                                             return (
                                                                 <label key={rule.id} className={`flex items-start gap-3 p-3 rounded-xl border-2 transition-all cursor-pointer select-none ${isChecked ? 'bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-500/20' : 'bg-white dark:bg-slate-900 border-transparent hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
                                                                     <div className="relative flex items-center justify-center mt-0.5">
-                                                                        <input type="checkbox" className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-slate-600 rounded-md checked:bg-emerald-500 transition-all cursor-pointer" checked={isChecked} onChange={() => handleToggleRuleCompliance(rule.id)} />
+                                                                        <input type="checkbox" className="peer appearance-none w-5 h-5 border-2 border-slate-300 dark:border-[var(--tg-border)] rounded-md checked:bg-emerald-500 transition-all cursor-pointer" checked={isChecked} onChange={() => handleToggleRuleCompliance(rule.id)} />
                                                                         <Check className="w-3.5 h-3.5 text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" strokeWidth={3} />
                                                                     </div>
                                                                     <span className={`text-sm leading-snug transition-colors ${isChecked ? 'text-slate-500 line-through decoration-slate-400/50 dark:text-slate-400' : 'text-slate-700 dark:text-slate-200 font-medium'}`}>{rule.text}</span>
@@ -2296,7 +2296,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-900/50">
+                                    <div className="flex-1 flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-200 dark:border-[var(--tg-border)] rounded-2xl bg-slate-50/50 dark:bg-slate-900/50">
                                         <BookOpen className="w-16 h-16 text-slate-300 mb-4" />
                                         <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">No Playbook Selected</h3>
                                         <button onClick={() => setIsStrategyMenuOpen(true)} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold transition-all shadow-md">{labels.playbook.selectStrategy}</button>
@@ -2311,7 +2311,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <Layers className="w-4 h-4 text-indigo-500" /> {labels.executions.title}
                                 </h3>
-                                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative overflow-hidden">
+                                <div className="tg-module p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl relative overflow-hidden">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider dark:text-emerald-300">{labels.executions.entryFill}</span>
@@ -2319,7 +2319,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                     </div>
                                     <span className="font-mono text-lg font-bold text-slate-900 dark:text-white">{currentTrade.quantity} @ {currentTrade.entryPrice}</span>
                                 </div>
-                                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl relative overflow-hidden">
+                                <div className="tg-module p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl relative overflow-hidden">
                                     <div className="absolute left-0 top-0 bottom-0 w-1 bg-rose-500"></div>
                                     <div className="flex justify-between items-start mb-2">
                                         <span className="text-xs font-bold text-rose-600 uppercase tracking-wider dark:text-rose-300">{labels.executions.exitFill}</span>
@@ -2338,7 +2338,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 {currentTrade.images && currentTrade.images.length > 0 ? (
                                     <div className="grid grid-cols-1 gap-4">
                                         {currentTrade.images.map((img, i) => (
-                                            <img key={i} src={img} className="w-full rounded-xl border border-slate-200 dark:border-slate-700" alt={`Screenshot ${i+1}`} />
+                                            <img key={i} src={img} className="w-full rounded-xl border border-slate-200 dark:border-[var(--tg-border)]" alt={`Screenshot ${i+1}`} />
                                         ))}
                                     </div>
                                 ) : <div className="text-sm text-slate-500 italic dark:text-slate-400">{labels.attachments.none}</div>}
@@ -2349,13 +2349,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
 
                 {/* RIGHT CONTENT: Chart & Notes */}
                 <div ref={rightPanelRef} className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-slate-900 relative">
-                    <div style={{ height: `${splitRatio}%` }} className="border-b border-slate-200 dark:border-slate-800 relative">
+                    <div style={{ height: `${splitRatio}%` }} className="border-b border-slate-200 dark:border-[var(--tg-border)] relative">
                         {isDragging && <div className="absolute inset-0 z-50 bg-transparent" />}
 
                         {/* TradingView Chart */}
                         <div ref={chartContainerRef} className="w-full h-full" />
                     </div>
-                    <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-slate-700">
+                    <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-[var(--tg-border)]">
                         <GripHorizontal className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                     </div>
                     <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3">
@@ -2398,7 +2398,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             {/* Modals (Existing) */}
             {isAddCategoryOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-xl w-full max-w-sm p-4 border border-slate-200 dark:border-slate-700">
+                    <div className="tg-module bg-white dark:bg-slate-900 rounded-xl w-full max-w-sm p-4 border border-slate-200 dark:border-[var(--tg-border)]">
                         <h3 className="font-bold mb-4">{language === 'cn' ? '新增分类' : 'Add New Category'}</h3>
                         <input type="text" placeholder={language === 'cn' ? '分类名称' : 'Category Name'} value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border rounded-lg px-3 py-2 text-sm mb-4" />
                         <button onClick={handleCreateCategory} disabled={!newCategoryName.trim()} className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold">{language === 'cn' ? '创建' : 'Create'}</button>

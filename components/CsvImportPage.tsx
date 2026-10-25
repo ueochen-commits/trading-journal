@@ -807,14 +807,14 @@ const CsvImportPage: React.FC<Props> = ({
               <label style={{ fontSize: 11, fontWeight: 600, color: 'var(--tg-muted, #8888b0)', letterSpacing: '0.06em', textTransform: 'uppercase', display: 'block', marginBottom: 8 }}>时区</label>
               <div style={{ position: 'relative' }}>
                 <button onClick={() => setTzOpen(v => !v)}
-                  style={{ width: '100%', height: 46, background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #d8d4ee)', borderRadius: 10, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: 14, color: 'var(--tg-text, #1a1a3a)', fontFamily: 'inherit', boxShadow: 'none' }}>
+                  style={{ width: '100%', height: 46, background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #d8d4ee))', borderRadius: 10, padding: '0 14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', fontSize: 14, color: 'var(--tg-text, #1a1a3a)', fontFamily: 'inherit', boxShadow: 'none' }}>
                   <span>{TIMEZONES.find(t => t.value === timezone)?.label}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8888b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
                 {tzOpen && (
                   <>
                     <div style={{ position: 'fixed', inset: 0, zIndex: 40 }} onClick={() => setTzOpen(false)} />
-                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 2, background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #d8d4ee)', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 2, background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #d8d4ee))', borderRadius: 10, boxShadow: '0 8px 24px rgba(0,0,0,0.1)', zIndex: 50, overflow: 'hidden' }}>
                       {TIMEZONES.map(tz => (
                         <button key={tz.value} onClick={() => { setTimezone(tz.value); setTzOpen(false); }}
                           style={{ width: '100%', padding: '10px 14px', textAlign: 'left', background: tz.value === timezone ? 'var(--tg-accent-soft, #f0f0ff)' : 'transparent', border: 'none', cursor: 'pointer', fontSize: 13.5, color: tz.value === timezone ? 'var(--tg-accent, #5b5bd6)' : 'var(--tg-text, #1a1a3a)', fontFamily: 'inherit', fontWeight: tz.value === timezone ? 600 : 400 }}>
@@ -840,7 +840,7 @@ const CsvImportPage: React.FC<Props> = ({
                   height: 170, boxSizing: 'border-box', borderRadius: 10,
                   transition: 'border-color 200ms ease, background-color 200ms ease',
                   ...(selectedFile ? {
-                    border: '1px solid var(--tg-border, #C7D2FE)', background: 'var(--tg-surface, #FAFBFF)',
+                    border: 'var(--tg-module-border, 1px solid var(--tg-border, #C7D2FE))', background: 'var(--tg-surface, #FAFBFF)',
                     padding: 14, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', cursor: 'default',
                   } : {
                     border: `1.5px dashed ${dragOver ? '#5b5bd6' : 'var(--tg-border, #c8c4e8)'}`,
@@ -1002,7 +1002,7 @@ const CsvImportPage: React.FC<Props> = ({
             <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 500 }}>正在处理你的文件</div>
 
             {/* File card — reuse upload page "selected" style */}
-            <div style={{ border: '1px solid var(--tg-border, #C7D2FE)', background: 'var(--tg-surface, #FAFBFF)', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ border: 'var(--tg-module-border, 1px solid var(--tg-border, #C7D2FE))', background: 'var(--tg-surface, #FAFBFF)', borderRadius: 8, padding: 14, display: 'flex', alignItems: 'center', gap: 12 }}>
               <div style={{ width: 34, height: 34, background: 'var(--tg-accent-soft, #EEF2FF)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="#4338CA">
                   <path d="M7 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-6-6H7Zm6 1.5V8h4.5L13 3.5Z"/>
@@ -1285,7 +1285,7 @@ const CsvImportPage: React.FC<Props> = ({
         </div>
         <div style={{ width: '100%', display: 'flex', gap: 24 }}>
           {/* LEFT */}
-          <div style={{ flex: 1, background: 'var(--tg-surface, #fff)', borderRadius: 16, border: '1px solid var(--tg-border, #e8e8f0)', padding: '24px 24px 20px' }}>
+          <div style={{ flex: 1, background: 'var(--tg-surface, #fff)', borderRadius: 16, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', padding: '24px 24px 20px' }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--tg-muted, #9396aa)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>导入摘要</p>
             {[
               ['数据来源', parseResult?.exchange ?? `${exchangeName} 衍生品`],
@@ -1308,7 +1308,7 @@ const CsvImportPage: React.FC<Props> = ({
               { icon: '📝', title: '写一份本月复盘', desc: '基于导入的数据记录交易心得' },
               { icon: '🏷️', title: '给交易打策略标签', desc: `${imported} 笔交易还没有策略标签` },
             ].map(card => (
-              <div key={card.title} style={{ background: 'var(--tg-surface, #fff)', border: '1px solid var(--tg-border, #e8e8f0)', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s' }}
+              <div key={card.title} style={{ background: 'var(--tg-surface, #fff)', border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', borderRadius: 12, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', transition: 'border-color 0.15s' }}
                 onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--tg-border, #a5b4fc)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--tg-border, #e8e8f0)'; }}>
                 <div style={{ width: 36, height: 36, borderRadius: 8, background: 'var(--tg-accent-soft, #ede9fe)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{card.icon}</div>

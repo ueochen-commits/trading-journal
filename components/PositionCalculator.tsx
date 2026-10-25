@@ -77,7 +77,7 @@ const PositionCalculator: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 
                 {/* Input Section */}
-                <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="tg-module bg-white dark:bg-slate-800 p-6 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                     <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-6">Trade Parameters</h3>
                     <div className="space-y-4">
                         <div className="grid grid-cols-2 gap-4">
@@ -87,7 +87,7 @@ const PositionCalculator: React.FC = () => {
                                     type="number" 
                                     value={accountSize}
                                     onChange={e => setAccountSize(Number(e.target.value))}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                                 />
                             </div>
                             <div>
@@ -97,7 +97,7 @@ const PositionCalculator: React.FC = () => {
                                     step="0.1"
                                     value={riskPercent}
                                     onChange={e => setRiskPercent(Number(e.target.value))}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                                 />
                             </div>
                         </div>
@@ -109,7 +109,7 @@ const PositionCalculator: React.FC = () => {
                                     type="number" 
                                     value={entry}
                                     onChange={e => setEntry(Number(e.target.value))}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                                 />
                             </div>
                             <div>
@@ -118,7 +118,7 @@ const PositionCalculator: React.FC = () => {
                                     type="number" 
                                     value={stopLoss}
                                     onChange={e => setStopLoss(Number(e.target.value))}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                                 />
                             </div>
                             <div>
@@ -127,7 +127,7 @@ const PositionCalculator: React.FC = () => {
                                     type="number" 
                                     value={target}
                                     onChange={e => setTarget(Number(e.target.value))}
-                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
+                                    className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg p-2.5 text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-cyan-500"
                                 />
                             </div>
                         </div>
@@ -135,7 +135,7 @@ const PositionCalculator: React.FC = () => {
 
                     {/* Results Display */}
                     {results && (
-                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-700">
+                        <div className="mt-8 pt-6 border-t border-slate-100 dark:border-[var(--tg-border)]">
                             <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 dark:text-slate-400">{t.calculator.results}</h4>
                             
                             <div className="grid grid-cols-2 gap-4 mb-6">
@@ -172,7 +172,7 @@ const PositionCalculator: React.FC = () => {
                 </div>
 
                 {/* 5-Step Checklist */}
-                <div className="bg-slate-900 text-white p-6 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
+                <div className="tg-module bg-slate-900 text-white p-6 rounded-2xl border border-slate-700 shadow-xl flex flex-col">
                     <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
                         <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                         {t.calculator.fiveStep}
@@ -207,7 +207,7 @@ const PositionCalculator: React.FC = () => {
                         ))}
                     </div>
 
-                    <div className={`mt-6 p-4 rounded-xl text-center font-bold transition-all ${isChecklistComplete ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-500/30 scale-105' : 'bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
+                    <div className={`tg-module mt-6 p-4 rounded-xl text-center font-bold transition-all ${isChecklistComplete ? 'bg-emerald-700 text-white shadow-lg shadow-emerald-500/30 scale-105' : 'bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
                         {isChecklistComplete ? "READY TO EXECUTE" : "COMPLETE CHECKLIST FIRST"}
                     </div>
                 </div>

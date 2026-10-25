@@ -139,7 +139,7 @@ const Banner: React.FC<{ refLink: string }> = ({ refLink }) => {
 const TABS = ['快速开始', '任务中心', '收益记录', '我的链接', '排行榜', '常见问题', '推广素材'];
 
 const TabBar: React.FC<{ active: number; onChange: (i: number) => void }> = ({ active, onChange }) => (
-  <div style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: `0.5px solid ${T.border}`, background: 'var(--tg-surface, #fff)', padding: '0 28px', display: 'flex', gap: 0 }} className="dark:bg-slate-900 dark:border-slate-700">
+  <div style={{ position: 'sticky', top: 0, zIndex: 10, borderBottom: `0.5px solid ${T.border}`, background: 'var(--tg-surface, #fff)', padding: '0 28px', display: 'flex', gap: 0 }} className="dark:bg-slate-900 dark:border-[var(--tg-border)]">
     {TABS.map((tab, i) => (
       <button key={tab} onClick={() => onChange(i)} style={{ padding: '9px 12px', fontSize: 12, fontWeight: active === i ? 500 : 400, color: active === i ? T.textPrimary : T.textTertiary, background: 'none', border: 'none', borderBottom: active === i ? `1.5px solid ${T.primary}` : '1.5px solid transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}>
         {tab}{i === 1 && <span style={{ background: T.primary, color: '#fff', fontSize: 10, padding: '1px 6px', borderRadius: 20, fontVariantNumeric: 'tabular-nums' }}>{TASKS.length}</span>}
@@ -353,7 +353,7 @@ const ReferralCenter: React.FC = () => {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto', background: T.bgPrimary }} className="dark:bg-slate-900">
-      <div style={{ borderBottom: `0.5px solid ${T.border}`, padding: '20px 28px 14px', fontSize: 16, fontWeight: 500, color: T.textPrimary }} className="dark:text-white dark:border-slate-700">
+      <div style={{ borderBottom: `0.5px solid ${T.border}`, padding: '20px 28px 14px', fontSize: 16, fontWeight: 500, color: T.textPrimary }} className="dark:text-white dark:border-[var(--tg-border)]">
         推广中心
       </div>
       <Banner refLink={refLink} />

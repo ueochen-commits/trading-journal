@@ -87,12 +87,12 @@ const TradeScreenshotPicker: React.FC<Props> = ({ images, tier, language, onChan
       </div>
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto">
         {images.map((image, index) => (
-          <div key={`${index}-${image.slice(-24)}`} className="relative min-h-[64px] overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
+          <div key={`${index}-${image.slice(-24)}`} className="relative min-h-[64px] overflow-hidden rounded-lg border border-slate-200 dark:border-[var(--tg-border)]">
             <img src={image} alt={`${cn ? '截图' : 'Screenshot'} ${index + 1}`} className="h-full max-h-[96px] w-full object-cover" />
             <button type="button" aria-label={`${cn ? '删除截图' : 'Remove screenshot'} ${index + 1}`} disabled={busy} onClick={() => change(current.current.filter((_, i) => i !== index))} className="absolute right-1 top-1 rounded-full bg-slate-950/80 p-1 text-white hover:bg-rose-600 disabled:opacity-50"><X size={12} /></button>
           </div>
         ))}
-        {!full && <label className={`flex min-h-[64px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-400 dark:hover:bg-slate-800 ${images.length === 0 ? 'col-span-2' : ''}`}>
+        {!full && <label className={`flex min-h-[64px] cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-slate-300 text-slate-500 hover:bg-slate-50 dark:border-[var(--tg-border)] dark:text-slate-400 dark:hover:bg-slate-800 ${images.length === 0 ? 'col-span-2' : ''}`}>
           <Upload size={18} /><span className="mt-1 text-[10px]">{busy ? (cn ? '处理中…' : 'Processing…') : (cn ? '上传 / 粘贴截图' : 'Upload / paste')}</span>
           <input type="file" aria-label={cn ? '上传交易截图' : 'Upload trade screenshots'} accept="image/*" multiple disabled={busy} className="hidden" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ''; void addFiles(files); }} />
         </label>}

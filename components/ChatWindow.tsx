@@ -34,10 +34,10 @@ const ChatWindow: React.FC = () => {
         : "right-4 md:right-8";
 
     return (
-        <div className={`fixed bottom-0 ${positionClass} w-80 md:w-96 h-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-2xl z-[50] flex flex-col transition-all duration-300 animate-fade-in-up`}>
+        <div className={`fixed bottom-0 ${positionClass} w-80 md:w-96 h-[500px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-t-2xl shadow-2xl z-[50] flex flex-col transition-all duration-300 animate-fade-in-up`}>
             
             {/* Header */}
-            <div className="p-3 px-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-indigo-600 rounded-t-2xl text-white cursor-pointer" onClick={() => {}}>
+            <div className="p-3 px-4 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-indigo-600 rounded-t-2xl text-white cursor-pointer" onClick={() => {}}>
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold bg-white text-indigo-600 border border-indigo-400 dark:bg-slate-900 dark:text-indigo-300">
@@ -66,10 +66,10 @@ const ChatWindow: React.FC = () => {
                 )}
                 {messages.map((msg) => (
                     <div key={msg.id} className={`flex ${msg.senderId === 'me' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow-sm ${
+                        <div className={`tg-module max-w-[80%] px-4 py-2 rounded-2xl text-sm shadow-sm ${
                             msg.senderId === 'me' 
                             ? 'bg-indigo-600 text-white rounded-br-none' 
-                            : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-bl-none'
+                            : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-[var(--tg-border)] rounded-bl-none'
                         }`}>
                             {msg.text}
                         </div>
@@ -79,7 +79,7 @@ const ChatWindow: React.FC = () => {
             </div>
 
             {/* Input */}
-            <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 flex gap-2">
+            <div className="p-3 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-[var(--tg-border)] flex gap-2">
                 <input 
                     type="text" 
                     value={input}

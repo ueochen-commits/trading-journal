@@ -167,11 +167,11 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
     };
 
     return (
-        <div className="flex h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm animate-fade-in">
+        <div className="tg-module flex h-full bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] overflow-hidden shadow-sm animate-fade-in">
 
             {/* --- LEFT SIDEBAR: Directory --- */}
-            <div className="w-[280px] flex-shrink-0 border-r border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 flex flex-col">
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
+            <div className="w-[280px] flex-shrink-0 border-r border-slate-100 dark:border-[var(--tg-border)] bg-slate-50/50 dark:bg-slate-950/40 flex flex-col">
+                <div className="p-4 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-white dark:bg-slate-900">
                     <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest dark:text-slate-400">
                         {language === 'cn' ? '笔记 & 场景' : 'Notes & Scenarios'}
                     </h3>
@@ -191,7 +191,7 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
                             <div
                                 key={note.id}
                                 onClick={() => setActiveNoteId(note.id)}
-                                className={`group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
+                                className={`tg-module group flex items-center justify-between px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 ${
                                     isActive
                                     ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 ring-1 ring-indigo-500/10'
                                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/50'
@@ -224,7 +224,7 @@ const StrategyNotes = ({ strategy, onUpdate }: { strategy: Strategy, onUpdate: (
             {/* --- RIGHT COLUMN: Editor --- */}
             <div className="flex-1 flex flex-col min-w-0">
                 {/* Toolbar */}
-                <div className="flex flex-wrap items-center justify-between p-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/50 sticky top-0 z-10">
+                <div className="flex flex-wrap items-center justify-between p-3 border-b border-slate-100 dark:border-[var(--tg-border)] bg-slate-50/50 dark:bg-slate-950/50 sticky top-0 z-10">
                     <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 md:pb-0">
                         <button onClick={() => execCmd('bold')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors dark:text-slate-400" title="Bold"><Bold size={16} /></button>
                         <button onClick={() => execCmd('insertUnorderedList')} className="p-2 hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg text-slate-500 transition-colors dark:text-slate-400" title="List"><ListIcon size={16} /></button>
@@ -483,18 +483,18 @@ const CreatePlaybookModal = ({
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 animate-fade-in">
-            <div id="playbook-create-modal" className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden max-h-[90vh]">
-                <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 z-10 shrink-0">
+            <div id="playbook-create-modal" className="tg-module bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 dark:border-[var(--tg-border)] flex flex-col overflow-hidden max-h-[90vh]">
+                <div className="px-8 py-6 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center bg-white dark:bg-slate-900 z-10 shrink-0">
                     <h2 className="text-xl font-bold text-slate-900 dark:text-white">{lbl.title}</h2>
                     <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors dark:text-slate-400"><X className="w-5 h-5" /></button>
                 </div>
                 <div className="flex-1 overflow-y-auto p-8 custom-scrollbar bg-slate-50/50 dark:bg-slate-950/30">
                     <div className="mb-10 space-y-6">
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">{lbl.genInfo}</h3>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2 border-b border-slate-200 dark:border-[var(--tg-border)] pb-2">{lbl.genInfo}</h3>
                         <div className="space-y-6 pl-1">
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{lbl.name}</label>
-                                <input autoFocus type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Breakout" className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all shadow-sm" />
+                                <input autoFocus type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Breakout" className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 font-medium transition-all shadow-sm" />
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">{lbl.color}</label>
@@ -506,7 +506,7 @@ const CreatePlaybookModal = ({
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">{lbl.label}</label>
-                                <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all shadow-sm" />
+                                <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Brief description..." className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 text-sm transition-all shadow-sm" />
                             </div>
                         </div>
                     </div>
@@ -514,10 +514,10 @@ const CreatePlaybookModal = ({
                         <div className="mb-6"><h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{lbl.rulesTitle}</h3><p className="text-sm text-slate-500 dark:text-slate-400">{lbl.rulesDesc}</p></div>
                         <div className="space-y-4">
                             {sections.map((section, idx) => (
-                                <div key={section.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden mb-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 group shadow-sm">
-                                    <div className="bg-slate-50/50 dark:bg-slate-900/50 px-4 py-3 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10 transition-colors">
+                                <div key={section.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] overflow-hidden mb-6 transition-all hover:border-indigo-300 dark:hover:border-indigo-600 group shadow-sm">
+                                    <div className="bg-slate-50/50 dark:bg-slate-900/50 px-4 py-3 border-b border-slate-100 dark:border-[var(--tg-border)] flex justify-between items-center group-hover:bg-indigo-50/30 dark:group-hover:bg-indigo-900/10 transition-colors">
                                         <div className="flex items-center gap-3 flex-1">
-                                            <div className="p-1.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 text-slate-400 cursor-grab active:cursor-grabbing hover:text-indigo-500 transition-colors dark:text-slate-400"><GripVertical className="w-3.5 h-3.5" /></div>
+                                            <div className="p-1.5 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-[var(--tg-border)] text-slate-400 cursor-grab active:cursor-grabbing hover:text-indigo-500 transition-colors dark:text-slate-400"><GripVertical className="w-3.5 h-3.5" /></div>
                                             <input type="text" value={section.title} onChange={(e) => handleSectionTitleChange(section.id, e.target.value)} className="bg-transparent border-none outline-none font-bold text-slate-800 dark:text-white text-sm w-full focus:ring-0 p-0 placeholder-slate-400" placeholder="Section Title" />
                                         </div>
                                         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -531,7 +531,7 @@ const CreatePlaybookModal = ({
                                         {section.rules.map((rule) => (
                                             <div key={rule.id} className="flex gap-3 items-center group/rule">
                                                 <GripVertical className="w-4 h-4 text-slate-300 cursor-grab opacity-50 group-hover/rule:opacity-100" />
-                                                <input type="text" value={rule.text} onChange={(e) => handleRuleChange(section.id, rule.id, e.target.value)} placeholder="Type a rule..." className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-400" />
+                                                <input type="text" value={rule.text} onChange={(e) => handleRuleChange(section.id, rule.id, e.target.value)} placeholder="Type a rule..." className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg px-3 py-2 text-sm text-slate-900 dark:text-white outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all placeholder-slate-400" />
                                                 <button onClick={() => handleDeleteRule(section.id, rule.id)} className="text-slate-300 hover:text-rose-500 p-1 opacity-0 group-hover/rule:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
                                             </div>
                                         ))}
@@ -540,11 +540,11 @@ const CreatePlaybookModal = ({
                                 </div>
                             ))}
                         </div>
-                        <button onClick={handleAddSection} className="mt-6 w-full py-3 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 dark:text-slate-400 font-bold text-sm hover:border-indigo-500 hover:text-indigo-500 dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> {lbl.addSection}</button>
+                        <button onClick={handleAddSection} className="mt-6 w-full py-3 border-2 border-dashed border-slate-300 dark:border-[var(--tg-border)] rounded-xl text-slate-500 dark:text-slate-400 font-bold text-sm hover:border-indigo-500 hover:text-indigo-500 dark:hover:border-indigo-400 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2"><Plus className="w-4 h-4" /> {lbl.addSection}</button>
                     </div>
                 </div>
-                <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3 bg-white dark:bg-slate-900 shrink-0">
-                    <button onClick={onClose} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">{lbl.cancel}</button>
+                <div className="p-6 border-t border-slate-100 dark:border-[var(--tg-border)] flex justify-end gap-3 bg-white dark:bg-slate-900 shrink-0">
+                    <button onClick={onClose} className="px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">{lbl.cancel}</button>
                     <button onClick={handleSave} className="px-8 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95">{lbl.createBtn}</button>
                 </div>
             </div>
@@ -789,7 +789,7 @@ const StrategyDetailView = ({
     ];
 
     const StatBox = ({ label, value, colorClass = "text-slate-900 dark:text-white" }: { label: string, value: string | number, colorClass?: string }) => (
-        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+        <div className="tg-module bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-100 dark:border-[var(--tg-border)] shadow-sm flex flex-col justify-between">
             <div className="flex justify-between items-start mb-2">
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest dark:text-slate-400">{label}</span>
                 <Info className="w-3 h-3 text-indigo-400 opacity-50" />
@@ -820,7 +820,7 @@ const StrategyDetailView = ({
     return (
         <div className="h-full flex flex-col bg-[#F9FAFC] dark:bg-slate-950 animate-fade-in overflow-hidden">
             {/* Header */}
-            <div className="px-8 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-4 bg-white dark:bg-slate-900 shrink-0">
+            <div className="px-8 py-4 border-b border-slate-200 dark:border-[var(--tg-border)] flex items-center gap-4 bg-white dark:bg-slate-900 shrink-0">
                 <button
                     onClick={onBack}
                     className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500 dark:text-slate-400"
@@ -837,7 +837,7 @@ const StrategyDetailView = ({
             </div>
 
             {/* Tabs */}
-            <div className="px-8 pt-4 flex gap-8 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+            <div className="px-8 pt-4 flex gap-8 border-b border-slate-100 dark:border-[var(--tg-border)] bg-white dark:bg-slate-900 shrink-0">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
@@ -881,7 +881,7 @@ const StrategyDetailView = ({
                             <StatBox label="Total R Multiple" value={`${overviewStats.totalR.toFixed(2)}`} />
                         </div>
 
-                        <div className="bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div className="tg-module bg-white dark:bg-slate-900 p-4 md:p-6 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                             <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
                                 Daily Net Cumulative P&L
                                 <Info className="w-3 h-3 text-slate-400 dark:text-slate-400" />
@@ -927,9 +927,9 @@ const StrategyDetailView = ({
 
                 {activeTab === 'rules' && (
                     <div className="space-y-10 animate-fade-in-up w-full">
-                        <div className="overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div className="tg-module overflow-hidden bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                             <table className="w-full text-left table-fixed border-collapse">
-                                <thead className="bg-[#F8F9FB] dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800">
+                                <thead className="bg-[#F8F9FB] dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-[var(--tg-border)]">
                                     <tr>
                                         <th className="w-1/3 px-6 py-4 text-[11px] font-black uppercase tracking-wider">Rule Details</th>
                                         <th className="px-6 py-4 text-[11px] font-black uppercase tracking-wider text-center">Follow Rate</th>
@@ -1017,7 +1017,7 @@ const StrategyDetailView = ({
                                                 );
                                             })}
                                             <tr className="bg-white dark:bg-slate-900">
-                                                <td colSpan={6} className="px-6 py-3 pl-12 border-b border-slate-50 dark:border-slate-800">
+                                                <td colSpan={6} className="px-6 py-3 pl-12 border-b border-slate-50 dark:border-[var(--tg-border)]">
                                                     <button
                                                         onClick={() => handleCreateRule(section.title)}
                                                         className="text-indigo-600 dark:text-indigo-400 font-bold text-xs flex items-center gap-1.5 hover:underline decoration-2 underline-offset-4"
@@ -1044,7 +1044,7 @@ const StrategyDetailView = ({
                                                             checklist: [...strategy.checklist, placeholderRule]
                                                         });
                                                     }}
-                                                    className="px-10 py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-400 font-black text-xs hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-widest flex items-center gap-3 bg-white/50 dark:bg-slate-900/50 shadow-sm"
+                                                    className="px-10 py-4 border-2 border-dashed border-slate-200 dark:border-[var(--tg-border)] rounded-2xl text-slate-400 dark:text-slate-400 font-black text-xs hover:border-indigo-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all uppercase tracking-widest flex items-center gap-3 bg-white/50 dark:bg-slate-900/50 shadow-sm"
                                                 >
                                                     <Plus className="w-5 h-5" /> Add New Rule Section
                                                 </button>
@@ -1059,10 +1059,10 @@ const StrategyDetailView = ({
                 )}
 
                 {activeTab === 'executed' && (
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden animate-fade-in-up">
+                    <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm overflow-hidden animate-fade-in-up">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-slate-50/50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-black tracking-widest border-b border-slate-100 dark:border-slate-800">
+                                <thead className="bg-slate-50/50 dark:bg-slate-800/30 text-slate-500 dark:text-slate-400 uppercase text-[10px] font-black tracking-widest border-b border-slate-100 dark:border-[var(--tg-border)]">
                                     <tr>
                                         <th className="px-6 py-4">{t.playbook.detail.table.openDate}</th>
                                         <th className="px-6 py-4">{t.playbook.detail.table.symbol}</th>
@@ -1474,7 +1474,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
             <CreatePlaybookModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onSave={handleSaveStrategy} initialData={editStrategy} />
             {isColumnModalOpen && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-slate-900/30 px-4 backdrop-blur-[2px]">
-                    <div className="w-full max-w-[750px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-slate-800 dark:bg-slate-900">
+                    <div className="tg-module w-full max-w-[750px] overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                         <div className="flex items-start justify-between px-6 pb-4 pt-6">
                             <div>
                                 <h3 className="text-[16px] font-semibold text-slate-900 dark:text-white">
@@ -1513,17 +1513,17 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             type="checkbox"
                                             checked={checked}
                                             onChange={() => toggleDraftColumn(column.id)}
-                                            className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 dark:border-slate-700 dark:text-violet-300"
+                                            className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500 dark:border-[var(--tg-border)] dark:text-violet-300"
                                         />
                                         <span>{column.label}</span>
                                     </label>
                                 );
                             })}
                         </div>
-                        <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-slate-800">
+                        <div className="flex justify-end gap-3 border-t border-slate-200 px-6 py-4 dark:border-[var(--tg-border)]">
                             <button
                                 onClick={() => setIsColumnModalOpen(false)}
-                                className="rounded-xl border border-slate-200 px-6 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+                                className="rounded-xl border border-slate-200 px-6 py-2.5 text-[14px] font-medium text-slate-700 transition-colors hover:bg-slate-50 dark:border-[var(--tg-border)] dark:text-slate-300 dark:hover:bg-slate-800"
                             >
                                 {language === 'cn' ? '取消' : 'Cancel'}
                             </button>
@@ -1541,26 +1541,26 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                 </div>
             )}
 
-            <div className="shrink-0 border-b border-slate-200/80 bg-[#faf9f7] dark:border-slate-800 dark:bg-slate-900">
+            <div className="shrink-0 border-b border-slate-200/80 bg-[#faf9f7] dark:border-[var(--tg-border)] dark:bg-slate-900">
                 <div className="px-5 pb-0 pt-6 lg:px-8">
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <h2 className="text-[20px] font-semibold tracking-[-0.01em] text-slate-900 dark:text-white">
                         {language === 'cn' ? '策略手册' : 'Strategies'}
                     </h2>
                     <div className="flex flex-wrap items-center gap-2">
-                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700">
+                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700">
                             <Activity className="h-3.5 w-3.5 text-violet-500" />
                             <span>{selectedTimeLabel}</span>
                             <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-400" />
                         </button>
-                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700">
+                        <button className="flex h-9 items-center gap-2 rounded-[10px] border border-slate-200 bg-white px-3.5 text-[14px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-slate-300 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-700">
                             <BookMarked className="h-3.5 w-3.5 text-violet-500" />
                             <span>{selectedAccountLabel}</span>
                             <ChevronDown className="h-4 w-4 text-slate-400 dark:text-slate-400" />
                         </button>
                     </div>
                 </div>
-                <div className="mt-4 flex gap-8 overflow-x-auto border-t border-slate-200/80 dark:border-slate-800">
+                <div className="mt-4 flex gap-8 overflow-x-auto border-t border-slate-200/80 dark:border-[var(--tg-border)]">
                     {collectionTabs.map(tab => {
                         const active = activeCollection === tab.id;
                         return (
@@ -1585,7 +1585,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
 
             <div className="flex-1 overflow-y-auto px-5 py-5 custom-scrollbar lg:px-8">
                 {activeCollection !== 'mine' ? (
-                    <div className="rounded-[18px] border border-slate-200 bg-white px-10 py-20 text-center shadow-[0_8px_24px_rgba(15,23,42,0.035)] dark:border-slate-800 dark:bg-slate-900">
+                    <div className="tg-module rounded-[18px] border border-slate-200 bg-white px-10 py-20 text-center shadow-[0_8px_24px_rgba(15,23,42,0.035)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                         <h3 className="text-[18px] font-semibold text-slate-900 dark:text-white">
                             {activeCollection === 'shared'
                                 ? (language === 'cn' ? '共享策略即将上线' : 'Shared strategies coming soon')
@@ -1614,7 +1614,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                             {summaryCards.map(card => (
                                 <div
                                     key={card.id}
-                                    className="min-h-[116px] rounded-[18px] border border-slate-200/90 bg-white px-4 py-4 shadow-[0_6px_18px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900"
+                                    className="tg-module min-h-[116px] rounded-[18px] border border-slate-200/90 bg-white px-4 py-4 shadow-[0_6px_18px_rgba(15,23,42,0.03)] dark:border-[var(--tg-border)] dark:bg-slate-900"
                                 >
                                     <div className="flex items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
                                         {card.icon}
@@ -1640,8 +1640,8 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                             ))}
                         </div>
 
-                        <div className="overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)] dark:border-slate-800 dark:bg-slate-900">
-                            <div className="flex min-h-[56px] items-center justify-end gap-2 border-b border-slate-200/80 px-5 py-3 dark:border-slate-800">
+                        <div className="tg-module overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.035)] dark:border-[var(--tg-border)] dark:bg-slate-900">
+                            <div className="flex min-h-[56px] items-center justify-end gap-2 border-b border-slate-200/80 px-5 py-3 dark:border-[var(--tg-border)]">
                                 {([
                                     { id: 'grid', icon: <LayoutGrid className="h-5 w-5" /> },
                                     { id: 'table', icon: <ListIcon className="h-5 w-5" /> },
@@ -1668,7 +1668,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                 </button>
                             </div>
                             <div className="px-3 py-4">
-                                <div className="inline-flex rounded-[14px] bg-slate-100 p-1 dark:bg-slate-800">
+                                <div className="tg-module inline-flex rounded-[14px] bg-slate-100 p-1 dark:bg-slate-800">
                                     {([
                                         { id: 'active', label: language === 'cn' ? '进行中' : 'Active' },
                                         { id: 'archived', label: language === 'cn' ? '已归档' : 'Archived' },
@@ -1705,7 +1705,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                             <article
                                                 key={strategy.id}
                                                 onClick={() => setDetailedStrategyId(strategy.id)}
-                                                className="group cursor-pointer rounded-[18px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] transition-all hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
+                                                className="tg-module group cursor-pointer rounded-[18px] border border-slate-200 bg-white px-4 py-4 shadow-[0_4px_16px_rgba(15,23,42,0.03)] transition-all hover:border-slate-300 hover:shadow-[0_10px_24px_rgba(15,23,42,0.06)] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:border-slate-700"
                                             >
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="min-w-0">
@@ -1739,7 +1739,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                             <MoreVertical className="h-4 w-4" />
                                                         </button>
                                                         {isMenuOpen && (
-                                                            <div className="absolute right-0 top-full z-20 mt-2 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+                                                            <div className="absolute right-0 top-full z-20 mt-2 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                                                                 <button
                                                                     onClick={event => {
                                                                         event.stopPropagation();
@@ -1767,7 +1767,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                     </div>
                                                 </div>
 
-                                                <div className="mt-4 border-t border-slate-200 pt-4 dark:border-slate-800">
+                                                <div className="mt-4 border-t border-slate-200 pt-4 dark:border-[var(--tg-border)]">
                                                     <div className="grid grid-cols-3 gap-4">
                                                         <div className="space-y-1">
                                                             <div className="text-[11px] font-medium text-slate-500 dark:text-slate-400">{language === 'cn' ? '胜率' : 'Win rate'}</div>
@@ -1854,7 +1854,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                             return (
                                                                 <td
                                                                     key={columnId}
-                                                                    className={`border-t border-slate-200 px-5 py-5 align-middle dark:border-slate-800 ${
+                                                                    className={`border-t border-slate-200 px-5 py-5 align-middle dark:border-[var(--tg-border)] ${
                                                                         columnId === 'title' ? 'text-left' : 'text-center'
                                                                     }`}
                                                                 >
@@ -1862,7 +1862,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                 </td>
                                                             );
                                                         })}
-                                                        <td className="relative border-t border-slate-200 px-5 py-5 text-center dark:border-slate-800">
+                                                        <td className="relative border-t border-slate-200 px-5 py-5 text-center dark:border-[var(--tg-border)]">
                                                             <button
                                                                 onClick={event => {
                                                                     event.stopPropagation();
@@ -1873,7 +1873,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                                                 <MoreVertical className="h-4 w-4" />
                                                             </button>
                                                             {isMenuOpen && (
-                                                                <div className="absolute right-4 top-[calc(100%-6px)] z-20 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+                                                                <div className="absolute right-4 top-[calc(100%-6px)] z-20 w-40 overflow-hidden rounded-2xl border border-slate-200 bg-white py-1 shadow-[0_16px_40px_rgba(15,23,42,0.16)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                                                                     <button
                                                                         onClick={event => {
                                                                             event.stopPropagation();
@@ -1905,14 +1905,14 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
                                         </tbody>
                                     </table>
                                     <div className="flex justify-center px-6 py-7">
-                                        <div className="flex items-center gap-3 rounded-[16px] border border-slate-200 bg-white px-6 py-3 text-[14px] text-slate-600 shadow-[0_4px_16px_rgba(15,23,42,0.05)] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+                                        <div className="tg-module flex items-center gap-3 rounded-[16px] border border-slate-200 bg-white px-6 py-3 text-[14px] text-slate-600 shadow-[0_4px_16px_rgba(15,23,42,0.05)] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-300">
                                             <span className="font-semibold">
                                                 {language === 'cn'
                                                     ? `结果：1 - ${visibleStrategies.length} / 共 ${visibleStrategies.length} 个策略`
                                                     : `Result: 1 - ${visibleStrategies.length} of ${visibleStrategies.length} strategies`}
                                             </span>
                                             <div className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-                                            <button className="rounded-lg border border-slate-200 px-3 py-1.5 dark:border-slate-700">1</button>
+                                            <button className="rounded-lg border border-slate-200 px-3 py-1.5 dark:border-[var(--tg-border)]">1</button>
                                             <span>{language === 'cn' ? '共 1 页' : 'of 1 pages'}</span>
                                         </div>
                                     </div>

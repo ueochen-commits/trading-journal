@@ -162,7 +162,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
         <>
             {/* Chat Interface Window */}
             {isOpen && (
-                <div className={`fixed z-[60] flex flex-col bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-slate-800 transition-all duration-300 overflow-hidden animate-fade-in-up
+                <div className={`fixed z-[60] flex flex-col bg-white dark:bg-slate-900 shadow-2xl border border-slate-200 dark:border-[var(--tg-border)] transition-all duration-300 overflow-hidden animate-fade-in-up
                     ${isExpanded 
                         ? 'inset-4 md:inset-20 rounded-2xl' 
                         : 'bottom-28 right-8 w-[90vw] md:w-[400px] h-[600px] rounded-3xl'
@@ -171,7 +171,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                     {/* Header */}
                     <div className="flex items-center justify-between p-4 bg-gradient-to-r from-indigo-600 to-purple-700 text-white shrink-0">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                            <div className="tg-module p-2 bg-white/20 rounded-lg backdrop-blur-sm">
                                 <Bot className="w-5 h-5" />
                             </div>
                             <div>
@@ -196,10 +196,10 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                     <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-slate-950/50">
                         {messages.map((msg) => (
                             <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${
+                                <div className={`tg-module max-w-[85%] rounded-2xl p-4 shadow-sm ${
                                     msg.role === 'user' 
                                     ? 'bg-indigo-600 text-white rounded-br-none' 
-                                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-bl-none'
+                                    : 'bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-100 dark:border-[var(--tg-border)] rounded-bl-none'
                                 }`}>
                                     {msg.image && (
                                         <div className="mb-3 rounded-lg overflow-hidden border border-white/20">
@@ -241,7 +241,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
 
                                     {/* Action Footer for AI Messages (Normal Chat) */}
                                     {msg.role === 'model' && !msg.tradeDetails && (
-                                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                                        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-[var(--tg-border)] flex justify-end">
                                             <button 
                                                 onClick={() => handleSave(msg.content)}
                                                 className="text-[10px] flex items-center gap-1 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors uppercase font-bold tracking-wider dark:text-slate-400"
@@ -256,7 +256,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                         ))}
                         {isLoading && (
                             <div className="flex justify-start">
-                                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-bl-none border border-slate-100 dark:border-slate-700 flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                                <div className="tg-module bg-white dark:bg-slate-800 p-4 rounded-2xl rounded-bl-none border border-slate-100 dark:border-[var(--tg-border)] flex items-center gap-2 text-slate-500 dark:text-slate-400">
                                     <Loader2 className="w-4 h-4 animate-spin text-indigo-500" />
                                     <span className="text-xs">Thinking...</span>
                                 </div>
@@ -266,7 +266,7 @@ const ChatAssistant = ({ isOpen, onClose, onSaveToNotebook, onAutoLogTrade, onVi
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 shrink-0">
+                    <div className="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-[var(--tg-border)] shrink-0">
                         {/* Image Preview */}
                         {selectedImage && (
                             <div className="relative inline-block mb-3">

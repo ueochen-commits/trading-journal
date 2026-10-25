@@ -57,7 +57,7 @@ const AccountDetailsModal: React.FC<Props> = ({ initial, mode, showBroker, showM
   return (
     <div className="fixed inset-0 z-[10000] flex items-center justify-center overflow-y-auto bg-black/60 p-4 backdrop-blur-sm">
       <form onSubmit={submit} role="dialog" aria-modal="true" aria-labelledby="account-details-title"
-        className="my-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+        className="tg-module my-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-2xl dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100">
         <div className="mb-5 flex items-center justify-between gap-4">
           <h2 id="account-details-title" className="text-lg font-semibold">{mode === 'create' ? '创建手动交易账户' : '编辑账户'}</h2>
           <button type="button" aria-label="关闭账户设置" onClick={onClose} disabled={saving} className="rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"><X size={18} /></button>
@@ -83,7 +83,7 @@ const AccountDetailsModal: React.FC<Props> = ({ initial, mode, showBroker, showM
         </label>}
         {error && <p role="alert" className="mb-4 rounded-lg bg-rose-50 p-3 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{error}</p>}
         <div className="mt-6 flex justify-end gap-3">
-          <button type="button" onClick={onClose} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm dark:border-slate-700 disabled:opacity-50">取消</button>
+          <button type="button" onClick={onClose} disabled={saving} className="rounded-lg border border-slate-200 px-4 py-2.5 text-sm dark:border-[var(--tg-border)] disabled:opacity-50">取消</button>
           <button type="submit" disabled={saving} className="rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500 disabled:opacity-50">{saving ? '保存中…' : mode === 'create' ? '创建账户' : '保存修改'}</button>
         </div>
       </form>

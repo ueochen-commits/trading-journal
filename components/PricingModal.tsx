@@ -124,7 +124,7 @@ const PricingModal: React.FC = () => {
                             </div>
 
                             {/* WeChat contact */}
-                            <div className="bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-slate-700/50">
+                            <div className="tg-module bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-slate-700/50">
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider dark:text-slate-400">{language === 'cn' ? '添加微信预约' : 'WeChat ID'}</p>
@@ -220,7 +220,7 @@ const PricingModal: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-start perspective-1000">
                     
                     {/* 1. Free Plan */}
-                    <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 hover:border-slate-700 transition-all duration-300 relative group">
+                    <div className="tg-module bg-slate-900 rounded-3xl p-8 border border-slate-800 hover:border-slate-700 transition-all duration-300 relative group">
                         <div className="mb-6">
                             <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4 text-slate-400 group-hover:text-white transition-colors dark:text-slate-400">
                                 <Star className="w-6 h-6" />

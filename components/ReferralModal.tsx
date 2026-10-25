@@ -29,7 +29,7 @@ const ReferralModal = () => {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in" onClick={closeReferral}>
-            <div className="bg-white dark:bg-slate-900 rounded-lg w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-lg w-full max-w-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-[var(--tg-border)] flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
                 
                 {/* Header Section */}
                 <div className="p-6 pb-2">
@@ -44,7 +44,7 @@ const ReferralModal = () => {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-6 border-b border-slate-200 dark:border-slate-800">
+                    <div className="flex gap-6 border-b border-slate-200 dark:border-[var(--tg-border)]">
                         <button 
                             onClick={() => setActiveTab('refer')}
                             className={`pb-3 text-sm font-bold transition-all ${
@@ -95,32 +95,32 @@ const ReferralModal = () => {
 
                             <div className="mb-6">
                                 <p className="text-xs text-slate-500 mb-2 dark:text-slate-400">{t.referral.copyLink}</p>
-                                <div className="flex items-center border border-slate-300 dark:border-slate-700 rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">
+                                <div className="tg-module flex items-center border border-slate-300 dark:border-[var(--tg-border)] rounded-lg overflow-hidden bg-slate-50 dark:bg-slate-800">
                                     <input 
                                         type="text" 
                                         readOnly 
                                         value="https://tradepulse.net/pricing/?share_your_love=tradepulse_user"
                                         className="flex-1 bg-transparent px-4 py-3 text-sm text-slate-700 dark:text-slate-300 outline-none truncate"
                                     />
-                                    <button onClick={copyLink} className="p-3 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 border-l border-slate-300 dark:border-slate-700 transition-colors">
+                                    <button onClick={copyLink} className="p-3 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 border-l border-slate-300 dark:border-[var(--tg-border)] transition-colors">
                                         <Copy className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-3 gap-4 mb-8">
-                                <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
+                                <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
                                     <Mail className="w-4 h-4" /> {t.referral.socials.email}
                                 </button>
-                                <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
+                                <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
                                     <Facebook className="w-4 h-4 text-blue-600 dark:text-blue-300" /> {t.referral.socials.facebook}
                                 </button>
-                                <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
+                                <button className="flex items-center justify-center gap-2 py-2.5 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-slate-700 dark:text-slate-300 text-sm font-medium">
                                     <Twitter className="w-4 h-4" /> {t.referral.socials.x}
                                 </button>
                             </div>
 
-                            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 flex flex-col md:flex-row justify-between items-center mb-8 shadow-sm">
+                            <div className="tg-module bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl p-6 flex flex-col md:flex-row justify-between items-center mb-8 shadow-sm">
                                 <div className="text-center md:text-left mb-4 md:mb-0">
                                     <h4 className="text-4xl font-bold text-slate-900 dark:text-white mb-1">${currentBalance}</h4>
                                     <p className="text-xs text-slate-500 uppercase tracking-wide dark:text-slate-400">{t.referral.stats.earned}</p>
@@ -162,7 +162,7 @@ const ReferralModal = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {redeemOptions.map((option, idx) => (
-                                    <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-5 hover:border-indigo-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between">
+                                    <div key={idx} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl p-5 hover:border-indigo-500 transition-all cursor-pointer group shadow-sm flex flex-col justify-between">
                                         <div>
                                             <div className="flex justify-between items-start mb-6">
                                                 <div>
@@ -191,7 +191,7 @@ const ReferralModal = () => {
                                 ))}
                             </div>
 
-                            <p className="text-xs text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800 dark:text-slate-400">
+                            <p className="text-xs text-slate-400 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-[var(--tg-border)] dark:text-slate-400">
                                 {language === 'cn' 
                                     ? 'TradeGrail, Inc.在某些国家/地区注册了销售税。因此，根据您所在的位置，您的最终账单可能会添加销售税。' 
                                     : 'TradeGrail, Inc. is registered for sales tax in certain jurisdictions. Sales tax may be added to your final bill based on your location.'}

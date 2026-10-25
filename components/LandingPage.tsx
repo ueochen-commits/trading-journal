@@ -191,7 +191,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onEnterApp }) => {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                         <div className="order-2 lg:order-1 relative group">
                             <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 rounded-3xl blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                            <div className="relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
+                            <div className="tg-module relative bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl aspect-[4/3]">
                                 <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2670&auto=format&fit=crop" alt="Import" className="w-full h-full object-cover opacity-80" />
                             </div>
                         </div>

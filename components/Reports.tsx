@@ -456,7 +456,7 @@ class ReportsErrorBoundary extends React.Component<
         if (this.state.hasError) {
             return (
                 <div className="flex min-h-[420px] items-center justify-center px-6 py-16">
-                    <div className="w-full max-w-xl rounded-[16px] border border-[#e5e9f0] bg-white px-8 py-10 text-center shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-slate-900">
+                    <div className="tg-module w-full max-w-xl rounded-[16px] border border-[#e5e9f0] bg-white px-8 py-10 text-center shadow-[0_10px_40px_rgba(15,23,42,0.06)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                         <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-rose-50 text-rose-500 dark:bg-rose-950/30 dark:text-rose-300">
                             <AlertTriangle className="h-5 w-5" />
                         </div>
@@ -3168,7 +3168,7 @@ const Reports: React.FC<ReportsProps> = ({
           <div key={report.id} className={`bg-white dark:bg-slate-900 rounded-xl border p-4 transition-all group ${
               isPending ? 'border-amber-300 dark:border-amber-700' :
               isFailed ? 'border-rose-300 dark:border-rose-700' :
-              'border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700'
+              'border-slate-200 dark:border-[var(--tg-border)] hover:border-indigo-300 dark:hover:border-indigo-700'
           }`}>
               <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
@@ -3273,7 +3273,7 @@ const Reports: React.FC<ReportsProps> = ({
   };
 
   const DataRow = ({ label, value, colorClass = "text-slate-900 dark:text-white" }: { label: string, value: string | number, colorClass?: string }) => (
-      <div className="flex justify-between items-center py-2.5 px-3 border-b border-slate-100 dark:border-slate-800 last:border-0 odd:bg-white dark:odd:bg-slate-900 even:bg-slate-50 dark:even:bg-slate-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors">
+      <div className="flex justify-between items-center py-2.5 px-3 border-b border-slate-100 dark:border-[var(--tg-border)] last:border-0 odd:bg-white dark:odd:bg-slate-900 even:bg-slate-50 dark:even:bg-slate-900/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/10 transition-colors">
           <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</span>
           <span className={`text-sm font-bold font-mono ${colorClass}`}>{value}</span>
       </div>
@@ -3913,8 +3913,8 @@ const Reports: React.FC<ReportsProps> = ({
       return Array.from(indexes).sort((a, b) => a - b);
   }
 
-  const reportPanelClass = "bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)]";
-  const reportControlClass = "h-9 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors";
+  const reportPanelClass = "tg-module bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-[var(--tg-border)] rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.04)]";
+  const reportControlClass = "h-9 inline-flex items-center gap-2 rounded-md border border-slate-200 dark:border-[var(--tg-border)] bg-white dark:bg-slate-900 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors";
 
   const ReportCardLoadingOverlay = ({ radius = 8 }: { radius?: number }) => {
       if (!isDataLoading) return null;
@@ -4266,7 +4266,7 @@ const Reports: React.FC<ReportsProps> = ({
 
       return (
           <div
-              className={`absolute left-0 top-full z-50 mt-[8px] w-[316px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+              className={`absolute left-0 top-full z-50 mt-[8px] w-[316px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                   isOpen
                       ? 'max-h-[420px] scale-100 opacity-100'
                       : 'pointer-events-none max-h-0 scale-[0.96] opacity-0'
@@ -4278,7 +4278,7 @@ const Reports: React.FC<ReportsProps> = ({
                       const colorDropdownOpen = openChartColorDropdown?.side === side && openChartColorDropdown.slot === metric.slot;
 
                       return (
-                          <div key={metric.slot} className={index > 0 ? 'pt-[2px] dark:border-slate-800' : ''}>
+                          <div key={metric.slot} className={index > 0 ? 'pt-[2px] dark:border-[var(--tg-border)]' : ''}>
                               <div className="mb-[9px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
                                   {metric.config.label}
                               </div>
@@ -4290,14 +4290,14 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenChartVisualDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-[var(--tg-border)]"
+                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:border-[var(--tg-border)]"
                                           aria-expanded={colorDropdownOpen}
                                           aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
                                       >
                                           <span className="h-full rounded-[3px]" style={{ backgroundColor: metric.color }} />
                                       </button>
                                       <div
-                                          className={`absolute left-0 top-full z-[70] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute left-0 top-full z-[70] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               colorDropdownOpen ? 'max-h-[58px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -4330,13 +4330,13 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenChartColorDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
+                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
                                       >
                                           {chartVisualOptions.find(option => option.id === metric.visual)?.label}
                                           <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
                                       </button>
                                       <div
-                                          className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               visualDropdownOpen ? 'max-h-[160px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -4401,7 +4401,7 @@ const Reports: React.FC<ReportsProps> = ({
 
       return (
           <div
-              className={`absolute left-0 top-full z-50 mt-[8px] w-[316px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+              className={`absolute left-0 top-full z-50 mt-[8px] w-[316px] origin-top-left overflow-visible rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_12px_28px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                   isOpen
                       ? 'max-h-[420px] scale-100 opacity-100'
                       : 'pointer-events-none max-h-0 scale-[0.96] opacity-0'
@@ -4413,7 +4413,7 @@ const Reports: React.FC<ReportsProps> = ({
                       const colorDropdownOpen = openDayTimeChartColorDropdown?.side === side && openDayTimeChartColorDropdown.slot === metric.slot;
 
                       return (
-                          <div key={metric.slot} className={index > 0 ? 'pt-[2px] dark:border-slate-800' : ''}>
+                          <div key={metric.slot} className={index > 0 ? 'pt-[2px] dark:border-[var(--tg-border)]' : ''}>
                               <div className="mb-[9px] truncate text-[14px] font-bold text-[#2b3139] dark:text-slate-100">
                                   {metric.config.label}
                               </div>
@@ -4425,14 +4425,14 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenDayTimeChartColorDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenDayTimeChartVisualDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:hover:border-[var(--tg-border)]"
+                                          className="flex h-[32px] w-[32px] flex-col overflow-hidden rounded-[6px] border border-[#dfe4ec] bg-white p-[4px] shadow-[0_1px_0_rgba(15,23,42,0.03)] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:border-[var(--tg-border)]"
                                           aria-expanded={colorDropdownOpen}
                                           aria-label={language === 'cn' ? '选择图表颜色' : 'Choose chart color'}
                                       >
                                           <span className="h-full rounded-[3px]" style={{ backgroundColor: metric.color }} />
                                       </button>
                                       <div
-                                          className={`absolute left-0 top-full z-[70] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute left-0 top-full z-[70] mt-[6px] flex origin-top items-center gap-[8px] overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white px-[9px] py-[8px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               colorDropdownOpen ? 'max-h-[58px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -4465,13 +4465,13 @@ const Reports: React.FC<ReportsProps> = ({
                                               setOpenDayTimeChartVisualDropdown(current => current?.side === side && current.slot === metric.slot ? null : { side, slot: metric.slot });
                                               setOpenDayTimeChartColorDropdown(null);
                                           }}
-                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
+                                          className="flex h-[32px] w-full items-center justify-between rounded-[6px] border border-[#dfe4ec] bg-white px-[10px] text-[14px] font-semibold text-[#20232a] transition-colors hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
                                       >
                                           {chartVisualOptions.find(option => option.id === metric.visual)?.label}
                                           <ChevronDown className={`h-[15px] w-[15px] transition-transform ${visualDropdownOpen ? 'rotate-180' : ''}`} />
                                       </button>
                                       <div
-                                          className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute left-0 top-full z-[60] mt-[5px] w-[120px] origin-top overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white py-[5px] shadow-[0_8px_22px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               visualDropdownOpen ? 'max-h-[160px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -4865,7 +4865,7 @@ const Reports: React.FC<ReportsProps> = ({
       };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-[var(--tg-border)] dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
                       <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1] dark:text-[var(--tg-muted)]" />
@@ -4873,7 +4873,7 @@ const Reports: React.FC<ReportsProps> = ({
                           value={dayTimeMetricPickerSearch}
                           onChange={(event) => setDayTimeMetricPickerSearch(event.target.value)}
                           placeholder={language === 'cn' ? '搜索' : 'Search'}
-                          className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                          className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100"
                       />
                   </div>
               </div>
@@ -4958,7 +4958,7 @@ const Reports: React.FC<ReportsProps> = ({
                           return next;
                       });
                   }}
-                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-[8px] overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
+                  className="report-chart-metric-trigger relative inline-flex h-[32px] min-w-0 flex-1 items-center justify-between gap-[8px] overflow-hidden rounded-[7px] border border-[#dfe4ec] bg-white pl-[18px] pr-[9px] text-[13px] font-medium text-[#20232a] transition-colors hover:border-[#c9d0dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100 dark:hover:border-[var(--tg-border)]"
               >
                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
                       <span className="absolute left-0 top-0 h-full w-[4px] rounded-l-[7px]" style={{ backgroundColor: selected.color }} />
@@ -5250,7 +5250,7 @@ const Reports: React.FC<ReportsProps> = ({
               : 'bg-[#eeeaf8] text-[#6b55cf] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]';
       return (
           <div
-              className={`min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900 ${animate ? 'animate-fade-in-up' : ''}`}
+              className={`tg-module min-h-[104px] rounded-[8px] bg-white px-[18px] py-[17px] shadow-none dark:bg-slate-900 ${animate ? 'animate-fade-in-up' : ''}`}
               style={animate ? { animationDelay: `${animationDelayMs}ms`, animationDuration: '420ms', animationFillMode: 'both' } : undefined}
           >
               <div className="mb-[10px] flex items-center gap-[6px] text-[13px] font-medium leading-none text-[#777f8b] dark:text-[var(--tg-secondary)]">
@@ -5365,8 +5365,8 @@ const Reports: React.FC<ReportsProps> = ({
       };
 
       return (
-      <div className={`${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
-          <div className={`${featured ? 'min-h-[64px] rounded-t-[8px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-slate-800'} flex flex-wrap items-start justify-between gap-[10px] bg-white dark:bg-slate-900`}>
+      <div className={`tg-module ${featured ? 'rounded-[8px] bg-white dark:bg-slate-900 shadow-none' : reportPanelClass} relative overflow-visible`}>
+          <div className={`${featured ? 'min-h-[64px] rounded-t-[8px] px-[10px] py-[10px]' : 'min-h-14 px-4 py-3 border-b border-slate-100 dark:border-[var(--tg-border)]'} flex flex-wrap items-start justify-between gap-[10px] bg-white dark:bg-slate-900`}>
               <div className={`${featured ? 'gap-[10px]' : 'gap-3'} flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center`}>
                   <div className="relative" data-chart-style-root={side}>
                       <button
@@ -5378,7 +5378,7 @@ const Reports: React.FC<ReportsProps> = ({
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
+                          className={`${featured ? 'h-[32px] w-[32px] rounded-[7px] border-[#dfe4ec] bg-white text-[#5f636b] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-secondary)] dark:hover:border-[var(--tg-border)]' : 'w-8 h-8 rounded-md border-slate-200 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-800'} border flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5b45d6]/35`}
                           aria-label={language === 'cn' ? '调整图表样式' : 'Edit chart style'}
                       >
                           <FilledChartStyleIcon className={accent} />
@@ -5400,7 +5400,7 @@ const Reports: React.FC<ReportsProps> = ({
                               setOpenChartVisualDropdown(null);
                               setOpenChartColorDropdown(null);
                           }}
-                          className={`${featured ? 'report-chart-metric-trigger relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                          className={`${featured ? 'report-chart-metric-trigger relative h-[32px] w-full overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 w-full min-w-0 border-slate-200 dark:border-[var(--tg-border)] px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                       >
                           {featured && (
                               <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -5426,7 +5426,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'report-chart-metric-trigger relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
+                              className={`${featured ? 'report-chart-metric-trigger relative h-[32px] min-w-0 flex-1 overflow-hidden rounded-[7px] border-[#dfe4ec] bg-white pl-[18px] pr-[10px] text-[13px] font-medium text-[#20232a] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 min-w-0 flex-1 border-slate-200 dark:border-[var(--tg-border)] px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border transition-colors`}
                           >
                               {featured && (
                                   <span className="pointer-events-none absolute left-0 top-0 h-full w-[5px]">
@@ -5484,7 +5484,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   setOpenChartVisualDropdown(null);
                                   setOpenChartColorDropdown(null);
                               }}
-                              className={`${featured ? 'h-[32px] w-[84px] sm:w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 border-slate-200 dark:border-slate-700 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
+                              className={`${featured ? 'h-[32px] w-[84px] sm:w-[100px] rounded-[7px] border-[#dfe4ec] px-[12px] text-[14px] font-medium text-[#1f2933] hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:text-[var(--tg-text)] dark:hover:border-[var(--tg-border)]' : 'h-8 border-slate-200 dark:border-[var(--tg-border)] px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'} inline-flex items-center justify-between gap-2 border bg-white dark:bg-slate-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80`}
                               aria-expanded={timeframeMenuOpen}
                               aria-label={language === 'cn' ? '选择图表时间粒度' : 'Choose chart timeframe'}
                           >
@@ -5492,7 +5492,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ChevronDown className={`${featured ? 'h-[15px] w-[15px] text-[#111827] transition-transform dark:text-[var(--tg-text)]' : 'w-3.5 h-3.5 text-slate-400 transition-transform dark:text-slate-400'} ${timeframeMenuOpen ? 'rotate-180' : ''}`} />
                           </button>
                           <div
-                              className={`absolute right-0 top-full z-[70] mt-[6px] w-[96px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                              className={`absolute right-0 top-full z-[70] mt-[6px] w-[96px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                   timeframeMenuOpen ? 'max-h-[148px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                               }`}
                           >
@@ -5519,7 +5519,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </div>
                   )}
-                  <button className={`${featured ? 'h-[32px] w-[36px] rounded-[7px] border-[#dfe4ec] text-[#5f636b] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)]' : 'h-8 w-8 rounded-md border-slate-200 dark:border-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 dark:text-slate-400'} inline-flex items-center justify-center border bg-white dark:bg-slate-900 transition-colors`}>
+                  <button className={`${featured ? 'h-[32px] w-[36px] rounded-[7px] border-[#dfe4ec] text-[#5f636b] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)]' : 'h-8 w-8 rounded-md border-slate-200 dark:border-[var(--tg-border)] text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 dark:text-slate-400'} inline-flex items-center justify-center border bg-white dark:bg-slate-900 transition-colors`}>
                       <MoreVertical className={`${featured ? 'h-[18px] w-[18px]' : 'w-4 h-4'}`} />
                   </button>
               </div>
@@ -5556,7 +5556,7 @@ const Reports: React.FC<ReportsProps> = ({
       const tone = value >= 0 ? 'text-emerald-500' : 'text-rose-500';
 
       return (
-          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.24)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.24)] dark:border-[var(--tg-border)] dark:bg-slate-900">
               <div className="text-[12px] font-bold text-[#20232a] dark:text-[var(--tg-text)]">{label}</div>
               <div className="mt-1 flex items-center gap-2">
                   <span className={`h-[6px] w-[6px] rounded-full ${value >= 0 ? 'bg-emerald-500' : 'bg-[#ff6468]'}`} />
@@ -5571,7 +5571,7 @@ const Reports: React.FC<ReportsProps> = ({
       const value = Number(payload[0]?.value || 0);
 
       return (
-          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.18)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="rounded-[4px] border border-slate-300 bg-white px-3 py-2 shadow-[0_2px_8px_rgba(15,23,42,0.18)] dark:border-[var(--tg-border)] dark:bg-slate-900">
               <div className="text-[12px] font-bold text-[#20232a] dark:text-[var(--tg-text)]">{label}</div>
               <div className="mt-1 flex items-center gap-2">
                   <span className="h-[6px] w-[6px] rounded-full bg-[#55c39e]" />
@@ -5773,7 +5773,7 @@ const Reports: React.FC<ReportsProps> = ({
       };
 
       return (
-          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900">
+          <div className="absolute left-0 top-full z-50 mt-[8px] flex max-h-[440px] w-[clamp(260px,100%,420px)] min-w-full origin-top-left flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-[var(--tg-border)] dark:bg-slate-900">
               <div className="p-[12px] pb-[8px]">
                   <div className="relative">
                       <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1] dark:text-[var(--tg-muted)]" />
@@ -5781,7 +5781,7 @@ const Reports: React.FC<ReportsProps> = ({
                           value={chartMetricPickerSearch}
                           onChange={(event) => setChartMetricPickerSearch(event.target.value)}
                           placeholder={language === 'cn' ? '搜索' : 'Search'}
-                          className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                          className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100"
                       />
                   </div>
               </div>
@@ -5849,7 +5849,7 @@ const Reports: React.FC<ReportsProps> = ({
           <div
               className={`group/summary-metric relative min-h-[64px] transition-all ${
                   isEditing
-                      ? 'rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] shadow-[0_1px_0_rgba(15,23,42,0.03)] hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900/80 dark:hover:border-[var(--tg-border)]'
+                      ? 'rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] shadow-[0_1px_0_rgba(15,23,42,0.03)] hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900/80 dark:hover:border-[var(--tg-border)]'
                       : ''
               } ${draggableClassName}`}
               {...dragAttributes}
@@ -6915,7 +6915,7 @@ const Reports: React.FC<ReportsProps> = ({
                     <button
                         type="button"
                         onClick={() => setIsDatePickerOpen(current => !current)}
-                        className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
+                        className="flex min-h-[58px] min-w-[220px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                     >
                         <div className="flex min-w-0 items-center gap-3">
                             <ReportRangeIcon />
@@ -6931,10 +6931,10 @@ const Reports: React.FC<ReportsProps> = ({
                         <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isDatePickerOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                    <div className={`absolute right-0 top-full mt-2 flex w-[640px] origin-top-right overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                         isDatePickerOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
                     }`}>
-                        <div className="flex-1 border-r border-slate-100 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+                        <div className="flex-1 border-r border-slate-100 bg-white p-6 dark:border-[var(--tg-border)] dark:bg-slate-900">
                             <div className="mb-4 flex items-center justify-between">
                                 <button
                                     type="button"
@@ -6979,7 +6979,7 @@ const Reports: React.FC<ReportsProps> = ({
                     <button
                         type="button"
                         onClick={() => setIsAccountSwitcherOpen(current => !current)}
-                        className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
+                        className="flex min-h-[58px] min-w-[200px] items-center justify-between gap-3 rounded-lg border border-[#d9e1ec] bg-white px-4 py-2.5 shadow-[0_1px_2px_rgba(15,23,42,0.02)] transition-all hover:border-[#c5cfdd] hover:bg-slate-50 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:hover:bg-slate-800/70 dark:hover:border-[var(--tg-border)]"
                     >
                         <div className="flex min-w-0 items-center gap-3">
                             <ReportAccountIcon />
@@ -6993,7 +6993,7 @@ const Reports: React.FC<ReportsProps> = ({
                         <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-slate-400 transition-transform  dark:text-slate-400 ${isAccountSwitcherOpen ? 'rotate-180' : ''}`} />
                     </button>
 
-                    <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-slate-800 dark:bg-slate-900 ${
+                    <div className={`absolute right-0 top-full mt-2 w-64 origin-top-right overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                         isAccountSwitcherOpen ? 'scale-100 opacity-100' : 'pointer-events-none scale-[0.98] opacity-0'
                     }`}>
                         <div className="space-y-1 p-2">
@@ -7042,7 +7042,7 @@ const Reports: React.FC<ReportsProps> = ({
         
         {/* Navigation Bar */}
         <div className="relative z-30 -mx-4 md:-mx-8">
-            <div className="flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 dark:border-slate-800 dark:bg-slate-900/60 md:px-8">
+            <div className="flex min-h-[56px] flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b border-[#dfe5ec] bg-white/70 px-4 dark:border-[var(--tg-border)] dark:bg-slate-900/60 md:px-8">
             <div className="flex min-h-[56px] max-w-full flex-wrap items-center gap-x-[27px] gap-y-0 pr-3">
                 {REPORT_TABS.map((tab) => {
                     const isActive = activeTab === tab.id;
@@ -7083,7 +7083,7 @@ const Reports: React.FC<ReportsProps> = ({
                             </button>
                             {isReportMenuTab && (
                                 <div
-                                    className={`absolute left-[-2px] top-[calc(100%-6px)] z-50 w-[180px] origin-top-left overflow-hidden rounded-[10px] border border-[#dedfe4] bg-white py-[7px] shadow-[0_1px_2px_rgba(20,24,36,0.08),0_8px_18px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                    className={`absolute left-[-2px] top-[calc(100%-6px)] z-50 w-[180px] origin-top-left overflow-hidden rounded-[10px] border border-[#dedfe4] bg-white py-[7px] shadow-[0_1px_2px_rgba(20,24,36,0.08),0_8px_18px_rgba(20,24,36,0.10)] transition-all duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                         isReportMenuOpen ? 'translate-y-0 scale-100 opacity-100' : 'pointer-events-none -translate-y-1 scale-[0.98] opacity-0'
                                     }`}
                                     role="menu"
@@ -7129,7 +7129,7 @@ const Reports: React.FC<ReportsProps> = ({
                           <ChevronDown className={`w-3.5 h-3.5 text-slate-500 transition-transform  dark:text-slate-400 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                       </button>
                       <div
-                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                               isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                           }`}
                       >
@@ -7250,8 +7250,8 @@ const Reports: React.FC<ReportsProps> = ({
                   })}
               </div>
 
-              <div className="relative rounded-[8px] bg-white shadow-none dark:bg-slate-900">
-                  <div className="h-[52px] px-4 flex items-center justify-between border-b border-[#e2e6ec] dark:border-slate-800">
+              <div className="tg-module relative rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                  <div className="h-[52px] px-4 flex items-center justify-between border-b border-[#e2e6ec] dark:border-[var(--tg-border)]">
                       <div className="flex items-center gap-[34px]">
                           {[
                               { id: 'summary' as const, label: language === 'cn' ? '汇总' : 'Summary' },
@@ -7279,7 +7279,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={cancelSummaryEditing}
-                                  className="h-[32px] rounded-[7px] border border-[#dfe4ec] bg-white px-[13px] text-[13px] font-semibold text-[#1f2933] transition-colors hover:border-[#c9d0dc] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[var(--tg-border)]"
+                                  className="h-[32px] rounded-[7px] border border-[#dfe4ec] bg-white px-[13px] text-[13px] font-semibold text-[#1f2933] transition-colors hover:border-[#c9d0dc] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[var(--tg-border)]"
                               >
                                   {language === 'cn' ? '取消' : 'Cancel'}
                               </button>
@@ -7298,7 +7298,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   if (summaryTab !== 'summary') setSummaryTab('summary');
                                   startSummaryEditing();
                               }}
-                              className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[var(--tg-border)] dark:hover:text-[var(--tg-accent)]"
+                              className="h-[32px] w-[32px] inline-flex items-center justify-center rounded-[7px] border border-[#dfe4ec] bg-white text-[#1f2933] transition-colors hover:border-[#c9d0dc] hover:text-[#5b45d6] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-300 dark:hover:border-[var(--tg-border)] dark:hover:text-[var(--tg-accent)]"
                               aria-label={language === 'cn' ? '编辑摘要模块' : 'Edit summary modules'}
                           >
                               <Settings className="h-[17px] w-[17px]" />
@@ -7344,14 +7344,14 @@ const Reports: React.FC<ReportsProps> = ({
                                               <button
                                                   type="button"
                                                   onClick={() => setIsAddMetricMenuOpen(open => !open)}
-                                                  className="flex min-h-[64px] w-full items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] text-[15px] font-semibold text-[#20232a] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc] dark:border-slate-700 dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:border-[var(--tg-border)]"
+                                                  className="flex min-h-[64px] w-full items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#dfe3ea] bg-white px-[14px] py-[11px] text-[15px] font-semibold text-[#20232a] transition-colors hover:border-[#cbd3df] hover:bg-[#fafbfc] dark:border-[var(--tg-border)] dark:bg-slate-900/80 dark:text-slate-100 dark:hover:bg-slate-800 dark:hover:border-[var(--tg-border)]"
                                               >
                                                   {language === 'cn' ? '新增模块' : 'Add new'}
                                                   <ChevronDown className="h-[15px] w-[15px] text-[#6b55cf] dark:text-[var(--tg-accent)]" />
                                               </button>
 
                                               {isAddMetricMenuOpen && (
-                                                  <div className="absolute bottom-full right-[-18px] z-40 mb-[10px] flex max-h-[420px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-slate-700 dark:bg-slate-900 xl:right-0">
+                                                  <div className="absolute bottom-full right-[-18px] z-40 mb-[10px] flex max-h-[420px] w-[320px] flex-col overflow-hidden rounded-[10px] border border-[#e2e6ec] bg-white shadow-[0_14px_36px_rgba(15,23,42,0.16)] dark:border-[var(--tg-border)] dark:bg-slate-900 xl:right-0">
                                                       <div className="p-[12px] pb-[8px]">
                                                           <div className="relative">
                                                               <Search className="pointer-events-none absolute left-[10px] top-1/2 h-[15px] w-[15px] -translate-y-1/2 text-[#8b95a1] dark:text-[var(--tg-muted)]" />
@@ -7359,7 +7359,7 @@ const Reports: React.FC<ReportsProps> = ({
                                                                   value={metricPickerSearch}
                                                                   onChange={(event) => setMetricPickerSearch(event.target.value)}
                                                                   placeholder={language === 'cn' ? '搜索' : 'Search'}
-                                                                  className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+                                                                  className="h-[38px] w-full rounded-[7px] border border-[#d9dee6] bg-white pl-[33px] pr-[10px] text-[14px] font-medium text-[#303844] outline-none transition-colors placeholder:text-[#6f7782] focus:border-[#6b55cf] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-100"
                                                               />
                                                           </div>
                                                       </div>
@@ -7639,7 +7639,7 @@ const Reports: React.FC<ReportsProps> = ({
                     <button
                         type="button"
                         onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                        className="inline-flex h-[36px] min-w-[104px] items-center justify-between gap-[12px] rounded-[6px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-[#cbd3df] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                        className="inline-flex h-[36px] min-w-[104px] items-center justify-between gap-[12px] rounded-[6px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] shadow-[0_1px_2px_rgba(15,23,42,0.03)] transition-colors hover:border-[#cbd3df] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#d5dae3]/80 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                         aria-expanded={isPnlDisplayMenuOpen}
                         aria-label={language === 'cn' ? '选择盈亏显示口径' : 'Choose P&L display mode'}
                     >
@@ -7647,7 +7647,7 @@ const Reports: React.FC<ReportsProps> = ({
                         <ChevronDown className={`h-[14px] w-[14px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                     </button>
                     <div
-                        className={`absolute left-0 top-full z-[80] mt-[6px] w-[128px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                        className={`absolute left-0 top-full z-[80] mt-[6px] w-[128px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                             isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                         }`}
                     >
@@ -7678,7 +7678,7 @@ const Reports: React.FC<ReportsProps> = ({
                 </div>
             </div>
 
-            <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+            <section className="tg-module relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                 <div className="px-[18px] pb-[20px] pt-[18px]">
                     <div className="flex items-center gap-[6px]">
                         <h3 className="text-[15px] font-bold uppercase leading-none text-[#20232a] dark:text-slate-100">
@@ -7779,7 +7779,7 @@ const Reports: React.FC<ReportsProps> = ({
             </section>
 
             <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                <section className="tg-module relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                     <div className="flex h-[58px] items-center justify-between border-b border-[#e6e8ec] px-[18px] dark:border-[var(--tg-border)]">
                         <div className="flex items-center gap-[13px]">
                             <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
@@ -7813,7 +7813,7 @@ const Reports: React.FC<ReportsProps> = ({
                     <ReportCardLoadingOverlay radius={8} />
                 </section>
 
-                <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                <section className="tg-module relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                     <div className="flex h-[58px] items-center border-b border-[#e6e8ec] px-[18px] dark:border-[var(--tg-border)]">
                         <div className="flex items-center gap-[13px]">
                             <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-slate-100">
@@ -7852,7 +7852,7 @@ const Reports: React.FC<ReportsProps> = ({
               {detailedFilter === 'DAYS' ? (
                   <div className="space-y-[14px]">
                       <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
-                          <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                          <div className="tg-module inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                               {([
                                   { id: 'DAYS' as const, label: language === 'cn' ? '天' : 'Days' },
                                   { id: 'MONTHS' as const, label: language === 'cn' ? '月份' : 'Months' },
@@ -7878,13 +7878,13 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                               >
                                   <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                   <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                               </button>
                               <div
-                                  className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                  className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                       isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                   }`}
                               >
@@ -7954,7 +7954,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="left">
@@ -8030,7 +8030,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="right">
@@ -8107,7 +8107,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
                       </div>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
                               <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
@@ -8140,7 +8140,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </section>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
@@ -8148,13 +8148,13 @@ const Reports: React.FC<ReportsProps> = ({
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeDayTimeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                       </button>
                                       <div
-                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -8248,7 +8248,7 @@ const Reports: React.FC<ReportsProps> = ({
               ) : detailedFilter === 'SYMBOLS' ? (
                   <div className="space-y-[14px]">
                       <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
-                          <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                          <div className="tg-module inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                               {([
                                   { id: 'SYMBOLS' as const, label: language === 'cn' ? '交易品种' : 'Symbols' },
                                   { id: 'INSTRUMENTS' as const, label: language === 'cn' ? '标的' : 'Instruments' },
@@ -8274,13 +8274,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{activeSymbolLimitLabel}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[140px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[140px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -8308,13 +8308,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -8385,7 +8385,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="left">
@@ -8462,7 +8462,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="right">
@@ -8540,7 +8540,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
                       </div>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
                               <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
@@ -8573,7 +8573,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </section>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
@@ -8659,13 +8659,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[116px] items-center justify-between gap-[10px] rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[116px] items-center justify-between gap-[10px] rounded-[8px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute left-0 top-full z-[80] mt-[6px] w-[132px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute left-0 top-full z-[80] mt-[6px] w-[132px] origin-top-left overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -8709,7 +8709,7 @@ const Reports: React.FC<ReportsProps> = ({
                           ] as const).map(section => {
                               const summary = section.key === 'wins' ? winsLossesSummary.wins : winsLossesSummary.losses;
                               return (
-                                  <div key={section.key} className="rounded-[8px] bg-white px-[22px] py-[15px] shadow-none dark:bg-slate-900">
+                                  <div key={section.key} className="tg-module rounded-[8px] bg-white px-[22px] py-[15px] shadow-none dark:bg-slate-900">
                                       <div className="text-[15px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                           {section.header} ({summary.tradeCount} {section.matchedLabel})
                                       </div>
@@ -8749,7 +8749,7 @@ const Reports: React.FC<ReportsProps> = ({
                               ];
 
                               return (
-                                  <section key={section.key} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                  <section key={section.key} className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                                       <div className="border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">{section.heading}</h3>
                                           <div className="mt-[4px] text-[12px] font-bold uppercase tracking-[0.08em] text-[#8a919d] dark:text-[var(--tg-muted)]">{section.subtitle}</div>
@@ -8773,7 +8773,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[14px] xl:grid-cols-2">
-                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                   <div className="flex items-center gap-[10px]">
                                       <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
@@ -8806,7 +8806,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                   <div className="flex items-center gap-[10px]">
                                       <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
@@ -8843,7 +8843,7 @@ const Reports: React.FC<ReportsProps> = ({
               ) : detailedFilter === 'TAGS' ? (
                   <div className="space-y-[14px]">
                       <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
-                          <div className="inline-flex w-fit flex-wrap overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                          <div className="tg-module inline-flex w-fit flex-wrap overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                               {availableTagReportCategories.map(category => (
                                   <button
                                       key={category.id}
@@ -8865,13 +8865,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{activeSymbolLimitLabel}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[140px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[140px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -8899,13 +8899,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -8976,7 +8976,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="left">
@@ -9053,7 +9053,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="right">
@@ -9131,7 +9131,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
                       </div>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
                               <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
@@ -9164,7 +9164,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </section>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
@@ -9172,13 +9172,13 @@ const Reports: React.FC<ReportsProps> = ({
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                       </button>
                                       <div
-                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -9272,7 +9272,7 @@ const Reports: React.FC<ReportsProps> = ({
               ) : detailedFilter === 'SETUPS' ? (
                   <div className="space-y-[14px]">
                       <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
-                          <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                          <div className="tg-module inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                               <button
                                   type="button"
                                   className="h-[38px] min-w-[92px] bg-[#e8e4f4] px-[18px] text-[13px] font-semibold text-[#5f47c9] dark:bg-[var(--tg-accent-soft)] dark:text-[var(--tg-accent)]"
@@ -9286,13 +9286,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[110px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{activeSymbolLimitLabel}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[140px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[140px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -9320,13 +9320,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <button
                                       type="button"
                                       onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                      className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                   >
                                       <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                       <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                                   </button>
                                   <div
-                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                      className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                           isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                       }`}
                                   >
@@ -9397,7 +9397,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="left">
@@ -9474,7 +9474,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="right">
@@ -9552,7 +9552,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
                       </div>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
                               <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
@@ -9585,7 +9585,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </section>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
@@ -9593,13 +9593,13 @@ const Reports: React.FC<ReportsProps> = ({
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                       </button>
                                       <div
-                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -9693,7 +9693,7 @@ const Reports: React.FC<ReportsProps> = ({
               ) : detailedFilter === 'RISK' ? (
                   <div className="space-y-[14px]">
                       <div className="flex flex-col gap-[12px] xl:flex-row xl:items-center xl:justify-between">
-                          <div className="inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-slate-800 dark:bg-slate-900">
+                          <div className="tg-module inline-flex w-fit overflow-hidden rounded-[8px] border border-[#e0e4ea] bg-white shadow-[0_1px_2px_rgba(15,23,42,0.03)] dark:border-[var(--tg-border)] dark:bg-slate-900">
                               {([
                                   { id: 'VOLUMES' as const, label: language === 'cn' ? '成交量' : 'Volumes' },
                                   { id: 'POSITION SIZES' as const, label: language === 'cn' ? '仓位大小' : 'Position sizes' },
@@ -9718,13 +9718,13 @@ const Reports: React.FC<ReportsProps> = ({
                               <button
                                   type="button"
                                   onClick={() => setIsPnlDisplayMenuOpen(current => !current)}
-                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                  className="inline-flex h-[36px] min-w-[112px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                               >
                                   <span>{pnlDisplayMode === 'net' ? (language === 'cn' ? '净盈亏' : 'NET P&L') : (language === 'cn' ? '总盈亏' : 'GROSS P&L')}</span>
                                   <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isPnlDisplayMenuOpen ? 'rotate-180' : ''}`} />
                               </button>
                               <div
-                                  className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                  className={`absolute right-0 top-full z-[80] mt-[6px] w-[128px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                       isPnlDisplayMenuOpen ? 'max-h-[112px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                   }`}
                               >
@@ -9794,7 +9794,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       <div className="grid grid-cols-1 gap-[10px] xl:grid-cols-2">
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="left">
@@ -9871,7 +9871,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <ReportCardLoadingOverlay radius={8} />
                           </section>
 
-                          <section className="relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section className="tg-module relative overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="relative z-[90] flex min-h-[58px] items-start justify-between gap-[10px] px-[10px] py-[10px]">
                                   <div className="flex min-w-[min(100%,360px)] flex-1 flex-wrap items-center gap-[8px]">
                                       <div className="relative" data-day-time-chart-style-root="right">
@@ -9949,7 +9949,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </section>
                       </div>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex h-[52px] items-center justify-between border-b border-[#e0e4ea] px-[18px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '汇总' : 'Summary'}</h3>
                               <button className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-[7px] border border-[#dfe4ec] text-[#6b7280] hover:bg-[#f5f6f8] dark:border-[var(--tg-border)] dark:text-[var(--tg-secondary)] dark:hover:bg-[var(--tg-surface-muted)]" type="button" aria-label="Summary settings">
@@ -9982,7 +9982,7 @@ const Reports: React.FC<ReportsProps> = ({
                           </div>
                       </section>
 
-                      <section className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                      <section className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                           <div className="flex min-h-[52px] flex-wrap items-center justify-between gap-[10px] border-b border-[#e0e4ea] px-[18px] py-[10px] dark:border-[var(--tg-border)]">
                               <h3 className="text-[19px] font-bold text-[#252a32] dark:text-white">{language === 'cn' ? '交叉分析' : 'Cross analysis'}</h3>
                               <div className="flex flex-wrap items-center gap-[8px]">
@@ -9990,13 +9990,13 @@ const Reports: React.FC<ReportsProps> = ({
                                       <button
                                           type="button"
                                           onClick={() => setIsDayTimeSymbolLimitOpen(current => !current)}
-                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
+                                          className="inline-flex h-[32px] min-w-[132px] items-center justify-between gap-[10px] rounded-[7px] border border-[#dfe4ec] bg-white px-[12px] text-[13px] font-semibold text-[#303844] transition-colors hover:border-[#cbd3df] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-slate-200 dark:hover:border-[var(--tg-border)]"
                                       >
                                           <span>{activeSymbolLimitLabel}</span>
                                           <ChevronDown className={`h-[13px] w-[13px] text-[#111827] transition-transform dark:text-slate-300 ${isDayTimeSymbolLimitOpen ? 'rotate-180' : ''}`} />
                                       </button>
                                       <div
-                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-slate-700 dark:bg-slate-900 ${
+                                          className={`absolute right-0 top-full z-[80] mt-[6px] w-[156px] origin-top-right overflow-hidden rounded-[8px] border border-[#dfe4ec] bg-white p-[5px] shadow-[0_10px_26px_rgba(15,23,42,0.16)] transition-[opacity,transform,max-height] duration-200 ease-out dark:border-[var(--tg-border)] dark:bg-slate-900 ${
                                               isDayTimeSymbolLimitOpen ? 'max-h-[192px] scale-100 opacity-100' : 'pointer-events-none max-h-0 scale-[0.97] opacity-0'
                                           }`}
                                       >
@@ -10091,7 +10091,7 @@ const Reports: React.FC<ReportsProps> = ({
               <>
               {/* Filter Bar */}
               <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                  <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
+                  <div className="tg-module bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm flex items-center gap-2 overflow-x-auto no-scrollbar max-w-full">
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase px-3 whitespace-nowrap dark:text-slate-400">
                           {t.reports.filters.label}
                       </div>
@@ -10112,16 +10112,16 @@ const Reports: React.FC<ReportsProps> = ({
                   <div className="flex items-center gap-3">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">{t.reports.filters.timeInterval}</span>
                       <div className="relative group z-30">
-                          <button className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-sm">
+                          <button className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-sm">
                               {timeInterval}
                               <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400" />
                           </button>
-                          <div className="absolute top-full left-0 mt-1 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl p-1 hidden group-hover:block animate-fade-in-up origin-top-left">
+                          <div className="absolute top-full left-0 mt-1 w-32 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-xl shadow-xl p-1 hidden group-hover:block animate-fade-in-up origin-top-left">
                               {['1 Hour', '30 Minutes', '15 Minutes', '5 Minutes'].map(opt => (
                                   <div 
                                     key={opt} 
                                     onClick={() => setTimeInterval(opt)}
-                                    className={`px-3 py-2 text-xs font-medium rounded-lg cursor-pointer ${timeInterval === opt ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
+                                    className={`tg-module px-3 py-2 text-xs font-medium rounded-lg cursor-pointer ${timeInterval === opt ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-300' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                                   >
                                       {opt}
                                   </div>
@@ -10134,7 +10134,7 @@ const Reports: React.FC<ReportsProps> = ({
               {/* Dynamic Charts based on Filter */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   {/* Distribution Chart */}
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="tg-module bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                       <div className="flex justify-between items-start mb-6">
                           <div>
                               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{distChartTitle}</h3>
@@ -10179,7 +10179,7 @@ const Reports: React.FC<ReportsProps> = ({
                   </div>
 
                   {/* Performance Chart */}
-                  <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                  <div className="tg-module bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                       <div className="flex justify-between items-start mb-6">
                           <div>
                               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{pnlChartTitle}</h3>
@@ -10227,13 +10227,13 @@ const Reports: React.FC<ReportsProps> = ({
               </div>
 
               {/* Summary Table */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+              <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm overflow-hidden">
+                  <div className="p-4 border-b border-slate-200 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-950">
                       <h3 className="font-bold text-slate-800 dark:text-white uppercase text-sm">{t.reports.table.summary}</h3>
                   </div>
                   <div className="overflow-x-auto">
                       <table className="w-full text-sm text-left">
-                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-[var(--tg-border)]">
                               <tr>
                                   <th className="px-6 py-4">{getDetailedFilterLabel(detailedFilter)}</th>
                                   <th className="px-6 py-4 text-right">{t.reports.table.netProfits}</th>
@@ -10280,12 +10280,12 @@ const Reports: React.FC<ReportsProps> = ({
               <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-2">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider dark:text-slate-400">P&L SHOWING</span>
-                      <button className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-sm">
+                      <button className="flex items-center gap-2 px-3 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-500 transition-colors shadow-sm">
                           NET P&L <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400" />
                       </button>
                   </div>
 
-                  <div className="bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center gap-2">
+                  <div className="tg-module bg-white dark:bg-slate-900 p-2 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm flex items-center gap-2">
                       <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase px-3 dark:text-slate-400">
                           {t.reports.filters.label}
                       </div>
@@ -10308,7 +10308,7 @@ const Reports: React.FC<ReportsProps> = ({
               {riskFilter === 'R-MULTIPLE' && (
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                       {/* Distribution Chart */}
-                      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="tg-module bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                           <div className="flex justify-between items-start mb-6">
                               <div>
                                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{t.reports.charts.distTitle} R-Multiple</h3>
@@ -10337,7 +10337,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
 
                       {/* Performance Chart */}
-                      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                      <div className="tg-module bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
                           <div className="flex justify-between items-start mb-6">
                               <div>
                                   <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">{t.reports.charts.perfTitle} R-Multiple</h3>
@@ -10374,13 +10374,13 @@ const Reports: React.FC<ReportsProps> = ({
               )}
 
               {/* Summary Table */}
-              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
-                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950">
+              <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm overflow-hidden">
+                  <div className="p-4 border-b border-slate-200 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-950">
                       <h3 className="font-bold text-slate-800 dark:text-white uppercase text-sm">{t.reports.table.summary}</h3>
                   </div>
                   <div className="overflow-x-auto">
                       <table className="w-full text-sm text-left">
-                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-slate-800">
+                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-wider border-b border-slate-100 dark:border-[var(--tg-border)]">
                               <tr>
                                   <th className="px-6 py-4">R-Multiple</th>
                                   <th className="px-6 py-4 text-right">{t.reports.table.netProfits}</th>
@@ -10462,7 +10462,7 @@ const Reports: React.FC<ReportsProps> = ({
                   </div>
               </div>
 
-              <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+              <section className="tg-module overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
                   <div className="border-b border-[#edf1f5] px-[22px] py-[16px] dark:border-[var(--tg-border)]">
                       <h2 className="text-[18px] font-bold tracking-[-0.01em] text-[#2d3139] dark:text-[var(--tg-text)]">{language === 'cn' ? '年度' : 'YEAR'}</h2>
                   </div>
@@ -10520,7 +10520,7 @@ const Reports: React.FC<ReportsProps> = ({
                   </div>
               </section>
 
-              <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+              <section className="tg-module overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
                   <div className="flex flex-wrap items-center justify-between gap-[12px] border-b border-[#edf1f5] px-[12px] py-[12px] sm:px-[18px] dark:border-[var(--tg-border)]">
                       <div className="flex flex-wrap items-center gap-[10px]">
                           <button
@@ -10558,7 +10558,7 @@ const Reports: React.FC<ReportsProps> = ({
                               {calendarWeekdayHeaders.map(label => (
                                   <div
                                       key={label}
-                                      className="flex h-[32px] items-center justify-center rounded-[10px] border border-[#e8edf2] bg-white text-[14px] font-semibold text-[#20232a] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)]"
+                                      className="tg-module flex h-[32px] items-center justify-center rounded-[10px] border border-[#e8edf2] bg-white text-[14px] font-semibold text-[#20232a] dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-[var(--tg-text)]"
                                   >
                                       {language === 'cn' ? label : label}
                                   </div>
@@ -10654,7 +10654,7 @@ const Reports: React.FC<ReportsProps> = ({
               </section>
 
               <div className="grid grid-cols-1 gap-[12px] xl:grid-cols-[1fr_1fr]">
-                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                  <section className="tg-module overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
                       <div className="flex items-center justify-between border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px] dark:border-[var(--tg-border)]">
                           <div className="flex items-baseline gap-[10px]">
                               <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-[var(--tg-text)]">
@@ -10695,7 +10695,7 @@ const Reports: React.FC<ReportsProps> = ({
                       </div>
                   </section>
 
-                  <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+                  <section className="tg-module overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
                       <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px] dark:border-[var(--tg-border)]">
                           <div className="flex items-baseline gap-[10px]">
                               <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-[var(--tg-text)]">
@@ -10753,7 +10753,7 @@ const Reports: React.FC<ReportsProps> = ({
                   </section>
               </div>
 
-              <section className="overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
+              <section className="tg-module overflow-hidden rounded-[16px] bg-white shadow-none dark:bg-slate-900">
                   <div className="border-b border-[#edf1f5] px-[14px] py-[14px] sm:px-[18px] dark:border-[var(--tg-border)]">
                       <div className="flex items-baseline gap-[10px]">
                           <h3 className="text-[15px] font-bold uppercase text-[#20232a] dark:text-[var(--tg-text)]">
@@ -10820,7 +10820,7 @@ const Reports: React.FC<ReportsProps> = ({
                       );
 
                       return (
-                          <section key={group.key} className="overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                          <section key={group.key} className="tg-module overflow-visible rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                               <div className="border-b border-[#eceff3] px-[22px] py-[14px] dark:border-[var(--tg-border)]">
                                   <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                       {group.title}{compareHasGenerated ? ` (${matchedLabel})` : ''}
@@ -11153,7 +11153,7 @@ const Reports: React.FC<ReportsProps> = ({
                               ];
 
                               return (
-                                  <section key={`${group.key}-stats`} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                  <section key={`${group.key}-stats`} className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                                       <div className="border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                               {language === 'cn' ? `统计（${group.title}）` : `STATISTICS (${group.title.toUpperCase()})`}
@@ -11191,7 +11191,7 @@ const Reports: React.FC<ReportsProps> = ({
                               const winPercent = (winCount / total) * 100;
 
                               return (
-                                  <section key={`${group.key}-evaluation`} className="overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                                  <section key={`${group.key}-evaluation`} className="tg-module overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                                       <div className="border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">
                                               {language === 'cn' ? `综合评估（${group.title}）` : `OVERALL EVALUATION (${group.title.toUpperCase()})`}
@@ -11276,7 +11276,7 @@ const Reports: React.FC<ReportsProps> = ({
                                   chartId: 'compare-right',
                               },
                           ]).map(group => (
-                              <section key={`${group.key}-chart`} className="relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
+                              <section key={`${group.key}-chart`} className="tg-module relative overflow-hidden rounded-[8px] bg-white shadow-none dark:bg-slate-900">
                                   <div className="flex items-center justify-between border-b border-[#eceff3] px-[24px] py-[15px] dark:border-[var(--tg-border)]">
                                       <div className="flex items-center gap-[10px]">
                                           <h3 className="text-[16px] font-bold tracking-[-0.01em] text-[#2c3138] dark:text-white">{group.title}</h3>
@@ -11318,9 +11318,9 @@ const Reports: React.FC<ReportsProps> = ({
       {activeTab === 'ai' && (
           <div className="h-full">
               <FeatureGate tier="pro">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col min-h-[1100px]">
+                  <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm overflow-hidden flex flex-col min-h-[1100px]">
                       {/* Header */}
-                      <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col md:flex-row justify-between items-center gap-4">
+                      <div className="p-6 border-b border-slate-100 dark:border-[var(--tg-border)] bg-gradient-to-r from-slate-50 to-white dark:from-slate-900 dark:to-slate-950 flex flex-col md:flex-row justify-between items-center gap-4">
                           <div>
                               <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                   <Sparkles className="w-5 h-5 text-indigo-500" />
@@ -11336,7 +11336,7 @@ const Reports: React.FC<ReportsProps> = ({
                               <button 
                                 onClick={() => handleGenerateReport('weekly')}
                                 disabled={isGeneratingReport}
-                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:border-indigo-500 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md"
+                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] hover:border-indigo-500 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md"
                               >
                                   {isGeneratingReport ? <Loader2 className="w-4 h-4 animate-spin"/> : <CalendarIcon className="w-4 h-4 text-indigo-500"/>}
                                   {language === 'cn' ? '生成周报' : 'Weekly Report'}
@@ -11387,13 +11387,13 @@ const Reports: React.FC<ReportsProps> = ({
                                   <div className="flex justify-end mb-3">
                                       <button
                                           onClick={handleDownloadPdf}
-                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                                          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                                       >
                                           <Download className="w-4 h-4" />
                                           {language === 'cn' ? '下载 PDF' : 'Download PDF'}
                                       </button>
                                   </div>
-                                  <div ref={reportRef} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg animate-fade-in-up overflow-hidden">
+                                  <div ref={reportRef} className="tg-module bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] shadow-lg animate-fade-in-up overflow-hidden">
                                       <div className="h-1.5 bg-gradient-to-r from-slate-700 via-slate-500 to-slate-700" />
                                       <div className="p-10 md:p-14">
                                           <div dangerouslySetInnerHTML={{ __html: reportResult }} />
@@ -11437,7 +11437,7 @@ const Reports: React.FC<ReportsProps> = ({
 
       {/* Placeholders for tabs not yet fully implemented */}
       {['options', 'wins_losses'].includes(activeTab) && (
-           <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 border-dashed text-slate-400 dark:text-slate-400">
+           <div className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] border-dashed text-slate-400 dark:text-slate-400">
                <Activity className="w-16 h-16 mb-4 opacity-20" />
                <p className="font-medium">This report view is coming soon.</p>
                <p className="text-sm mt-2 opacity-60">We are building this feature.</p>

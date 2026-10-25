@@ -51,7 +51,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700 p-8 w-full max-w-md mx-4 flex flex-col gap-6">
+            <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-[var(--tg-border)] p-8 w-full max-w-md mx-4 flex flex-col gap-6">
                 {/* Header */}
                 <div className="text-center">
                     <div className="text-4xl mb-3">🎉</div>
@@ -70,7 +70,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete }) => {
                                 className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-all duration-150 text-left
                                     ${selected === key
                                         ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-500/20'
-                                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400'
+                                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-[var(--tg-border)] text-slate-700 dark:text-slate-300 hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400'
                                     }`}
                             >
                                 {label}

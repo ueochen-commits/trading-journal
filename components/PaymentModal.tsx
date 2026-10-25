@@ -107,7 +107,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
 
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl">
+      <div className="tg-module bg-white dark:bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-slate-200 dark:border-[var(--tg-border)] shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -122,7 +122,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
         </div>
 
         {/* Order Info */}
-        <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 mb-6">
+        <div className="tg-module bg-slate-50 dark:bg-slate-800 rounded-xl p-4 mb-6">
           <div className="flex justify-between items-center mb-2">
             <span className="text-sm text-slate-600 dark:text-slate-400">
               {language === 'cn' ? '订阅方案' : 'Plan'}
@@ -199,7 +199,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
                 </p>
 
                 {/* QR Code */}
-                <div className="bg-white p-4 rounded-xl inline-block mb-4 dark:bg-slate-900">
+                <div className="tg-module bg-white p-4 rounded-xl inline-block mb-4 dark:bg-slate-900">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrCode)}`}
                     alt="Payment QR Code"

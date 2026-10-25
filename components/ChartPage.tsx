@@ -325,7 +325,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
     <div className="h-full w-full flex flex-col overflow-hidden bg-slate-50 dark:bg-slate-950 font-sans relative">
       
       {/* Top Control Bar */}
-      <div id="chart-toolbar" className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-2 flex flex-col md:flex-row items-center gap-3 shrink-0 z-20 shadow-sm">
+      <div id="chart-toolbar" className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-[var(--tg-border)] p-2 flex flex-col md:flex-row items-center gap-3 shrink-0 z-20 shadow-sm">
           
           {/* Left: Symbol & Timeframe */}
           <div className="flex items-center gap-2 w-full md:w-auto">
@@ -337,11 +337,11 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
                     onChange={(e) => setTempSymbol(e.target.value.toUpperCase())}
                     onKeyDown={(e) => e.key === 'Enter' && setSymbol(tempSymbol)}
                     onBlur={() => setSymbol(tempSymbol)}
-                    className="pl-9 pr-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-900 dark:text-white w-32 md:w-40 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                    className="pl-9 pr-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] rounded-lg text-sm font-bold text-slate-900 dark:text-white w-32 md:w-40 outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
                     placeholder="SYMBOL"
                   />
               </div>
-              <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-slate-700">
+              <div className="tg-module flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 border border-slate-200 dark:border-[var(--tg-border)]">
                   {TIMEFRAMES.map(tf => (
                       <button
                         key={tf.value}
@@ -364,13 +364,13 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
           <div className="flex items-center gap-2">
               
               {/* View Toggles */}
-              <div id="chart-layout-toggle" className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+              <div id="chart-layout-toggle" className="tg-module flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                   <button onClick={() => setLayoutMode('chart-only')} className={`p-1.5 rounded ${layoutMode === 'chart-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Maximize2 className="w-4 h-4" /></button>
                   <button onClick={() => setLayoutMode('note-only')} className={`p-1.5 rounded ${layoutMode === 'note-only' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Minimize2 className="w-4 h-4" /></button>
               </div>
 
               {/* Split Controls */}
-              <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 ml-1">
+              <div className="tg-module flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1 ml-1">
                   <button onClick={() => { setLayoutMode('split'); setSplitDirection('horizontal'); }} className={`p-1.5 rounded ${layoutMode === 'split' && splitDirection === 'horizontal' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Columns className="w-4 h-4" /></button>
                   <button onClick={() => { setLayoutMode('split'); setSplitDirection('vertical'); }} className={`p-1.5 rounded ${layoutMode === 'split' && splitDirection === 'vertical' ? 'bg-white dark:bg-slate-700 shadow-sm text-indigo-500' : 'text-slate-400 dark:text-slate-400'}`}><Rows className="w-4 h-4" /></button>
               </div>
@@ -404,7 +404,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
                   onMouseDown={handleMouseDown}
                   className={`
                       z-40 flex items-center justify-center bg-slate-200 dark:bg-slate-800 hover:bg-indigo-500 dark:hover:bg-indigo-600 transition-colors
-                      ${splitDirection === 'horizontal' ? 'w-2 cursor-col-resize h-full border-x border-slate-300 dark:border-slate-700' : 'h-2 cursor-row-resize w-full border-y border-slate-300 dark:border-slate-700'}
+                      ${splitDirection === 'horizontal' ? 'w-2 cursor-col-resize h-full border-x border-slate-300 dark:border-[var(--tg-border)]' : 'h-2 cursor-row-resize w-full border-y border-slate-300 dark:border-[var(--tg-border)]'}
                   `}
               >
                   {splitDirection === 'horizontal' 
@@ -424,15 +424,15 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
             className="flex flex-col bg-white dark:bg-slate-900 z-10 transition-none overflow-hidden"
           >
               {/* Note Toolbar (Rich Text) */}
-              <div className="flex flex-col border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/50">
+              <div className="flex flex-col border-b border-slate-100 dark:border-[var(--tg-border)] bg-slate-50 dark:bg-slate-950/50">
                   {/* Row 1: Text Formatting */}
-                  <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 dark:border-slate-800">
+                  <div className="flex flex-wrap items-center gap-1 p-2 border-b border-slate-100 dark:border-[var(--tg-border)]">
                       <ToolbarButton onClick={() => execCmd('undo')} icon={RotateCcw} title={t.plans.editor.undo} />
                       <ToolbarButton onClick={() => execCmd('redo')} icon={RotateCw} title={t.plans.editor.redo} />
                       <Divider />
                       <select 
                           onChange={(e) => execCmd('formatBlock', e.target.value)} 
-                          className="bg-transparent text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-slate-700 rounded p-1 hover:bg-white dark:hover:bg-slate-800 transition-colors h-6 cursor-pointer w-20"
+                          className="bg-transparent text-[10px] font-bold text-slate-600 dark:text-slate-300 outline-none border border-slate-200 dark:border-[var(--tg-border)] rounded p-1 hover:bg-white dark:hover:bg-slate-800 transition-colors h-6 cursor-pointer w-20"
                       >
                           <option value="P">{t.plans.editor.normal}</option>
                           <option value="H2">{t.plans.editor.h1}</option>
@@ -506,7 +506,7 @@ const ChartPage: React.FC<ChartPageProps> = ({ onSavePlan, onNavigateToNotebook 
                       placeholder="Note Title..." 
                       value={noteTitle}
                       onChange={e => setNoteTitle(e.target.value)}
-                      className="px-5 py-3 text-sm font-bold bg-transparent border-b border-slate-100 dark:border-slate-800 outline-none text-slate-900 dark:text-white placeholder-slate-400"
+                      className="px-5 py-3 text-sm font-bold bg-transparent border-b border-slate-100 dark:border-[var(--tg-border)] outline-none text-slate-900 dark:text-white placeholder-slate-400"
                   />
                   <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">
                       <div

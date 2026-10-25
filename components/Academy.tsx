@@ -148,9 +148,9 @@ const Academy: React.FC = () => {
     if (view === 'exam') {
         const q = CFA_QUESTIONS[currentQ];
         return (
-            <div className="h-full flex flex-col animate-fade-in bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-slate-800">
+            <div className="tg-module h-full flex flex-col animate-fade-in bg-white dark:bg-slate-950 p-6 rounded-3xl border border-slate-200 dark:border-[var(--tg-border)]">
                 {/* Exam Header */}
-                <div className="flex items-center justify-between mb-8 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center justify-between mb-8 border-b border-slate-100 dark:border-[var(--tg-border)] pb-4">
                     <div className="flex items-center gap-4">
                         <button onClick={() => setView('main')} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                             <ArrowLeft className="w-5 h-5" />
@@ -187,7 +187,7 @@ const Academy: React.FC = () => {
                                 className={`w-full text-left p-6 rounded-2xl border-2 transition-all flex items-center justify-between group ${
                                     userAnswers[q.id] === idx 
                                     ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-4 ring-indigo-500/10' 
-                                    : 'border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
+                                    : 'border-slate-100 dark:border-[var(--tg-border)] bg-white dark:bg-slate-900 hover:border-slate-300 dark:hover:border-slate-700'
                                 }`}
                             >
                                 <div className="flex items-center gap-4">
@@ -203,11 +203,11 @@ const Academy: React.FC = () => {
                 </div>
 
                 {/* Footer Controls */}
-                <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-slate-800 mt-auto">
+                <div className="flex items-center justify-between pt-6 border-t border-slate-100 dark:border-[var(--tg-border)] mt-auto">
                     <button 
                         disabled={currentQ === 0}
                         onClick={() => setCurrentQ(v => v - 1)}
-                        className="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 font-bold disabled:opacity-30"
+                        className="px-6 py-2.5 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] text-slate-600 dark:text-slate-400 font-bold disabled:opacity-30"
                     >
                         Previous
                     </button>
@@ -235,7 +235,7 @@ const Academy: React.FC = () => {
     if (view === 'result') {
         return (
             <div className="max-w-4xl mx-auto space-y-8 animate-fade-in py-8">
-                <div className="bg-white dark:bg-slate-900 rounded-3xl p-12 border border-slate-200 dark:border-slate-800 shadow-xl text-center relative overflow-hidden">
+                <div className="tg-module bg-white dark:bg-slate-900 rounded-3xl p-12 border border-slate-200 dark:border-[var(--tg-border)] shadow-xl text-center relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-8 opacity-5">
                         <Trophy className="w-64 h-64" />
                     </div>
@@ -268,7 +268,7 @@ const Academy: React.FC = () => {
                         <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
                             <button 
                                 onClick={handleStartExam}
-                                className="px-8 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
+                                className="px-8 py-3 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] text-slate-700 dark:text-slate-300 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-all flex items-center justify-center gap-2"
                             >
                                 <RefreshCw className="w-5 h-5" /> {t.academy.exam.retakeBtn}
                             </button>
@@ -290,7 +290,7 @@ const Academy: React.FC = () => {
                 {/* Score Distribution Breakdown (Static Mock for visual quality) */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {['Ethics', 'Derivatives', 'Economics'].map((topic, i) => (
-                        <div key={i} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+                        <div key={i} className="tg-module bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-100 dark:border-[var(--tg-border)]">
                             <h4 className="font-bold text-sm text-slate-500 uppercase mb-4 dark:text-slate-400">{topic}</h4>
                             <div className="flex items-end justify-between">
                                 <span className="text-2xl font-black font-mono">82%</span>
@@ -306,7 +306,7 @@ const Academy: React.FC = () => {
     return (
         <div className="space-y-8 animate-fade-in pb-12">
             {/* Header Banner */}
-            <div className="relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-xl">
+            <div className="tg-module relative rounded-3xl overflow-hidden bg-slate-900 text-white shadow-xl">
                 <div className="absolute inset-0 bg-gradient-to-r from-indigo-900/90 to-purple-900/80 z-10"></div>
                 <div className="absolute -right-20 -top-20 w-96 h-96 bg-indigo-500/30 rounded-full blur-3xl"></div>
                 <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl"></div>
@@ -343,8 +343,8 @@ const Academy: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 {/* Left: Courses (8 cols) */}
                 <div className="lg:col-span-8 space-y-6">
-                    <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full md:w-auto">
+                    <div className="tg-module flex flex-col md:flex-row justify-between items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] shadow-sm">
+                        <div className="tg-module flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-full md:w-auto">
                             {(['all', 'free', 'premium'] as const).map(tab => (
                                 <button
                                     key={tab}
@@ -374,7 +374,7 @@ const Academy: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {filteredCourses.map(course => (
-                            <div key={course.id} className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
+                            <div key={course.id} className="tg-module bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-[var(--tg-border)] overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full">
                                 <div className={`h-48 w-full ${course.thumbnail} relative p-6 flex flex-col justify-between`}>
                                     <div className="flex justify-between items-start">
                                         <span className="bg-black/30 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
@@ -390,7 +390,7 @@ const Academy: React.FC = () => {
                                             </span>
                                         )}
                                     </div>
-                                    <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                                    <div className="tg-module bg-white/10 backdrop-blur-sm rounded-xl p-3 border border-white/10 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                                         <button className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 py-2 rounded-lg font-bold text-sm hover:bg-slate-50 transition-colors dark:bg-slate-900 dark:text-slate-100 dark:hover:bg-slate-700">
                                             <PlayCircle className="w-4 h-4" /> Preview
                                         </button>
@@ -405,7 +405,7 @@ const Academy: React.FC = () => {
                                     </div>
                                     <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1 group-hover:text-indigo-500 transition-colors line-clamp-2">{course.title}</h3>
                                     <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">by {course.instructor}</p>
-                                    <div className="mt-auto pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                                    <div className="mt-auto pt-4 border-t border-slate-100 dark:border-[var(--tg-border)] flex items-center justify-between">
                                         <div className="flex items-center gap-1 text-amber-500 text-sm font-bold">
                                             <Star className="w-4 h-4 fill-current" /> {course.rating}
                                             <span className="text-slate-400 text-xs font-normal ml-1 dark:text-slate-400">({course.students})</span>
@@ -427,7 +427,7 @@ const Academy: React.FC = () => {
                         
                         <div className="relative z-10 space-y-6">
                             <div className="flex items-center gap-3">
-                                <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                                <div className="tg-module p-3 bg-white/10 rounded-2xl backdrop-blur-md">
                                     <FileQuestion className="w-6 h-6 text-amber-400" />
                                 </div>
                                 <h3 className="text-xl font-bold uppercase tracking-tight">{t.academy.exam.title}</h3>
@@ -441,11 +441,11 @@ const Academy: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <div className="tg-module p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 dark:text-slate-400">Items</p>
                                     <p className="text-xl font-black">50</p>
                                 </div>
-                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
+                                <div className="tg-module p-4 bg-white/5 rounded-2xl border border-white/10 text-center">
                                     <p className="text-[10px] font-bold text-slate-400 uppercase mb-1 dark:text-slate-400">Level</p>
                                     <p className="text-xl font-black">II - III</p>
                                 </div>
@@ -462,7 +462,7 @@ const Academy: React.FC = () => {
                     </div>
 
                     {/* Additional Resources / Stats */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 space-y-6 shadow-sm">
+                    <div className="tg-module bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-[var(--tg-border)] space-y-6 shadow-sm">
                         <h4 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                             <BarChart3 className="w-4 h-4 text-indigo-500" /> Top Performers
                         </h4>

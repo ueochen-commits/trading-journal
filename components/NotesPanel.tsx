@@ -442,14 +442,14 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
   const panelContent = (
     <div
       ref={fullscreenRef}
-      className={`notes-input-panel flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors focus-within:border-indigo-400 dark:border-slate-700/70 dark:bg-[#172033] dark:focus-within:border-indigo-400/70 ${
+      className={`notes-input-panel flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors focus-within:border-indigo-400 dark:border-[var(--tg-border)] dark:bg-[#172033] dark:focus-within:border-indigo-400/70 ${
         isFullscreen ? 'fixed inset-0 z-[200]' : 'h-full'
       }`}
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif' }}
     >
       {/* ─── Rich Text Toolbar ─── */}
       <div
-        className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700/70 dark:bg-slate-800/50"
+        className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-[var(--tg-border)] dark:bg-slate-800/50"
         onMouseDown={(e) => e.preventDefault()}
       >
         {/* Group 1: History & Input */}
@@ -719,7 +719,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       {/* ─── Delete Confirm Modal ─── */}
       {deleteConfirmOpen && (
         <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1a1a1a] rounded-xl p-6 max-w-sm w-full shadow-2xl border border-[rgba(0,0,0,0.12)] dark:border-[rgba(255,255,255,0.16)]">
+          <div className="tg-module bg-white dark:bg-[#1a1a1a] rounded-xl p-6 max-w-sm w-full shadow-2xl border border-[rgba(0,0,0,0.12)] dark:border-[rgba(255,255,255,0.16)]">
             <p className="text-[14px] text-[#1a1a1a] dark:text-[#ededed] mb-4 font-medium">
               确定清空当前笔记吗？此操作无法撤销。
             </p>
@@ -746,7 +746,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       {/* ─── Template Modal ─── */}
       {templateModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-[300] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0a0a0a] rounded-xl max-w-md w-full shadow-2xl border border-[rgba(0,0,0,0.12)] dark:border-[rgba(255,255,255,0.16)] overflow-hidden">
+          <div className="tg-module bg-white dark:bg-[#0a0a0a] rounded-xl max-w-md w-full shadow-2xl border border-[rgba(0,0,0,0.12)] dark:border-[rgba(255,255,255,0.16)] overflow-hidden">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[rgba(0,0,0,0.08)] dark:border-[rgba(255,255,255,0.12)]">
               <span className="text-[14px] font-medium text-[#1a1a1a] dark:text-[#ededed]">选择模板</span>
               <button type="button" onClick={() => setTemplateModalOpen(false)} aria-label="关闭">

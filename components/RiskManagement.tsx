@@ -158,7 +158,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
       {/* Reset Confirmation Modal */}
       {showResetConfirm && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-              <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 max-w-sm w-full mx-4">
+              <div className="tg-module bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-[var(--tg-border)] max-w-sm w-full mx-4">
                   <div className="flex items-center gap-3 mb-3">
                       <div className="p-2 bg-amber-100 dark:bg-amber-900/30 rounded-full">
                           <RotateCcw className="w-5 h-5 text-amber-600 dark:text-amber-400" />
@@ -171,7 +171,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                   <div className="flex gap-3">
                       <button
                           onClick={() => setShowResetConfirm(false)}
-                          className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium"
+                          className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-[var(--tg-border)] text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors font-medium"
                       >
                           取消
                       </button>
@@ -197,7 +197,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
 
       {/* Column 1: Risk Settings */}
       <div id="risk-settings" className="space-y-6">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
+        <div className="tg-module bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] transition-colors">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Shield className="w-6 h-6 text-indigo-500" />
                 {t.risk.settingsTitle}
@@ -256,7 +256,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                                     setLocalSettings({...localSettings, accountSize: val});
                                     setSimBalance(val);
                                 }}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -289,7 +289,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                                 value={localSettings.maxTradeRisk}
                                 disabled={isLocked}
                                 onChange={e => setLocalSettings({...localSettings, maxTradeRisk: Number(e.target.value)})}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded p-2 pl-6 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                     </div>
@@ -304,13 +304,13 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                             value={localSettings.maxConsecutiveLosses || 4}
                             disabled={isLocked}
                             onChange={e => setLocalSettings({...localSettings, maxConsecutiveLosses: Number(e.target.value)})}
-                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                         />
                     </div>
                 </div>
 
                 {/* New Risk Factors Section */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+                <div className="pt-2 border-t border-slate-100 dark:border-[var(--tg-border)]">
                     <p className="text-xs text-slate-400 font-bold uppercase mb-3 dark:text-slate-400">Additional Constraints</p>
                     <div className="grid grid-cols-2 gap-4">
                         <div>
@@ -323,7 +323,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                                 value={localSettings.maxOpenPositions || 1}
                                 disabled={isLocked}
                                 onChange={e => setLocalSettings({...localSettings, maxOpenPositions: Number(e.target.value)})}
-                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
+                                className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500 disabled:opacity-60 disabled:cursor-not-allowed"
                             />
                         </div>
                         <div>
@@ -357,13 +357,13 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
         </div>
 
         {/* Review Center */}
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors">
+        <div className="tg-module bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] transition-colors">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <CalendarCheck className="w-6 h-6 text-emerald-500" />
                 {t.risk.reviewTitle}
             </h3>
             <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                <div className="tg-module flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-[var(--tg-border)] transition-colors">
                     <div className="flex items-center gap-3">
                         <Clock className="w-5 h-5 text-blue-500" />
                         <div>
@@ -380,7 +380,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                     </button>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                <div className="tg-module flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-[var(--tg-border)] transition-colors">
                     <div className="flex items-center gap-3">
                         <CalendarCheck className="w-5 h-5 text-purple-500" />
                         <div>
@@ -396,7 +396,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         {isWeeklyDone ? t.risk.completed : t.risk.checkIn}
                     </button>
                 </div>
-                 <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                 <div className="tg-module flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-[var(--tg-border)] transition-colors">
                     <div className="flex items-center gap-3">
                         <Shield className="w-5 h-5 text-orange-500" />
                         <div>
@@ -417,7 +417,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
       </div>
 
       {/* Column 2: Trading Rules */}
-      <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col h-full transition-colors">
+      <div className="tg-module bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] flex flex-col h-full transition-colors">
          <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-yellow-500" />
             {t.risk.rulesTitle}
@@ -426,11 +426,11 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
         
         <div className="flex-1 space-y-3 overflow-y-auto mb-4">
             {rules.map(rule => (
-                <div key={rule.id} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg group border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-colors">
+                <div key={rule.id} className="tg-module flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg group border border-transparent hover:border-slate-200 dark:hover:border-slate-600 transition-colors">
                     <button onClick={() => onToggleRule(rule.id)} className="mt-1">
                         {rule.isActive 
                             ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> 
-                            : <div className="w-5 h-5 rounded-full border-2 border-slate-400 dark:border-slate-600" />
+                            : <div className="w-5 h-5 rounded-full border-2 border-slate-400 dark:border-[var(--tg-border)]" />
                         }
                     </button>
                     <span className={`flex-1 text-slate-700 dark:text-slate-200 ${!rule.isActive && 'text-slate-400 dark:text-slate-400 line-through'}`}>{rule.text}</span>
@@ -442,14 +442,14 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
             {rules.length === 0 && <p className="text-slate-500 text-center py-8 dark:text-slate-400">{t.risk.noRules}</p>}
         </div>
 
-        <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="flex gap-2 pt-4 border-t border-slate-200 dark:border-[var(--tg-border)]">
             <input 
                 type="text"
                 value={newRuleText}
                 onChange={e => setNewRuleText(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && newRuleText && (onAddRule(newRuleText), setNewRuleText(''))}
                 placeholder={t.risk.addRulePlaceholder}
-                className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
+                className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded p-2 text-slate-900 dark:text-white outline-none focus:border-indigo-500"
             />
             <button 
                 onClick={() => { if(newRuleText) { onAddRule(newRuleText); setNewRuleText(''); } }}
@@ -461,7 +461,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
       </div>
 
       {/* NEW SECTION: Equity Simulator (Full Width) */}
-      <div id="risk-simulator" className="lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 shadow-lg shadow-indigo-500/5 transition-colors">
+      <div id="risk-simulator" className="tg-module lg:col-span-2 bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-[var(--tg-border)] shadow-lg shadow-indigo-500/5 transition-colors">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
               <div>
                   <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -481,7 +481,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {/* Controls */}
-              <div className="space-y-5 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700">
+              <div className="tg-module space-y-5 p-5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-[var(--tg-border)]">
                   <div className="flex items-center gap-2 text-slate-400 text-xs uppercase font-bold tracking-wider mb-2 dark:text-slate-400">
                       <Sliders className="w-4 h-4" /> Parameters
                   </div>
@@ -496,7 +496,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                         type="number" 
                         value={simBalance}
                         onChange={e => setSimBalance(Number(e.target.value))}
-                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded p-1.5 text-sm"
+                        className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-[var(--tg-border)] rounded p-1.5 text-sm"
                       />
                   </div>
 
@@ -599,7 +599,7 @@ const RiskManagement: React.FC<RiskManagementProps> = ({
                       </div>
                   </div>
 
-                  <div className="flex-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-xl p-2 shadow-inner">
+                  <div className="tg-module flex-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-[var(--tg-border)] rounded-xl p-2 shadow-inner">
                       <ResponsiveContainer width="100%" height="100%">
                           <AreaChart data={simulationData}>
                               <defs>
