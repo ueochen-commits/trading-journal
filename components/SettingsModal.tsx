@@ -29,7 +29,7 @@ const compressImage = (file: File): Promise<string> => {
 };
 
 interface SettingsModalProps {
-    onImportTrades?: (trades: Trade[]) => void;
+    onImportTrades?: (trades: Trade[]) => void | Promise<void>;
 }
 
 const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
@@ -136,7 +136,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
                 lastSync: new Date().toLocaleString()
             };
             addExchangeConnection(newConnection);
-            if (onImportTrades) onImportTrades(newTrades);
+            if (onImportTrades) await onImportTrades(newTrades);
             setApiKey('');
             setApiSecret('');
             showToast(`${newTrades.length} trades imported from ${selectedExchange}`);
@@ -153,7 +153,7 @@ const SettingsModal = ({ onImportTrades }: SettingsModalProps) => {
         try {
             const newTrades = await fetchTradesFromExchange(connection.exchange, 'mock-key', 'mock-secret', addLog);
             updateExchangeConnectionLastSync(connection.id);
-            if (onImportTrades) onImportTrades(newTrades);
+            if (onImportTrades) await onImportTrades(newTrades);
             showToast(`Synced ${newTrades.length} new trades.`);
         } catch (error) {
             addLog(`[Error] Sync failed.`);

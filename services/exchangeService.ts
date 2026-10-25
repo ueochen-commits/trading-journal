@@ -1,3 +1,4 @@
+import { tradePnlBreakdown } from '../utils/tradePnl';
 
 import { Trade, Direction, TradeStatus } from '../types';
 
@@ -14,7 +15,7 @@ function toDirection(dir: string): Direction {
 
 // Binance 配对交易 → TradeGrail Trade
 function mapBinanceTrade(raw: any, accountId?: string): Trade {
-    const pnl = raw.pnl ?? 0;
+    const pnl = tradePnlBreakdown(raw.pnl ?? 0, Math.max(0, raw.fees ?? 0), 'gross').net;
     let status: TradeStatus;
     if (raw.isOpen) {
         status = TradeStatus.OPEN;

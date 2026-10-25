@@ -40,7 +40,7 @@ function getYesterdayTrades(trades: Trade[]): Trade[] {
 
 // Headline is built from hardcoded templates with only numeric/symbol data interpolated — no user input
 function buildHeadlineParts(scenario: Scenario, yesterdayTrades: Trade[]): React.ReactNode {
-  const netPnl = yesterdayTrades.reduce((s, t) => s + (t.pnl - t.fees), 0);
+  const netPnl = yesterdayTrades.reduce((s, t) => s + (t.pnl), 0);
   const wins = yesterdayTrades.filter(t => t.pnl > 0).length;
   const winRate = yesterdayTrades.length > 0 ? ((wins / yesterdayTrades.length) * 100).toFixed(1) : '0';
   const grossWins = yesterdayTrades.filter(t => t.pnl > 0).reduce((s, t) => s + t.pnl, 0);
@@ -72,11 +72,11 @@ const TradeGrailDailyCard: React.FC<TradeGrailDailyCardProps> = ({
   const scenario: Scenario = useMemo(() => {
     if (isWeekend(today)) return 'market-closed';
     if (yesterdayTrades.length === 0) return 'no-trade';
-    const netPnl = yesterdayTrades.reduce((s, t) => s + (t.pnl - t.fees), 0);
+    const netPnl = yesterdayTrades.reduce((s, t) => s + (t.pnl), 0);
     return netPnl >= 0 ? 'profit' : 'loss';
   }, [yesterdayTrades]);
 
-  const netPnl = useMemo(() => yesterdayTrades.reduce((s, t) => s + (t.pnl - t.fees), 0), [yesterdayTrades]);
+  const netPnl = useMemo(() => yesterdayTrades.reduce((s, t) => s + (t.pnl), 0), [yesterdayTrades]);
   const headlineParts = useMemo(() => buildHeadlineParts(scenario, yesterdayTrades), [scenario, yesterdayTrades]);
 
   const banner: BannerData | null = useMemo(() => {

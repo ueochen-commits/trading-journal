@@ -40,7 +40,7 @@ const ReviewSession: React.FC<ReviewSessionProps> = ({ config, trades, plans, on
     // 2. Calculate Stats
     const stats = useMemo(() => {
         const count = sessionTrades.length;
-        const netPnl = sessionTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+        const netPnl = sessionTrades.reduce((acc, t) => acc + (t.pnl), 0);
         const wins = sessionTrades.filter(t => t.pnl > 0).length;
         const winRate = count > 0 ? (wins / count) * 100 : 0;
         return { count, netPnl, winRate };

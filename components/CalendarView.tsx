@@ -515,7 +515,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
       const [y, m] = k.split('-').map(Number);
       return y === yyyy && m === mm;
     });
-    const totalPnl = monthTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
+    const totalPnl = monthTrades.reduce((acc, tr) => acc + (tr.pnl), 0);
     const tradingDaySet = new Set(monthTrades.map(tr => tradeDateKey(tr.entryDate)));
     return { totalPnl, totalTrades: monthTrades.length, tradingDays: tradingDaySet.size };
   }, [currentDate, trades]);
@@ -538,7 +538,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
         if (isCurrentMonth && cellDate.toDateString() === now.toDateString()) containsToday = true;
         const cellKey = `${currentDate.getFullYear()}-${String(currentDate.getMonth()+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
         const dayTrades = trades.filter(tr => tradeDateKey(tr.entryDate) === cellKey);
-        weekPnl += dayTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
+        weekPnl += dayTrades.reduce((acc, tr) => acc + (tr.pnl), 0);
         weekCount += dayTrades.length;
         if (dayTrades.length > 0) daySet.add(cellKey);
       }
@@ -555,7 +555,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const daysTrades = trades.filter(tr => tradeDateKey(tr.entryDate) === dateKey);
     const dayPlan = plans?.find(p => p.date === dateKey && p.folder === 'daily-journal' && !p.isDeleted);
     if (daysTrades.length === 0 && !dayPlan) return null;
-    const netPnl = daysTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
+    const netPnl = daysTrades.reduce((acc, tr) => acc + (tr.pnl), 0);
     const count = daysTrades.length;
     const wins = daysTrades.filter(tr => tr.pnl > 0).length;
     const winRate = count > 0 ? (wins / count) * 100 : 0;
@@ -642,7 +642,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
 
   const handleInsertTrade = useCallback((trade: typeof selectedDayTrades[0]) => {
     if (!reviewEditor) return;
-    const netPnl = trade.pnl - trade.fees;
+    const netPnl = trade.pnl;
     const time = new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
     reviewEditor.chain().focus().insertContent([
       { type: 'tradeReference', attrs: { tradeId: trade.id, time, symbol: trade.symbol, direction: trade.direction, netPnl } },
@@ -663,7 +663,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
   const selectedDayStats = useMemo(() => {
     const count = selectedDayTrades.length;
     if (count === 0) return null;
-    const pnl = selectedDayTrades.reduce((acc, tr) => acc + (tr.pnl - tr.fees), 0);
+    const pnl = selectedDayTrades.reduce((acc, tr) => acc + (tr.pnl), 0);
     const wins = selectedDayTrades.filter(tr => tr.pnl > 0).length;
     const losses = selectedDayTrades.filter(tr => tr.pnl <= 0).length;
     const winRate = (wins / count) * 100;
@@ -678,7 +678,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     const grossLosses = Math.abs(selectedDayTrades.filter(tr => tr.pnl <= 0).reduce((acc, tr) => acc + tr.pnl, 0));
     const profitFactor = grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0;
     const totalFees = selectedDayTrades.reduce((acc, tr) => acc + tr.fees, 0);
-    const grossPnl = selectedDayTrades.reduce((acc, tr) => acc + tr.pnl, 0);
+    const grossPnl = selectedDayTrades.reduce((acc, tr) => acc + tr.pnl + tr.fees, 0);
     const volume = selectedDayTrades.reduce((acc, tr) => acc + (tr.entryPrice * tr.quantity), 0);
     return { profitFactor, totalFees, grossPnl, volume, grossWins, grossLosses };
   }, [selectedDayStats, selectedDayTrades]);
@@ -687,7 +687,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
     if (!selectedDay) return [];
     const sorted = [...selectedDayTrades].sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime());
     let cum = 0;
-    return sorted.map((tr, i) => { cum += tr.pnl - tr.fees; return { i: i + 1, pnl: parseFloat(cum.toFixed(2)) }; });
+    return sorted.map((tr, i) => { cum += tr.pnl; return { i: i + 1, pnl: parseFloat(cum.toFixed(2)) }; });
   }, [selectedDay, selectedDayTrades]);
 
   const selectedDayHasReview = useMemo(() => {
@@ -1181,7 +1181,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                         </thead>
                         <tbody>
                           {selectedDayTrades.map(trade => {
-                            const netPnl = trade.pnl - trade.fees;
+                            const netPnl = trade.pnl;
                             const costBasis = trade.entryPrice * trade.quantity;
                             const roi = costBasis > 0 ? (netPnl / costBasis) * 100 : null;
                             return (
@@ -1480,7 +1480,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({ trades, plans, onSavePlan, 
                           {filteredPickerTrades.length === 0 ? (
                             <div style={{ padding: '28px 16px', textAlign: 'center', color: 'var(--tg-muted, #94A3B8)', fontSize: 13 }}>没有匹配的交易</div>
                           ) : filteredPickerTrades.map((trade, idx) => {
-                            const netPnl = trade.pnl - trade.fees;
+                            const netPnl = trade.pnl;
                             const time = new Date(trade.entryDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
                             return (
                               <div key={trade.id} onClick={() => handleInsertTrade(trade)} onMouseEnter={() => setTradeHighlightIdx(idx)}

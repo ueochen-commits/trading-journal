@@ -1,3 +1,4 @@
+import { displayTradePnl } from '../utils/tradePnl';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { DailyPlan, Notification, Trade, TradeStatus, Direction, Report, TradingAccount, Strategy, TagCategoryDefinition } from '../types';
@@ -758,9 +759,7 @@ const Reports: React.FC<ReportsProps> = ({
   const setDayTimeRightTertiaryMetric = (metricId: DayTimeMetricId | null) => setDayTimeMetricSelection('right', current => ({ ...current, tertiary: metricId }));
 
   const getDisplayPnl = (trade: Trade) => {
-      const grossPnl = Number(trade.pnl) || 0;
-      const fees = Number(trade.fees) || 0;
-      return pnlDisplayMode === 'net' ? grossPnl - fees : grossPnl;
+      return displayTradePnl(trade, pnlDisplayMode);
   };
 
   const getTradeVolume = (trade: Trade) => Math.abs((Number(trade.quantity) || 0) * (Number(trade.entryPrice) || 0));
@@ -1671,7 +1670,7 @@ const Reports: React.FC<ReportsProps> = ({
   });
 
   const addTradeToDetailedRow = (row: DetailedStatRow, trade: Trade) => {
-      const net = trade.pnl - trade.fees;
+      const net = trade.pnl;
       row.count += 1;
       row.netPnl += net;
       if (net > 0) {
@@ -1767,7 +1766,7 @@ const Reports: React.FC<ReportsProps> = ({
           breakeven: createDetailedStatRow(language === 'cn' ? '打平交易' : 'Breakeven trades'),
       };
       trades.forEach(trade => {
-          const net = trade.pnl - trade.fees;
+          const net = trade.pnl;
           if (net > 0) addTradeToDetailedRow(rows.wins, trade);
           else if (net < 0) addTradeToDetailedRow(rows.losses, trade);
           else addTradeToDetailedRow(rows.breakeven, trade);

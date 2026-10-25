@@ -1,3 +1,4 @@
+import ScreenshotViewer from './ScreenshotViewer';
 import React, { useEffect, useRef, useState } from 'react';
 import { Upload, X } from 'lucide-react';
 import type { UserTier } from '../UserContext';
@@ -43,6 +44,7 @@ const TradeScreenshotPicker: React.FC<Props> = ({ images, tier, language, onChan
   }, [onBusyChange]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [viewing, setViewing] = useState<number | null>(null);
   const limit = screenshotLimit(tier);
   const cn = language === 'cn';
   const full = images.length >= limit;
@@ -88,7 +90,9 @@ const TradeScreenshotPicker: React.FC<Props> = ({ images, tier, language, onChan
       <div className="grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-y-auto">
         {images.map((image, index) => (
           <div key={`${index}-${image.slice(-24)}`} className="relative min-h-[64px] overflow-hidden rounded-lg border border-slate-200 dark:border-[var(--tg-border)]">
-            <img src={image} alt={`${cn ? '截图' : 'Screenshot'} ${index + 1}`} className="h-full max-h-[96px] w-full object-cover" />
+            <button type="button" aria-label={`${cn ? '查看截图' : 'View screenshot'} ${index + 1}`} onClick={() => setViewing(index)} className="block h-full w-full cursor-zoom-in">
+              <img src={image} alt={`${cn ? '截图' : 'Screenshot'} ${index + 1}`} className="h-full max-h-[96px] w-full object-cover" />
+            </button>
             <button type="button" aria-label={`${cn ? '删除截图' : 'Remove screenshot'} ${index + 1}`} disabled={busy} onClick={() => change(current.current.filter((_, i) => i !== index))} className="absolute right-1 top-1 rounded-full bg-slate-950/80 p-1 text-white hover:bg-rose-600 disabled:opacity-50"><X size={12} /></button>
           </div>
         ))}
@@ -97,6 +101,7 @@ const TradeScreenshotPicker: React.FC<Props> = ({ images, tier, language, onChan
           <input type="file" aria-label={cn ? '上传交易截图' : 'Upload trade screenshots'} accept="image/*" multiple disabled={busy} className="hidden" onChange={event => { const files = Array.from(event.target.files || []); event.target.value = ''; void addFiles(files); }} />
         </label>}
       </div>
+      {viewing !== null && <ScreenshotViewer images={images} index={viewing} language={language} onClose={() => setViewing(null)} />}
       {error && <p role="alert" className="text-[10px] leading-snug text-rose-600 dark:text-rose-300">{error}</p>}
     </div>
   );

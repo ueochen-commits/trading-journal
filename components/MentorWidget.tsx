@@ -72,7 +72,7 @@ const MentorWidget: React.FC<MentorWidgetProps> = ({ trades, plans, riskSettings
             .filter(t => new Date(t.entryDate).toDateString() === today)
             .sort((a, b) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime()); // Newest first
 
-        const todayPnl = todaysTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+        const todayPnl = todaysTrades.reduce((acc, t) => acc + (t.pnl), 0);
         
         // Check for max loss
         if (todayPnl <= -Math.abs(riskSettings.maxDailyLoss)) {

@@ -197,8 +197,8 @@ const RichTextEditor = ({ content, onChange }: { content: string, onChange: (htm
 const TradeSummaryCard = ({ trades, onViewDetails }: { trades: Trade[], onViewDetails: () => void }) => {
     const { t } = useLanguage();
     if (trades.length === 0) return null;
-    const netPnl = trades.reduce((acc, t) => acc + t.pnl - t.fees, 0);
-    const grossPnl = trades.reduce((acc, t) => acc + t.pnl, 0);
+    const netPnl = trades.reduce((acc, t) => acc + t.pnl, 0);
+    const grossPnl = trades.reduce((acc, t) => acc + t.pnl + t.fees, 0);
     const commissions = trades.reduce((acc, t) => acc + t.fees, 0);
     const volume = trades.reduce((acc, t) => acc + t.quantity, 0);
     const totalTrades = trades.length;
@@ -983,7 +983,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                       const isSelected = selectedPlanId === plan.id;
                       const linkedTrades = trades.filter(t => plan.linkedTradeIds?.includes(t.id));
                       let displayPnl: number | null = null;
-                      if (linkedTrades.length > 0) displayPnl = linkedTrades.reduce((acc, t) => acc + t.pnl - t.fees, 0);
+                      if (linkedTrades.length > 0) displayPnl = linkedTrades.reduce((acc, t) => acc + t.pnl, 0);
                       const isMenuOpen = noteMenuOpenId === plan.id;
                       const relativeTime = (() => {
                           const now = Date.now();
@@ -1098,8 +1098,8 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                 <div className="flex-1 overflow-y-auto px-10 pb-8 custom-scrollbar">
                     {/* Net P&L 信息卡 */}
                     {activePlanTrades.length > 0 ? (() => {
-                        const netPnl = activePlanTrades.reduce((acc, t) => acc + t.pnl - t.fees, 0);
-                        const winCount = activePlanTrades.filter(t => t.pnl - t.fees > 0).length;
+                        const netPnl = activePlanTrades.reduce((acc, t) => acc + t.pnl, 0);
+                        const winCount = activePlanTrades.filter(t => t.pnl > 0).length;
                         const winRate = activePlanTrades.length > 0 ? Math.round((winCount / activePlanTrades.length) * 100) : 0;
                         return (
                             <div className="tg-module mb-5 bg-[#F9FAFB] dark:bg-slate-800/50 border border-[#E5E7EB] dark:border-[var(--tg-border)] rounded-[8px] px-4 py-3 flex items-center">

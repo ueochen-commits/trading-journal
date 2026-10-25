@@ -41,7 +41,7 @@ export interface Trade {
   quantity: number;
   direction: Direction;
   status: TradeStatus;
-  pnl: number;
+  pnl: number; // Net P&L after total trading fees; gross = pnl + fees.
   leverage?: number; // New Leverage Field
   riskAmount?: number; // Stop Loss Amount ($)
   profitTarget?: number; // 目标止盈价

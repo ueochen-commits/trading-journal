@@ -70,7 +70,7 @@ function computeRMultiple(trades: Trade[]): { bins: BinData[]; stats: Stats } {
 
   trades.forEach(t => {
     if (!t.exitDate) return;
-    const pnl = t.pnl - t.fees;
+    const pnl = t.pnl;
     const risk = t.riskAmount && t.riskAmount > 0
       ? t.riskAmount
       : Math.abs(t.entryPrice * t.quantity * 0.01) || 1;

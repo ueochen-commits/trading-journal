@@ -24,7 +24,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
 
     // ROI Calculation (Estimated based on risk or position size)
     const exposure = trade.entryPrice * trade.quantity;
-    const roi = exposure > 0 ? ((trade.pnl - trade.fees) / exposure) * 100 : 0;
+    const roi = exposure > 0 ? ((trade.pnl) / exposure) * 100 : 0;
 
     const handleCopyLink = () => {
         navigator.clipboard.writeText(shareUrl);

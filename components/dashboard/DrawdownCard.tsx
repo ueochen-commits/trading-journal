@@ -29,7 +29,7 @@ function computeDrawdown(trades: Trade[], accountSize: number): DdStats {
   const dayMap: Record<string, number> = {};
   closed.forEach(t => {
     const d = new Date(t.exitDate).toISOString().slice(0, 10);
-    dayMap[d] = (dayMap[d] ?? 0) + (t.pnl - t.fees);
+    dayMap[d] = (dayMap[d] ?? 0) + (t.pnl);
   });
   const days = Object.keys(dayMap).sort();
   if (days.length < 2) {

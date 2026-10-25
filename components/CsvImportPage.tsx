@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
 import { Trade, Direction, TradeStatus } from '../types';
+import { tradePnlBreakdown, inferPnlInputMode, type PnlInputMode } from '../utils/tradePnl';
 import { supabase } from '../supabaseClient';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -51,6 +52,8 @@ interface ParseResult {
   preview: ParsedTrade[];
   convertedTrades: Trade[];
   newTrades: Trade[];
+  sourceConvertedTrades: Trade[];
+  sourceNewTrades: Trade[];
 }
 
 interface Props {
@@ -59,7 +62,7 @@ interface Props {
   exchangeBrandColor?: string;
   onBack?: () => void;
   onClose?: () => void;
-  onImportComplete?: (trades: Trade[]) => void;
+  onImportComplete?: (trades: Trade[]) => void | Promise<void>;
 }
 
 // ─── Exchange tutorial data ───────────────────────────────────────────────────
@@ -196,8 +199,8 @@ function buildFallbackRules(headers: string[], rows: Record<string, string>[], e
       side:       find('方向', 'side', 'direction', 'type', '类型') || headers[2],
       quantity:   find('成交量', '数量', '持仓量', 'qty', 'quantity', 'size', 'amount') || headers[3],
       openPrice:  find('开仓均价', '开仓价格', '开仓价', 'open price', 'entry', 'avg', 'price') || headers[4],
-      closePrice: find('平仓均价', '平仓价格', '平仓价', 'close price', 'exit price'),
-      netPnl:     find('已实现盈亏', '盈亏', 'pnl', 'profit', 'realized', '收益', '盈利') || headers[5],
+      closePrice: find('平仓均价', '平仓价格', '平仓价', 'close price', 'exit price', 'exit'),
+      netPnl:     find('已实现盈亏', '盈亏', 'pnl', 'profit', 'realized', '收益', '盈利'),
       grossPnl:   null,
       commission: find('手续费', 'fee', 'commission', 'cost'),
     },
@@ -275,7 +278,7 @@ function convertPairedRows(rows: Record<string, string>[], rules: AiRules): Trad
     const rawSide = fm.side ? (row[fm.side] || '').trim().toLowerCase() : '';
     const direction: Direction = shortSet.has(rawSide) ? Direction.SHORT : Direction.LONG;
 
-    const pnl = fm.netPnl ? parseNum(row[fm.netPnl]) : 0;
+    const pnl = fm.netPnl ? parseNum(row[fm.netPnl]) : fm.grossPnl ? parseNum(row[fm.grossPnl]) : 0;
     const fees = fm.commission ? Math.abs(parseNum(row[fm.commission])) : 0;
     // Try mapped column first, then scan all values for a date-like string
     const rawTime = fm.openTime
@@ -356,16 +359,21 @@ function pairRawOrders(rows: Record<string, string>[], rules: AiRules): Trade[] 
         const entryPrice = fm.openPrice ? parseNum(entryRow[fm.openPrice]) : 0;
         const exitPrice = fm.openPrice ? parseNum(exitRow[fm.openPrice]) : 0;
         const quantity = fm.quantity ? (parseNum(entryRow[fm.quantity]) || 1) : 1;
+        const closeQuantity = fm.quantity ? (parseNum(exitRow[fm.quantity]) || 1) : 1;
+        if (Math.abs(quantity - closeQuantity) > 1e-8) throw new Error('原始成交包含分批开平仓，无法准确分摊手续费。请上传已配对的完整交易记录，或手动录入。');
 
         let pnl = 0;
         if (fm.netPnl && exitRow[fm.netPnl]) {
           pnl = parseNum(exitRow[fm.netPnl]);
+        } else if (fm.grossPnl && exitRow[fm.grossPnl]) {
+          pnl = parseNum(exitRow[fm.grossPnl]);
         } else if (entryPrice > 0 && exitPrice > 0) {
+          if (/^(GC|NQ|ES)([FGHJKMNQUVXZ]\d{1,4}|1!)?$/.test(symbol.replace(/^.*:/, ''))) throw new Error('期货原始订单需要提供盈亏字段；本批不根据价格自动计算期货合约盈亏。');
           pnl = direction === Direction.LONG
             ? (exitPrice - entryPrice) * quantity
             : (entryPrice - exitPrice) * quantity;
         }
-        const fees = fm.commission ? Math.abs(parseNum(exitRow[fm.commission!])) : 0;
+        const fees = fm.commission ? Math.abs(parseNum(entryRow[fm.commission])) + Math.abs(parseNum(exitRow[fm.commission])) : 0;
         const status = pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
 
         trades.push({
@@ -388,14 +396,14 @@ function pairRawOrders(rows: Record<string, string>[], rules: AiRules): Trade[] 
         id: `import_${Date.now()}_${idx++}`,
         symbol,
         entryDate,
-        exitDate: entryDate,
+        exitDate: '',
         entryPrice,
         exitPrice: 0,
         quantity,
         direction: isBuy ? Direction.LONG : Direction.SHORT,
-        status: TradeStatus.BE,
+        status: TradeStatus.OPEN,
         pnl: 0,
-        fees: 0,
+        fees: fm.commission ? Math.abs(parseNum(row[fm.commission])) : 0,
         setup: '',
         notes: '',
         leverage: 1,
@@ -563,6 +571,14 @@ function parseBitgetOrder(rows: Record<string, string>[]): { trades: Trade[]; wa
   return { trades, warnings };
 }
 
+function normalizeImportPnl(trades: Trade[], mode: PnlInputMode): Trade[] {
+  return trades.map(trade => {
+    const pnl = tradePnlBreakdown(trade.pnl, trade.fees, mode).net;
+    const status = trade.status === TradeStatus.OPEN ? TradeStatus.OPEN : pnl > 0 ? TradeStatus.WIN : pnl < 0 ? TradeStatus.LOSS : TradeStatus.BE;
+    return { ...trade, pnl, status };
+  });
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const CsvImportPage: React.FC<Props> = ({
@@ -583,6 +599,9 @@ const CsvImportPage: React.FC<Props> = ({
   const [parseProgress, setParseProgress] = useState(0); // 0-4 steps done
   const [parseResult, setParseResult] = useState<ParseResult | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [pnlBasis, setPnlBasis] = useState<PnlInputMode | ''>('');
+  const [basisDescription, setBasisDescription] = useState('');
+  const [importError, setImportError] = useState('');
   const [backHovered, setBackHovered] = useState(false);
   const [closeHovered, setCloseHovered] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -594,6 +613,8 @@ const CsvImportPage: React.FC<Props> = ({
   const startParsing = useCallback(async (f: File) => {
     setStep('parsing');
     setParseProgress(0);
+    setImportError('');
+    setPnlBasis('');
 
     try {
       // ── Step 1: Read file ──────────────────────────────────────────────────
@@ -626,6 +647,8 @@ const CsvImportPage: React.FC<Props> = ({
       let converted: Trade[];
       let detectedExchangeLabel: string;
       let detectedConfidence: number;
+      let detectedBasis: PnlInputMode | null = null;
+      let sourceColumn = '';
 
       if (bitgetType !== 'unknown') {
         const { trades: bgTrades, warnings: bgWarnings } = bitgetType === 'bitget_position'
@@ -633,6 +656,8 @@ const CsvImportPage: React.FC<Props> = ({
           : parseBitgetOrder(allRows);
         if (bgWarnings.length > 0) console.warn('[Bitget Import]', bgWarnings);
         converted = bgTrades;
+        sourceColumn = bitgetType === 'bitget_order' ? '净盈亏' : '仓位盈亏';
+        detectedBasis = inferPnlInputMode(sourceColumn);
         detectedExchangeLabel = bitgetType === 'bitget_position' ? 'Bitget 历史仓位' : 'Bitget 历史委托';
         detectedConfidence = 95;
         setParseProgress(4);
@@ -654,6 +679,8 @@ const CsvImportPage: React.FC<Props> = ({
         }
         setParseProgress(3);
         converted = convertRows(allRows, rules);
+        sourceColumn = rules.fieldMapping.netPnl || rules.fieldMapping.grossPnl || '';
+        detectedBasis = sourceColumn ? inferPnlInputMode(sourceColumn) : rules.recordType === 'raw_orders' ? 'gross' : null;
         detectedExchangeLabel = `${rules.detectedExchange} ${rules.detectedAccountType}`;
         detectedConfidence = rules.confidence;
         setParseProgress(4);
@@ -681,6 +708,13 @@ const CsvImportPage: React.FC<Props> = ({
       }
       setParseProgress(5);
 
+      setPnlBasis(detectedBasis || '');
+      setBasisDescription(sourceColumn ? `来源字段：${sourceColumn}` : '来源未提供明确的盈亏口径');
+      const sourceConvertedTrades = converted;
+      const sourceNewTrades = newTrades;
+      converted = normalizeImportPnl(converted, detectedBasis || 'net');
+      newTrades = normalizeImportPnl(newTrades, detectedBasis || 'net');
+
       // ── Build result ───────────────────────────────────────────────────────
       const wins = newTrades.filter(t => t.pnl > 0).length;
       const grossWins = newTrades.filter(t => t.pnl > 0).reduce((s, t) => s + t.pnl, 0);
@@ -690,7 +724,7 @@ const CsvImportPage: React.FC<Props> = ({
       setParseResult({
         total: converted.length,
         duplicates: duplicateCount,
-        netPnl: newTrades.reduce((s, t) => s + (t.pnl - t.fees), 0),
+        netPnl: newTrades.reduce((s, t) => s + t.pnl, 0),
         winRate: newTrades.length > 0 ? (wins / newTrades.length) * 100 : 0,
         profitFactor: grossLosses > 0 ? grossWins / grossLosses : grossWins > 0 ? Infinity : 0,
         dateRange: dates.length > 0 ? `${dates[0].slice(0, 10)} → ${dates[dates.length - 1].slice(0, 10)}` : '—',
@@ -700,16 +734,18 @@ const CsvImportPage: React.FC<Props> = ({
           time: new Date(t.entryDate).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }),
           symbol: t.symbol,
           direction: t.direction,
-          netPnl: t.pnl - t.fees,
+          netPnl: t.pnl,
         })),
         convertedTrades: converted,
         newTrades,
+        sourceConvertedTrades,
+        sourceNewTrades,
       });
       setStep('preview');
     } catch (err) {
       console.error('Parsing failed:', err);
       setStep('upload');
-      alert('文件解析失败，请检查文件格式后重试');
+      setImportError(err instanceof Error ? err.message : '文件解析失败，请检查文件格式后重试');
     }
   }, [exchangeName, timezone]);
 
@@ -741,15 +777,37 @@ const CsvImportPage: React.FC<Props> = ({
   }, [selectedFile, startParsing]);
 
   const handleConfirmImport = useCallback(async () => {
-    if (!parseResult?.newTrades || isImporting) return;
+    if (!parseResult?.newTrades || isImporting || !pnlBasis) return;
+    setImportError('');
     setIsImporting(true);
     try {
       await onImportComplete?.(parseResult.newTrades);
       setStep('done');
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : '导入失败，请重试。');
     } finally {
       setIsImporting(false);
     }
-  }, [parseResult, onImportComplete, isImporting]);
+  }, [parseResult, onImportComplete, isImporting, pnlBasis]);
+
+  const changePnlBasis = (value: PnlInputMode | '') => {
+    setPnlBasis(value);
+    setImportError('');
+    setParseResult(previous => {
+      if (!previous) return previous;
+      const newTrades = normalizeImportPnl(previous.sourceNewTrades, value || 'net');
+      const wins = newTrades.filter(trade => trade.pnl > 0);
+      const losses = newTrades.filter(trade => trade.pnl < 0);
+      const positive = wins.reduce((sum, trade) => sum + trade.pnl, 0);
+      const negative = -losses.reduce((sum, trade) => sum + trade.pnl, 0);
+      return { ...previous, newTrades, convertedTrades: normalizeImportPnl(previous.sourceConvertedTrades, value || 'net'),
+        netPnl: newTrades.reduce((sum, trade) => sum + trade.pnl, 0),
+        winRate: newTrades.length ? wins.length / newTrades.length * 100 : 0,
+        profitFactor: negative > 0 ? positive / negative : positive > 0 ? Infinity : 0,
+        preview: previous.preview.map((preview, index) => ({ ...preview, netPnl: newTrades[index].pnl })),
+      };
+    });
+  };
 
   // ── Shared nav chrome ──────────────────────────────────────────────────────
 
@@ -793,6 +851,7 @@ const CsvImportPage: React.FC<Props> = ({
   if (step === 'upload') return (
     <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
       {navChrome()}
+      {importError && <p role="alert" className="mx-auto my-4 max-w-xl rounded-xl bg-rose-50 p-4 text-sm text-rose-700 dark:bg-rose-950/40 dark:text-rose-300">{importError}</p>}
       <div style={{ width: '100%', maxWidth: 900, paddingTop: 64, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {pageTitle('添加交易', '上传文件')}
 
@@ -1143,6 +1202,17 @@ const CsvImportPage: React.FC<Props> = ({
                 </span>
               </div>
 
+              <div className="tg-module mb-5 rounded-xl bg-slate-50 p-4 dark:bg-slate-800/50">
+                <label htmlFor="import-pnl-basis" className="mb-2 block text-sm font-semibold text-slate-900 dark:text-white">导入盈亏口径</label>
+                <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">{basisDescription}。请核对原始账单；费用为每笔交易的总额。</p>
+                <select id="import-pnl-basis" value={pnlBasis} disabled={isImporting} onChange={event => changePnlBasis(event.target.value as PnlInputMode | '')} className="w-full rounded-lg border border-slate-200 bg-white p-2 text-sm text-slate-900 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-white">
+                  <option value="">请选择原始盈亏是否已扣手续费</option>
+                  <option value="net">已扣费净盈亏（不重复扣费）</option>
+                  <option value="gross">未扣费毛盈亏（减去总手续费）</option>
+                </select>
+                <p role="status" className="mt-2 text-xs text-amber-600 dark:text-amber-300">{pnlBasis ? '下方预览与最终保存均为净盈亏，切换口径会从原始金额重新计算。' : '尚未确认口径：下方金额为暂按净盈亏显示的预览，选择后才能确认导入。'}</p>
+              </div>
+              {importError && <p role="alert" className="mb-4 text-sm text-rose-600 dark:text-rose-300">{importError}</p>}
               {/* KPI rows */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 0, marginBottom: 32 }}>
                 {[
@@ -1154,10 +1224,8 @@ const CsvImportPage: React.FC<Props> = ({
                     last: false,
                   },
                   {
-                    label: isFutures ? '累计净盈亏' : '累计金额',
-                    value: isFutures
-                      ? `${parseResult.netPnl >= 0 ? '+' : '−'}$${Math.abs(parseResult.netPnl).toFixed(2)}`
-                      : `$${Math.abs(parseResult.netPnl).toFixed(2)}`,
+                    label: '累计净盈亏',
+                    value: `${parseResult.netPnl >= 0 ? '+' : '−'}$${Math.abs(parseResult.netPnl).toFixed(2)}`,
                     big: true,
                     color: isFutures ? (parseResult.netPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-text, #0F172A)',
                     last: false,
@@ -1207,8 +1275,8 @@ const CsvImportPage: React.FC<Props> = ({
                 </div>
               ) : (
                 <>
-                  <button onClick={handleConfirmImport} disabled={isImporting}
-                    style={{ width: '100%', padding: 13, background: isImporting ? '#a5b4fc' : '#4F46E5', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: isImporting ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                  <button onClick={handleConfirmImport} disabled={isImporting || !pnlBasis}
+                    style={{ width: '100%', padding: 13, background: isImporting || !pnlBasis ? '#a5b4fc' : '#4F46E5', color: 'white', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 500, cursor: isImporting || !pnlBasis ? 'not-allowed' : 'pointer', fontFamily: 'inherit', marginBottom: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     {isImporting ? (
                       <>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.9s linear infinite' }}><path d="M12 2a10 10 0 0 1 10 10"/></svg>
@@ -1241,7 +1309,7 @@ const CsvImportPage: React.FC<Props> = ({
               {/* Table header */}
               <div style={{ display: 'grid', gridTemplateColumns: '76px 1fr 44px 76px', gap: 10, paddingBottom: 10, borderBottom: '1px solid rgba(148,163,184,0.25)', fontSize: 11, color: 'var(--tg-muted, #94A3B8)', fontWeight: 500, marginBottom: 4 }}>
                 <span>时间</span><span>品种</span><span>方向</span>
-                <span style={{ textAlign: 'right' }}>{isFutures ? '净盈亏' : '金额'}</span>
+                <span style={{ textAlign: 'right' }}>净盈亏</span>
               </div>
 
               {/* Table rows */}
@@ -1253,7 +1321,7 @@ const CsvImportPage: React.FC<Props> = ({
                     <span><span style={{ padding: '2px 7px', background: 'var(--tg-accent-soft, #EEF2FF)', color: 'var(--tg-accent, #4338CA)', borderRadius: 3, fontSize: 11, fontWeight: 500 }}>{t.symbol}</span></span>
                     <span style={{ color: 'var(--tg-text, #0F172A)', fontSize: 12 }}>{t.direction}</span>
                     <span style={{ textAlign: 'right', fontWeight: 500, fontVariantNumeric: 'tabular-nums', color: isFutures ? (t.netPnl >= 0 ? 'var(--tg-positive, #15803D)' : 'var(--tg-negative, #DC2626)') : 'var(--tg-text, #0F172A)' }}>
-                      {isFutures ? `${t.netPnl >= 0 ? '+' : '−'}$${Math.abs(t.netPnl).toFixed(2)}` : `$${Math.abs(t.netPnl).toFixed(2)}`}
+                      {`${t.netPnl >= 0 ? '+' : '−'}$${Math.abs(t.netPnl).toFixed(2)}`}
                     </span>
                   </div>
                 );

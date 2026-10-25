@@ -89,9 +89,9 @@ function computeHeatmap(trades: Trade[]): CellData[] {
 
   return Object.entries(buckets).map(([key, ts]) => {
     const [dowStr, slot] = key.split(/-(.+)/); // split on first dash only
-    const wins = ts.filter(t => (t.pnl - t.fees) > 0);
-    const losses = ts.filter(t => (t.pnl - t.fees) <= 0);
-    const totalPnL = ts.reduce((s, t) => s + (t.pnl - t.fees), 0);
+    const wins = ts.filter(t => (t.pnl) > 0);
+    const losses = ts.filter(t => (t.pnl) <= 0);
+    const totalPnL = ts.reduce((s, t) => s + (t.pnl), 0);
     const winRate = ts.length > 0 ? wins.length / ts.length : 0;
 
     // Expectancy in R
@@ -99,7 +99,7 @@ function computeHeatmap(trades: Trade[]): CellData[] {
       const risk = t.riskAmount && t.riskAmount > 0
         ? t.riskAmount
         : Math.abs(t.entryPrice * t.quantity * 0.01) || 1;
-      return (t.pnl - t.fees) / risk;
+      return (t.pnl) / risk;
     });
     const avgWinR = wins.length > 0
       ? rValues.filter((_, i) => ts[i].pnl > 0).reduce((s, r) => s + r, 0) / wins.length

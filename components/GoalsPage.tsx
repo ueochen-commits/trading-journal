@@ -43,15 +43,15 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ onBack, trades, currentGoal }) =>
 
             let actual = 0;
             if (currentGoal.type === 'amount') {
-                actual = weekTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+                actual = weekTrades.reduce((acc, t) => acc + (t.pnl), 0);
             } else if (currentGoal.type === 'r_multiple') {
                 actual = weekTrades.reduce((acc, t) => {
-                    const r = t.riskAmount && t.riskAmount > 0 ? (t.pnl - t.fees) / t.riskAmount : 0;
+                    const r = t.riskAmount && t.riskAmount > 0 ? (t.pnl) / t.riskAmount : 0;
                     return acc + r;
                 }, 0);
             } else {
                 // Mock Percentage (assuming 10k base for simplicity in history)
-                const pnl = weekTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+                const pnl = weekTrades.reduce((acc, t) => acc + (t.pnl), 0);
                 actual = (pnl / 10000) * 100;
             }
 

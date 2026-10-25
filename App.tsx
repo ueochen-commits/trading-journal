@@ -129,7 +129,7 @@ const formatTradeFromDB = (trade: any): Trade => {
   const pnl = trade.pnl || 0;
   const exitPrice = trade.exit_price || 0;
   let status: TradeStatus;
-  if (!exitPrice) {
+  if (!exitPrice && !trade.exit_date) {
     status = TradeStatus.OPEN;
   } else if (pnl > 0) {
     status = TradeStatus.WIN;
@@ -141,7 +141,7 @@ const formatTradeFromDB = (trade: any): Trade => {
   return {
     id: trade.id,
     entryDate: trade.date,
-    exitDate: trade.exit_date || trade.date,
+    exitDate: status === TradeStatus.OPEN ? '' : trade.exit_date || trade.date,
     symbol: trade.symbol,
     direction: trade.direction === 'long' ? Direction.LONG : Direction.SHORT,
     entryPrice: trade.entry_price,
@@ -573,7 +573,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   // 导入交易到 Supabase
   const handleImportTrades = async (imported: Trade[]) => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) throw new Error('登录状态已过期，请重新登录后导入');
 
     const data = imported.map(trade => {
       const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
@@ -618,8 +618,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           return r.status === 'fulfilled' && !(r.value as any).error;
         });
         if (insertedTrades.length > 0) setTrades(prev => [...insertedTrades, ...prev]);
+        const failures = results.filter(result => result.status === 'rejected' || (result.value.error && result.value.error.code !== '23505'));
+        if (failures.length) throw new Error(`已保存 ${insertedTrades.length} 笔，另有 ${failures.length} 笔保存失败。请重新上传核对，已保存的记录会跳过。`);
       } else {
-        console.error('Error importing trades:', error);
+        throw new Error(error.message || '导入失败，请重试');
       }
     } else {
       // Reload from DB to get real IDs and accountId correctly reflected

@@ -127,7 +127,7 @@ export const getMentorAdvice = async (
 ): Promise<string> => {
     const today = new Date().toDateString();
     const todayTrades = recentTrades.filter(t => new Date(t.entryDate).toDateString() === today);
-    const todayLoss = todayTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+    const todayLoss = todayTrades.reduce((acc, t) => acc + (t.pnl), 0);
 
     if (todayLoss <= -Math.abs(riskSettings.maxDailyLoss)) {
         return language === 'cn'

@@ -62,7 +62,7 @@ function computeSymbolData(trades: Trade[]): SymbolData[] {
   return Object.entries(bySymbol)
     .filter(([, ts]) => ts.length >= 5)
     .map(([symbol, ts]) => {
-      const totalPnL = ts.reduce((s, t) => s + (t.pnl - t.fees), 0);
+      const totalPnL = ts.reduce((s, t) => s + (t.pnl), 0);
       const wins = ts.filter(t => t.pnl > 0).length;
       const winRate = wins / ts.length;
 
@@ -71,7 +71,7 @@ function computeSymbolData(trades: Trade[]): SymbolData[] {
         const risk = t.riskAmount && t.riskAmount > 0
           ? t.riskAmount
           : t.entryPrice * t.quantity * 0.01;
-        return (t.pnl - t.fees) / risk;
+        return (t.pnl) / risk;
       });
       const avgR = rValues.reduce((s, r) => s + r, 0) / rValues.length;
 

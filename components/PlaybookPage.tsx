@@ -589,7 +589,7 @@ const StrategyDetailView = ({
         const wins = closed.filter(t => t.pnl > 0);
         const losses = closed.filter(t => t.pnl < 0);
 
-        const totalNetPnl = closed.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+        const totalNetPnl = closed.reduce((acc, t) => acc + (t.pnl), 0);
         const totalTrades = closed.length;
         const winRate = totalTrades > 0 ? (wins.length / totalTrades) * 100 : 0;
 
@@ -606,7 +606,7 @@ const StrategyDetailView = ({
         const expectancy = totalTrades > 0 ? totalNetPnl / totalTrades : 0;
 
         const totalR = closed.reduce((acc, t) => {
-            const r = t.riskAmount && t.riskAmount > 0 ? (t.pnl - t.fees) / t.riskAmount : 0;
+            const r = t.riskAmount && t.riskAmount > 0 ? (t.pnl) / t.riskAmount : 0;
             return acc + r;
         }, 0);
 
@@ -651,7 +651,7 @@ const StrategyDetailView = ({
             const followedTrades = relevantTrades.filter(t => t.compliance?.[ruleId]);
             const followRate = relevantTrades.length > 0 ? (followedTrades.length / relevantTrades.length) * 100 : 0;
             const followedWins = followedTrades.filter(t => t.pnl > 0);
-            const netPnl = followedTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+            const netPnl = followedTrades.reduce((acc, t) => acc + (t.pnl), 0);
             const winRate = followedTrades.length > 0 ? (followedWins.length / followedTrades.length) * 100 : 0;
             const gProfit = followedWins.reduce((acc, t) => acc + t.pnl, 0);
             const followedLosses = followedTrades.filter(t => t.pnl < 0);
@@ -669,7 +669,7 @@ const StrategyDetailView = ({
 
         let runningEquity = 0;
         const curve = closed.map(t => {
-            runningEquity += (t.pnl - t.fees);
+            runningEquity += (t.pnl);
             return {
                 date: new Date(t.entryDate).toLocaleDateString(undefined, { month: '2-digit', day: '2-digit', year: '2-digit' }),
                 equity: runningEquity
@@ -1081,7 +1081,7 @@ const StrategyDetailView = ({
                                     {filteredTrades.map(t => {
                                         const isWin = t.pnl >= 0;
                                         const exposure = t.entryPrice * t.quantity;
-                                        const roi = exposure > 0 ? ((t.pnl - t.fees) / exposure) * 100 : 0;
+                                        const roi = exposure > 0 ? ((t.pnl) / exposure) * 100 : 0;
                                         const accountName = MOCK_ACCOUNTS.find(a => a.id === t.accountId)?.name || 'Default Account';
 
                                         return (
@@ -1115,7 +1115,7 @@ const StrategyDetailView = ({
                                                     ${t.exitPrice ? t.exitPrice.toLocaleString() : '---'}
                                                 </td>
                                                 <td className={`px-6 py-4 text-right font-mono font-bold ${isWin ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                    {isWin ? '+' : ''}${(t.pnl - t.fees).toLocaleString()}
+                                                    {isWin ? '+' : ''}${(t.pnl).toLocaleString()}
                                                 </td>
                                                 <td className={`px-6 py-4 text-right font-mono font-bold ${roi >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                                                     {roi >= 0 ? '+' : ''}{roi.toFixed(2)}%
@@ -1268,7 +1268,7 @@ const PlaybookPage: React.FC<PlaybookPageProps> = ({
             const wins = relatedTrades.filter(t => t.pnl > 0);
             const losses = relatedTrades.filter(t => t.pnl <= 0);
             const winRate = count > 0 ? (wins.length / count) * 100 : 0;
-            const netPnl = relatedTrades.reduce((acc, t) => acc + (t.pnl - t.fees), 0);
+            const netPnl = relatedTrades.reduce((acc, t) => acc + (t.pnl), 0);
             const grossWin = wins.reduce((acc, t) => acc + t.pnl, 0);
             const grossLoss = Math.abs(losses.reduce((acc, t) => acc + t.pnl, 0));
             const profitFactor = grossLoss === 0 ? (grossWin > 0 ? 999 : 0) : grossWin / grossLoss;

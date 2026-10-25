@@ -1,3 +1,6 @@
+import ScreenshotViewer from './common/ScreenshotViewer';
+import { resolveChartSymbol, hasRestrictedFuturesFeed, tradingViewChartUrl } from '../utils/chartSymbols';
+import { displayTradePnl } from '../utils/tradePnl';
 import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Trade, Direction, TradeStatus, Strategy, ChecklistItem, DailyPlan, TradingAccount, TagCategoryDefinition } from '../types';
@@ -1182,6 +1185,14 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
     };
 
     const isDark = useIsDarkMode();
+    const [viewingScreenshot, setViewingScreenshot] = useState<number | null>(null);
+    const [chartOverride, setChartOverride] = useState('');
+    const [chartDraft, setChartDraft] = useState('');
+    const [chartError, setChartError] = useState('');
+    useEffect(() => { setChartOverride(''); setChartDraft(''); setChartError(''); setViewingScreenshot(null); }, [currentTrade.id, currentTrade.symbol]);
+    const chartSymbol = resolveChartSymbol(chartOverride || currentTrade.symbol);
+    const isScreenshotDocked = viewingScreenshot !== null && leftTab === 'attachments';
+
 
     // Load TradingView Advanced Chart Widget
     useEffect(() => {
@@ -1192,11 +1203,8 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             chartContainer.removeChild(chartContainer.firstChild);
         }
 
-        // Build TradingView symbol: ensure USDT suffix + BINANCE prefix
-        let tvSymbol = currentTrade.symbol.replace(/_PERP$/, '').replace(/\//, '').toUpperCase();
-        if (!tvSymbol.endsWith('USDT') && !tvSymbol.endsWith('BUSD')) tvSymbol += 'USDT';
-        if (!tvSymbol.includes(':')) tvSymbol = `BINANCE:${tvSymbol}`;
-
+        if (!chartSymbol || hasRestrictedFuturesFeed(chartSymbol.symbol)) return;
+        const tvSymbol = chartSymbol.symbol;
 
         const script = document.createElement('script');
         script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js';
@@ -1228,7 +1236,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                 }
             } catch { /* ignore cleanup errors */ }
         };
-    }, [currentTrade.symbol, language, isDark]);
+    }, [chartSymbol?.symbol, language, isDark]);
 
     // --- Dynamic Tag Handlers ---
     const handleAddTag = (catId: string, tag: string) => {
@@ -1530,7 +1538,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
 
     // Calculate Computed Stats
     const riskAmount = currentTrade.riskAmount || 0;
-    const grossPnl = currentTrade.pnl + currentTrade.fees;
+    const grossPnl = displayTradePnl(currentTrade, 'gross');
     const realizedR = riskAmount > 0 ? (currentTrade.pnl / riskAmount).toFixed(2) + 'R' : 'N/A';
 
     // Net ROI %
@@ -1876,13 +1884,13 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
             </div>
 
             {/* Body Layout */}
-            <div className="flex flex-1 overflow-hidden">
+            <div className={`flex flex-1 min-h-0 overflow-hidden ${isScreenshotDocked ? 'flex-col md:flex-row' : ''}`}>
                 
                 {/* LEFT SIDEBAR: Trade Details */}
-                <div className="w-96 bg-white dark:bg-[#0d0f14] border-r border-slate-200 dark:border-white/[0.04] flex flex-col flex-shrink-0">
+                <div className={`${isScreenshotDocked ? 'w-full h-[48%] md:h-full md:w-[46%] md:min-w-[320px]' : 'w-96'} min-h-0 bg-white dark:bg-[#0d0f14] border-r border-slate-200 dark:border-white/[0.04] flex flex-col flex-shrink-0`}>
                     
                     {/* Action Buttons Row */}
-                    <div className="flex items-center justify-between px-5 pt-5 pb-3">
+                    <div className={`${isScreenshotDocked ? 'hidden md:flex' : 'flex'} items-center justify-between px-5 pt-5 pb-3`}>
                         <div className="flex gap-2">
                             <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all bg-slate-50 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.06] text-slate-500 dark:text-slate-400 hover:border-indigo-400">
                                 <Edit2 className="w-3.5 h-3.5" />
@@ -1935,7 +1943,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 return (
                                     <button
                                         key={id}
-                                        onClick={() => setLeftTab(id)}
+                                        onClick={() => { setLeftTab(id); if (id !== 'attachments') setViewingScreenshot(null); }}
                                         className={`px-3 pb-3 pt-1 text-[11px] font-medium uppercase tracking-wider transition-all duration-200 relative ${
                                             isActive ? 'text-slate-800 dark:text-slate-200' : 'text-slate-400 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                                         }`}
@@ -1949,7 +1957,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                     </div>
 
                     {/* SCROLLABLE CONTENT AREA */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                    <div className={`flex-1 min-h-0 ${isScreenshotDocked ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
                         {/* --- TAB: STATS --- */}
                         {leftTab === 'stats' && (
                             <>
@@ -2330,7 +2338,9 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                             </div>
                         )}
 
-                        {leftTab === 'attachments' && (
+                        {leftTab === 'attachments' && (viewingScreenshot !== null ? (
+                            <div className="h-full min-h-0 p-2"><ScreenshotViewer embedded images={currentTrade.images || []} index={viewingScreenshot} language={language} onClose={() => setViewingScreenshot(null)} /></div>
+                        ) : (
                             <div className="p-6">
                                 <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                                     <Paperclip className="w-4 h-4 text-indigo-500" /> {labels.attachments.title}
@@ -2338,27 +2348,47 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                                 {currentTrade.images && currentTrade.images.length > 0 ? (
                                     <div className="grid grid-cols-1 gap-4">
                                         {currentTrade.images.map((img, i) => (
-                                            <img key={i} src={img} className="w-full rounded-xl border border-slate-200 dark:border-[var(--tg-border)]" alt={`Screenshot ${i+1}`} />
+                                            <button type="button" key={i} aria-label={`${language === 'cn' ? '查看截图' : 'View screenshot'} ${i + 1}`} onClick={() => setViewingScreenshot(i)} className="w-full cursor-zoom-in rounded-xl focus-visible:ring-2 focus-visible:ring-indigo-500">
+                                              <img src={img} className="w-full rounded-xl border border-slate-200 dark:border-[var(--tg-border)]" alt={`Screenshot ${i+1}`} />
+                                            </button>
                                         ))}
                                     </div>
                                 ) : <div className="text-sm text-slate-500 italic dark:text-slate-400">{labels.attachments.none}</div>}
                             </div>
-                        )}
+                        ))}
                     </div>
                 </div>
 
                 {/* RIGHT CONTENT: Chart & Notes */}
-                <div ref={rightPanelRef} className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-slate-900 relative">
-                    <div style={{ height: `${splitRatio}%` }} className="border-b border-slate-200 dark:border-[var(--tg-border)] relative">
+                <div ref={rightPanelRef} className="flex-1 min-w-0 min-h-0 flex flex-col overflow-hidden bg-white dark:bg-slate-900 relative">
+                    <div style={{ '--trade-chart-height': `${splitRatio}%` } as React.CSSProperties} className={`${isScreenshotDocked ? 'h-full md:h-[var(--trade-chart-height)]' : 'h-[var(--trade-chart-height)]'} border-b border-slate-200 dark:border-[var(--tg-border)] relative`}>
                         {isDragging && <div className="absolute inset-0 z-50 bg-transparent" />}
 
-                        {/* TradingView Chart */}
-                        <div ref={chartContainerRef} className="w-full h-full" />
+                        {/* The chart selection is a reference view and never changes the recorded symbol. */}
+                        <div className="flex h-full min-h-0 flex-col">
+                          <div className="shrink-0 border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs dark:border-[var(--tg-border)] dark:bg-slate-800/50">
+                            <p className="text-slate-600 dark:text-slate-300">{chartSymbol ? `${chartSymbol.symbol} · ${chartSymbol.continuous ? (language === 'cn' ? '连续合约参考图，非具体交割合约' : 'Continuous reference, not a delivery contract') : (language === 'cn' ? '参考行情' : 'Reference chart')}` : (language === 'cn' ? '未识别此品种，请选择参考图表；交易记录仍可正常保存。' : 'Symbol not recognized. Select a reference chart; saving the trade remains available.')}</p>
+                            {chartSymbol && hasRestrictedFuturesFeed(chartSymbol.symbol) && <p role="status" className="mt-1 text-amber-700 dark:text-amber-300">{language === 'cn' ? '该期货市场的行情不在免费嵌入授权范围，组件可能无法显示；可在 TradingView 查看，或手动选择其他参考图。' : 'This futures venue is outside the free embedded feed. Open TradingView or manually choose another reference chart.'}</p>}
+                            {chartSymbol && <a href={tradingViewChartUrl(chartSymbol.symbol)} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block font-semibold text-indigo-600 underline dark:text-indigo-300">{language === 'cn' ? '在 TradingView 打开对应图表 ↗' : 'Open this chart on TradingView ↗'}</a>}
+                            <form className="mt-2 flex flex-wrap items-center gap-2" onSubmit={event => { event.preventDefault(); const resolved = resolveChartSymbol(chartDraft); if (!resolved) { setChartError(language === 'cn' ? '请输入 GC、NQ、ES 或交易所:代码，例如 NASDAQ:AAPL。' : 'Enter GC, NQ, ES or EXCHANGE:SYMBOL, e.g. NASDAQ:AAPL.'); return; } setChartOverride(chartDraft.trim()); setChartError(''); }}>
+                              <input aria-label={language === 'cn' ? '参考图表品种' : 'Reference chart symbol'} value={chartDraft} onChange={event => setChartDraft(event.target.value)} placeholder={language === 'cn' ? 'GC / NQ / ES / 交易所:代码' : 'GC / NQ / ES / EXCHANGE:SYMBOL'} className="min-w-0 flex-1 rounded border border-slate-200 bg-white px-2 py-1.5 text-slate-900 dark:border-[var(--tg-border)] dark:bg-slate-900 dark:text-white" />
+                              <button type="submit" className="rounded bg-indigo-600 px-3 py-1.5 font-semibold text-white">{language === 'cn' ? '切换参考图' : 'Set chart'}</button>
+                            </form>
+                            {chartError && <p role="alert" className="mt-1 text-rose-600 dark:text-rose-300">{chartError}</p>}
+                          </div>
+                          <div className="min-h-0 flex-1">
+                            {chartSymbol && hasRestrictedFuturesFeed(chartSymbol.symbol) && <div className="flex h-full flex-col items-center justify-center gap-3 p-4 text-center text-sm text-slate-500 dark:text-slate-400">
+                              <p>{language === 'cn' ? '品种已识别，站内行情受数据授权限制。截图查看、笔记和交易保存均可正常使用。' : 'Instrument recognized. The embedded feed is restricted; screenshots, notes and trade saving remain available.'}</p>
+                              <a href={tradingViewChartUrl(chartSymbol.symbol)} target="_blank" rel="noopener noreferrer" className="rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white">{language === 'cn' ? '在 TradingView 查看此品种 ↗' : 'View this instrument on TradingView ↗'}</a>
+                            </div>}
+                            <div ref={chartContainerRef} className={!chartSymbol || hasRestrictedFuturesFeed(chartSymbol.symbol) ? 'hidden' : 'h-full w-full'} />
+                          </div>
+                        </div>
                     </div>
-                    <div onMouseDown={handleMouseDown} className="h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center z-40 border-y border-slate-200 dark:border-[var(--tg-border)]">
+                    <div onMouseDown={handleMouseDown} className={`h-2 bg-slate-100 dark:bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors ${isScreenshotDocked ? 'hidden md:flex' : 'flex'} items-center justify-center z-40 border-y border-slate-200 dark:border-[var(--tg-border)]`}>
                         <GripHorizontal className="w-4 h-4 text-slate-400 dark:text-slate-400" />
                     </div>
-                    <div className="flex-1 flex flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3">
+                    <div className={`flex-1 ${isScreenshotDocked ? 'hidden md:flex' : 'flex'} flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3`}>
                         <NotesPanel
                           dragHandleWidth={29}
                           symbol={currentTrade.symbol}
