@@ -94,7 +94,7 @@ export interface RiskSettings {
   accountSize: number;
   maxDailyLoss: number;
   maxTradeRisk: number;
-  maxConsecutiveLosses?: number; // Added: Max consecutive losses before stop
+  maxConsecutiveLosses?: number; // Advisory loss-streak threshold; never blocks journal entry
   maxOpenPositions?: number; // NEW: Max simultaneous open trades
   dailyProfitTarget?: number; // NEW: Walk away profit target
   lockedAt?: string; // ISO timestamp when settings were locked

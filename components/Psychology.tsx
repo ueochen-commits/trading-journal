@@ -444,6 +444,8 @@ const Psychology: React.FC<PsychologyProps> = ({
         <h1 style={{ fontSize: 20, fontWeight: 700, color: 'var(--tg-text, #1a1d2e)', margin: 0 }}>{language === 'cn' ? '心态风控' : 'Progress Tracker'}</h1>
       </div>
 
+      <p style={{ margin: '0 0 20px', fontSize: 12, lineHeight: 1.7, color: 'var(--tg-muted, #9396aa)' }}>{language === 'cn' ? '规则用于风险提醒与复盘评分，不会阻止添加、补录或编辑交易记录。' : 'Rules support risk reminders and review scores. They never block adding, backfilling or editing trade records.'}</p>
+
       {/* Top 3 stat cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 20, maxWidth: 560 }}>
         {/* Streak */}

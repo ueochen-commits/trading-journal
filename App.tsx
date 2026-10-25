@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 
 import { persistTradeScreenshots, readTradeScreenshots, validateScreenshotCount } from './utils/tradeScreenshots';
+import { countNonDemoJournalTrades } from './utils/journalRiskAdvisories';
 
 const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
   const response = await fetch(imageBase64);
@@ -421,15 +422,15 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       throw new Error('登录状态已过期，请重新登录');
     }
 
-    // 检查交易记录条数上限
+    // Sample/demo records never consume the real-journal allowance.
+    if (isDataLoading) throw new Error(language === 'cn' ? '账户数据仍在加载，请稍候再保存。' : 'Account data is loading. Please save again shortly.');
     const TRADE_LIMITS: Record<string, number | null> = { free: 100, pro: 1000, elite: null };
     const tradeLimit = TRADE_LIMITS[user.tier];
-    if (tradeLimit !== null && (user.tradeCount ?? 0) >= tradeLimit) {
-      alert(language === 'cn'
-        ? `你的 ${user.tier === 'free' ? '基础' : '专业'} 账户最多可存储 ${tradeLimit} 条交易记录，请升级会员以继续添加。`
-        : `Your ${user.tier} plan allows up to ${tradeLimit} trade records. Please upgrade to add more.`
-      );
-      return;
+    const isDemoTarget = tradingAccounts.some(account => account.id === trade.accountId && account.type === 'demo');
+    if (!isDemoTarget && tradeLimit !== null && countNonDemoJournalTrades(trades, tradingAccounts) >= tradeLimit) {
+      throw new Error(language === 'cn'
+        ? `当前方案最多可记录 ${tradeLimit} 笔非演示交易，演示数据不计入额度。请升级方案后继续添加。`
+        : `Your plan allows ${tradeLimit} non-demo trades. Demo data does not count. Please upgrade to add more.`);
     }
 
     validateScreenshotCount(user.tier, trade.images?.length || 0);
@@ -1076,6 +1077,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
                           onImportTrades={handleImportTrades}
                           onShare={(t) => handleShare({ type: 'trade', data: t })}
                           riskSettings={riskSettings}
+                          onViewRiskRules={() => handleSetActiveTab('psychology')}
                           onSavePlan={handleSavePlan}
                           autoOpen={journalAutoOpen}
                           onResetAutoOpen={() => journalAutoOpen && setJournalAutoOpen(false)}
