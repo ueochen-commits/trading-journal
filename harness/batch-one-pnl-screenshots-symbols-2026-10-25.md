@@ -38,3 +38,12 @@ Sources checked 2026-10-25:
 ## Prior draft isolation
 
 The earlier unapproved onboarding draft is preserved in Git stash named 'Unapproved onboarding draft preserved before batch one', on codex/new-user-first-trade. It is excluded from this branch and preview.
+
+## Review deployment
+
+- 34 tests passed; build passed.
+- Runtime commit: 8d4c33f084c598c86ed3f4f6d683d98379ceca7d.
+- Vercel preview: https://trading-journal-9slo992zc-chenzhixuns-projects.vercel.app
+- Deployment dpl_6UVAeeZNrE652e8dsKURhiSBGGVJ is Ready with target preview. Vercel deployment protection remains enabled.
+- Production remains at fdd2fd9, served index-D-P4QlzY.js; preview serves index-rkWDD-kn.js.
+- No main push or production alias update. Await user confirmation before publishing.
