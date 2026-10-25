@@ -1,4 +1,5 @@
 import React from 'react';
+import ThemeIllustration from './ThemeIllustration';
 
 type EmptyChartStateVariant = 'cards' | 'cloud';
 
@@ -47,14 +48,12 @@ const EmptyChartState: React.FC<EmptyChartStateProps> = ({
           maxWidth: compact ? 260 : 320,
         }}
       >
-        <img
-          src={imageSrc}
-          alt=""
-          aria-hidden="true"
+        <ThemeIllustration
+          lightSrc={imageSrc}
+          darkSrc={`/report-empty-state-${variant}-dark.svg`}
           style={{
             width: imageWidth,
             height: 'auto',
-            display: 'block',
             userSelect: 'none',
             pointerEvents: 'none',
           }}

@@ -442,15 +442,14 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
   const panelContent = (
     <div
       ref={fullscreenRef}
-      className={`flex flex-col bg-white dark:bg-[#0a0a0a] transition-colors ${
+      className={`notes-input-panel flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-colors focus-within:border-indigo-400 dark:border-slate-700/70 dark:bg-[#172033] dark:focus-within:border-indigo-400/70 ${
         isFullscreen ? 'fixed inset-0 z-[200]' : 'h-full'
       }`}
       style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif' }}
     >
       {/* ─── Rich Text Toolbar ─── */}
       <div
-        className="flex items-center gap-0.5 flex-wrap"
-        style={{ paddingBottom: '10px', marginBottom: '10px' }}
+        className="flex flex-wrap items-center gap-0.5 border-b border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700/70 dark:bg-slate-800/50"
         onMouseDown={(e) => e.preventDefault()}
       >
         {/* Group 1: History & Input */}
@@ -696,7 +695,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       <div
         ref={editorContainerRef}
         className={`flex-1 overflow-y-auto ${isFullscreen ? 'max-w-[800px] mx-auto w-full' : ''}`}
-        style={{ padding: '4px 0 20px 0' }}
+        style={{ padding: '12px 20px 24px 0' }}
         onPaste={(e) => {
           const items = Array.from(e.clipboardData?.items || []);
           const imageItem = items.find(item => item.type.startsWith('image/'));

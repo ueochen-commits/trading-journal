@@ -1,44 +1,14 @@
 import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 
-// 上传图片到 Supabase Storage
+import { persistTradeScreenshots, readTradeScreenshots, validateScreenshotCount } from './utils/tradeScreenshots';
+
 const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
-  try {
-    console.log('Starting image upload...');
-    console.log('UserId:', userId);
-    console.log('ImageBase64 length:', imageBase64?.length);
-
-    // 转换 base64 为 Blob
-    const response = await fetch(imageBase64);
-    const blob = await response.blob();
-    console.log('Blob created, size:', blob.size);
-
-    // 生成唯一文件名
-    const fileName = `${userId}/${Date.now()}.jpg`;
-
-    // 上传到 Supabase Storage
-    const { data, error } = await supabase.storage
-      .from('trade-images')
-      .upload(fileName, blob, {
-        contentType: 'image/jpeg'
-      });
-
-    if (error) {
-      console.error('Error uploading image:', error);
-      return null;
-    }
-
-    console.log('Upload successful, data:', data);
-
-    // 获取公开 URL
-    const { data: urlData } = supabase.storage
-      .from('trade-images')
-      .getPublicUrl(fileName);
-
-    return urlData.publicUrl;
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    return null;
-  }
+  const response = await fetch(imageBase64);
+  const blob = await response.blob();
+  const fileName = `${userId}/${crypto.randomUUID()}.jpg`;
+  const { error } = await supabase.storage.from('trade-images').upload(fileName, blob, { contentType: 'image/jpeg' });
+  if (error) return null;
+  return supabase.storage.from('trade-images').getPublicUrl(fileName).data.publicUrl;
 };
 import Sidebar from './components/Sidebar';
 import Dashboard from './components/Dashboard';
@@ -186,7 +156,7 @@ const formatTradeFromDB = (trade: any): Trade => {
     fees: trade.fees || 0,
     mistakes: trade.mistakes ? (typeof trade.mistakes === 'string' ? JSON.parse(trade.mistakes) : trade.mistakes) : [],
     customTags: trade.custom_tags ? (typeof trade.custom_tags === 'string' ? JSON.parse(trade.custom_tags) : trade.custom_tags) : {},
-    images: trade.screenshot_url ? [trade.screenshot_url] : [],
+    images: readTradeScreenshots(trade),
     rating: trade.rating || undefined,
     compliance: trade.compliance || undefined,
     executionGrade: trade.execution_grade || undefined,
@@ -448,8 +418,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
     // 获取当前用户
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (!authUser) {
-      console.error('No user logged in');
-      return;
+      throw new Error('登录状态已过期，请重新登录');
     }
 
     // 检查交易记录条数上限
@@ -463,14 +432,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       return;
     }
 
-    // Free 用户不支持截图上传
-    if (user.tier === 'free' && trade.images && trade.images.length > 0) {
-      alert(language === 'cn'
-        ? '基础账户不支持上传截图，请升级会员后使用此功能。'
-        : 'Screenshot upload is not available on the free plan. Please upgrade to use this feature.'
-      );
-      trade = { ...trade, images: [] };
-    }
+    validateScreenshotCount(user.tier, trade.images?.length || 0);
 
     // 计算 pnl_percent
     const pnlPercent = trade.entryPrice > 0 ? (trade.pnl / (trade.entryPrice * trade.quantity)) * 100 : 0;
@@ -483,11 +445,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       ? 'long'
       : 'short';
 
-    // 上传图片（如果有）
-    let screenshotUrl = null;
-    if (trade.images && trade.images.length > 0) {
-      screenshotUrl = await uploadImage(authUser.id, trade.images[0]);
-    }
+    const screenshotUrls = await persistTradeScreenshots(trade.images || [], image => uploadImage(authUser.id, image));
 
     const { data, error } = await supabase.from('trading_journals').insert({
       user_id: authUser.id,
@@ -509,12 +467,12 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       review_notes: trade.reviewNotes || '',
       mistakes: JSON.stringify(trade.mistakes || []),
       custom_tags: trade.customTags || {},
-      screenshot_url: screenshotUrl
+      screenshot_url: screenshotUrls[0] || null,
+      screenshot_urls: screenshotUrls
     }).select().single();
 
     if (error) {
-      console.error('Error saving trade:', error);
-      return;
+      throw new Error(error.message || '保存交易失败，请重试');
     }
 
     if (data) {
@@ -525,11 +483,10 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
 
   // 更新交易到 Supabase
   const handleUpdateTrade = async (updated: Trade) => {
-    // 乐观更新：立刻反映到 UI
-    setTrades(prev => prev.map((t: Trade) => t.id === updated.id ? updated : t));
-
+    const previousImages = trades.find(trade => trade.id === updated.id)?.images || [];
+    if (JSON.stringify(updated.images || []) !== JSON.stringify(previousImages)) validateScreenshotCount(user.tier, updated.images?.length || 0);
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    if (!authUser) return;
+    if (!authUser) throw new Error('登录状态已过期，请重新登录');
 
     const pnlPercent = updated.entryPrice > 0 ? (updated.pnl / (updated.entryPrice * updated.quantity)) * 100 : 0;
 
@@ -538,24 +495,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       ? 'long'
       : 'short';
 
-    // 检查是否有新图片需要上传
-    let screenshotUrl = null;
-    if (updated.images && updated.images.length > 0) {
-      if (updated.images[0].startsWith('data:')) {
-        // Free 用户不支持截图上传
-        if (user.tier === 'free') {
-          alert(language === 'cn'
-            ? '基础账户不支持上传截图，请升级会员后使用此功能。'
-            : 'Screenshot upload is not available on the free plan. Please upgrade to use this feature.'
-          );
-          updated = { ...updated, images: [] };
-        } else {
-          screenshotUrl = await uploadImage(authUser.id, updated.images[0]);
-        }
-      } else {
-        screenshotUrl = updated.images[0];
-      }
-    }
+    const screenshotUrls = await persistTradeScreenshots(updated.images || [], image => uploadImage(authUser.id, image));
 
     const { error } = await supabase.from('trading_journals').update({
       date: updated.entryDate,
@@ -575,7 +515,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       review_notes: updated.reviewNotes || '',
       mistakes: JSON.stringify(updated.mistakes || []),
       custom_tags: updated.customTags || {},
-      screenshot_url: screenshotUrl,
+      screenshot_url: screenshotUrls[0] || null,
+      screenshot_urls: screenshotUrls,
       rating: updated.rating || null,
       compliance: updated.compliance || null,
       execution_grade: updated.executionGrade || null,
@@ -584,9 +525,8 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       stop_loss: updated.stopLoss || null
     }).eq('id', updated.id).eq('user_id', user.id);
 
-    if (!error) {
-      setTrades(prev => prev.map(t => t.id === updated.id ? updated : t));
-    }
+    if (error) throw new Error(error.message || '保存交易失败，请重试');
+    setTrades(prev => prev.map(t => t.id === updated.id ? { ...updated, images: screenshotUrls } : t));
   };
 
   // 删除交易从 Supabase

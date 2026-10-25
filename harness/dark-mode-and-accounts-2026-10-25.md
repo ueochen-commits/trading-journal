@@ -22,3 +22,16 @@
 ## Scope and limitations
 
 The local browser checks validate UI against fixtures; production authenticated third-party exchange sync, payments and AI calls were not exercised. Existing security findings from the service recovery remain outside this change. Historical duplicates are preserved rather than merged or deleted. Shared Project OS paths referenced by AGENTS.md are unavailable on this machine; the workspace STATUS.md records this release.
+
+## Follow-up — empty illustrations, notebook and free screenshots
+
+- Added SVG dark variants for the shared cards/cloud empty states and the Psychology rules illustration. Theme switching uses CSS visibility and preloaded light/dark images; verified only the selected variant is visible and loaded for a Free fixture.
+- Defined the previously missing dark `--border-tertiary` token used by Journal summary cards; the win-rate track now uses the dark track token.
+- NotesPanel now has a slate editing surface, rounded border, separated toolbar, content padding and focus border; verified dark and light modes.
+- Free accounts can attach up to **two screenshots per trade**, through file selection or clipboard paste. The picker displays both previews, individual remove actions, count, processing and limit feedback. Removing one permits another upload. Paid accounts retain their existing uncapped picker behavior.
+- Fixed persistence that previously saved only the first image: every new screenshot uploads with a unique UUID path, both URLs persist in `screenshot_urls`, and `screenshot_url` mirrors the first for compatibility. NULL galleries read the legacy single URL; empty galleries stay empty. Upload failure rejects saving instead of dropping the image; Journal awaits save completion and shows errors without closing the form.
+- Migration `20261025082351_trade_screenshot_gallery.sql` applied. The invoker trigger checks the Free quota against existing subscription records under RLS, permits existing unchanged paid galleries after downgrade, and mirrors the first URL. It grants no new table/storage permissions. Existing bucket visibility is unchanged. Before/after security advisors show the same five pre-existing findings.
+- Database transaction test, rolled back: authenticated Free user persists two URLs; a third raises check_violation; removal clears both fields; active Pro permits three. No synthetic user or journal persisted.
+- Eight Node tests pass (account initialization plus screenshot limits, legacy/gallery readback and upload failure). Vite production build passes; no new source TypeScript diagnostics against the existing baseline.
+- Browser QA uses Free local fixtures and actual App/Journal upload/save code: select three files -> two accepted; third clipboard paste rejected; save -> refresh -> reopen retains both; delete -> paste permits replacement. No real user's trading data or screenshots were uploaded during QA. Source-generated neutral PNG test images were used.
+- Desktop visual checks cover dashboard/report empty states, Journal card borders and dark track, Psychology checklist, and the notebook input surface. Evidence is in workspace `output/notebook-dark-refined.png` and `output/free-two-screenshots.png`. Temporary browser viewport override was reset.

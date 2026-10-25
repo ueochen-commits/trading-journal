@@ -9,6 +9,7 @@
   --text-secondary: #6b7280;
   --border-primary: #e2e8f0;
   --border-secondary: #d1d5db;
+  --border-tertiary: #e8e8f0;
 }
 
 html.dark {
@@ -43,6 +44,7 @@ html.dark {
   --text-secondary: var(--tg-muted);
   --border-primary: var(--tg-border);
   --border-secondary: var(--tg-border);
+  --border-tertiary: #253148;
 }
 
 html.dark body { background: var(--tg-page); color: var(--tg-text); }
