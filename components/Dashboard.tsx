@@ -12,7 +12,7 @@ import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
 import { useIsDarkMode } from '../hooks/useIsDarkMode';
 import CalendarView from './CalendarView';
-import { MOCK_FRIENDS, MOCK_INDICES } from '../constants';
+
 import MentorWidget from './MentorWidget';
 import TradeGrailDailyCard from './TradeGrailDailyCard';
 import EmptyChartState from './common/EmptyChartState';
@@ -1076,13 +1076,6 @@ const MARKET_OPTIONS = [
     { id: 'newyork', labelKey: 'newYork', zone: 'America/New_York', start: [9, 30], end: [16, 0], color: 'rose', icon: Landmark },
 ];
 
-const MOCK_GOAL_HISTORY = [
-    { id: 1, week: '12/08 - 12/14', target: 1000, current: 1250, status: 'success' },
-    { id: 2, week: '12/01 - 12/07', target: 1000, current: 800, status: 'fail' },
-    { id: 3, week: '11/24 - 11/30', target: 500, current: 620, status: 'success' },
-    { id: 4, week: '11/17 - 11/23', target: 500, current: 450, status: 'fail' },
-];
-
 const useMarketHours = () => {
   const [now, setNow] = useState(new Date());
   useEffect(() => {
@@ -1588,7 +1581,7 @@ const Dashboard: React.FC<DashboardProps> = ({
     return ['tokyo', 'london', 'newyork'];
   });
   const [isMarketConfigOpen, setIsMarketConfigOpen] = useState(false);
-  const [friends, setFriends] = useState<Friend[]>(MOCK_FRIENDS);
+  const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const [chartClickDay, setChartClickDay] = useState<Date | null>(null);
   const [isAddFriendModalOpen, setIsAddFriendModalOpen] = useState(false);
@@ -2062,20 +2055,6 @@ const Dashboard: React.FC<DashboardProps> = ({
 
   return (
     <div className="space-y-8 animate-fade-in pb-12">
-      <div className="tg-module w-full bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-[var(--tg-border)] overflow-hidden py-2 relative group mb-6 -mt-2 rounded-xl shadow-sm">
-         <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white dark:from-slate-900 to-transparent z-10"></div>
-         <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white dark:from-slate-900 to-transparent z-10"></div>
-         <div className="flex animate-scroll hover-pause whitespace-nowrap w-max">
-            {[...MOCK_INDICES, ...MOCK_INDICES].map((item, i) => (
-                <div key={i} className="inline-flex items-center gap-2 mx-6 text-sm font-medium tabular-nums">
-                    <span className="font-bold text-slate-700 dark:text-slate-200">{item.symbol}</span>
-                    <span className={item.change >= 0 ? 'text-emerald-500' : 'text-rose-500'}>{item.price.toLocaleString()}</span>
-                    <span className={`text-xs ${item.change >= 0 ? 'text-emerald-500' : 'text-rose-500'} flex items-center`}>{item.change >= 0 ? '▲' : '▼'} {Math.abs(item.change)}%</span>
-                </div>
-            ))}
-         </div>
-      </div>
-
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
         <div>
           <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">{greeting}</h2>
@@ -2092,12 +2071,12 @@ const Dashboard: React.FC<DashboardProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-slate-400 dark:text-slate-400">{lastSyncLabel}</span>
                   <button
-                    onClick={() => onResync?.(selectedAccountId)}
+                    disabled
                     className="flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors"
-                    title={language === 'cn' ? '重新同步' : 'Resync'}
+                    title={language === 'cn' ? 'API 同步暂未开放' : 'API sync is paused'}
                   >
                     <RefreshCw className="w-3 h-3" />
-                    {language === 'cn' ? '重新同步' : 'Resync'}
+                    {language === 'cn' ? 'API 同步暂停' : 'API sync paused'}
                   </button>
                 </div>
               );
@@ -2823,7 +2802,7 @@ const Dashboard: React.FC<DashboardProps> = ({
           <GoalHistoryModal 
             isOpen={isHistoryModalOpen} 
             onClose={() => setIsHistoryModalOpen(false)} 
-            history={MOCK_GOAL_HISTORY}
+            history={[]}
             language={language}
           />
       )}

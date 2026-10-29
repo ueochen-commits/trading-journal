@@ -57,3 +57,15 @@ test('writes started by a previous identity cannot save into the newly signed-in
  await assert.rejects(service.savePlan({id:'stale'},'previous-user'),/登录用户已变化/);
  await assert.rejects(service.saveFeeTemplates([],'previous-user'),/登录用户已变化/);
 });
+
+test('full account bootstrap and connection refresh both work with metadata-only exchange privileges',async()=>{
+ const calls=[];
+ const connection={id:'legacy-connection',user_id:'user-qa',exchange:'binance',label:'Legacy account',is_active:true};
+ const service=await loadService({auth,from:table=>{
+  let denied=false,single=false;
+  const builder={select(fields){calls.push({table,fields});denied=table==='exchange_connections'&&(fields==='*'||/api_key|api_secret/.test(fields));return this;},eq(){return this;},order(){return this;},maybeSingle(){single=true;return this;},then(ok,fail){return Promise.resolve({data:single?null:table==='exchange_connections'?[connection]:[],error:denied?{message:'permission denied'}:null}).then(ok,fail);}};
+  return builder;
+ }});
+ const loaded=await service.loadUserData();assert.equal(loaded.exchangeConnections.length,1);assert.equal(loaded.exchangeConnections[0].apiKey,'');assert.equal(loaded.exchangeConnections[0].apiSecret,'');assert.equal(loaded.exchangeConnections[0].isConnected,false);
+ const refreshed=await service.loadExchangeConnections();assert.equal(refreshed[0].label,'Legacy account');assert.equal(calls.filter(c=>c.table==='exchange_connections').length,2);
+});

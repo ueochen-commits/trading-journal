@@ -49,7 +49,7 @@ export const chatWithAnalyst = async (
         const response = await fetch('/api/ai-coach', {
             method: 'POST',
             headers: await aiHeaders(),
-            body: JSON.stringify({ message, history, trades, language, tradingRules, riskSettings, userId })
+            body: JSON.stringify({ task: message, trades, language })
         });
 
         const data = await response.json();

@@ -1,0 +1,3 @@
+ALTER TABLE public.exchange_connections ADD CONSTRAINT exchange_credentials_encrypted CHECK ((api_key_encrypted IS NULL OR api_key_encrypted = '' OR api_key_encrypted ~ '^tgenc:v1:[A-Za-z0-9_-]{16}:[A-Za-z0-9_-]{22}:[A-Za-z0-9_-]+$') AND (api_secret_encrypted IS NULL OR api_secret_encrypted = '' OR api_secret_encrypted ~ '^tgenc:v1:[A-Za-z0-9_-]{16}:[A-Za-z0-9_-]{22}:[A-Za-z0-9_-]+$'));
+COMMENT ON COLUMN public.exchange_connections.api_key_encrypted IS 'AES-256-GCM v1 envelope authenticated to row ID and column name; server-only key in Production secret storage.';
+COMMENT ON COLUMN public.exchange_connections.api_secret_encrypted IS 'AES-256-GCM v1 envelope authenticated to row ID and column name; server-only key in Production secret storage.';

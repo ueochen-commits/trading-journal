@@ -21,17 +21,11 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
     if (!isOpen) return null;
 
     const isWin = trade.pnl >= 0;
-    const shareUrl = `https://tradegrail.com/share/${trade.id}`;
+
 
     // ROI Calculation (Estimated based on risk or position size)
     const exposure = tradeNotional(trade);
     const roi = exposure > 0 ? ((trade.pnl) / exposure) * 100 : 0;
-
-    const handleCopyLink = () => {
-        navigator.clipboard.writeText(shareUrl);
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-    };
 
     const handleSaveToAlbum = async () => {
         if (!cardRef.current || isGenerating) return;
@@ -169,13 +163,9 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                         <div className="flex justify-between items-end pt-4 border-t border-white/5 mt-auto">
                             <div className="space-y-1">
                                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest leading-none dark:text-slate-400">Journaled at</p>
-                                <p className="text-lg font-bold text-white tracking-tighter">TradeGrail.com</p>
+                                <p className="text-lg font-bold text-white tracking-tighter">tradegrail.net</p>
                             </div>
-                            <div className="w-16 h-16 bg-white p-1.5 rounded-xl shadow-lg shadow-black/50 overflow-hidden dark:bg-slate-900">
-                                <div className="tg-module w-full h-full bg-slate-900 rounded-lg flex items-center justify-center">
-                                    <QrCode className="w-8 h-8 text-white opacity-40" />
-                                </div>
-                            </div>
+
                         </div>
                     </div>
 
@@ -186,32 +176,7 @@ const TradeShareModal: React.FC<TradeShareModalProps> = ({ trade, isOpen, onClos
                 {/* SECTION B: ACTION SHEET */}
                 <div className="w-full mt-6 space-y-6 animate-fade-in-up">
                     
-                    {/* Share Link Field */}
-                    <div className="tg-module bg-white dark:bg-slate-900 border border-slate-200 dark:border-[var(--tg-border)] rounded-2xl p-1.5 flex items-center shadow-xl">
-                        <div className="pl-3 text-slate-400 dark:text-slate-400">
-                            <LinkIcon className="w-4 h-4" />
-                        </div>
-                        <input 
-                            type="text" 
-                            readOnly 
-                            value={shareUrl}
-                            className="flex-1 bg-transparent px-3 py-2 text-sm text-slate-600 dark:text-slate-300 outline-none truncate font-medium"
-                        />
-                        <button 
-                            onClick={handleCopyLink}
-                            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${isCopied ? 'bg-emerald-700 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20'}`}
-                        >
-                            {isCopied ? <><Check className="w-3.5 h-3.5" /> Copied</> : <><Copy className="w-3.5 h-3.5" /> Copy Link</>}
-                        </button>
-                    </div>
-
-                    {/* Social Buttons */}
-                    <div className="flex justify-between px-2">
-                        <SocialButton icon={Twitter} color="bg-black" label="X" />
-                        <SocialButton icon={Send} color="bg-sky-500" label="Telegram" />
-                        <SocialButton icon={Instagram} color="bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600" label="Stories" />
-                        <SocialButton icon={Share2} color="bg-slate-700" label="More" />
-                    </div>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">{language === 'cn' ? '可下载图片自行分享。公开交易链接和社区发布暂未开放。' : 'Download an image to share yourself. Public trade links and community publishing are not available.'}</p>
 
                     {/* Download Button */}
                     <button 

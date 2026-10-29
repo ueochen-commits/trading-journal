@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
 import { Friend, PrivateMessage } from '../types';
-import { MOCK_FRIENDS } from '../constants';
+
 
 interface SocialContextType {
     friends: Friend[];
@@ -19,51 +19,12 @@ interface SocialContextType {
 const SocialContext = createContext<SocialContextType | undefined>(undefined);
 
 export const SocialProvider = ({ children }: { children?: ReactNode }) => {
-    // Enrich mock friends with status
-    const [friends] = useState<Friend[]>(MOCK_FRIENDS.map((f, i) => ({
-        ...f,
-        status: i % 2 === 0 ? 'online' : 'offline',
-        lastSeen: i % 2 !== 0 ? '2h ago' : undefined
-    })));
+    const [friends] = useState<Friend[]>([]);
 
     const [isFriendDrawerOpen, setIsFriendDrawerOpen] = useState(false);
     const [activeChatId, setActiveChatId] = useState<string | null>(null);
     
-    // Initialize with some mock unread messages to demonstrate notifications
-    const [chatHistory, setChatHistory] = useState<Record<string, PrivateMessage[]>>({
-        'f1': [ // 查德 李 (1 unread)
-            {
-                id: 'm-init-1',
-                senderId: 'f1',
-                text: 'Bro, check out the 4H chart on SOL. Massive breakout incoming! 🚀',
-                timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(), // 45 mins ago
-                read: false
-            }
-        ],
-        'f2': [ // Jerry Xia (2 unread)
-            {
-                id: 'm-init-2',
-                senderId: 'me',
-                text: 'Did you close that ETH long?',
-                timestamp: new Date(Date.now() - 1000 * 60 * 120).toISOString(),
-                read: true
-            },
-            {
-                id: 'm-init-3',
-                senderId: 'f2',
-                text: 'Not yet, trailing stop hit breakeven.',
-                timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                read: false
-            },
-            {
-                id: 'm-init-4',
-                senderId: 'f2',
-                text: 'Lunch later?',
-                timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-                read: false
-            }
-        ]
-    });
+    const [chatHistory, setChatHistory] = useState<Record<string, PrivateMessage[]>>({});
 
     const openFriendDrawer = () => setIsFriendDrawerOpen(true);
     const closeFriendDrawer = () => setIsFriendDrawerOpen(false);

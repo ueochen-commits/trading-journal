@@ -174,8 +174,6 @@ const Sidebar = ({
   ];
 
   const communityItems = [
-    { id: 'plaza',         label: t.sidebar.plaza,         icon: Icons.Plaza,   pro: true },
-    { id: 'academy',       label: t.sidebar.academy,       icon: Icons.Academy, pro: true },
     { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell,    pro: false },
   ];
 
@@ -275,8 +273,6 @@ const Sidebar = ({
         })),
       ]
     : [
-        { id: 'plaza',         label: t.sidebar.plaza,         icon: Icons.Plaza },
-        { id: 'academy',       label: t.sidebar.academy,       icon: Icons.Academy },
         { id: 'notifications', label: t.sidebar.notifications, icon: Icons.Bell,  badge: unreadNotificationsCount },
       ];
 

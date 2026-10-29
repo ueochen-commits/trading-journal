@@ -55,8 +55,7 @@ import { fetchTradesFromExchange, generateAccountName } from './services/exchang
 import { Plus, MessageSquarePlus, FileText, BookOpen, Globe, HelpCircle, TrendingUp, X } from 'lucide-react';
 
 import { 
-  MOCK_STRATEGIES, MOCK_PRE_TRADE_CHECKLIST, 
-  DEFAULT_TRACKER_RULES, MOCK_POSTS, MOCK_NOTIFICATIONS, 
+  DEFAULT_TRACKER_RULES,
   DEFAULT_DISCIPLINE_RULES 
 } from './constants';
 import {
@@ -249,7 +248,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const [checklist, setChecklist] = useState<ChecklistItem[]>([]);
   const [trackerRules, setTrackerRules] = useState<TrackerRule[]>([]);
   const [plans, setPlans] = useState<DailyPlan[]>([]);
-  const [posts, setPosts] = useStickyState<Post[]>(MOCK_POSTS, 'tg_posts');
+  const [posts, setPosts] = useStickyState<Post[]>([], 'tg_posts');
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Discipline & Goals
@@ -842,7 +841,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
       if (intent.type === 'trade') {
           setIsShareModalOpen(true);
       } else {
-          handleSetActiveTab('plaza');
+          showToast(language === 'cn' ? '社区发布暂未开放，笔记仍保存在自己的账户中。' : 'Community publishing is not available. Notes remain in your own account.');
       }
   };
 
@@ -878,16 +877,6 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           onClick: () => {
               handleSetActiveTab('playbook');
               setPlaybookAutoCreate(true);
-              setIsFabOpen(false);
-          }
-      },
-      {
-          id: 'post',
-          label: t.fab?.post || (language === 'cn' ? '发表观点' : 'Post View'),
-          icon: Globe,
-          color: 'bg-sky-500',
-          onClick: () => {
-              handleSetActiveTab('plaza');
               setIsFabOpen(false);
           }
       },
@@ -1352,7 +1341,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
               tradingRules={trackerRules}
               riskSettings={riskSettings}
           />
-          <ChatWindow />
+
           {/* <FriendListDrawer /> */}
           <SettingsModal onImportTrades={handleImportTrades} />
           <PricingModal />

@@ -120,14 +120,14 @@ function dbToExchangeConnection(row: any): ExchangeConnection {
   return {
     id: row.id,
     exchange: row.exchange || '',
-    apiKey: row.api_key_encrypted || '',
-    apiSecret: row.api_secret_encrypted || '',
+    apiKey: '',
+    apiSecret: '',
     label: row.label || undefined,
     accountType: row.account_type || 'main',
     skipSpot: row.skip_spot ?? false,
     startDate: row.start_date || undefined,
     lastSync: row.last_sync || undefined,
-    isConnected: row.is_active ?? true,
+    isConnected: false,
   };
 }
 
@@ -178,7 +178,7 @@ export const userDataService = {
       supabase.from('user_settings').select('settings, risk_settings').eq('user_id', userId).maybeSingle(),
       supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
       supabase.from('trading_accounts').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-      supabase.from('exchange_connections').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('exchange_connections').select('id,user_id,exchange,is_active,last_sync,created_at,label,account_type,skip_spot,start_date').eq('user_id', userId).order('created_at', { ascending: false }),
       supabase.from('user_rule_settings').select('net_max_loss_per_day_enabled, net_max_loss_per_day_value').eq('user_id', userId).maybeSingle(),
     ]);
 
@@ -740,19 +740,7 @@ export const userDataService = {
     const userId = await getCurrentUserId(expectedUserId);
     if (!userId) return { data: null, error: 'Not authenticated' };
 
-    const { data, error } = await supabase.from('exchange_connections').insert({
-      user_id: userId,
-      exchange: conn.exchange,
-      api_key_encrypted: conn.apiKey,
-      api_secret_encrypted: conn.apiSecret,
-      label: conn.label || null,
-      account_type: conn.accountType || 'main',
-      skip_spot: conn.skipSpot ?? false,
-      start_date: conn.startDate || null,
-      is_active: true,
-    }).select().single();
-
-    return { data, error };
+    return { data: null, error: new Error('API 同步暂未开放，请使用手动记录或 CSV 导入。') };
   },
 
   async loadExchangeConnections(): Promise<ExchangeConnection[]> {
@@ -760,7 +748,7 @@ export const userDataService = {
     if (!userId) return [];
 
     const { data } = await supabase.from('exchange_connections')
-      .select('*').eq('user_id', userId).order('created_at', { ascending: false });
+      .select('id,user_id,exchange,is_active,last_sync,created_at,label,account_type,skip_spot,start_date').eq('user_id', userId).order('created_at', { ascending: false });
 
     return (data || []).map(dbToExchangeConnection);
   },

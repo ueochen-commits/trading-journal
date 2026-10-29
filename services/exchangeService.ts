@@ -1,5 +1,4 @@
 import { tradePnlBreakdown } from '../utils/tradePnl';
-
 import { Trade, Direction, TradeStatus } from '../types';
 
 // 生成账户名称：交易所名 + 5位随机数
@@ -58,46 +57,7 @@ export const fetchTradesFromExchange = async (
     skipSpot = false,
 ): Promise<{ trades: Trade[]; balance: number; currency: string }> => {
 
-    if (!apiKey || !apiSecret) {
-        throw new Error('缺少 API 凭证');
-    }
-
-    if (exchange !== 'Binance') {
-        throw new Error(`暂不支持 ${exchange}，敬请期待`);
-    }
-
-    if (onLog) onLog(`[${new Date().toLocaleTimeString()}] 正在连接 Binance API...`);
-
-    const response = await fetch('/api/binance-sync', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ apiKey, apiSecret, startDate, skipSpot }),
-    });
-
-    if (!response.ok) {
-        const err = await response.json().catch(() => null);
-        const msg = err?.error || err?.details || `请求失败 (${response.status})`;
-        throw new Error(msg);
-    }
-
-    const data = await response.json();
-
-    if (!data.success) {
-        throw new Error(data.error || '同步失败');
-    }
-
-    if (onLog) onLog(`[${new Date().toLocaleTimeString()}] 验证成功，正在解析 ${data.tradeCount} 笔交易...`);
-
-    // 输出调试信息到控制台
-    if (data.debug) {
-        console.log('[Binance Sync Debug]', data.debug);
-    }
-
-    const trades: Trade[] = (data.trades || []).map((raw: any) => mapBinanceTrade(raw, accountId));
-
-    if (onLog) onLog(`[${new Date().toLocaleTimeString()}] 导入完成，共 ${trades.length} 笔交易`);
-
-    return { trades, balance: data.balance ?? 0, currency: data.currency ?? 'USDT' };
+    throw new Error('API 同步暂未开放，请使用手动记录或 CSV 导入。');
 };
 
 // 返回账户余额（从 binance-sync 响应中提取）
@@ -105,17 +65,5 @@ export const fetchAccountBalance = async (
     apiKey: string,
     apiSecret: string,
 ): Promise<{ balance: number; currency: string } | null> => {
-    try {
-        const response = await fetch('/api/binance-sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ apiKey, apiSecret, startDate: null, skipSpot: true }),
-        });
-        if (!response.ok) return null;
-        const data = await response.json();
-        if (!data.success) return null;
-        return { balance: data.balance ?? 0, currency: data.currency ?? 'USDT' };
-    } catch {
-        return null;
-    }
+    return null;
 };

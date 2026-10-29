@@ -130,9 +130,9 @@ const RowMenu: React.FC<{
     <div ref={menuRef} style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'flex-end' }}>
       {account.type === 'auto_sync' && (
         <button
-          onClick={() => !isSyncing && onSync?.()}
+          disabled
           onMouseEnter={() => setSyncHov(true)} onMouseLeave={() => setSyncHov(false)}
-          title={isSyncing ? '同步中...' : '立即同步'}
+          title="API 同步暂未开放 / API sync is paused"
           style={{
             width: 30, height: 30, borderRadius: 7, border: 'none', cursor: isSyncing ? 'default' : 'pointer',
             background: syncHov && !isSyncing ? 'var(--tg-accent-soft, #f0edf8)' : 'transparent',
@@ -169,7 +169,7 @@ const RowMenu: React.FC<{
           <MenuItem icon={<IconBalance />} label="编辑余额" onClick={onEditBalance} />
           <MenuItem icon={<IconHistory />} label="查看导入历史" onClick={onHistory} />
           {account.type === 'auto_sync' && (
-            <MenuItem icon={<IconLink />} label="重新连接" onClick={() => {}} />
+            <MenuItem icon={<IconLink />} label="API 连接暂停" disabled title="请使用手动记录或 CSV 导入" />
           )}
           <div style={{ borderTop: '1px solid var(--tg-border, #f0edf8)', margin: '4px 0' }} />
           <MenuItem icon={<IconClear />} label="清除交易" danger onClick={onClearTrades} />
@@ -358,18 +358,7 @@ const TypeBadge: React.FC<{ account: TradingAccount }> = ({ account }) => {
   if (account.type === 'manual') {
     return <span style={{ color: 'var(--tg-muted, #8080a8)', fontSize: 12 }}>手动</span>;
   }
-  const statusMap = {
-    synced: { bg: 'var(--tg-positive-soft, #e8f7ee)', color: 'var(--tg-positive, #1a7a42)', label: '已同步' },
-    syncing: { bg: 'var(--tg-accent-soft, #f0eeff)', color: 'var(--tg-accent, #8060c0)', label: '同步中' },
-    error: { bg: 'var(--tg-negative-soft, #fff0f0)', color: 'var(--tg-negative, #a03030)', label: '错误' },
-  };
-  const s = statusMap[account.syncStatus ?? 'synced'];
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <span style={{ color: 'var(--tg-secondary, #6060a0)', fontSize: 12 }}>Auto sync</span>
-      <span style={{ background: s.bg, color: s.color, fontSize: 11, fontWeight: 600, padding: '3px 10px', borderRadius: 20 }}>{s.label}</span>
-    </div>
-  );
+  return <span style={{ color: 'var(--tg-muted, #8080a8)', fontSize: 12 }}>API 同步暂停 / Paused</span>;
 };
 
 // ─── Main component ───────────────────────────────────────────────────────────
@@ -444,15 +433,15 @@ const BrokersPage: React.FC<Props> = ({
               <line x1="12" y1="16" x2="12" y2="12"/>
               <line x1="12" y1="8" x2="12.01" y2="8"/>
             </svg>
-            了解更多
+            手动记录与 CSV 导入可用；API 同步暂停 / API sync paused
           </a>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
-            disabled={selectedIds.length === 0}
+            disabled
             onMouseEnter={() => selectedIds.length > 0 && setSyncBtnHov(true)}
             onMouseLeave={() => setSyncBtnHov(false)}
-            onClick={() => selectedIds.forEach(id => onSyncAccount?.(id))}
+            title="请使用手动记录或 CSV 导入"
             style={{
               height: 34, padding: '0 14px', borderRadius: 8, fontSize: 13, fontWeight: 500,
               border: 'var(--tg-module-border, 1px solid var(--tg-border, #e4e0f4))', transition: 'all 0.14s',
@@ -461,7 +450,7 @@ const BrokersPage: React.FC<Props> = ({
               cursor: selectedIds.length > 0 ? 'pointer' : 'not-allowed',
             }}
           >
-            同步已选
+            API 同步暂停
           </button>
           {isAtLimit && userPlan !== 'elite' && (
             <div style={{
@@ -691,7 +680,7 @@ const AccountRow: React.FC<{
 
       {/* Next update */}
       <td style={{ padding: '0 16px', color: 'var(--tg-muted, #8080a8)', fontSize: 12, verticalAlign: 'middle' }}>
-        {account.nextSync && account.nextSync !== '—'
+        {account.type === 'auto_sync' ? '已暂停 / Paused' : account.nextSync && account.nextSync !== '—'
           ? account.nextSync
           : <span style={{ color: 'var(--tg-muted, #c0bcd8)' }}>—</span>
         }
