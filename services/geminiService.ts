@@ -1,7 +1,7 @@
 import { supabase } from '../supabaseClient';
 import { Trade, DailyPlan, RiskSettings } from '../types';
 
-const aiHeaders = async () => {
+export const aiHeaders = async () => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Authentication required');
     return { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` };
@@ -54,7 +54,7 @@ export const chatWithAnalyst = async (
 
         const data = await response.json();
         if (data.error === 'QUOTA_EXCEEDED') {
-            return { text: language === 'cn' ? '今日 AI 使用次数已达上限，请明天再试或升级会员。' : 'Daily AI limit reached. Try again tomorrow or upgrade your plan.' };
+            return { text: language === 'cn' ? '当前 AI 使用额度已用完，请在额度重置后再试。' : 'AI allowance reached. Please try again after the quota resets.' };
         }
         if (!response.ok) throw new Error('API error');
         return { text: data.text || '' };
@@ -77,7 +77,7 @@ export const analyzeJournal = async (trades: Trade[], language: 'en' | 'cn' = 'c
         const data = await response.json();
         if (data.error === 'QUOTA_EXCEEDED') {
             return {
-                summary: language === 'cn' ? '今日 AI 使用次数已达上限，请明天再试或升级会员。' : 'Daily AI limit reached. Try again tomorrow or upgrade your plan.',
+                summary: language === 'cn' ? '当前 AI 使用额度已用完，请在额度重置后再试。' : 'AI allowance reached. Please try again after the quota resets.',
                 insights: [],
                 coachMessage: ''
             };
@@ -113,8 +113,8 @@ export const generatePeriodicReport = async (
         const data = await response.json();
         if (data.error === 'QUOTA_EXCEEDED') {
             return language === 'cn'
-                ? '<h3>今日 AI 使用次数已达上限</h3><p>请明天再试或升级会员。</p>'
-                : '<h3>Daily AI Limit Reached</h3><p>Try again tomorrow or upgrade your plan.</p>';
+                ? '<h3>当前 AI 使用额度已用完</h3><p>请在额度重置后再试。</p>'
+                : '<h3>AI Allowance Reached</h3><p>Please try again after the quota resets.</p>';
         }
         if (!response.ok) throw new Error('API error');
         return data.html || '';

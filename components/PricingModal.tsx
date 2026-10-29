@@ -1,470 +1,67 @@
-
-import React, { useState, useEffect } from 'react';
-import { X, Check, Zap, Crown, ShieldCheck, Star, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { X, Check } from 'lucide-react';
 import { useUser } from './UserContext';
 import { useLanguage } from '../LanguageContext';
 import PaymentModal from './PaymentModal';
-import type { PlanType, BillingCycle } from '../services/xorpayService';
 import { ManageUsdSubscription } from './CreemBilling';
 import { getCreemCatalog } from '../services/creemService';
+import { getBillingMarket, type BillingMarket } from '../services/billingMarket';
 
 const PricingModal: React.FC = () => {
-    const { isPricingOpen, closePricing, upgradeTier, user } = useUser();
-    const { t, language } = useLanguage();
-    const [moneyCurrency, setMoneyCurrency] = useState<'CNY' | 'USD'>(language === 'cn' ? 'CNY' : 'USD');
-    const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
-    const [showEarlyBirdModal, setShowEarlyBirdModal] = useState(false);
-    const [usdEnabled,setUsdEnabled] = useState(false);
-    useEffect(() => {
-        let alive=true;
-        if (isPricingOpen) void getCreemCatalog().then(c=>{if(alive)setUsdEnabled(c.enabled);}).catch(()=>{if(alive)setUsdEnabled(false);});
-        return ()=>{alive=false;};
-    },[isPricingOpen]);
-
-    // 支付相关状态
-    const [isPaymentOpen, setIsPaymentOpen] = useState(false);
-    const [selectedPlan, setSelectedPlan] = useState<{
-        plan: PlanType;
-        billingCycle: BillingCycle;
-        amount: number;
-        currency: 'CNY' | 'USD';
-    } | null>(null);
-
-    if (!isPricingOpen) return null;
-
-    const currency = moneyCurrency === 'CNY' ? '¥' : '$';
-
-    // 处理购买按钮点击
-    const handleBuyClick = (plan: PlanType, cycle: BillingCycle, amount: number) => {
-        setSelectedPlan({ plan, billingCycle: cycle, amount, currency: cycle === 'lifetime' ? 'CNY' : moneyCurrency });
-        setIsPaymentOpen(true);
-    };
-
-    // 处理支付完成
-    const handlePaymentClose = () => {
-        setIsPaymentOpen(false);
-        setSelectedPlan(null);
-    };
-
-    // Pricing Configuration
-    const pricing = {
-        monthly: {
-            pro: moneyCurrency === 'CNY' ? '29' : '5',
-            elite: moneyCurrency === 'CNY' ? '79' : '12',
-        },
-        yearly: {
-            pro: moneyCurrency === 'CNY' ? '199' : '29',
-            elite: moneyCurrency === 'CNY' ? '599' : '89',
-            savePro: moneyCurrency === 'CNY' ? '¥149' : '$31',
-            saveElite: moneyCurrency === 'CNY' ? '¥349' : '$55',
-            totalPro: moneyCurrency === 'CNY' ? '199' : '29',
-            totalElite: moneyCurrency === 'CNY' ? '599' : '89',
-            avgMonthlyPro: moneyCurrency === 'CNY' ? '16.6' : '2.42',
-            avgMonthlyElite: moneyCurrency === 'CNY' ? '49.9' : '7.42'
+  const { isPricingOpen, closePricing, user } = useUser();
+  const { language } = useLanguage();
+  const cn = language === 'cn';
+  const [cycle, setCycle] = useState<'monthly' | 'yearly'>('monthly');
+  const [market, setMarket] = useState<BillingMarket | null>(null);
+  const [error, setError] = useState(false);
+  const [retry, setRetry] = useState(0);
+  const [usdEnabled, setUsdEnabled] = useState(false);
+  const [purchase, setPurchase] = useState<{ plan: 'pro' | 'elite'; amount: number; currency: 'CNY' | 'USD'; billingCycle: 'monthly' | 'yearly' } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    if (isPricingOpen) {
+      setMarket(null); setError(false); setUsdEnabled(false); setPurchase(null);
+      void getBillingMarket().then(async value => {
+        if (!alive) return;
+        setMarket(value);
+        if (value.currency === 'USD') {
+          const catalog = await getCreemCatalog();
+          if (alive) setUsdEnabled(catalog.enabled && ['pro', 'elite'].every(plan => ['monthly', 'yearly'].every(period => catalog.offers.some(o => o.plan === plan && o.cycle === period && o.amount === value.prices[plan][period]))));
         }
-    };
-
-    const FeatureItem = ({ text, highlight = false }: { text: string, highlight?: boolean }) => (
-        <div className="flex items-start gap-3">
-            <div className={`mt-0.5 p-0.5 rounded-full flex-shrink-0 ${highlight ? 'bg-indigo-500 text-white' : 'bg-slate-800 text-emerald-400'}`}>
-                <Check className="w-2.5 h-2.5" strokeWidth={4} />
-            </div>
-            <span className={`text-sm leading-tight ${highlight ? 'text-white font-medium' : 'text-slate-400 dark:text-slate-400'}`}>{text}</span>
-        </div>
-    );
-
-    return (
-        <>
-            {/* Early Bird Modal */}
-            {showEarlyBirdModal && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-fade-in">
-                    <div className="relative bg-gradient-to-br from-slate-900 via-slate-900 to-slate-800 rounded-3xl p-10 max-w-lg w-full border border-amber-500/20 shadow-2xl overflow-hidden">
-                        {/* Background decorative elements */}
-                        <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl"></div>
-                        <div className="absolute bottom-0 left-0 w-48 h-48 bg-amber-600/5 rounded-full blur-3xl"></div>
-
-                        {/* Close button */}
-                        <button
-                            onClick={() => setShowEarlyBirdModal(false)}
-                            className="absolute top-4 right-4 p-2 text-slate-500 hover:text-white transition-colors rounded-full hover:bg-slate-800 dark:text-slate-400"
-                        >
-                            <X className="w-5 h-5" />
-                        </button>
-
-                        <div className="relative z-10">
-                            {/* Badge */}
-                            <div className="inline-flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold px-3 py-1.5 rounded-full mb-6">
-                                <Sparkles className="w-3.5 h-3.5" />
-                                {language === 'cn' ? '限时优惠' : 'LIMITED OFFER'}
-                            </div>
-
-                            {/* Title */}
-                            <h3 className="text-3xl font-black text-white mb-3 leading-tight">
-                                {language === 'cn' ? '早鸟终身买断' : 'Lifetime Access'}
-                                <br />
-                                <span className="text-amber-500">{language === 'cn' ? 'Elite 会员' : 'Elite Membership'}</span>
-                            </h3>
-
-                            {/* Price */}
-                            <div className="flex items-baseline gap-2 mb-6">
-                                <span className="text-5xl font-black text-white">¥1,999</span>
-                                <span className="text-slate-500 line-through text-lg dark:text-slate-400">¥7,188</span>
-                            </div>
-
-                            {/* Features */}
-                            <div className="space-y-3 mb-8">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <Check className="w-3 h-3 text-amber-500" strokeWidth={3} />
-                                    </div>
-                                    <span className="text-slate-300 text-sm">{language === 'cn' ? '终身使用 Elite 所有功能' : 'Lifetime access to all Elite features'}</span>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <Check className="w-3 h-3 text-amber-500" strokeWidth={3} />
-                                    </div>
-                                    <span className="text-slate-300 text-sm">{language === 'cn' ? '未来所有新功能免费更新' : 'Free updates for all future features'}</span>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-5 h-5 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <Check className="w-3 h-3 text-amber-500" strokeWidth={3} />
-                                    </div>
-                                    <span className="text-slate-300 text-sm">{language === 'cn' ? '仅限前 100 名用户' : 'Limited to first 100 users only'}</span>
-                                </div>
-                            </div>
-
-                            {/* WeChat contact */}
-                            <div className="tg-module bg-slate-800/50 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-slate-700/50">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-xs text-slate-500 mb-1 uppercase tracking-wider dark:text-slate-400">{language === 'cn' ? '添加微信预约' : 'WeChat ID'}</p>
-                                        <p className="text-lg font-bold text-white tracking-wide">Timetravel_0</p>
-                                    </div>
-                                    <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl flex items-center justify-center">
-                                        <Crown className="w-6 h-6 text-white" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* CTA Buttons */}
-                            <div className="space-y-3">
-                                <button
-                                    onClick={() => {
-                                        setShowEarlyBirdModal(false);
-                                        handleBuyClick('elite', 'lifetime', 1999);
-                                    }}
-                                    disabled={user.tier === 'elite' || (moneyCurrency === 'USD' && !usdEnabled)}
-                                    className={`w-full py-4 rounded-xl font-bold text-base transition-all ${
-                                        user.tier === 'elite'
-                                            ? 'bg-slate-700 text-slate-500 cursor-default dark:text-slate-400'
-                                            : 'bg-amber-500 hover:bg-amber-600 text-black'
-                                    }`}
-                                >
-                                    {user.tier === 'elite'
-                                        ? (language === 'cn' ? '已是 Elite 会员' : 'Already Elite Member')
-                                        : (language === 'cn' ? '立即购买 ¥1,999' : 'Buy Now ¥1,999')
-                                    }
-                                </button>
-                                <p className="text-center text-xs text-slate-500 dark:text-slate-400">
-                                    {language === 'cn'
-                                        ? '支持支付宝和微信支付 · 或添加微信 Timetravel_0 咨询'
-                                        : 'Alipay & WeChat Pay · Or add WeChat Timetravel_0'}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl animate-fade-in overflow-y-auto md:overflow-hidden">
-            
-            {/* Main Container */}
-            <div className="w-full max-w-7xl relative flex flex-col items-center">
-                
-                {/* Header Section */}
-                <div className="text-center mb-8 relative z-10 w-full">
-                    <button 
-                        onClick={closePricing}
-                        className="absolute top-0 right-0 p-2 text-slate-500 hover:text-white transition-colors dark:text-slate-400"
-                    >
-                        <X className="w-8 h-8" />
-                    </button>
-
-                    <h2 className="text-3xl md:text-5xl font-black text-white mb-4 tracking-tight">
-                        {language === 'cn' ? '解锁全套交易工具' : 'Unlock Your Trading Edge'}
-                    </h2>
-                    <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-4 dark:text-slate-400">
-                        {language === 'cn' ? '记录交易、复盘表现，选择适合你的工具。' : 'Journal your trades, review performance and choose the tools you need.'}
-                    </p>
-
-                    {/* Beta Notice */}
-                    <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm px-5 py-2.5 rounded-full mb-8">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-                        {language === 'cn' ? 'TradeGrail 免费版可持续使用，付费套餐按下方说明提供。' : 'Keep using the TradeGrail free plan, or choose a paid plan below.'}
-                    </div>
-
-                    <div className="mb-4 flex justify-center gap-3"><button onClick={() => setMoneyCurrency('CNY')} aria-pressed={moneyCurrency==='CNY'} className={`px-4 py-2 rounded-lg text-sm ${moneyCurrency==='CNY'?'bg-indigo-600 text-white':'bg-slate-800 text-slate-300'}`}>CNY ¥</button><button onClick={() => setMoneyCurrency('USD')} aria-pressed={moneyCurrency==='USD'} className={`px-4 py-2 rounded-lg text-sm ${moneyCurrency==='USD'?'bg-indigo-600 text-white':'bg-slate-800 text-slate-300'}`}>USD $ · Creem</button></div>
-                    <ManageUsdSubscription />
-                    {/* Billing Toggle */}
-                    <div className="inline-flex bg-slate-900 p-1 rounded-full border border-slate-800 relative">
-                        <div className={`absolute top-1 bottom-1 w-[50%] bg-indigo-600 rounded-full transition-all duration-300 shadow-lg ${billingCycle === 'monthly' ? 'left-1' : 'left-[49%]'}`}></div>
-                        <button 
-                            onClick={() => setBillingCycle('monthly')}
-                            className="relative z-10 px-8 py-2.5 rounded-full text-sm font-bold text-white transition-colors w-32"
-                        >
-                            {language === 'cn' ? '月付' : 'Monthly'}
-                        </button>
-                        <button 
-                            onClick={() => setBillingCycle('yearly')}
-                            className="relative z-10 px-8 py-2.5 rounded-full text-sm font-bold text-white transition-colors flex items-center justify-center gap-2 w-32"
-                        >
-                            {language === 'cn' ? '年付' : 'Yearly'}
-                        </button>
-                        
-                        {/* Discount Badge */}
-                        <div className="absolute -right-24 top-1/2 -translate-y-1/2 bg-emerald-700 text-white text-[10px] font-bold px-2 py-1 rounded-lg animate-bounce hidden md:block">
-                            {language === 'cn' ? '省 30%' : 'SAVE 30%'}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Cards Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-start perspective-1000">
-                    
-                    {/* 1. Free Plan */}
-                    <div className="tg-module bg-slate-900 rounded-3xl p-8 border border-slate-800 hover:border-slate-700 transition-all duration-300 relative group">
-                        <div className="mb-6">
-                            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4 text-slate-400 group-hover:text-white transition-colors dark:text-slate-400">
-                                <Star className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-xl font-bold text-white">{language === 'cn' ? "基础版" : "Basic"}</h3>
-                            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{language === 'cn' ? "适合刚开始的新手" : "For beginners just starting out"}</p>
-                        </div>
-                        
-                        <div className="mb-8">
-                            <div className="flex items-baseline">
-                                <span className="text-4xl font-black text-white">{currency}0</span>
-                                <span className="text-slate-500 ml-1 dark:text-slate-400">{language === 'cn' ? '/ 月' : '/ mo'}</span>
-                            </div>
-                            <p className="text-xs text-slate-600 mt-2 h-4 dark:text-slate-300"></p>
-                        </div>
-
-                        <button 
-                            onClick={() => { if(user.tier === 'free') closePricing(); }}
-                            disabled={user.tier === 'free'}
-                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-slate-700 ${user.tier === 'free' ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400' : 'bg-transparent text-white hover:bg-slate-800'}`}
-                        >
-                            {user.tier === 'free' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (language === 'cn' ? '降级' : 'Downgrade')}
-                        </button>
-
-                        <div className="mt-8 space-y-4">
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">Features</p>
-                            <FeatureItem text={language === 'cn' ? "手动记录交易" : "Manual Trade Logging"} />
-                            <FeatureItem text={language === 'cn' ? "基础数据统计" : "Basic Analytics"} />
-                            <FeatureItem text={language === 'cn' ? "仅限 100 条历史" : "Last 100 Trades Only"} />
-                            <FeatureItem text={language === 'cn' ? "每笔交易最多 2 张截图" : "Up to 2 screenshots per trade"} />
-                        </div>
-                    </div>
-
-                    {/* 2. Pro Plan (HERO) */}
-                    <div className="relative transform md:-translate-y-4 z-10">
-                        {/* Most Popular Header Banner */}
-                        <div className="bg-indigo-500 text-white text-center py-2 rounded-t-3xl font-bold text-sm flex items-center justify-center gap-2">
-                            <Zap className="w-4 h-4 fill-current" />
-                            {t?.pricing?.mostPopular || (language === 'cn' ? '最受欢迎' : 'MOST POPULAR')}
-                        </div>
-                        
-                        <div className="bg-slate-900 rounded-b-3xl rounded-t-none p-8 border-x-2 border-b-2 border-indigo-500 shadow-[0_0_40px_rgba(99,102,241,0.15)] relative overflow-hidden">
-                            {/* Glow Effect */}
-                            <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/10 blur-[80px] rounded-full pointer-events-none"></div>
-
-                            <div className="mb-6 relative">
-                                <div className="w-12 h-12 bg-indigo-600 rounded-2xl flex items-center justify-center mb-4 text-white shadow-lg shadow-indigo-500/30">
-                                    <Crown className="w-6 h-6" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white">Pro Trader</h3>
-                                <p className="text-sm text-indigo-300 mt-1">{language === 'cn' ? "严肃交易者的首选" : "Everything you need to scale"}</p>
-                            </div>
-                            
-                            <div className="mb-8 relative">
-                                {billingCycle === 'yearly' ? (
-                                    <>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-5xl font-black text-white tracking-tight">
-                                                {currency}{pricing.yearly.totalPro}
-                                            </span>
-                                            <span className="text-slate-400 font-medium dark:text-slate-400">{language === 'cn' ? '/ 年' : '/ year'}</span>
-                                        </div>
-                                        <div className="text-sm text-slate-400 font-medium mt-1 dark:text-slate-400">
-                                            {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.avgMonthlyPro}` : `${currency}${pricing.yearly.avgMonthlyPro}/mo average`}
-                                        </div>
-                                        <div className="mt-3 inline-flex items-center gap-2 bg-indigo-900/30 px-2 py-1 rounded border border-indigo-500/30">
-                                            <span className="text-xs text-indigo-300 line-through">{currency}{Number(pricing.monthly.pro) * 12}</span>
-                                            <span className="text-xs text-indigo-400 font-bold">{language === 'cn' ? `立省 ${pricing.yearly.savePro}` : `Save ${pricing.yearly.savePro}`}</span>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="flex items-baseline gap-1">
-                                            <span className="text-5xl font-black text-white tracking-tight">
-                                                {currency}{pricing.monthly.pro}
-                                            </span>
-                                            <span className="text-slate-400 font-medium dark:text-slate-400">{language === 'cn' ? '/ 月' : '/ mo'}</span>
-                                        </div>
-                                        <div className="h-9"></div>
-                                    </>
-                                )}
-                            </div>
-
-                            <button
-                                onClick={() => handleBuyClick(
-                                    'pro',
-                                    billingCycle,
-                                    Number(billingCycle === 'yearly' ? pricing.yearly.totalPro : pricing.monthly.pro)
-                                )}
-                                disabled={user.tier === 'pro' || user.tier === 'elite' || (moneyCurrency === 'USD' && !usdEnabled)}
-                                className={`w-full py-4 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
-                                    user.tier === 'pro' || user.tier === 'elite'
-                                        ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400'
-                                        : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                                }`}
-                            >
-                                {user.tier === 'pro' ? (language === 'cn' ? '当前方案' : 'Current Plan') :
-                                 user.tier === 'elite' ? (language === 'cn' ? '已是更高等级' : 'Higher Tier Active') :
-                                 (moneyCurrency === 'USD' && !usdEnabled ? (language === 'cn' ? '美元支付准备中' : 'USD billing coming soon') : (language === 'cn' ? '立即购买' : 'Buy Now'))}
-                            </button>
-
-                            {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3 dark:text-slate-400">{language === 'cn' ? '支持支付宝和微信支付' : 'Alipay & WeChat Pay supported'}</p>}
-
-                            <div className="mt-8 space-y-5">
-                                <div>
-                                    <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Analytics</p>
-                                    <div className="space-y-3">
-                                        <FeatureItem text={language === 'cn' ? "最多 1,000 条交易记录" : "Up to 1,000 Trade Records"} highlight />
-                                        <FeatureItem text={language === 'cn' ? "高级盈亏日历 & 热力图" : "Advanced Calendar & Heatmaps"} highlight />
-                                        <FeatureItem text={language === 'cn' ? "CSV 文件导入" : "CSV File Import"} highlight />
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">AI & Growth</p>
-                                    <div className="space-y-3">
-                                        <FeatureItem text={language === 'cn' ? "AI 功能每日 100 次" : "100 AI requests per day"} highlight />
-                                        <FeatureItem text={language === 'cn' ? "多张交易截图与复盘笔记" : "Multiple screenshots and review notes"} highlight />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* 3. Elite Plan */}
-                    <div className="bg-slate-900 rounded-3xl p-8 border border-slate-800 hover:border-amber-500/30 transition-all duration-300 group">
-                        <div className="mb-6">
-                            <div className="w-12 h-12 bg-slate-800 rounded-2xl flex items-center justify-center mb-4 text-amber-500 group-hover:scale-110 transition-transform">
-                                <Sparkles className="w-6 h-6" />
-                            </div>
-                            <h3 className="text-xl font-bold text-white">Elite</h3>
-                            <p className="text-sm text-slate-500 mt-1 dark:text-slate-400">{language === 'cn' ? "全职交易员/机构" : "For full-time scalpers"}</p>
-                        </div>
-                        
-                        <div className="mb-8">
-                            {billingCycle === 'yearly' ? (
-                                <>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-4xl font-black text-white">
-                                            {currency}{pricing.yearly.totalElite}
-                                        </span>
-                                        <span className="text-slate-500 font-medium dark:text-slate-400">{language === 'cn' ? '/ 年' : '/ year'}</span>
-                                    </div>
-                                    <p className="text-sm text-slate-400 font-medium mt-1 dark:text-slate-400">
-                                        {language === 'cn' ? `平均每月 ${currency}${pricing.yearly.avgMonthlyElite}` : `${currency}${pricing.yearly.avgMonthlyElite}/mo average`}
-                                    </p>
-                                    <p className="text-xs text-amber-500 mt-2 bg-amber-900/20 inline-block px-2 py-0.5 rounded">
-                                        {language === 'cn' ? `立省 ${pricing.yearly.saveElite}` : `Save ${pricing.yearly.saveElite}`}
-                                    </p>
-                                </>
-                            ) : (
-                                <>
-                                    <div className="flex items-baseline gap-1">
-                                        <span className="text-4xl font-black text-white">
-                                            {currency}{pricing.monthly.elite}
-                                        </span>
-                                        <span className="text-slate-500 font-medium dark:text-slate-400">{language === 'cn' ? '/ 月' : '/ mo'}</span>
-                                    </div>
-                                    <div className="h-10"></div>
-                                </>
-                            )}
-                        </div>
-
-                        <button
-                            onClick={() => handleBuyClick(
-                                'elite',
-                                billingCycle,
-                                Number(billingCycle === 'yearly' ? pricing.yearly.totalElite : pricing.monthly.elite)
-                            )}
-                            disabled={user.tier === 'elite' || (moneyCurrency === 'USD' && !usdEnabled)}
-                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed border ${
-                                user.tier === 'elite'
-                                    ? 'bg-slate-800 border-slate-800 text-slate-500 cursor-default dark:text-slate-400'
-                                    : 'bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black'
-                            }`}
-                        >
-                            {user.tier === 'elite' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (moneyCurrency === 'USD' && !usdEnabled ? (language === 'cn' ? '美元支付准备中' : 'USD billing coming soon') : (language === 'cn' ? '立即购买' : 'Buy Now'))}
-                        </button>
-
-                        {/* Early Bird Lifetime Deal */}
-                        <button
-                            onClick={() => setShowEarlyBirdModal(true)}
-                            className="w-full mt-3 text-center text-xs text-amber-500 hover:text-amber-400 transition-colors font-medium"
-                        >
-                            {language === 'cn' ? '🎁 早鸟买断 ¥1999 终身 · 限前100名' : '🎁 Lifetime Deal ¥1999 · First 100 Only'}
-                        </button>
-
-                        <div className="mt-8 space-y-4">
-                            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">VIP Access</p>
-                            <FeatureItem text={language === 'cn' ? "包含 Pro 版所有功能" : "Everything in Pro"} />
-                            <FeatureItem text={language === 'cn' ? "不限交易记录条数" : "Unlimited trade records"} />
-                            <FeatureItem text={language === 'cn' ? "AI 功能无每日次数上限" : "No daily AI request limit"} />
-                        </div>
-                    </div>
-
-                </div>
-
-                {/* Footer Trust Indicators */}
-                <div className="mt-12 flex flex-col md:flex-row items-center gap-6 md:gap-12 opacity-60">
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
-                        <ShieldCheck className="w-4 h-4" /> 
-                        {language === 'cn' ? 'SSL 安全支付' : 'Secure SSL Payment'}
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
-                        <HelpCircle className="w-4 h-4" />
-                        {language === 'cn' ? '付款前查看结账和退款条款' : 'Review checkout and refund terms before paying'}
-                    </div>
-                    <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
-                        <div className="flex -space-x-2">
-                            <div className="w-5 h-5 rounded-full bg-slate-600 border border-slate-900"></div>
-                            <div className="w-5 h-5 rounded-full bg-slate-500 border border-slate-900"></div>
-                            <div className="w-5 h-5 rounded-full bg-slate-400 border border-slate-900"></div>
-                        </div>
-                        {language === 'cn' ? '从免费版开始体验' : 'Start with the free plan'}
-                    </div>
-                </div>
-
-            </div>
-        </div>
-
-        {/* Payment Modal */}
-        {isPaymentOpen && selectedPlan && (
-            <PaymentModal
-                isOpen={isPaymentOpen}
-                onClose={handlePaymentClose}
-                plan={selectedPlan.plan}
-                billingCycle={selectedPlan.billingCycle}
-                amount={selectedPlan.amount}
-                currency={selectedPlan.currency}
-            />
-        )}
-        </>
-    );
+      }).catch(() => { if (alive) setError(true); });
+    }
+    return () => { alive = false; };
+  }, [isPricingOpen, retry]);
+  if (!isPricingOpen) return null;
+  const sign = market?.currency === 'CNY' ? '¥' : 'US$';
+  const features = {
+    free: cn ? ['1 个真实交易账户', '最多 100 条交易记录', '每笔交易最多 2 张截图', 'AI 每月 30 次，每日最多 5 次'] : ['1 personal trading account', 'Up to 100 trade records', 'Up to 2 screenshots per trade', '30 AI requests/month, up to 5/day'],
+    pro: cn ? ['最多 3 个真实交易账户', '最多 1,000 条交易记录', '多张截图、复盘笔记与统计', 'AI 每月 300 次，每日最多 30 次'] : ['Up to 3 personal accounts', 'Up to 1,000 trade records', 'Multiple screenshots, notes and analytics', '300 AI requests/month, up to 30/day'],
+    elite: cn ? ['包含 Pro 功能', '不限交易账户与记录条数', 'AI 每月 600 次，每日最多 60 次'] : ['Everything in Pro', 'No account or trade record count limit', '600 AI requests/month, up to 60/day'],
+  };
+  return <><div className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-xl overflow-y-auto p-5 md:p-12" role="dialog" aria-modal="true" aria-labelledby="pricing-title">
+    <div className="max-w-6xl mx-auto relative text-slate-100">
+      <button onClick={closePricing} aria-label={cn ? '关闭' : 'Close'} className="absolute right-0 top-0 p-2 rounded-lg hover:bg-slate-800"><X /></button>
+      <header className="text-center pt-10 mb-8"><h2 id="pricing-title" className="text-3xl font-bold">{cn ? '先免费体验，再按需要升级' : 'Start free. Upgrade when you need more.'}</h2><p className="text-slate-400 mt-4">{cn ? '记录、分析和复盘你的交易。' : 'Record, analyze and review your trades.'}</p></header>
+      {/* Existing subscriptions remain manageable while travelling, regardless of checkout market. */}
+      <ManageUsdSubscription />
+      {!market ? <div className="text-center py-16 text-slate-300">{error ? <><p>{cn ? '暂时无法确认支付地区，请重试。' : 'Unable to determine your payment region. Please retry.'}</p><button className="mt-4 px-5 py-2 bg-indigo-600 rounded-xl" onClick={() => setRetry(x => x + 1)}>{cn ? '重试' : 'Retry'}</button></> : (cn ? '正在确认当地支付方案…' : 'Loading local payment plans…')}</div> : <>
+        <p className="text-center text-sm text-slate-400 mb-6">{market.currency === 'CNY' ? '当前网络地区：人民币 · 支付宝 / 微信支付 · 预付费，到期不自动扣款' : (cn ? '当前网络地区：美元 · Creem 支付 · 自动续费，可随时取消后续续费' : 'USD · Creem checkout · Auto-renews; cancel future renewals anytime')}</p>
+        <div className="flex justify-center gap-3 mb-8">{(['monthly','yearly'] as const).map(period => <button key={period} aria-pressed={cycle === period} onClick={() => setCycle(period)} className={`rounded-xl px-6 py-3 border ${cycle === period ? 'bg-indigo-600 border-indigo-500' : 'border-slate-700'}`}>{period === 'monthly' ? (cn ? '月付' : 'Monthly') : (cn ? '年付 · 约省两个月' : 'Yearly · save about 2 months')}</button>)}</div>
+        <div className="grid md:grid-cols-3 gap-6">{(['free','pro','elite'] as const).map(plan => {
+          const amount = plan === 'free' ? 0 : market.prices[plan][cycle];
+          const current = user.tier === plan;
+          const disabled = plan === 'free' || user.tier === 'elite' || (plan === 'pro' && user.tier === 'pro') || (market.currency === 'USD' && !usdEnabled);
+          return <section key={plan} className={`tg-module rounded-2xl bg-slate-900 p-7 border ${plan === 'pro' ? 'border-indigo-500' : 'border-slate-800'}`}><h3 className="text-2xl font-bold mb-5">{plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Elite'}</h3><p className="text-4xl font-bold">{sign}{amount}<span className="text-sm font-normal text-slate-400"> / {plan === 'free' || cycle === 'monthly' ? (cn ? '月' : 'month') : (cn ? '年' : 'year')}</span></p>
+            <p className="text-sm text-slate-400 mt-3 min-h-10">{plan !== 'free' && cycle === 'yearly' ? (cn ? '一次收取全年费用；平均每月 ' : 'Charged annually; monthly equivalent ') + sign + (amount / 12).toFixed(2) : (plan === 'free' ? (cn ? '可持续免费使用' : 'Keep using the free plan') : '')}</p>
+            <ul className="space-y-4 my-7 min-h-40">{features[plan].map(text => <li className="flex items-start gap-2 text-sm text-slate-300" key={text}><Check size={16} className="text-emerald-400 shrink-0 mt-0.5" />{text}</li>)}</ul>
+            <button disabled={disabled} onClick={() => plan !== 'free' && setPurchase({ plan, amount, currency: market.currency, billingCycle: cycle })} className="w-full rounded-xl py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-400">{current ? (cn ? '当前方案' : 'Current plan') : plan === 'free' ? (cn ? '免费版' : 'Free plan') : user.tier === 'elite' ? (cn ? '已有更高等级方案' : 'Higher tier active') : (market.currency === 'USD' && !usdEnabled) ? (cn ? '美元支付准备中' : 'USD checkout coming soon') : (cn ? '选择方案' : 'Choose plan')}</button>
+          </section>;
+        })}</div>
+        <p className="text-sm text-slate-400 mt-7 text-center">{cn ? 'AI 额度按 UTC 自然月重置，年付也按月发放，不结转。原有已购买权益按原方案保留。' : 'AI quotas reset each UTC calendar month, including annual plans, without rollover. Existing paid entitlements retain their original plan.'}</p>
+        <p className="text-sm text-slate-400 mt-3 text-center">{cn ? '付款前显示最终税费和总额。七天内可申请退款。' : 'Final taxes and total appear before payment. Refund requests are accepted within seven days.'} <a className="text-indigo-300" href="https://www.tradegrail.net/terms" target="_blank" rel="noreferrer">{cn ? '服务条款' : 'Terms'}</a> · <a className="text-indigo-300" href="https://www.tradegrail.net/refunds" target="_blank" rel="noreferrer">{cn ? '退款说明' : 'Refund policy'}</a></p>
+      </>}
+    </div>
+  </div>{purchase && <PaymentModal isOpen onClose={() => setPurchase(null)} {...purchase} />}</>;
 };
-
 export default PricingModal;

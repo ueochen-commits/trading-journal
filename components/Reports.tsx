@@ -1,3 +1,4 @@
+import { aiHeaders } from '../services/geminiService';
 import { tradeNotional } from '../utils/tradeCalculation';
 import { displayTradePnl } from '../utils/tradePnl';
 
@@ -3116,7 +3117,7 @@ const Reports: React.FC<ReportsProps> = ({
           // 后台异步生成报告
           fetch('/api/generate-report-background', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: await aiHeaders(),
               body: JSON.stringify({ reportId: newReport.id })
           }).catch(err => console.error('Background generation failed:', err));
 
@@ -3150,7 +3151,7 @@ const Reports: React.FC<ReportsProps> = ({
       try {
           await fetch('/api/generate-report-background', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: await aiHeaders(),
               body: JSON.stringify({ reportId })
           });
           if (currentUserId) loadReports(currentUserId);

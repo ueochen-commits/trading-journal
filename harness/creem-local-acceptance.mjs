@@ -4,7 +4,7 @@ import { parseEnv } from 'node:util';
 import { randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { Creem } from 'creem';
-import { createServer as viteServer } from 'vite';
+import { preview } from 'vite';
 import route from '../api/creem/[action].ts';
 
 const root=new URL('../',import.meta.url);
@@ -33,8 +33,7 @@ const server=httpServer(async(req,res)=>{
   }catch{res.writeHead(500);res.end('Local billing fixture error');}
 });
 await new Promise(resolve=>server.listen(3022,'127.0.0.1',resolve));
-const vite=await viteServer({configFile:new URL('../vite.config.ts',import.meta.url).pathname,mode:'production',server:{host:'127.0.0.1',port:3021,strictPort:true,proxy:{'/api/creem':'http://127.0.0.1:3022'}}});
-await vite.listen();
+const vite=await preview({configFile:new URL('../vite.config.ts',import.meta.url).pathname,preview:{host:'127.0.0.1',port:3021,strictPort:true,proxy:{'/api/creem':'http://127.0.0.1:3022'}}});
 console.log('Billing acceptance app: http://localhost:3021 (sandbox; isolated QA identity)');
 let forwarding=false;
 const interval=setInterval(async()=>{
@@ -50,5 +49,5 @@ const interval=setInterval(async()=>{
   }catch(error){console.error('Sandbox forwarding unavailable:',error?.statusCode||error?.constructor?.name||'unknown');}
   finally{forwarding=false;}
 },3000);
-const stop=async()=>{clearInterval(interval);await vite.close();server.close();process.exit(0);};
+const stop=async()=>{clearInterval(interval);vite.httpServer.close();server.close();process.exit(0);};
 process.on('SIGINT',stop);process.on('SIGTERM',stop);

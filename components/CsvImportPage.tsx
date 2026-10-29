@@ -1,3 +1,4 @@
+import { aiHeaders } from '../services/geminiService';
 import React, { useState, useRef, useCallback } from 'react';
 import Papa from 'papaparse';
 import * as XLSX from 'xlsx';
@@ -669,7 +670,7 @@ const CsvImportPage: React.FC<Props> = ({
         try {
           const resp = await fetch('/api/csv-analyze', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await aiHeaders(),
             body: JSON.stringify({ headers, sampleRows, exchangeName, timezone }),
           });
           if (!resp.ok) throw new Error('AI API error');

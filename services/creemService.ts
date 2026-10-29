@@ -5,6 +5,7 @@ export type CreemCatalog = { enabled: boolean; mode: 'test' | 'prod'; offers: Cr
 export function billingMessage(code: string, language: string): string {
   const cn = language === 'cn';
   switch (code) {
+    case 'payment_market_changed': return cn ? '网络地区已变化，请关闭并重新打开套餐页面。' : 'Your network region changed. Please reopen the plans page.';
     case 'authentication_required': return cn ? '请重新登录后再试。' : 'Please sign in again.';
     case 'checkout_in_progress': return cn ? '上一笔结账正在创建，请稍后重试，不要重复付款。' : 'Your checkout is still being created. Please retry shortly; do not pay twice.';
     case 'subscription_already_exists': return cn ? '你已有有效订阅，请通过“管理美元订阅”进行管理。' : 'You already have a subscription. Use Manage USD subscription.';

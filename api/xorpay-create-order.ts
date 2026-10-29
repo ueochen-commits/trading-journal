@@ -1,24 +1,10 @@
+import { billingMarket, PRICES } from '../shared/billing-market.mjs';
 import CryptoJS from 'crypto-js';
 import { createClient } from '@supabase/supabase-js';
 
 export const config = { runtime: 'nodejs' };
 
-const PRICE_TABLE: Record<string, Record<string, number>> = {
-  CNY: {
-    'pro:monthly': 29,
-    'pro:yearly': 199,
-    'elite:monthly': 79,
-    'elite:yearly': 599,
-    'elite:lifetime': 1999,
-    'lifetime:lifetime': 1999
-  },
-  USD: {
-    'pro:monthly': 5,
-    'pro:yearly': 29,
-    'elite:monthly': 12,
-    'elite:yearly': 89
-  }
-};
+const PRICE_TABLE: Record<string, Record<string, number>> = { CNY: Object.fromEntries(Object.entries(PRICES.CNY).flatMap(([plan, cycles]) => Object.entries(cycles).map(([cycle, amount]) => [`${plan}:${cycle}`, amount]))) };
 
 const getBearerToken = (authorization?: string) => {
   const match = authorization?.match(/^Bearer\s+(.+)$/i);
@@ -35,6 +21,10 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
+
+  let market;
+  try { market=billingMarket(req.headers); } catch { return res.status(503).json({error:'payment_region_unavailable',message:'暂时无法确认支付地区，请稍后重试。'}); }
+  if (market.currency !== 'CNY') return res.status(403).json({ error: 'payment_market_changed', message: '当前网络地区的支付渠道已变化，请重新打开套餐页面。' });
 
   const XORPAY_APP_ID = process.env.XORPAY_APP_ID;
   const XORPAY_APP_SECRET = process.env.XORPAY_APP_SECRET;
@@ -121,7 +111,7 @@ export default async function handler(req: any, res: any) {
     }
 
     // 准备回调 URL
-    const baseUrl = req.headers.origin || `https://${req.headers.host}`;
+    const baseUrl = process.env.VERCEL_ENV === 'preview' && /^[a-z0-9-]+\.vercel\.app$/i.test(process.env.VERCEL_URL || '') ? `https://${process.env.VERCEL_URL}` : 'https://dashboard.tradegrail.net';
     const notifyUrl = `${baseUrl}/api/xorpay-callback`;
     const returnUrl = `${baseUrl}/payment/success`;
 

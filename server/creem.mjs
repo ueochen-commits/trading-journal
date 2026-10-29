@@ -1,13 +1,14 @@
+import { billingMarket, PRICES } from '../shared/billing-market.mjs';
 import { createHmac, timingSafeEqual, randomUUID } from 'node:crypto';
 import { createClient } from '@supabase/supabase-js';
 import { Creem } from 'creem';
 
-// Existing USD prices. Product IDs and credentials belong to this store/environment only.
+// Launch prices: a provider product with another amount fails validation before payment.
 export const plans = Object.freeze({
-  'pro:monthly': { plan: 'pro', cycle: 'monthly', cents: 500, period: 'every-month', env: 'CREEM_PRO_MONTHLY_PRODUCT_ID' },
-  'pro:yearly': { plan: 'pro', cycle: 'yearly', cents: 2900, period: 'every-year', env: 'CREEM_PRO_YEARLY_PRODUCT_ID' },
-  'elite:monthly': { plan: 'elite', cycle: 'monthly', cents: 1200, period: 'every-month', env: 'CREEM_ELITE_MONTHLY_PRODUCT_ID' },
-  'elite:yearly': { plan: 'elite', cycle: 'yearly', cents: 8900, period: 'every-year', env: 'CREEM_ELITE_YEARLY_PRODUCT_ID' },
+  'pro:monthly': { plan: 'pro', cycle: 'monthly', cents: PRICES.USD.pro.monthly * 100, period: 'every-month', env: 'CREEM_PRO_MONTHLY_PRODUCT_ID' },
+  'pro:yearly': { plan: 'pro', cycle: 'yearly', cents: PRICES.USD.pro.yearly * 100, period: 'every-year', env: 'CREEM_PRO_YEARLY_PRODUCT_ID' },
+  'elite:monthly': { plan: 'elite', cycle: 'monthly', cents: PRICES.USD.elite.monthly * 100, period: 'every-month', env: 'CREEM_ELITE_MONTHLY_PRODUCT_ID' },
+  'elite:yearly': { plan: 'elite', cycle: 'yearly', cents: PRICES.USD.elite.yearly * 100, period: 'every-year', env: 'CREEM_ELITE_YEARLY_PRODUCT_ID' },
 });
 export class BillingError extends Error {
   constructor(status, code) { super(code); this.status = status; this.code = code; }
@@ -75,6 +76,7 @@ export async function rawRequest(req) {
 
 export function createBillingHandlers({ env, provider, repo, authenticate, now = () => Date.now() }) {
   const config = () => billingConfig(env);
+  const marketFor = req => { try { return billingMarket(req.headers, env); } catch { fail(503, 'payment_region_unavailable'); } };
   async function authenticated(req) {
     const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
     if (!token) fail(401, 'authentication_required');
@@ -99,6 +101,7 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
   }
   return {
     async catalog(req) {
+      if (marketFor(req).currency !== 'USD') return { enabled: false, mode: env.CREEM_MODE === 'test' ? 'test' : 'prod', offers: [] };
       const { mode, enabled } = config();
       if (!enabled) return { enabled: false, mode, offers: [] };
       const offers = await Promise.all(Object.values(plans).filter(offer => env[offer.env]).map(async offer => {
@@ -111,6 +114,7 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
     },
     async checkout(req) {
       const user = await authenticated(req);
+      if (marketFor(req).currency !== 'USD') fail(403, 'payment_market_changed');
       const { mode, origin, enabled } = config(); sameOrigin(req, origin);
       if (!enabled) fail(503, 'billing_unavailable');
       const offer = plans[`${req.body?.plan}:${req.body?.billingCycle}`];
@@ -124,7 +128,7 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
       try {
         const checkout = await provider.checkouts.create({
           productId, requestId: attempt.id, units: 1,
-          successUrl: `${origin}/?billing_return=${attempt.id}`,
+          successUrl: `${origin}/settings?billing_return=${attempt.id}`,
           metadata: { app: 'tradegrail', tradegrail_checkout_id: attempt.id },
         });
         if (checkout.mode !== mode || objectId(checkout.product) !== productId) fail(502, 'checkout_mismatch');

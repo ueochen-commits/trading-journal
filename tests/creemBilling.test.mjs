@@ -7,7 +7,7 @@ import { createBillingHandlers, billingConfig, verifySignature, membershipSnapsh
 const attemptId='11111111-1111-4111-8111-111111111111';
 const env={CREEM_MODE:'test',CREEM_API_KEY:'creem_test_fixture',CREEM_WEBHOOK_SECRET:'fixture-secret',CREEM_CHECKOUT_ENABLED:'true',CREEM_APP_ORIGIN:'http://127.0.0.1:3017',CREEM_PRO_MONTHLY_PRODUCT_ID:'prod_pro_month'};
 const offer=plans['pro:monthly'];
-const product={id:'prod_pro_month',mode:'test',status:'active',currency:'USD',price:500,billingType:'recurring',billingPeriod:'every-month',taxMode:'exclusive'};
+const product={id:'prod_pro_month',mode:'test',status:'active',currency:'USD',price:900,billingType:'recurring',billingPeriod:'every-month',taxMode:'exclusive'};
 function fixture() {
   const attempt={id:attemptId,user_id:'user-1',mode:'test',product_id:product.id,plan:'pro',billing_cycle:'monthly',is_new:true};
   const sub={id:'sub_fixture',mode:'test',product:product.id,customer:'cust_fixture',status:'active',lastTransactionId:'txn_current',currentPeriodEndDate:new Date('2030-02-01'),updatedAt:new Date('2030-01-01'),metadata:{app:'tradegrail',tradegrail_checkout_id:attemptId}};
@@ -64,7 +64,7 @@ test('client amounts, user IDs, product IDs and return URLs are ignored',async()
   const f=fixture();await f.handlers.checkout(f.req({plan:'pro',billingCycle:'monthly',amount:1,userId:'victim',productId:'other',successUrl:'https://attacker.invalid'}));
   const args=f.writes.find(w=>w[0]==='create')[1];
   assert.equal(args.productId,product.id);assert.equal(args.requestId,attemptId);assert.equal(args.customer,undefined);
-  assert.equal(args.successUrl,env.CREEM_APP_ORIGIN+'/?billing_return='+attemptId);
+  assert.equal(args.successUrl,env.CREEM_APP_ORIGIN+'/settings?billing_return='+attemptId);
   assert.deepEqual(args.metadata,{app:'tradegrail',tradegrail_checkout_id:attemptId});assert.equal(args.customPrice,undefined);
 });
 test('retry reuses existing checkout and does not open a second subscription',async()=>{
@@ -118,4 +118,14 @@ test('billing portal uses authenticated membership mapping, never a client custo
 });
 test('provider redirects cannot escape allowlisted HTTPS hosts',()=>{
   for(const url of ['http://creem.io/pay','https://creem.io.attacker.invalid','https://user:pass@creem.io/pay','javascript:alert(1)'])assert.throws(()=>trustedCreemUrl(url));
+});
+
+test('China IP cannot create a USD checkout, but existing subscription management remains available',async()=>{
+  const f=fixture(); const china={...f.req({plan:'pro',billingCycle:'monthly'}),headers:{authorization:'Bearer valid','x-vercel-ip-country':'CN'}};
+  const handlers=createBillingHandlers({env:{...env,VERCEL:'1'},provider:f.provider,repo:f.repo,authenticate:async()=>({id:'user-1',email_confirmed_at:'2026-01-01'})});
+  await assert.rejects(handlers.checkout(china),/payment_market_changed/);
+  const catalog=await handlers.catalog(china);assert.deepEqual(catalog.offers,[]);assert.equal(catalog.enabled,false);
+  assert.equal(f.writes.filter(w=>w[0]==='create').length,0);
+  await f.handlers.webhook(f.webhook());
+  const portal=await handlers.portal(china);assert.match(portal.portalUrl,/creem\.io/);
 });

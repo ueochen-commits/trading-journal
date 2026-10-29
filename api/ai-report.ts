@@ -1,3 +1,4 @@
+import { limitAiMessages } from '../server/ai-budget.mjs';
 export const config = { runtime: 'nodejs' };
 import { checkAiAccess } from '../server/ai-access.mjs';
 
@@ -229,8 +230,9 @@ Tone: Restrained, objective, precise. No exclamation marks. No colloquial langua
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'deepseek-chat',
-                messages: [{ role: 'user', content: prompt }],
+                model: 'deepseek-flash',
+                thinking: { type: 'disabled' },
+                messages: limitAiMessages([{ role: 'user', content: prompt }]),
                 max_tokens: 2000,
                 temperature: 0.4
             })

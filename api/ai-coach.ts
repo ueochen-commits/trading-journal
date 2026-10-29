@@ -1,3 +1,4 @@
+import { limitAiMessages } from '../server/ai-budget.mjs';
 export const config = { runtime: 'nodejs' };
 import { checkAiAccess } from '../server/ai-access.mjs';
 
@@ -93,8 +94,9 @@ Requirements:
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'deepseek-chat',
-                messages,
+                model: 'deepseek-flash',
+                thinking: { type: 'disabled' },
+                messages: limitAiMessages(messages),
                 max_tokens: 800,
                 temperature: 0.7
             })

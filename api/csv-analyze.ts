@@ -1,3 +1,5 @@
+import { checkAiAccess } from '../server/ai-access.mjs';
+import { limitAiMessages } from '../server/ai-budget.mjs';
 export const config = { runtime: 'nodejs' };
 
 export default async function handler(req: any, res: any) {
@@ -8,6 +10,9 @@ export default async function handler(req: any, res: any) {
 
   const { headers, sampleRows, exchangeName, timezone } = req.body;
   if (!headers || !sampleRows) return res.status(400).json({ error: 'Missing headers or sampleRows' });
+
+  const accessError = await checkAiAccess(req);
+  if (accessError) return res.status(accessError.status).json({ error: accessError.error });
 
   const systemPrompt = `你是一个交易数据结构分析专家。用户会提供一个交易记录 CSV/Excel 的表头和前15行数据。
 你的任务是：
@@ -129,13 +134,14 @@ ${JSON.stringify(sampleRows, null, 2)}`;
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
       body: JSON.stringify({
-        model: 'deepseek-chat',
+        model: 'deepseek-flash',
+        thinking: { type: 'disabled' },
         max_tokens: 1800,
         temperature: 0.1,
-        messages: [
+        messages: limitAiMessages([
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt },
-        ],
+        ]),
       }),
     });
 

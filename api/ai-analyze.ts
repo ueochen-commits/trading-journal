@@ -1,3 +1,4 @@
+import { limitAiMessages } from '../server/ai-budget.mjs';
 export const config = { runtime: 'nodejs' };
 import { checkAiAccess } from '../server/ai-access.mjs';
 
@@ -83,8 +84,9 @@ Return ONLY this JSON format, no additional text:
                 'Authorization': `Bearer ${apiKey}`
             },
             body: JSON.stringify({
-                model: 'deepseek-chat',
-                messages: [{ role: 'user', content: prompt }],
+                model: 'deepseek-flash',
+                thinking: { type: 'disabled' },
+                messages: limitAiMessages([{ role: 'user', content: prompt }]),
                 max_tokens: 1000,
                 temperature: 0.5,
                 response_format: { type: 'json_object' }
