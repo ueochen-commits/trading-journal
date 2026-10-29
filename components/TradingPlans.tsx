@@ -14,12 +14,13 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
 import NotesPanel from './NotesPanel';
+import { createNoteAutosave } from '../utils/noteAutosave';
 
 interface TradingPlansProps {
   plans: DailyPlan[];
   trades: Trade[]; 
   strategies: Strategy[];
-  onSavePlan: (plan: DailyPlan) => void;
+  onSavePlan: (plan: DailyPlan) => Promise<void> | void;
   onDeletePlan: (id: string) => void;
   onSaveStrategies: (strategies: Strategy[]) => void;
   onShare: (plan: DailyPlan) => void;
@@ -255,15 +256,41 @@ interface FolderObj {
 type SortType = 'updated' | 'created' | 'title' | 'tag';
 
 const TradingPlans: React.FC<TradingPlansProps> = ({ 
-    plans, trades, strategies, onSavePlan, onDeletePlan, onSaveStrategies, onShare,
+    plans: savedPlans, trades, strategies, onSavePlan: persistPlan, onDeletePlan, onSaveStrategies, onShare,
     autoCreate, onResetAutoCreate, selectionIntent, onClearSelectionIntent,
     creationIntent, onClearCreationIntent
 }) => {
   const { t, language } = useLanguage();
+  const [, refreshDrafts] = useState(0);
+  const mountedRef = useRef(true);
+  const persistPlanRef = useRef(persistPlan);
+  persistPlanRef.current = persistPlan;
+  const [autosave] = useState(() => createNoteAutosave<DailyPlan>(
+      draft => persistPlanRef.current(draft),
+      () => { if (mountedRef.current) refreshDrafts(n => n + 1); },
+  ));
+  const drafts = autosave.drafts();
+  const plans = [...new Map([...savedPlans, ...drafts].map(plan => [plan.id, plan])).values()];
+  const onSavePlan = (plan: DailyPlan) => {
+      autosave.stage(plan);
+      return autosave.flush(plan.id);
+  };
+  useEffect(() => {
+      mountedRef.current = true;
+      const warnBeforeClose = (event: BeforeUnloadEvent) => {
+          if (autosave.drafts().length) { event.preventDefault(); event.returnValue = ''; }
+      };
+      window.addEventListener('beforeunload', warnBeforeClose);
+      return () => {
+          mountedRef.current = false;
+          window.removeEventListener('beforeunload', warnBeforeClose);
+          void autosave.flushAll();
+      };
+  }, [autosave]);
   const [activeFolder, setActiveFolder] = useState<string>('all');
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'synced'>('saved');
-  const saveTimeoutRef = useRef<any>(null);
+  const saveStatus = selectedPlanId ? autosave.status(selectedPlanId) : 'saved';
+  useEffect(() => () => { if (selectedPlanId) void autosave.flush(selectedPlanId); }, [selectedPlanId, autosave]);
   const [folders, setFolders] = useState<FolderObj[]>([
       { id: 'Trade Notes', name: 'Trade Notes', parentId: null },
       { id: 'Quarterly Goals', name: 'Quarterly Goals', parentId: null },
@@ -342,7 +369,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
         } else {
             // 2. Create New Note object
             const newPlan: DailyPlan = {
-                id: Date.now().toString(),
+                id: crypto.randomUUID(),
                 date: date,
                 folder: 'daily-journal',
                 content: '',
@@ -472,7 +499,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
   const handleCreateNote = (initialContent: string = '') => {
       const today = new Date().toISOString().slice(0, 10);
       const newPlan: DailyPlan = {
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           date: today,
           folder: activeFolder === 'all' || activeFolder === 'trash' ? 'daily-journal' : activeFolder,
           content: initialContent,
@@ -490,24 +517,23 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
 
   const handleUpdateActivePlan = (updates: Partial<DailyPlan>) => {
       if (!activePlan) return;
-      setSaveStatus('saving');
-      onSavePlan({ ...activePlan, ...updates });
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = setTimeout(() => {
-          setSaveStatus('saved');
-      }, 800);
+      const latest = autosave.drafts().find(p => p.id === activePlan.id) || activePlan;
+      autosave.stage({ ...latest, ...updates });
   };
 
-  const handleSoftDelete = (e: React.MouseEvent, plan: DailyPlan) => {
+  const handleSoftDelete = async (e: React.MouseEvent, plan: DailyPlan) => {
     e.stopPropagation();
     const isAlreadyDeleted = plan.isDeleted === true;
     if (isAlreadyDeleted) {
         if (window.confirm(language === 'cn' ? "确定要彻底删除这条笔记吗？此操作无法撤销。" : "Permanently delete this note? This action cannot be undone.")) {
+            await autosave.flush(plan.id);
+            if (autosave.status(plan.id) === 'error') return;
             onDeletePlan(plan.id);
             if (selectedPlanId === plan.id) setSelectedPlanId(null);
         }
     } else {
-        onDeletePlan(plan.id);
+        const latest = autosave.drafts().find(p => p.id === plan.id) || plan;
+        void onSavePlan({ ...latest, isDeleted: true });
         setToastMessage(language === 'cn' ? "笔记已移至回收站" : "Note moved to trash");
         setIsToastOpen(true);
         setTimeout(() => setIsToastOpen(false), 2000);
@@ -533,7 +559,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
   const handleSaveTemplateForm = () => {
       if (!formName.trim()) return;
       const templatePlan: DailyPlan = {
-          id: editingTemplate && !editingTemplate.isSystem ? editingTemplate.id : `tpl-${Date.now()}`,
+          id: editingTemplate && !editingTemplate.isSystem ? editingTemplate.id : crypto.randomUUID(),
           date: new Date().toISOString().slice(0, 10),
           title: formName,
           folder: 'templates',
@@ -692,7 +718,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
   const handleDuplicatePlan = (plan: DailyPlan) => {
       const copy: DailyPlan = {
           ...plan,
-          id: Date.now().toString(),
+          id: crypto.randomUUID(),
           title: `${plan.title || 'Untitled'} (Copy)`,
           date: new Date().toISOString().slice(0, 10), 
           isDeleted: false
@@ -753,7 +779,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
   const confirmSaveTemplate = () => {
       if (!templateName.trim() || !activePlan) return;
       const newTemplate: DailyPlan = {
-          id: `tpl-${Date.now()}`,
+          id: crypto.randomUUID(),
           date: new Date().toISOString().slice(0, 10),
           title: templateName,
           folder: 'templates', 
@@ -1070,9 +1096,10 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                             <span>·</span>
                             <span>{language === 'cn' ? '最后更新' : 'Updated'} {new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
                             <span>·</span>
-                            <span className={`flex items-center gap-1 ${saveStatus === 'saving' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#10B981] dark:text-[var(--tg-positive)]'}`}>
-                                {saveStatus === 'saving' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
-                                {saveStatus === 'saving' ? (language === 'cn' ? '保存中...' : 'Saving...') : (language === 'cn' ? '已自动保存' : 'Auto Saved')}
+                            <span role="status" className={`flex items-center gap-1 ${saveStatus === 'error' ? 'text-rose-500' : saveStatus !== 'saved' ? 'text-[#6366F1] dark:text-[var(--tg-accent)]' : 'text-[#10B981] dark:text-[var(--tg-positive)]'}`}>
+                                {saveStatus === 'error' ? <AlertCircle className="w-3 h-3" /> : saveStatus !== 'saved' ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                                {saveStatus === 'error' ? (language === 'cn' ? '保存失败，内容仍保留' : 'Save failed; draft retained') : saveStatus !== 'saved' ? (language === 'cn' ? '保存中...' : 'Saving...') : (language === 'cn' ? '已自动保存' : 'Auto Saved')}
+                                {saveStatus === 'error' && <button type="button" className="underline ml-1" onClick={() => void autosave.flush(activePlan.id)}>{language === 'cn' ? '重试' : 'Retry'}</button>}
                             </span>
                         </div>
                     </div>
@@ -1184,6 +1211,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                         </button>
                     </div>
                     <NotesPanel
+                      key={activePlan.id}
                       symbol={activePlanTrades[0]?.symbol}
                       date={activePlan.date}
                       tradeNoteContent={activePlan.content}
@@ -1197,7 +1225,7 @@ const TradingPlans: React.FC<TradingPlansProps> = ({
                       }}
                       onSave={(tab, content) => {
                         if (tab === 'trade-note') {
-                          handleUpdateActivePlan({ content });
+                          return autosave.flush(activePlan.id);
                         } else {
                           setDailyJournalContent(content);
                         }

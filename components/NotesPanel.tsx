@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, type Editor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
 import Link from '@tiptap/extension-link';
@@ -40,7 +40,7 @@ interface NotesPanelProps {
   tradeNoteContent: string;
   dailyJournalContent: string;
   onContentChange: (tab: NoteTab, content: string) => void;
-  onSave: (tab: NoteTab, content: string) => void;
+  onSave: (tab: NoteTab, content: string) => Promise<void> | void;
   tradeMetadata?: TradeMetadata;
   templates?: { id: string; name: string; content: string }[];
   onApplyTemplate?: (content: string) => void;
@@ -200,14 +200,31 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
+  const currentContent = activeTab === 'trade-note' ? tradeNoteContent : dailyJournalContent;
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const compositionTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const composingRef = useRef(false);
+  const lastContentPropRef = useRef(currentContent);
   const recognitionRef = useRef<any>(null);
   const editorContainerRef = useRef<HTMLDivElement>(null);
   const colorInputRef = useRef<HTMLInputElement>(null);
   const bgColorInputRef = useRef<HTMLInputElement>(null);
   const fullscreenRef = useRef<HTMLDivElement>(null);
 
-  const currentContent = activeTab === 'trade-note' ? tradeNoteContent : dailyJournalContent;
+  const publishContent = (ed: Editor) => {
+    if (composingRef.current || ed.view.composing) return;
+    const html = ed.getHTML();
+    onContentChange(activeTab, html);
+    setSaveStatus('unsaved');
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = setTimeout(() => {
+      setSaveStatus('saving');
+      Promise.resolve(onSave(activeTab, html)).then(
+        () => setSaveStatus('saved'),
+        () => setSaveStatus('unsaved'),
+      );
+    }, 1500);
+  };
 
   // ─── TipTap Editor Setup ───
   const editor = useEditor({
@@ -236,23 +253,34 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
       GlobalDragHandle.configure({ dragHandleWidth }),
     ],
     content: currentContent,
-    onUpdate: ({ editor: ed }) => {
-      const html = ed.getHTML();
-      onContentChange(activeTab, html);
-      setSaveStatus('unsaved');
-      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = setTimeout(() => {
-        setSaveStatus('saving');
-        onSave(activeTab, html);
-        setTimeout(() => setSaveStatus('saved'), 600);
-      }, 1500);
+    onUpdate: ({ editor: ed }) => publishContent(ed),
+    editorProps: {
+      handleDOMEvents: {
+        compositionstart: () => {
+          composingRef.current = true;
+          if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+          return false;
+        },
+        compositionend: () => {
+          composingRef.current = false;
+          // Let ProseMirror commit the browser's final IME text before publishing.
+          if (compositionTimeoutRef.current) clearTimeout(compositionTimeoutRef.current);
+          compositionTimeoutRef.current = setTimeout(() => {
+            if (editor && !editor.isDestroyed) publishContent(editor);
+          }, 0);
+          return false;
+        },
+      },
     },
   });
 
   // Sync content when tab changes
   useEffect(() => {
-    if (editor && editor.getHTML() !== currentContent) {
-      editor.commands.setContent(currentContent || '');
+    if (!editor || lastContentPropRef.current === currentContent) return;
+    lastContentPropRef.current = currentContent;
+    if (!composingRef.current && !editor.view.composing && editor.getHTML() !== currentContent) {
+      // Loading a note/template is not an edit. Tiptap 3 emits updates by default.
+      editor.commands.setContent(currentContent || '', { emitUpdate: false });
     }
   }, [activeTab, currentContent, editor]);
 
@@ -260,6 +288,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      if (compositionTimeoutRef.current) clearTimeout(compositionTimeoutRef.current);
       if (recognitionRef.current) recognitionRef.current.stop();
     };
   }, []);
@@ -267,6 +296,7 @@ const NotesPanel: React.FC<NotesPanelProps> = ({
   // ─── Tab Switch ───
   const handleTabSwitch = useCallback((tab: NoteTab) => {
     if (tab === activeTab) return;
+    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
     // Save current before switching
     if (editor) {
       const html = editor.getHTML();

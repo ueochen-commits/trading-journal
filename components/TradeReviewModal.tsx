@@ -2391,6 +2391,7 @@ const TradeReviewModal: React.FC<TradeReviewModalProps> = ({
                     </div>
                     <div className={`flex-1 ${isScreenshotDocked ? 'hidden md:flex' : 'flex'} flex-col min-h-0 bg-slate-50 dark:bg-slate-950/30 overflow-hidden pt-3`}>
                         <NotesPanel
+                          key={currentTrade.id}
                           dragHandleWidth={29}
                           symbol={currentTrade.symbol}
                           date={currentTrade.entryDate?.slice(0, 10)}
