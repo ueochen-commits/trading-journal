@@ -1,3 +1,4 @@
+import BillingSupport from './BillingSupport';
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../LanguageContext';
@@ -33,6 +34,7 @@ export default function CreemCheckoutModal({ plan, billingCycle, onClose }: {pla
         {error && <p role="alert" className="text-sm text-rose-600 dark:text-rose-300">{error}</p>}
         <button disabled={busy} onClick={checkout} className="w-full py-3 rounded-xl bg-indigo-600 text-white disabled:opacity-50">{busy?(cn?'正在前往…':'Opening…'):(cn?'前往 Creem 安全结账':'Continue to Creem checkout')}</button>
       </>}
+      <BillingSupport />
       <div className="flex flex-wrap gap-4 text-xs text-indigo-600 dark:text-indigo-300"><a href="https://www.tradegrail.net/terms" target="_blank" rel="noreferrer">{cn?'服务条款':'TradeGrail terms'}</a><a href="https://www.tradegrail.net/refunds" target="_blank" rel="noreferrer">{cn?'退款与取消':'Refunds & cancellation'}</a><a href="https://www.creem.io/buyer-terms" target="_blank" rel="noreferrer">{cn?'Creem 付款条款':'Creem buyer terms'}</a><a href="https://www.creem.io/privacy" target="_blank" rel="noreferrer">{cn?'Creem 隐私政策':'Creem privacy notice'}</a></div>
     </div>
   </div>;

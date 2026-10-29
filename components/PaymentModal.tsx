@@ -1,3 +1,4 @@
+import BillingSupport from './BillingSupport';
 import QRCode from 'qrcode';
 import React, { useEffect, useRef, useState } from 'react';
 import { X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
@@ -157,6 +158,8 @@ const CnyPaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, b
         </div>
 
         <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">{language === 'cn' ? '这是预付费方案，一次付款，到期不自动扣款。付款后七天内可申请退款。' : 'Prepaid access: one payment, no automatic debit at expiry. Refund requests are accepted within seven days.'} <a className="text-indigo-500 dark:text-indigo-300" href="https://www.tradegrail.net/terms" target="_blank" rel="noreferrer">{language === 'cn' ? '服务条款' : 'Terms'}</a> · <a className="text-indigo-500 dark:text-indigo-300" href="https://www.tradegrail.net/refunds" target="_blank" rel="noreferrer">{language === 'cn' ? '退款说明' : 'Refunds'}</a></p>
+
+        <BillingSupport />
 
         {/* Payment Method Selection */}
         {paymentStatus === 'idle' && (

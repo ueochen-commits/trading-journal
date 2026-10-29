@@ -1,3 +1,4 @@
+import BillingSupport from './BillingSupport';
 import React, { useEffect, useState } from 'react';
 import { X, Check } from 'lucide-react';
 import { useUser } from './UserContext';
@@ -45,6 +46,7 @@ const PricingModal: React.FC = () => {
       <header className="text-center pt-10 mb-8"><h2 id="pricing-title" className="text-3xl font-bold">{cn ? '先免费体验，再按需要升级' : 'Start free. Upgrade when you need more.'}</h2><p className="text-slate-400 mt-4">{cn ? '记录、分析和复盘你的交易。' : 'Record, analyze and review your trades.'}</p></header>
       {/* Existing subscriptions remain manageable while travelling, regardless of checkout market. */}
       <ManageUsdSubscription />
+      <BillingSupport />
       {!market ? <div className="text-center py-16 text-slate-300">{error ? <><p>{cn ? '暂时无法确认支付地区，请重试。' : 'Unable to determine your payment region. Please retry.'}</p><button className="mt-4 px-5 py-2 bg-indigo-600 rounded-xl" onClick={() => setRetry(x => x + 1)}>{cn ? '重试' : 'Retry'}</button></> : (cn ? '正在确认当地支付方案…' : 'Loading local payment plans…')}</div> : <>
         <p className="text-center text-sm text-slate-400 mb-6">{market.currency === 'CNY' ? '当前网络地区：人民币 · 支付宝 · 预付费，到期不自动扣款' : (cn ? '当前网络地区：美元 · Creem 支付 · 自动续费，可随时取消后续续费' : 'USD · Creem checkout · Auto-renews; cancel future renewals anytime')}</p>
         <div className="flex justify-center gap-3 mb-8">{(['monthly','yearly'] as const).map(period => <button key={period} aria-pressed={cycle === period} onClick={() => setCycle(period)} className={`rounded-xl px-6 py-3 border ${cycle === period ? 'bg-indigo-600 border-indigo-500' : 'border-slate-700'}`}>{period === 'monthly' ? (cn ? '月付' : 'Monthly') : (cn ? '年付 · 约省两个月' : 'Yearly · save about 2 months')}</button>)}</div>
