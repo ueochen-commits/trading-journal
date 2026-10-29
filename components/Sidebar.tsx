@@ -565,8 +565,7 @@ const Sidebar = ({
                 style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.6)', borderRadius: 7 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.05)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'none'; }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Icons.Gift />{language === 'cn' ? '推荐朋友' : 'Refer a friend'}</div>
-                <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--tg-positive, #4ade80)' }}>$15</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Icons.Gift />{language === 'cn' ? '分享 TradeGrail' : 'Share TradeGrail'}</div>
               </button>
               <div style={{ height: 0.5, background: 'rgba(255,255,255,0.07)', margin: '4px 8px' }} />
               <button onClick={logout}

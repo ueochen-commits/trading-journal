@@ -1,8 +1,5 @@
 import { supabase } from '../supabaseClient';
 
-// XorPay 配置
-const XORPAY_TEST_MODE = import.meta.env.VITE_XORPAY_TEST_MODE === 'true';
-
 export type PaymentMethod = 'alipay' | 'wechat';
 export type PlanType = 'pro' | 'elite' | 'lifetime';
 export type BillingCycle = 'monthly' | 'yearly' | 'lifetime';
@@ -109,21 +106,6 @@ interface XorPayOrderResponse {
 }
 
 const createXorPayOrder = async (params: XorPayOrderParams): Promise<XorPayOrderResponse> => {
-  // 测试模式：返回模拟数据
-  if (XORPAY_TEST_MODE) {
-    console.log('🧪 XorPay Test Mode - Simulating API call');
-    console.log('Order params:', params);
-
-    // 模拟 API 延迟
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    return {
-      order_id: params.orderId,
-      pay_url: 'https://test-payment-url.com',
-      qr_code: 'https://test-qr-code.com'
-    };
-  }
-
   // 调用后端 API 创建订单（避免 CORS 和密钥泄露问题）
   try {
     const { data: { session } } = await supabase.auth.getSession();

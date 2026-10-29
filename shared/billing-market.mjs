@@ -20,5 +20,5 @@ export function billingMarket(headers = {}, env = process.env) {
   // Local requests cannot spoof production geography. Tests inject the hosting environment.
   const country = env.VERCEL === '1' && typeof value === 'string' && /^[A-Z]{2}$/.test(value) ? value : null;
   const currency = country === 'CN' ? 'CNY' : 'USD';
-  return { country, currency, provider: currency === 'CNY' ? 'xorpay' : 'creem', version: PRICE_VERSION, prices: PRICES[currency] };
+  return { country, countrySource: proxied ? 'cloudflare' : country ? 'vercel' : 'unknown', currency, provider: currency === 'CNY' ? 'xorpay' : 'creem', version: PRICE_VERSION, prices: PRICES[currency] };
 }

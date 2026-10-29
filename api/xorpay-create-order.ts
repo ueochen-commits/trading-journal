@@ -1,17 +1,14 @@
-import { billingMarket, PRICES } from '../shared/billing-market.mjs';
+import { domesticPrice } from '../server/domestic-billing.mjs';
+import { billingMarket } from '../shared/billing-market.mjs';
 import CryptoJS from 'crypto-js';
 import { createClient } from '@supabase/supabase-js';
 
 export const config = { runtime: 'nodejs' };
 
-const PRICE_TABLE: Record<string, Record<string, number>> = { CNY: Object.fromEntries(Object.entries(PRICES.CNY).flatMap(([plan, cycles]) => Object.entries(cycles).map(([cycle, amount]) => [`${plan}:${cycle}`, amount]))) };
-
 const getBearerToken = (authorization?: string) => {
   const match = authorization?.match(/^Bearer\s+(.+)$/i);
   return match?.[1];
 };
-
-const amountsMatch = (actual: number, expected: number) => Math.abs(actual - expected) < 0.01;
 
 /**
  * 虎皮椒支付 - 创建订单 API
@@ -49,10 +46,10 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    if (!['alipay', 'wechat'].includes(paymentMethod)) {
+    if (paymentMethod !== 'alipay') {
       return res.status(400).json({
         error: 'Invalid payment method',
-        message: '支付方式无效'
+        message: '当前国内渠道支持支付宝，请选择支付宝支付。'
       });
     }
 
@@ -76,7 +73,7 @@ export default async function handler(req: any, res: any) {
 
     const { data: order, error: orderFetchError } = await supabase
       .from('payment_orders')
-      .select('id, user_id, plan, billing_cycle, amount, currency, payment_status')
+      .select('id, user_id, plan, billing_cycle, amount, currency, payment_status, payment_method')
       .eq('id', orderId)
       .single();
 
@@ -101,9 +98,8 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    const currency = order.currency || 'CNY';
-    const expectedAmount = PRICE_TABLE[currency]?.[`${order.plan}:${order.billing_cycle}`];
-    if (expectedAmount == null || !amountsMatch(Number(order.amount), expectedAmount)) {
+    const expectedAmount = domesticPrice(order);
+    if (expectedAmount == null) {
       return res.status(400).json({
         error: 'Invalid order amount',
         message: '订单金额或套餐配置无效'
@@ -118,8 +114,8 @@ export default async function handler(req: any, res: any) {
     // 根据虎皮椒文档准备请求参数
     const requestParams = {
       name: 'TradeGrail Membership', // 改成纯英文测试
-      pay_type: paymentMethod === 'wechat' ? 'wxpay' : 'alipay',
-      price: Number(order.amount).toFixed(2), // 确保是两位小数
+      pay_type: 'alipay',
+      price: expectedAmount.toFixed(2), // 确保是两位小数
       order_id: orderId,
       notify_url: notifyUrl,
       return_url: returnUrl
@@ -149,7 +145,8 @@ export default async function handler(req: any, res: any) {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: formBody
+      body: formBody,
+      signal: AbortSignal.timeout(15000)
     });
 
     const responseText = await response.text();

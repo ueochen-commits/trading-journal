@@ -6,12 +6,19 @@ import { createClient } from '@supabase/supabase-js';
 import { Creem } from 'creem';
 import { preview } from 'vite';
 import route from '../api/creem/[action].ts';
+import marketRoute from '../api/billing-market.ts';
+import coach from '../api/ai-coach.ts';
+import analyze from '../api/ai-analyze.ts';
+import report from '../api/ai-report.ts';
+import csv from '../api/csv-analyze.ts';
+import domesticCheckout from '../api/xorpay-create-order.ts';
+const aiRoutes={'/api/xorpay-create-order':domesticCheckout,'/api/ai-coach':coach,'/api/ai-analyze':analyze,'/api/ai-report':report,'/api/csv-analyze':csv};
 
 const root=new URL('../',import.meta.url);
 const billing=parseEnv(await readFile(new URL('.env.creem.test.local',root),'utf8'));
 const deploy=parseEnv(await readFile(new URL('.env.production.local',root),'utf8'));
 if(billing.CREEM_MODE!=='test')throw Error('Sandbox only');
-for(const key of ['VITE_SUPABASE_URL','VITE_SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY'])process.env[key]=deploy[key];
+for(const key of ['VITE_SUPABASE_URL','VITE_SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY','DEEPSEEK_API_KEY','XORPAY_APP_ID','XORPAY_APP_SECRET','XORPAY_API_URL'])if(deploy[key])process.env[key]=deploy[key];
 Object.assign(process.env,billing,{VERCEL_ENV:'development',CREEM_APP_ORIGIN:'http://localhost:3021'});
 const admin=createClient(deploy.VITE_SUPABASE_URL,deploy.SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
 const api=new Creem({apiKey:billing.CREEM_API_KEY,server:'test',timeoutMs:10000,retryConfig:{strategy:'none'}});
@@ -25,15 +32,21 @@ if(!fixture){
   fixture={id:data.user.id,email,password};
   await writeFile(fixtureFile,JSON.stringify(fixture),{mode:0o600});
 }
+const qaCountry=process.env.QA_COUNTRY;
+if(qaCountry){if(!['CN','US'].includes(qaCountry))throw Error('Local QA country must be CN or US');process.env.VERCEL='1';}
 const server=httpServer(async(req,res)=>{
+  if(qaCountry)req.headers['x-vercel-ip-country']=qaCountry;
   try{
     const chunks=[];for await(const chunk of req)chunks.push(chunk);
-    const result=await route.fetch(new Request(`http://127.0.0.1:3022${req.url}`,{method:req.method,headers:req.headers,...(req.method==='POST'?{body:Buffer.concat(chunks)}:{})}));
+    const ai=aiRoutes[req.url.split('?')[0]];
+    if(ai){res.status=code=>{res.statusCode=code;return res;};res.json=value=>{res.setHeader('Content-Type','application/json');res.end(JSON.stringify(value));return res;};await ai({method:req.method,headers:req.headers,body:JSON.parse(Buffer.concat(chunks).toString('utf8')||'{}')},res);return;}
+    const target=req.url.split('?')[0]==='/api/billing-market'?marketRoute:route;
+    const result=await target.fetch(new Request(`http://127.0.0.1:3022${req.url}`,{method:req.method,headers:req.headers,...(req.method==='POST'?{body:Buffer.concat(chunks)}:{})}));
     res.writeHead(result.status,Object.fromEntries(result.headers));res.end(Buffer.from(await result.arrayBuffer()));
   }catch{res.writeHead(500);res.end('Local billing fixture error');}
 });
 await new Promise(resolve=>server.listen(3022,'127.0.0.1',resolve));
-const vite=await preview({configFile:new URL('../vite.config.ts',import.meta.url).pathname,preview:{host:'127.0.0.1',port:3021,strictPort:true,proxy:{'/api/creem':'http://127.0.0.1:3022'}}});
+const vite=await preview({configFile:new URL('../vite.config.ts',import.meta.url).pathname,preview:{host:'127.0.0.1',port:3021,strictPort:true,proxy:Object.fromEntries(['/api/creem','/api/billing-market',...Object.keys(aiRoutes)].map(path=>[path,'http://127.0.0.1:3022']))}});
 console.log('Billing acceptance app: http://localhost:3021 (sandbox; isolated QA identity)');
 let forwarding=false;
 const interval=setInterval(async()=>{

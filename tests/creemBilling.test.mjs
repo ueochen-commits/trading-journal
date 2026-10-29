@@ -129,3 +129,12 @@ test('China IP cannot create a USD checkout, but existing subscription managemen
   await f.handlers.webhook(f.webhook());
   const portal=await handlers.portal(china);assert.match(portal.portalUrl,/creem\.io/);
 });
+test('authoritative cumulative refund overrides a stale refund webhook and cannot be restored by reconciliation',async()=>{
+ const f=fixture();await f.handlers.webhook(f.webhook());
+ f.sub.lastTransaction={id:'txn_current',mode:'test',status:'refunded',amountPaid:900,amount:900,refundedAmount:900};
+ await f.handlers.webhook(f.webhook({id:'evt_refund_stale_amount',eventType:'refund.created',object:{id:'ref_second',mode:'test',status:'succeeded',subscription:f.sub.id,transaction:{id:'txn_current',amount_paid:900,refunded_amount:100}}}));
+ const write=f.writes.filter(w=>w[0]==='sync').at(-1)[1];assert.equal(write.block,'txn_current');assert.equal(write.snapshot.access_allowed,false);
+ f.attempt.checkout_id=f.checkout.id;
+ const status=await f.handlers.status(f.req({attemptId}));assert.equal(status.state,'inactive');
+ assert.equal(f.writes.filter(w=>w[0]==='sync').at(-1)[1].snapshot.access_allowed,false);
+});

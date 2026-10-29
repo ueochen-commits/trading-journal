@@ -24,7 +24,7 @@ export default function CreemCheckoutModal({ plan, billingCycle, onClose }: {pla
   };
   return <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/70" role="dialog" aria-modal="true" aria-label={cn?'美元订阅':'USD subscription'}>
     <div className="tg-module rounded-2xl p-7 w-full max-w-md bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 space-y-5">
-      <div className="flex justify-between items-center"><h3 className="text-xl font-bold">{cn?'美元订阅':'USD subscription'}</h3><button onClick={onClose} aria-label={cn?'关闭':'Close'}><X size={22}/></button></div>
+      <div className="flex justify-between items-center"><h3 className="text-xl font-bold">{cn?'美元订阅':'USD subscription'}</h3><button autoFocus onClick={onClose} aria-label={cn?'关闭':'Close'}><X size={22}/></button></div>
       {loading ? <p role="status">{cn?'正在核对套餐…':'Checking plan…'}</p> : !offer ? <p role="status">{cn?'此美元套餐尚未开放。你可以继续使用免费版，稍后再试。':'This USD plan is not available yet. You can continue with the free plan and check back later.'}</p> : <>
         {test && <p className="text-amber-600 dark:text-amber-300">{cn?'测试环境，不会真实扣款或开通正式会员。':'Test mode. No real charges or live membership.'}</p>}
         <div className="rounded-xl p-4 bg-slate-50 dark:bg-slate-800"><p className="font-bold capitalize">{offer.plan} · {billingCycle==='yearly'?(cn?'年付':'Yearly'):(cn?'月付':'Monthly')}</p><p className="text-3xl font-bold mt-2">US${offer.amount}<span className="text-sm font-normal"> / {billingCycle==='yearly'?(cn?'年':'year'):(cn?'月':'month')}</span></p></div>
@@ -33,7 +33,7 @@ export default function CreemCheckoutModal({ plan, billingCycle, onClose }: {pla
         {error && <p role="alert" className="text-sm text-rose-600 dark:text-rose-300">{error}</p>}
         <button disabled={busy} onClick={checkout} className="w-full py-3 rounded-xl bg-indigo-600 text-white disabled:opacity-50">{busy?(cn?'正在前往…':'Opening…'):(cn?'前往 Creem 安全结账':'Continue to Creem checkout')}</button>
       </>}
-      <div className="flex gap-4 text-xs text-indigo-600 dark:text-indigo-300"><a href="https://www.creem.io/buyer-terms" target="_blank" rel="noreferrer">{cn?'Creem 付款条款':'Creem buyer terms'}</a><a href="https://www.creem.io/privacy" target="_blank" rel="noreferrer">{cn?'Creem 隐私政策':'Creem privacy notice'}</a></div>
+      <div className="flex flex-wrap gap-4 text-xs text-indigo-600 dark:text-indigo-300"><a href="https://www.tradegrail.net/terms" target="_blank" rel="noreferrer">{cn?'服务条款':'TradeGrail terms'}</a><a href="https://www.tradegrail.net/refunds" target="_blank" rel="noreferrer">{cn?'退款与取消':'Refunds & cancellation'}</a><a href="https://www.creem.io/buyer-terms" target="_blank" rel="noreferrer">{cn?'Creem 付款条款':'Creem buyer terms'}</a><a href="https://www.creem.io/privacy" target="_blank" rel="noreferrer">{cn?'Creem 隐私政策':'Creem privacy notice'}</a></div>
     </div>
   </div>;
 }

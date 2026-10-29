@@ -91,6 +91,14 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
     const { mode } = config();
     const sub = await provider.subscriptions.get(subId);
     const snapshot = membershipSnapshot(sub, attempt, mode);
+    // Refund webhooks can contain a pre-update transaction snapshot. The current
+    // subscription response has the authoritative cumulative refund total.
+    const tx=sub.lastTransaction;
+    const paid=tx?.amountPaid ?? tx?.amount;
+    if(tx?.id === snapshot.last_transaction_id && tx.status === 'refunded' && paid > 0 && tx.refundedAmount >= paid) {
+      block=tx.id;
+      snapshot.access_allowed=false;
+    }
     return repo.sync({ eventId, eventType, attemptId: attempt.id, snapshot, block });
   }
   async function resolveCheckout(id, userId) {
@@ -156,7 +164,7 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
       if (!objectId(checkout.subscription)) fail(502, 'subscription_missing');
       await syncSubscription(objectId(checkout.subscription), attempt, `reconcile:${randomUUID()}`, 'checkout.reconcile');
       const membership = await repo.membership(objectId(checkout.subscription), attempt.mode);
-      return { state: membership?.access_allowed && Date.parse(membership.current_period_end) > now() ? 'active' : 'pending', mode: attempt.mode };
+      return { state: membership?.access_allowed && Date.parse(membership.current_period_end) > now() ? 'active' : 'inactive', mode: attempt.mode };
     },
     async portal(req) {
       const user = await authenticated(req); const { mode, origin } = config(); sameOrigin(req, origin);

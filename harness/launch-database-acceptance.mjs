@@ -12,7 +12,7 @@ try {
  create table ai_usage(user_id uuid,date date,count integer,primary key(user_id,date));
  create view billing_entitlements as select user_id,plan,current_period_end from subscriptions where status='active' and(current_period_end is null or current_period_end>now()) union all select user_id,plan,current_period_end from creem_memberships where mode='prod' and access_allowed and current_period_end>now();
  `);
- await db.exec(await readFile(new URL('../supabase/migrations/20261029090000_launch_billing_policy.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/20261029040343_launch_billing_policy.sql',import.meta.url),'utf8'));
  await db.exec(`do $$
  declare u uuid:=gen_random_uuid(); o uuid:=gen_random_uuid(); o2 uuid:=gen_random_uuid(); chosen uuid; deadline timestamptz; today date:=(now() at time zone 'UTC')::date; r jsonb; initial_count integer;
  begin

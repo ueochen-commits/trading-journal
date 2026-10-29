@@ -48,6 +48,7 @@
     "lucide-react": "^0.560.0",
     "motion": "^12.42.2",
     "papaparse": "^5.5.3",
+    "qrcode": "1.5.4",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "recharts": "^3.5.1",

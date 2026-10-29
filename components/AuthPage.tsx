@@ -392,9 +392,9 @@ const AuthPage: React.FC = () => {
                       />
                       <span>
                         {language === 'cn' ? '我同意' : 'I agree to the'}{' '}
-                        <a href="https://www.tradegrail.net" className="text-white/60 hover:text-white underline underline-offset-4">
-                          {language === 'cn' ? '条款和条件' : 'terms and conditions'}
-                        </a>
+                        <a href={language === 'cn' ? 'https://www.tradegrail.net/terms' : 'https://www.tradegrail.net/en/terms'} target="_blank" rel="noreferrer" className="text-white/60 hover:text-white underline underline-offset-4">
+                          {language === 'cn' ? '服务条款' : 'terms of service'}
+                        </a>{language === 'cn' ? '和' : ' and '}<a href={language === 'cn' ? 'https://www.tradegrail.net/privacy' : 'https://www.tradegrail.net/en/privacy'} target="_blank" rel="noreferrer" className="text-white/60 hover:text-white underline underline-offset-4">{language === 'cn' ? '隐私政策' : 'privacy policy'}</a>
                       </span>
                     </label>
                   </>

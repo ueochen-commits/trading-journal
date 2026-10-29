@@ -1362,7 +1362,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           {/* {showOnboarding && (
               <OnboardingModal onComplete={() => { setShowOnboarding(false); startInitialTour(); }} />
           )} */}
-          {showWelcome && user.id && (
+          {showWelcome && user.id && !new URLSearchParams(window.location.search).has('billing_return') && (
               <WelcomeModal
                   userId={user.id}
                   userEmail={user.email}

@@ -37,3 +37,9 @@ test('Cloudflare-proxied requests use visitor country rather than the proxy loca
  }
  assert.throws(()=>billingMarket({'x-forwarded-for':'104.16.1.2','x-vercel-ip-country':'SG'},{VERCEL:'1'}),/payment_region_unavailable/);
 });
+test('payment return removes provider IDs and signatures without losing unrelated settings',async()=>{
+ const {cleanBillingReturn}=await import('../utils/billingReturn.mjs');
+ const value='https://dashboard.tradegrail.net/settings?billing_return=attempt&request_id=attempt&checkout_id=checkout&order_id=order&customer_id=customer&subscription_id=sub&product_id=product&signature=sig&tab=billing#details';
+ assert.equal(cleanBillingReturn(value,true),'/settings?billing_return=attempt&tab=billing#details');
+ assert.equal(cleanBillingReturn(value),'/settings?tab=billing#details');
+});
