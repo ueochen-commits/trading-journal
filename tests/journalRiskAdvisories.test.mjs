@@ -7,7 +7,7 @@ const asModule=source=>`data:text/javascript;base64,${Buffer.from(ts.transpileMo
 const typesUrl=asModule(await readFile(new URL('../types.ts',import.meta.url),'utf8'));
 const {TradeStatus}=await import(typesUrl);
 const source=(await readFile(new URL('../utils/journalRiskAdvisories.ts',import.meta.url),'utf8')).replace("from '../types';",`from '${typesUrl}';`);
-const {getJournalRiskAdvisories,exceedsTradeRiskReference,countNonDemoJournalTrades}=await import(asModule(source));
+const {getJournalRiskAdvisories,exceedsTradeRiskReference,countNonDemoJournalTrades,journalImportAllowance}=await import(asModule(source));
 const now=new Date('2026-10-25T08:00:00Z');
 const accounts=[{id:'demo',type:'demo'},{id:'real',type:'manual'},{id:'empty',type:'manual'}];
 const settings={maxDailyLoss:500,maxTradeRisk:100,maxConsecutiveLosses:3};
@@ -55,4 +55,13 @@ test('demo samples do not consume a new user real-journal allowance',()=>{
 });
 test('real and legacy rows still consume the normal allowance',()=>{
   assert.equal(countNonDemoJournalTrades(Array.from({length:100},(_,id)=>loss(id)),accounts),100);
+});
+
+test('Free CSV import allows the last available record, excludes demo rows and rejects an over-limit batch before writes',()=>{
+ const history=Array.from({length:99},(_,id)=>({id:String(id),accountId:'real'}));
+ assert.equal(journalImportAllowance(history,[{accountId:'real'}],accounts,'free').allowed,true);
+ assert.deepEqual(journalImportAllowance(history,[{accountId:'real'},{accountId:'real'}],accounts,'free'),{allowed:false,reason:'allowance',remaining:1});
+ assert.equal(journalImportAllowance(history,[{accountId:'demo'},{accountId:'real'}],accounts,'free').allowed,true);
+ assert.equal(journalImportAllowance(history,[{accountId:'missing'}],accounts,'elite').reason,'account');
+ assert.equal(journalImportAllowance(history,Array.from({length:1001},()=>({accountId:'real'})),accounts,'elite').allowed,true);
 });

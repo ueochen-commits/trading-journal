@@ -54,3 +54,14 @@ export function countNonDemoJournalTrades(trades: Trade[], accounts: TradingAcco
   const demoIds = new Set(accounts.filter(account => account.type === 'demo').map(account => account.id));
   return trades.filter(trade => !demoIds.has(trade.accountId)).length;
 }
+
+/** Plan allowance is separate from advisory risk rules. Reject a whole batch before writing. */
+export function journalImportAllowance(trades: Trade[], imported: Trade[], accounts: TradingAccount[], tier: string) {
+  if (imported.some(trade => !accounts.some(account => account.id === trade.accountId))) return { allowed: false, reason: 'account' as const, remaining: 0 };
+  const limits: Record<string, number> = { free: 100, pro: 1000, elite: Infinity };
+  const limit = limits[tier] ?? 100;
+  const existing = countNonDemoJournalTrades(trades, accounts);
+  const requested = countNonDemoJournalTrades(imported, accounts);
+  const remaining = Math.max(0, limit - existing);
+  return { allowed: requested <= remaining, reason: 'allowance' as const, remaining };
+}

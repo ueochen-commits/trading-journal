@@ -447,7 +447,7 @@ const Sidebar = ({
             letterSpacing: '0.1em', textTransform: 'uppercase',
             padding: '4px 2px 6px',
           }}>
-            Community
+            {language === 'cn' ? '消息' : 'Updates'}
           </div>
         )}
         {communityItems.map(item => (

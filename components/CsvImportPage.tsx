@@ -113,8 +113,8 @@ const DEFAULT_TUTORIAL = {
   steps: [
     '导出你的交易记录为 CSV 或 Excel 格式',
     '确保文件包含：时间、品种、方向、盈亏等字段',
-    'AI 会自动识别字段格式，无需手动映射',
-    '上传文件后预览确认即可完成导入',
+    '系统尝试识别字段；请在预览中核对品种、方向、数量和盈亏口径',
+    '确认账户与记录内容后再导入，无法识别时请修正源文件',
   ],
 };
 
@@ -1023,7 +1023,7 @@ const CsvImportPage: React.FC<Props> = ({
             {/* Tutorial */}
             <div>
               <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', marginBottom: 6 }}>
-                {isCustom ? 'AI 智能解析任何格式' : `如何从 ${exchangeName} 导出交易记录`}
+                {isCustom ? 'CSV / Excel 字段识别与预览' : `如何从 ${exchangeName} 导出交易记录`}
               </div>
               {!isCustom && (
                 <p style={{ fontSize: 14, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.75, margin: '0 0 12px 0' }}>
@@ -1117,7 +1117,7 @@ const CsvImportPage: React.FC<Props> = ({
               <svg width="14" height="14" viewBox="0 0 24 24" fill="#A16207" style={{ flexShrink: 0, marginTop: 1 }}>
                 <path d="M12 2 1 21h22L12 2Zm1 15h-2v-2h2v2Zm0-4h-2V9h2v4Z"/>
               </svg>
-              <div style={{ fontSize: 11.5, color: 'var(--tg-warning, #713F12)', lineHeight: 1.5 }}>通常需要 3-8 秒，请保持页面打开。</div>
+              <div style={{ fontSize: 11.5, color: 'var(--tg-warning, #713F12)', lineHeight: 1.5 }}>请等待字段识别。AI 不可用时会尝试本地规则，导入前仍需核对预览。</div>
             </div>
           </div>
 
@@ -1129,15 +1129,15 @@ const CsvImportPage: React.FC<Props> = ({
               <span style={{ fontSize: 15, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)' }}>TradeGrail AI</span>
             </div>
 
-            <p style={{ fontSize: 13, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.75, margin: 0 }}>AI 不是简单做字段映射，而是逐行理解你的数据：识别日期时间格式、判断方向字段的表达方式、计算手续费扣除前后的盈亏差异、处理重复开平仓的合并。</p>
+            <p style={{ fontSize: 13, color: 'var(--tg-secondary, #6b6b9a)', lineHeight: 1.75, margin: 0 }}>AI 可辅助识别表头与有限样例，随后由导入程序解析记录。识别可能出错；请在预览中核对账户、时间、方向、金额和费用口径，确认后再保存。</p>
 
-            <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 600 }}>正在理解什么</div>
+            <div style={{ fontSize: 13, color: 'var(--tg-text, #0F172A)', fontWeight: 600 }}>导入前需要核对</div>
 
             {[
               ['时间格式：', '识别 2026-04-15 05:40:58、2026/4/15 5:40 等多种写法'],
               ['方向字段：', 'Buy / Sell / 做多 / 做空 / Long / Short'],
-              ['盈亏计算：', '是否已扣除手续费、是否已计算资金费率'],
-              ['开平仓合并：', '自动配对同一笔交易的开仓和平仓记录'],
+              ['盈亏口径：', '请主动选择原始金额是毛盈亏还是已扣费净盈亏'],
+              ['开平仓记录：', '请核对源文件中的配对关系，分批成交需要单独确认'],
             ].map(([label, content]) => (
               <div key={label} style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                 <span style={{ width: 5, height: 5, background: '#0F172A', borderRadius: '50%', marginTop: 7, flexShrink: 0 }} />
@@ -1344,8 +1344,8 @@ const CsvImportPage: React.FC<Props> = ({
 
   // ── Step 4: Done ───────────────────────────────────────────────────────────
 
-  const imported = parseResult ? parseResult.total - parseResult.duplicates : 275;
-  const skipped = parseResult?.duplicates ?? 12;
+  const imported = parseResult ? parseResult.total - parseResult.duplicates : 0;
+  const skipped = parseResult?.duplicates ?? 0;
 
   return (
     <div className="csv-page" style={{ position: "fixed", inset: 0, overflowY: "auto", background: 'radial-gradient(ellipse 65% 55% at 50% 38%, var(--tg-surface, #ffffff) 0%, var(--tg-surface, #ffffff) 20%, var(--tg-accent-soft, #ede9fe) 55%, var(--tg-accent-soft, #ddd6fe) 100%)', display: "flex", flexDirection: "column", alignItems: "center", fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif', zIndex: 9999 }}>
@@ -1361,15 +1361,15 @@ const CsvImportPage: React.FC<Props> = ({
           <div style={{ flex: 1, background: 'var(--tg-surface, #fff)', borderRadius: 16, border: 'var(--tg-module-border, 1px solid var(--tg-border, #e8e8f0))', padding: '24px 24px 20px' }}>
             <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--tg-muted, #9396aa)', marginBottom: 14, textTransform: 'uppercase', letterSpacing: '0.05em' }}>导入摘要</p>
             {[
-              ['数据来源', parseResult?.exchange ?? `${exchangeName} 衍生品`],
+              ['数据来源', parseResult?.exchange && !/unknown|custom/i.test(parseResult.exchange) ? parseResult.exchange : exchangeName],
               ['时间范围', parseResult?.dateRange ?? '—'],
-              ['累计净盈亏', `+$${parseResult?.netPnl.toFixed(2) ?? '—'}`],
+              ['累计净盈亏', parseResult ? `${parseResult.netPnl < 0 ? '−' : '+'}$${Math.abs(parseResult.netPnl).toFixed(2)}` : '—'],
               ['胜率', `${parseResult?.winRate.toFixed(1) ?? '—'}%`],
               ['盈利因子', `${parseResult?.profitFactor.toFixed(2) ?? '—'}`],
             ].map(([label, val], i) => (
               <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: i < 4 ? '1px solid var(--tg-border, #f4f4f8)' : 'none' }}>
                 <span style={{ fontSize: 13, color: 'var(--tg-muted, #9396aa)' }}>{label}</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: label === '累计净盈亏' ? 'var(--tg-positive, #15803d)' : 'var(--tg-text, #1a1a3a)', fontVariantNumeric: 'tabular-nums' }}>{val}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: label === '累计净盈亏' ? ((parseResult?.netPnl ?? 0) < 0 ? 'var(--tg-negative, #dc2626)' : 'var(--tg-positive, #15803d)') : 'var(--tg-text, #1a1a3a)', fontVariantNumeric: 'tabular-nums' }}>{val}</span>
               </div>
             ))}
           </div>

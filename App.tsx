@@ -2,7 +2,7 @@ import { tradePnlPercent, type FeeTemplate } from './utils/tradeCalculation';
 import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react';
 
 import { persistTradeScreenshots, readTradeScreenshots, validateScreenshotCount } from './utils/tradeScreenshots';
-import { countNonDemoJournalTrades } from './utils/journalRiskAdvisories';
+import { countNonDemoJournalTrades, journalImportAllowance } from './utils/journalRiskAdvisories';
 
 const uploadImage = async (userId: string, imageBase64: string): Promise<string | null> => {
   const response = await fetch(imageBase64);
@@ -565,6 +565,11 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
   const handleImportTrades = async (imported: Trade[]) => {
     const { data: { user: authUser } } = await supabase.auth.getUser();
     if (!authUser || authUser.id !== user.id) throw new Error('登录状态已过期，请重新登录后导入');
+    if (isDataLoading || dataLoadError) throw new Error(dataLoadError || '账户数据仍在加载，请稍后再导入');
+    const allowance = journalImportAllowance(trades, imported, tradingAccounts, user.tier);
+    if (!allowance.allowed) throw new Error(allowance.reason === 'account'
+      ? (language === 'cn' ? '请先选择有效的交易归属账户。' : 'Select a valid trading account first.')
+      : (language === 'cn' ? `当前方案还可导入 ${allowance.remaining} 笔非演示交易，请减少导入数量或升级。` : `Your plan has room for ${allowance.remaining} more non-demo records. Reduce the import size or upgrade.`));
 
     const data = imported.map(trade => {
       const pnlPercent = tradePnlPercent(trade);
