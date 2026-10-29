@@ -20,3 +20,9 @@ Production has the monthly-only cycle variable. Open the global checkout gate on
 - `harness/creem-live-prelaunch.mjs` validates real products and authenticated runtime handlers with a local monthly-only configuration; secrets remain in ignored0600 files and the checkout URL is saved privately. Report is in workspace output/creem-live-prelaunch-2026-10-30.json. It does not enable the public production flag.
 
 Live production deployment and smoke checks are recorded in shared STATUS.md after completion. No schema, credentials, prices, refund promise, entity identity or domestic payment change is included.
+
+## Production release
+
+Application behavior commit `da885a5` is deployed at https://trading-journal-14mtjqwqi-chenzhixuns-projects.vercel.app and aliased to https://dashboard.tradegrail.net. Production monthly checkout is enabled, with `CREEM_ENABLED_CYCLES=monthly` keeping annual checkout disabled. All16 live HTTP checks pass: real Cloudflare SG/USD market, only two monthly offers, auth/origin checks, annual rejection, unpaid checkout/retry binding, pending state without membership, signature/mode rejection, and public website/policy availability. See workspace output/creem-monthly-live-acceptance-2026-10-30.json. No real payment/refund/payout is included in those checks.
+
+Owner handoff remains the explicit financial-account association: select the approved existing account and link it to TradeGrail in the already-open verification page, after checking the destination personally. No bank details were read or account linked by the agent. Existing heartbeat now follows remaining payout/annual/Alipay work and preserves the live monthly launch instead of treating approval as pending.
