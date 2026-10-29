@@ -1,3 +1,5 @@
+import { csvRulesWithFallback } from '../utils/csvAiRules.mjs';
+import AiUseNotice from './AiUseNotice';
 import { aiHeaders } from '../services/geminiService';
 import React, { useState, useRef, useCallback } from 'react';
 import Papa from 'papaparse';
@@ -666,20 +668,10 @@ const CsvImportPage: React.FC<Props> = ({
         setParseProgress(4);
       } else {
         // ── Step 3: AI identifies format ─────────────────────────────────────
-        let rules: AiRules;
-        try {
-          const resp = await fetch('/api/csv-analyze', {
-            method: 'POST',
-            headers: await aiHeaders(),
-            body: JSON.stringify({ headers, sampleRows, exchangeName, timezone }),
-          });
-          if (!resp.ok) throw new Error('AI API error');
-          rules = await resp.json();
-          console.log('[CSV Import] AI rules:', JSON.stringify(rules, null, 2));
-          console.log('[CSV Import] Sample row[0]:', JSON.stringify(sampleRows[0]));
-        } catch {
-          rules = buildFallbackRules(headers, sampleRows, exchangeName);
-        }
+        const rules: AiRules = await csvRulesWithFallback(async () => fetch('/api/csv-analyze', {
+          method: 'POST', headers: await aiHeaders(),
+          body: JSON.stringify({ headers, sampleRows, exchangeName, timezone }),
+        }), () => buildFallbackRules(headers, sampleRows, exchangeName));
         setParseProgress(3);
         converted = convertRows(allRows, rules);
         sourceColumn = rules.fieldMapping.netPnl || rules.fieldMapping.grossPnl || '';
@@ -846,6 +838,7 @@ const CsvImportPage: React.FC<Props> = ({
     <div style={{ textAlign: 'center', marginBottom: 36 }}>
       <div style={{ fontSize: 13, color: 'var(--tg-muted, #8888b0)', fontWeight: 400, letterSpacing: '0.03em', marginBottom: 8 }}>{kicker}</div>
       <h1 style={{ fontSize: 28, fontWeight: 700, color: 'var(--tg-text, #1a1a3a)', margin: 0 }}>{title}</h1>
+      <AiUseNotice/>
     </div>
   );
 

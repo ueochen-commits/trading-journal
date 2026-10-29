@@ -1,3 +1,4 @@
+import { aiReviewPayload } from '../utils/aiReviewPayload.mjs';
 import { supabase } from '../supabaseClient';
 import { Trade, DailyPlan, RiskSettings } from '../types';
 
@@ -49,10 +50,13 @@ export const chatWithAnalyst = async (
         const response = await fetch('/api/ai-coach', {
             method: 'POST',
             headers: await aiHeaders(),
-            body: JSON.stringify({ task: message, trades, language })
+            body: JSON.stringify({ task: message, trades: aiReviewPayload(trades), language })
         });
 
         const data = await response.json();
+        if (data.error === 'AI_CONTENT_NOT_ALLOWED') {
+            return { text: language === 'cn' ? '请求或回复被使用政策拦截：禁止 NSFW、色情或性暗示内容。' : 'Blocked by our use policy: NSFW, explicit or sexually suggestive content is prohibited.' };
+        }
         if (data.error === 'QUOTA_EXCEEDED') {
             return { text: language === 'cn' ? '当前 AI 使用额度已用完，请在额度重置后再试。' : 'AI allowance reached. Please try again after the quota resets.' };
         }
@@ -71,10 +75,11 @@ export const analyzeJournal = async (trades: Trade[], language: 'en' | 'cn' = 'c
         const response = await fetch('/api/ai-analyze', {
             method: 'POST',
             headers: await aiHeaders(),
-            body: JSON.stringify({ trades, language, userId })
+            body: JSON.stringify({ trades: aiReviewPayload(trades), language })
         });
 
         const data = await response.json();
+        if (data.error === 'AI_CONTENT_NOT_ALLOWED') return { summary: language === 'cn' ? '请求或回复违反 AI 使用政策，已拦截。' : 'Request or response blocked by the AI use policy.', insights: [], coachMessage: '' };
         if (data.error === 'QUOTA_EXCEEDED') {
             return {
                 summary: language === 'cn' ? '当前 AI 使用额度已用完，请在额度重置后再试。' : 'AI allowance reached. Please try again after the quota resets.',
@@ -107,10 +112,11 @@ export const generatePeriodicReport = async (
         const response = await fetch('/api/ai-report', {
             method: 'POST',
             headers: await aiHeaders(),
-            body: JSON.stringify({ trades, plans, period, language, disciplineHistory, riskSettings, userId })
+            body: JSON.stringify({ trades: aiReviewPayload(trades), period, language })
         });
 
         const data = await response.json();
+        if (data.error === 'AI_CONTENT_NOT_ALLOWED') return language === 'cn' ? '<p>请求或回复违反 AI 使用政策，已拦截。</p>' : '<p>Request or response blocked by the AI use policy.</p>';
         if (data.error === 'QUOTA_EXCEEDED') {
             return language === 'cn'
                 ? '<h3>当前 AI 使用额度已用完</h3><p>请在额度重置后再试。</p>'

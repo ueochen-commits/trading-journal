@@ -1,3 +1,4 @@
+import { aiReviewPayload } from '../utils/aiReviewPayload.mjs';
 import { ownedReport, reportApiOrigin } from '../server/background-report.mjs';
 export const config = { runtime: 'nodejs' };
 export default async function handler(req: any, res: any) {
@@ -10,7 +11,7 @@ export default async function handler(req: any, res: any) {
     const { trades, plans, disciplineHistory, riskSettings, language } = report.content?.metadata || {};
     const response = await fetch(`${reportApiOrigin()}/api/ai-report`, {
       method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ trades, plans, period: report.report_type, language, disciplineHistory, riskSettings })
+      body: JSON.stringify({ trades: aiReviewPayload(trades), period: report.report_type, language })
     });
     if (!response.ok) throw Error('AI report generation failed');
     const { html } = await response.json();

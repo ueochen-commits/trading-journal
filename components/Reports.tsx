@@ -1,3 +1,4 @@
+import AiUseNotice from './AiUseNotice';
 import { aiHeaders } from '../services/geminiService';
 import { tradeNotional } from '../utils/tradeCalculation';
 import { displayTradePnl } from '../utils/tradePnl';
@@ -11332,9 +11333,10 @@ const Reports: React.FC<ReportsProps> = ({
                                     ? '基于您最近的交易日记，生成深度复盘报告。' 
                                     : 'Generate deep dive reports based on your recent journal entries.'}
                               </p>
+                              <AiUseNotice/>
                           </div>
                           <div className="flex gap-3">
-                              <button 
+                              <button
                                 onClick={() => handleGenerateReport('weekly')}
                                 disabled={isGeneratingReport}
                                 className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-[var(--tg-border)] hover:border-indigo-500 text-slate-700 dark:text-slate-300 rounded-xl font-bold text-sm flex items-center gap-2 transition-all hover:shadow-md"

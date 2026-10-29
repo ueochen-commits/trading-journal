@@ -1,4 +1,5 @@
 // Historical journaling only: no caller messages, roles, notes, symbols or prompts reach the model.
+import { AI_USE_INSTRUCTION, assertAiContentAllowed, hasProhibitedAiContent, aiSafetyResponse } from './ai-safety.mjs';
 import { authenticateAiUser, checkAiAccess } from './ai-access.mjs';
 export const REVIEW_TASKS = ['summary', 'fees', 'questions'];
 export function journalStats(trades) {
@@ -12,12 +13,13 @@ export function journalStats(trades) {
 export function reviewMessages(stats, task, language) {
   if (!REVIEW_TASKS.includes(task)) throw Error('Unsupported review task');
   return [
-    {role:'system',content:`You summarize a user's historical journal statistics. You are a software assistant, not a financial adviser or trading expert. Discuss only recorded outcomes and record completeness. Never recommend trades, instruments, entry/exit prices, targets, positions, leverage, allocation or future investment actions. No predictions, signals or promises. Do not infer causation or skill from a small sample. P&L is already NET of fees: never subtract fees again. Return JSON only with {"summary":"short historical description","insights":[{"title":"short title","description":"historical observation","type":"neutral"}],"coachMessage":"question about reviewing past records"}. At most 3 insights. ${language==='cn'?'Write Chinese.':'Write English.'}`},
+    {role:'system',content:`${AI_USE_INSTRUCTION} You summarize a user's historical journal statistics. You are a software assistant, not a financial adviser or trading expert. Discuss only recorded outcomes and record completeness. Never recommend trades, instruments, entry/exit prices, targets, positions, leverage, allocation or future investment actions. No predictions, signals or promises. Do not infer causation or skill from a small sample. P&L is already NET of fees: never subtract fees again. Return JSON only with {"summary":"short historical description","insights":[{"title":"short title","description":"historical observation","type":"neutral"}],"coachMessage":"question about reviewing past records"}. At most 3 insights. ${language==='cn'?'Write Chinese.':'Write English.'}`},
     {role:'user',content:JSON.stringify({task,taskDescription:{summary:'Summarize recorded results only.',fees:'Describe recorded fees without changing net P&L.',questions:'Suggest questions to check historical record completeness.'}[task],historicalStatistics:stats})}
   ];
 }
 const unsafe = /(?:\b(?:buy|sell|long|short)\b.{0,45}\b(?:now|next|tomorrow|at|should|recommend|target)\b|\b(?:should|recommend|must)\b.{0,45}\b(?:buy|sell|invest|trade|allocate)\b|\b(?:price target|stop.?loss|take.?profit|guaranteed return|hedge fund|financial adviser)\b|建议.{0,15}(?:买入|卖出|做多|做空|建仓|加仓|减仓|持仓|杠杆)|(?:买入价|卖出价|目标价|止盈价|止损价|稳赚|保证收益|对冲基金)|https?:\/\/|<[^>]*>)/i;
 export function safeReview(raw) {
+  assertAiContentAllowed(raw);
   let x;try{x=JSON.parse(raw);}catch{throw Error('Invalid review');}
   const safeText=(s,max)=>{if(typeof s!=='string'||!s.trim()||s.length>max||unsafe.test(s))throw Error('Out-of-scope review');return s.trim();};
   if(!Array.isArray(x.insights)||x.insights.length>3)throw Error('Invalid insights');
@@ -39,6 +41,7 @@ export function createReviewHandler(kind, deps={}) {
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   const auth=await authenticate(req);if(auth?.error)return res.status(auth.status).json({error:auth.error});
   const body=req.body||{}, language=body.language==='en'?'en':'cn';
+  if(hasProhibitedAiContent(body))return res.status(400).json(aiSafetyResponse(language));
   const task=kind==='coach'?body.task:'summary';
   if(!REVIEW_TASKS.includes(task))return res.status(400).json({error:'HISTORICAL_REVIEW_ONLY',text:language==='cn'?'请选择历史摘要、费用回顾或记录检查。不提供自由投资问答。':'Choose a historical summary, fee review or record check. Open investment chat is not available.'});
   const stats=journalStats(body.trades);let result=fallbackReview(stats,language);
@@ -49,7 +52,7 @@ export function createReviewHandler(kind, deps={}) {
     const response=await request('https://api.deepseek.com/chat/completions',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${process.env.DEEPSEEK_API_KEY}`},body:JSON.stringify({model:'deepseek-flash',thinking:{type:'disabled'},messages:reviewMessages(stats,task,language),temperature:0.2,max_tokens:1200,response_format:{type:'json_object'}}),signal:AbortSignal.timeout(30000)});
     if(!response.ok)throw Error('Provider unavailable');
     const data=await response.json();result=safeReview(data.choices?.[0]?.message?.content||'');
-   }catch{return res.status(503).json({error:'AI_REVIEW_UNAVAILABLE',text:language==='cn'?'本次历史复盘未完成，请稍后再试。':'Historical review could not be completed. Please try again.'});}
+   }catch(error){if(error?.code==='AI_CONTENT_NOT_ALLOWED')return res.status(502).json(aiSafetyResponse(language));return res.status(503).json({error:'AI_REVIEW_UNAVAILABLE',text:language==='cn'?'本次历史复盘未完成，请稍后再试。':'Historical review could not be completed. Please try again.'});}
   }
   if(kind==='report')return res.status(200).json({html:reviewHtml(result,stats,language,body.period)});
   if(kind==='coach')return res.status(200).json({text:[result.summary,...result.insights.map(i=>`${i.title}: ${i.description}`),result.coachMessage].join('\n\n')});

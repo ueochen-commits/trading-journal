@@ -1,3 +1,4 @@
+import AiUseNotice from './AiUseNotice';
 
 import React, { useState } from 'react';
 import { Trade } from '../types';
@@ -34,6 +35,7 @@ const AICoach: React.FC<AICoachProps> = ({ trades }) => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto h-full min-h-[600px] relative">
       <FeatureGate tier="pro">
+        <AiUseNotice/>
         <div className="text-center space-y-4 py-8">
             <div className="inline-flex items-center justify-center p-3 bg-indigo-100 dark:bg-indigo-500/10 rounded-full mb-2">
                 <Bot className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
