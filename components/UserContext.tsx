@@ -56,7 +56,7 @@ const getCachedTier = (userId: string): { tier: UserTier; subscriptionEnd?: stri
         const raw = localStorage.getItem(`tier_cache_${userId}`);
         if (!raw) return null;
         const { tier, subscriptionEnd, expiresAt } = JSON.parse(raw);
-        if (Date.now() > expiresAt) {
+        if (Date.now() > expiresAt || (subscriptionEnd && Date.parse(subscriptionEnd) <= Date.now())) {
             localStorage.removeItem(`tier_cache_${userId}`);
             return null;
         }
@@ -169,19 +169,16 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             const cached = getCachedTier(supabaseUser.id);
             if (cached) {
                 setUser(prev => ({ ...prev, tier: cached.tier, subscriptionEnd: cached.subscriptionEnd }));
-                // 后台加载其他数据
-                loadUserStats(supabaseUser.id).catch(() => {});
-                return;
+                // Show cached UI immediately, then reconcile with server-owned entitlements.
             }
         }
 
         // 从 subscriptions 表读取真实会员等级和到期日
         try {
             const { data: subs } = await supabase
-                .from('subscriptions')
-                .select('plan, status, current_period_end')
-                .eq('user_id', supabaseUser.id)
-                .eq('status', 'active');
+                .from('billing_entitlements')
+                .select('plan, current_period_end')
+                .eq('user_id', supabaseUser.id);
 
             const tierPriority: Record<string, number> = { elite: 3, pro: 2, free: 1 };
 
@@ -193,7 +190,8 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             let tier: UserTier = 'free';
             let subscriptionEnd: string | undefined;
             if (validSubs.length > 0) {
-                validSubs.sort((a, b) => (tierPriority[b.plan] || 0) - (tierPriority[a.plan] || 0));
+                validSubs.sort((a, b) => (tierPriority[b.plan] || 0) - (tierPriority[a.plan] || 0)
+                    || (b.current_period_end ? Date.parse(b.current_period_end) : Infinity) - (a.current_period_end ? Date.parse(a.current_period_end) : Infinity));
                 tier = validSubs[0].plan as UserTier;
                 subscriptionEnd = validSubs[0].current_period_end;
             }
@@ -260,6 +258,26 @@ export const UserProvider = ({ children }: { children?: ReactNode }) => {
             await syncUser(session.user, true);
         }
     };
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const reconcile = () => { void refreshUser().catch(() => {}); };
+        window.addEventListener('focus', reconcile);
+        return () => window.removeEventListener('focus', reconcile);
+    }, []);
+
+    useEffect(() => {
+        if (!user.subscriptionEnd) return;
+        let timer: ReturnType<typeof setTimeout>;
+        const schedule = () => {
+            const remaining = Date.parse(user.subscriptionEnd!) - Date.now();
+            if (!Number.isFinite(remaining)) return;
+            if (remaining <= 0) { void refreshUser().catch(() => {}); return; }
+            timer = setTimeout(schedule, Math.min(remaining + 100, 2147483647));
+        };
+        schedule();
+        return () => clearTimeout(timer);
+    }, [user.subscriptionEnd]);
 
     const markOnboardingComplete = () => setOnboardingCompleted(true);
 

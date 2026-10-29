@@ -50,7 +50,7 @@ const AuthPage: React.FC = () => {
     loginDesc: language === 'cn' ? '继续您的系统化交易之路，充满信心。' : 'Continue your structured trading review workflow.',
     signupTitle: language === 'cn' ? '激活您的个人 AI 分析师' : 'Activate your personal AI analyst',
     signupDesc: language === 'cn' ? '您的系统化交易之路从现在开始。' : 'Your structured trading workflow starts here.',
-    tags: language === 'cn' ? ['分析', '回测', 'AI 分析师'] : ['Analyze', 'Backtest', 'AI Analyst'],
+    tags: language === 'cn' ? ['记录', '复盘', 'AI 分析师'] : ['Journal', 'Review', 'AI Analyst'],
   };
 
   const getFriendlyError = (message: string): string => {

@@ -26,6 +26,7 @@ import NotificationCenter from './components/NotificationCenter';
 import SettingsModal from './components/SettingsModal';
 import SettingsPage from './components/SettingsPage';
 import PricingModal from './components/PricingModal';
+import { CreemBillingReturn } from './components/CreemBilling';
 import AuthPage from './components/AuthPage';
 import UserProfileModal from './components/UserProfileModal';
 import ReferralCenter from './components/ReferralCenter';
@@ -1355,6 +1356,7 @@ const MainAppInner: React.FC<{ onSetActiveTabReady: (fn: (tab: string) => void) 
           {/* <FriendListDrawer /> */}
           <SettingsModal onImportTrades={handleImportTrades} />
           <PricingModal />
+          <CreemBillingReturn />
           <UserProfileModal />
           {/* TEMPORARILY DISABLED — OnboardingModal replaced by new first-login flow */}
           {/* {showOnboarding && (

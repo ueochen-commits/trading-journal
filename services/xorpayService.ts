@@ -16,6 +16,8 @@ export interface CreateOrderParams {
 }
 
 export interface PaymentOrder {
+  pay_url?: string;
+  qr_code?: string;
   id: string;
   user_id: string;
   xorpay_order_id?: string;
@@ -190,85 +192,4 @@ export const getUserOrders = async (): Promise<PaymentOrder[]> => {
 
   if (error) throw error;
   return data || [];
-};
-
-/**
- * 处理支付回调（这个应该在后端 API 中实现）
- */
-export const handlePaymentCallback = async (callbackData: any) => {
-  // 验证签名
-  const isValid = verifyXorPaySign(callbackData);
-  if (!isValid) {
-    throw new Error('Invalid signature');
-  }
-
-  // 更新订单状态
-  const { error: orderError } = await supabase
-    .from('payment_orders')
-    .update({
-      payment_status: 'paid',
-      paid_at: new Date().toISOString(),
-      xorpay_trade_no: callbackData.trade_no,
-      callback_data: callbackData
-    })
-    .eq('xorpay_order_id', callbackData.order_id);
-
-  if (orderError) throw orderError;
-
-  // 获取订单信息
-  const { data: order } = await supabase
-    .from('payment_orders')
-    .select('*')
-    .eq('xorpay_order_id', callbackData.order_id)
-    .single();
-
-  if (!order) throw new Error('Order not found');
-
-  // 创建或更新订阅
-  const periodEnd = calculatePeriodEnd(order.billing_cycle);
-
-  const { error: subError } = await supabase
-    .from('subscriptions')
-    .upsert({
-      user_id: order.user_id,
-      plan: order.plan,
-      status: 'active',
-      current_period_end: periodEnd,
-      xorpay_order_id: callbackData.order_id,
-      payment_method: order.payment_method,
-      payment_status: 'paid',
-      amount: order.amount,
-      currency: order.currency
-    });
-
-  if (subError) throw subError;
-
-  return { success: true };
-};
-
-/**
- * 验证 XorPay 签名
- */
-const verifyXorPaySign = (_data: any): boolean => {
-  // 签名验证已在后端 API 处理
-  return true;
-};
-
-/**
- * 计算订阅到期时间
- */
-const calculatePeriodEnd = (billingCycle: BillingCycle): string => {
-  const now = new Date();
-  switch (billingCycle) {
-    case 'monthly':
-      now.setMonth(now.getMonth() + 1);
-      break;
-    case 'yearly':
-      now.setFullYear(now.getFullYear() + 1);
-      break;
-    case 'lifetime':
-      now.setFullYear(now.getFullYear() + 100); // 100 年后
-      break;
-  }
-  return now.toISOString();
 };

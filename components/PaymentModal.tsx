@@ -3,6 +3,7 @@ import { X, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
 import { createPaymentOrder, queryOrderStatus, PaymentMethod, PlanType, BillingCycle } from '../services/xorpayService';
 import { useLanguage } from '../LanguageContext';
 import { useUser } from './UserContext';
+import CreemCheckoutModal from './CreemCheckoutModal';
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -10,9 +11,10 @@ interface PaymentModalProps {
   plan: PlanType;
   billingCycle: BillingCycle;
   amount: number;
+  currency?: 'CNY' | 'USD';
 }
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, billingCycle, amount }) => {
+const CnyPaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, billingCycle, amount }) => {
   const { language } = useLanguage();
   const { refreshUser, closePricing } = useUser();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('alipay'); // 默认支付宝
@@ -274,4 +276,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, plan, bill
   );
 };
 
-export default PaymentModal;
+export default function PaymentModal(props: PaymentModalProps) {
+  if (!props.isOpen) return null;
+  if (props.currency === 'USD') return <CreemCheckoutModal plan={props.plan} billingCycle={props.billingCycle} onClose={props.onClose}/>;
+  return <CnyPaymentModal {...props}/>;
+}

@@ -23,17 +23,17 @@ test('switching identity discards previous subscription/profile/stat replies and
  const f=await setup();try{
  await f.event('alice');await f.event('bob');
  f.finish('alice','profiles',{onboarding_completed:true,currency:'EUR',timezone:'Europe/London'});
- f.finish('alice','subscriptions',[{plan:'elite'}]);await f.tick();
+ f.finish('alice','billing_entitlements',[{plan:'elite'}]);await f.tick();
  assert.equal(f.render().user.id,'bob');assert.equal(f.render().user.tier,'free');assert.equal(f.render().userCurrency,'USD');
  f.finish('bob','profiles',{onboarding_completed:true,currency:'USD',timezone:'UTC'});
- f.finish('bob','subscriptions',[]);await f.tick();
+ f.finish('bob','billing_entitlements',[]);await f.tick();
  assert.equal(f.render().onboardingCompleted,true);
  await f.event(null,'SIGNED_OUT');assert.equal(f.render().user.id,undefined);assert.equal(f.render().onboardingCompleted,null);
  }finally{f.cleanup();}
 });
 test('token refresh does not reopen onboarding or replace freshly saved preferences',async()=>{
  const f=await setup();try{
- await f.event('alice');f.finish('alice','profiles',{onboarding_completed:false,currency:'USD',timezone:'UTC'});f.finish('alice','subscriptions',[]);await f.tick();
+ await f.event('alice');f.finish('alice','profiles',{onboarding_completed:false,currency:'USD',timezone:'UTC'});f.finish('alice','billing_entitlements',[]);await f.tick();
  f.render().markOnboardingComplete();f.render().updateUserPreferences('EUR','Europe/Paris');
  await f.event('alice','TOKEN_REFRESHED');assert.equal(f.render().onboardingCompleted,true);assert.equal(f.render().userCurrency,'EUR');assert.equal(f.render().userTimezone,'Europe/Paris');
  }finally{f.cleanup();}

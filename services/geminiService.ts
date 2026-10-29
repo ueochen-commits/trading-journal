@@ -1,4 +1,11 @@
+import { supabase } from '../supabaseClient';
 import { Trade, DailyPlan, RiskSettings } from '../types';
+
+const aiHeaders = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Authentication required');
+    return { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` };
+};
 
 // --- Local Fallback Quotes ---
 const FALLBACK_QUOTES_CN = [
@@ -41,15 +48,15 @@ export const chatWithAnalyst = async (
     try {
         const response = await fetch('/api/ai-coach', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await aiHeaders(),
             body: JSON.stringify({ message, history, trades, language, tradingRules, riskSettings, userId })
         });
 
-        if (!response.ok) throw new Error('API error');
         const data = await response.json();
         if (data.error === 'QUOTA_EXCEEDED') {
             return { text: language === 'cn' ? '今日 AI 使用次数已达上限，请明天再试或升级会员。' : 'Daily AI limit reached. Try again tomorrow or upgrade your plan.' };
         }
+        if (!response.ok) throw new Error('API error');
         return { text: data.text || '' };
     } catch (error) {
         return {
@@ -63,11 +70,10 @@ export const analyzeJournal = async (trades: Trade[], language: 'en' | 'cn' = 'c
     try {
         const response = await fetch('/api/ai-analyze', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await aiHeaders(),
             body: JSON.stringify({ trades, language, userId })
         });
 
-        if (!response.ok) throw new Error('API error');
         const data = await response.json();
         if (data.error === 'QUOTA_EXCEEDED') {
             return {
@@ -76,6 +82,7 @@ export const analyzeJournal = async (trades: Trade[], language: 'en' | 'cn' = 'c
                 coachMessage: ''
             };
         }
+        if (!response.ok) throw new Error('API error');
         return data;
     } catch (error) {
         return {
@@ -99,17 +106,17 @@ export const generatePeriodicReport = async (
     try {
         const response = await fetch('/api/ai-report', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: await aiHeaders(),
             body: JSON.stringify({ trades, plans, period, language, disciplineHistory, riskSettings, userId })
         });
 
-        if (!response.ok) throw new Error('API error');
         const data = await response.json();
         if (data.error === 'QUOTA_EXCEEDED') {
             return language === 'cn'
                 ? '<h3>今日 AI 使用次数已达上限</h3><p>请明天再试或升级会员。</p>'
                 : '<h3>Daily AI Limit Reached</h3><p>Try again tomorrow or upgrade your plan.</p>';
         }
+        if (!response.ok) throw new Error('API error');
         return data.html || '';
     } catch (error) {
         return language === 'cn'

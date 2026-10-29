@@ -37,6 +37,7 @@
     "@tiptap/starter-kit": "^3.22.3",
     "canvas-confetti": "^1.9.4",
     "ccxt": "^4.5.48",
+    "creem": "1.13.0",
     "crypto-js": "^4.2.0",
     "flatpickr": "^4.6.13",
     "html-to-image": "^1.11.13",

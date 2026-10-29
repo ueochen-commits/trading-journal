@@ -1,16 +1,25 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Check, Zap, Crown, ShieldCheck, Star, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
 import { useUser } from './UserContext';
 import { useLanguage } from '../LanguageContext';
 import PaymentModal from './PaymentModal';
 import type { PlanType, BillingCycle } from '../services/xorpayService';
+import { ManageUsdSubscription } from './CreemBilling';
+import { getCreemCatalog } from '../services/creemService';
 
 const PricingModal: React.FC = () => {
     const { isPricingOpen, closePricing, upgradeTier, user } = useUser();
     const { t, language } = useLanguage();
+    const [moneyCurrency, setMoneyCurrency] = useState<'CNY' | 'USD'>(language === 'cn' ? 'CNY' : 'USD');
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
     const [showEarlyBirdModal, setShowEarlyBirdModal] = useState(false);
+    const [usdEnabled,setUsdEnabled] = useState(false);
+    useEffect(() => {
+        let alive=true;
+        if (isPricingOpen) void getCreemCatalog().then(c=>{if(alive)setUsdEnabled(c.enabled);}).catch(()=>{if(alive)setUsdEnabled(false);});
+        return ()=>{alive=false;};
+    },[isPricingOpen]);
 
     // 支付相关状态
     const [isPaymentOpen, setIsPaymentOpen] = useState(false);
@@ -18,15 +27,16 @@ const PricingModal: React.FC = () => {
         plan: PlanType;
         billingCycle: BillingCycle;
         amount: number;
+        currency: 'CNY' | 'USD';
     } | null>(null);
 
     if (!isPricingOpen) return null;
 
-    const currency = language === 'cn' ? '¥' : '$';
+    const currency = moneyCurrency === 'CNY' ? '¥' : '$';
 
     // 处理购买按钮点击
     const handleBuyClick = (plan: PlanType, cycle: BillingCycle, amount: number) => {
-        setSelectedPlan({ plan, billingCycle: cycle, amount });
+        setSelectedPlan({ plan, billingCycle: cycle, amount, currency: cycle === 'lifetime' ? 'CNY' : moneyCurrency });
         setIsPaymentOpen(true);
     };
 
@@ -39,18 +49,18 @@ const PricingModal: React.FC = () => {
     // Pricing Configuration
     const pricing = {
         monthly: {
-            pro: language === 'cn' ? '29' : '5',
-            elite: language === 'cn' ? '79' : '12',
+            pro: moneyCurrency === 'CNY' ? '29' : '5',
+            elite: moneyCurrency === 'CNY' ? '79' : '12',
         },
         yearly: {
-            pro: language === 'cn' ? '199' : '29',
-            elite: language === 'cn' ? '599' : '89',
-            savePro: language === 'cn' ? '¥149' : '$31',
-            saveElite: language === 'cn' ? '¥349' : '$55',
-            totalPro: language === 'cn' ? '199' : '29',
-            totalElite: language === 'cn' ? '599' : '89',
-            avgMonthlyPro: language === 'cn' ? '16.6' : '2.42',
-            avgMonthlyElite: language === 'cn' ? '49.9' : '7.42'
+            pro: moneyCurrency === 'CNY' ? '199' : '29',
+            elite: moneyCurrency === 'CNY' ? '599' : '89',
+            savePro: moneyCurrency === 'CNY' ? '¥149' : '$31',
+            saveElite: moneyCurrency === 'CNY' ? '¥349' : '$55',
+            totalPro: moneyCurrency === 'CNY' ? '199' : '29',
+            totalElite: moneyCurrency === 'CNY' ? '599' : '89',
+            avgMonthlyPro: moneyCurrency === 'CNY' ? '16.6' : '2.42',
+            avgMonthlyElite: moneyCurrency === 'CNY' ? '49.9' : '7.42'
         }
     };
 
@@ -143,7 +153,7 @@ const PricingModal: React.FC = () => {
                                         setShowEarlyBirdModal(false);
                                         handleBuyClick('elite', 'lifetime', 1999);
                                     }}
-                                    disabled={user.tier === 'elite'}
+                                    disabled={user.tier === 'elite' || (moneyCurrency === 'USD' && !usdEnabled)}
                                     className={`w-full py-4 rounded-xl font-bold text-base transition-all ${
                                         user.tier === 'elite'
                                             ? 'bg-slate-700 text-slate-500 cursor-default dark:text-slate-400'
@@ -184,15 +194,17 @@ const PricingModal: React.FC = () => {
                         {language === 'cn' ? '解锁全套交易工具' : 'Unlock Your Trading Edge'}
                     </h2>
                     <p className="text-slate-400 text-base md:text-lg max-w-2xl mx-auto mb-4 dark:text-slate-400">
-                        {language === 'cn' ? '加入前 5% 的盈利交易员行列，用专业数据武装自己。' : 'Stop guessing. Start trading with institutional-grade data and AI coaching.'}
+                        {language === 'cn' ? '记录交易、复盘表现，选择适合你的工具。' : 'Journal your trades, review performance and choose the tools you need.'}
                     </p>
 
                     {/* Beta Notice */}
                     <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-sm px-5 py-2.5 rounded-full mb-8">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0"></span>
-                        {language === 'cn' ? '目前 TraderGrad 正在内测中，所有功能均免费测试使用。' : 'TraderGrad is currently in beta — all features are free to use.'}
+                        {language === 'cn' ? 'TradeGrail 免费版可持续使用，付费套餐按下方说明提供。' : 'Keep using the TradeGrail free plan, or choose a paid plan below.'}
                     </div>
 
+                    <div className="mb-4 flex justify-center gap-3"><button onClick={() => setMoneyCurrency('CNY')} aria-pressed={moneyCurrency==='CNY'} className={`px-4 py-2 rounded-lg text-sm ${moneyCurrency==='CNY'?'bg-indigo-600 text-white':'bg-slate-800 text-slate-300'}`}>CNY ¥</button><button onClick={() => setMoneyCurrency('USD')} aria-pressed={moneyCurrency==='USD'} className={`px-4 py-2 rounded-lg text-sm ${moneyCurrency==='USD'?'bg-indigo-600 text-white':'bg-slate-800 text-slate-300'}`}>USD $ · Creem</button></div>
+                    <ManageUsdSubscription />
                     {/* Billing Toggle */}
                     <div className="inline-flex bg-slate-900 p-1 rounded-full border border-slate-800 relative">
                         <div className={`absolute top-1 bottom-1 w-[50%] bg-indigo-600 rounded-full transition-all duration-300 shadow-lg ${billingCycle === 'monthly' ? 'left-1' : 'left-[49%]'}`}></div>
@@ -240,7 +252,7 @@ const PricingModal: React.FC = () => {
                         <button 
                             onClick={() => { if(user.tier === 'free') closePricing(); }}
                             disabled={user.tier === 'free'}
-                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border border-slate-700 ${user.tier === 'free' ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400' : 'bg-transparent text-white hover:bg-slate-800'}`}
+                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-slate-700 ${user.tier === 'free' ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400' : 'bg-transparent text-white hover:bg-slate-800'}`}
                         >
                             {user.tier === 'free' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (language === 'cn' ? '降级' : 'Downgrade')}
                         </button>
@@ -250,7 +262,7 @@ const PricingModal: React.FC = () => {
                             <FeatureItem text={language === 'cn' ? "手动记录交易" : "Manual Trade Logging"} />
                             <FeatureItem text={language === 'cn' ? "基础数据统计" : "Basic Analytics"} />
                             <FeatureItem text={language === 'cn' ? "仅限 100 条历史" : "Last 100 Trades Only"} />
-                            <FeatureItem text={language === 'cn' ? "社区访问权限" : "Community Access"} />
+                            <FeatureItem text={language === 'cn' ? "每笔交易最多 2 张截图" : "Up to 2 screenshots per trade"} />
                         </div>
                     </div>
 
@@ -310,8 +322,8 @@ const PricingModal: React.FC = () => {
                                     billingCycle,
                                     Number(billingCycle === 'yearly' ? pricing.yearly.totalPro : pricing.monthly.pro)
                                 )}
-                                disabled={user.tier === 'pro' || user.tier === 'elite'}
-                                className={`w-full py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 ${
+                                disabled={user.tier === 'pro' || user.tier === 'elite' || (moneyCurrency === 'USD' && !usdEnabled)}
+                                className={`w-full py-4 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 ${
                                     user.tier === 'pro' || user.tier === 'elite'
                                         ? 'bg-slate-800 text-slate-500 cursor-default dark:text-slate-400'
                                         : 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -319,7 +331,7 @@ const PricingModal: React.FC = () => {
                             >
                                 {user.tier === 'pro' ? (language === 'cn' ? '当前方案' : 'Current Plan') :
                                  user.tier === 'elite' ? (language === 'cn' ? '已是更高等级' : 'Higher Tier Active') :
-                                 (language === 'cn' ? '立即购买' : 'Buy Now')}
+                                 (moneyCurrency === 'USD' && !usdEnabled ? (language === 'cn' ? '美元支付准备中' : 'USD billing coming soon') : (language === 'cn' ? '立即购买' : 'Buy Now'))}
                             </button>
 
                             {!user.tier && <p className="text-[10px] text-center text-slate-500 mt-3 dark:text-slate-400">{language === 'cn' ? '支持支付宝和微信支付' : 'Alipay & WeChat Pay supported'}</p>}
@@ -328,16 +340,16 @@ const PricingModal: React.FC = () => {
                                 <div>
                                     <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">Analytics</p>
                                     <div className="space-y-3">
-                                        <FeatureItem text={language === 'cn' ? "无限历史数据存储" : "Unlimited Trade History"} highlight />
+                                        <FeatureItem text={language === 'cn' ? "最多 1,000 条交易记录" : "Up to 1,000 Trade Records"} highlight />
                                         <FeatureItem text={language === 'cn' ? "高级盈亏日历 & 热力图" : "Advanced Calendar & Heatmaps"} highlight />
-                                        <FeatureItem text={language === 'cn' ? "CSV 自动导入" : "Auto-Sync Broker Data"} highlight />
+                                        <FeatureItem text={language === 'cn' ? "CSV 文件导入" : "CSV File Import"} highlight />
                                     </div>
                                 </div>
                                 <div>
                                     <p className="text-xs font-bold text-white uppercase tracking-wider mb-3">AI & Growth</p>
                                     <div className="space-y-3">
-                                        <FeatureItem text={language === 'cn' ? "AI 交易教练 (每日复盘)" : "AI Trade Coach (Daily Review)"} highlight />
-                                        <FeatureItem text={language === 'cn' ? "策略回测引擎" : "Strategy Backtesting Engine"} highlight />
+                                        <FeatureItem text={language === 'cn' ? "AI 功能每日 100 次" : "100 AI requests per day"} highlight />
+                                        <FeatureItem text={language === 'cn' ? "多张交易截图与复盘笔记" : "Multiple screenshots and review notes"} highlight />
                                     </div>
                                 </div>
                             </div>
@@ -389,14 +401,14 @@ const PricingModal: React.FC = () => {
                                 billingCycle,
                                 Number(billingCycle === 'yearly' ? pricing.yearly.totalElite : pricing.monthly.elite)
                             )}
-                            disabled={user.tier === 'elite'}
-                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all border ${
+                            disabled={user.tier === 'elite' || (moneyCurrency === 'USD' && !usdEnabled)}
+                            className={`w-full py-3.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed border ${
                                 user.tier === 'elite'
                                     ? 'bg-slate-800 border-slate-800 text-slate-500 cursor-default dark:text-slate-400'
                                     : 'bg-transparent border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black'
                             }`}
                         >
-                            {user.tier === 'elite' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (language === 'cn' ? '立即购买' : 'Buy Now')}
+                            {user.tier === 'elite' ? (language === 'cn' ? '当前方案' : 'Current Plan') : (moneyCurrency === 'USD' && !usdEnabled ? (language === 'cn' ? '美元支付准备中' : 'USD billing coming soon') : (language === 'cn' ? '立即购买' : 'Buy Now'))}
                         </button>
 
                         {/* Early Bird Lifetime Deal */}
@@ -410,10 +422,8 @@ const PricingModal: React.FC = () => {
                         <div className="mt-8 space-y-4">
                             <p className="text-xs font-bold text-slate-500 uppercase tracking-wider dark:text-slate-400">VIP Access</p>
                             <FeatureItem text={language === 'cn' ? "包含 Pro 版所有功能" : "Everything in Pro"} />
-                            <FeatureItem text={language === 'cn' ? "专属导师交流群" : "Private Mentor Group Access"} />
-                            <FeatureItem text={language === 'cn' ? "实时交易信号" : "Live Trading Signals"} />
-                            <FeatureItem text={language === 'cn' ? "1对1 账户诊断" : "1-on-1 Monthly Audit"} />
-                            <FeatureItem text={language === 'cn' ? "优先客服支持" : "Priority Support"} />
+                            <FeatureItem text={language === 'cn' ? "不限交易记录条数" : "Unlimited trade records"} />
+                            <FeatureItem text={language === 'cn' ? "AI 功能无每日次数上限" : "No daily AI request limit"} />
                         </div>
                     </div>
 
@@ -427,7 +437,7 @@ const PricingModal: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
                         <HelpCircle className="w-4 h-4" />
-                        {language === 'cn' ? '7天无理由退款' : '7-Day Money-Back Guarantee'}
+                        {language === 'cn' ? '付款前查看结账和退款条款' : 'Review checkout and refund terms before paying'}
                     </div>
                     <div className="flex items-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-wide dark:text-slate-400">
                         <div className="flex -space-x-2">
@@ -435,7 +445,7 @@ const PricingModal: React.FC = () => {
                             <div className="w-5 h-5 rounded-full bg-slate-500 border border-slate-900"></div>
                             <div className="w-5 h-5 rounded-full bg-slate-400 border border-slate-900"></div>
                         </div>
-                        {language === 'cn' ? '15,000+ 交易员都在用' : 'Trusted by 15,000+ Traders'}
+                        {language === 'cn' ? '从免费版开始体验' : 'Start with the free plan'}
                     </div>
                 </div>
 
@@ -450,6 +460,7 @@ const PricingModal: React.FC = () => {
                 plan={selectedPlan.plan}
                 billingCycle={selectedPlan.billingCycle}
                 amount={selectedPlan.amount}
+                currency={selectedPlan.currency}
             />
         )}
         </>
