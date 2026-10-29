@@ -5,7 +5,7 @@ import { useUser } from './UserContext';
 import { useLanguage } from '../LanguageContext';
 import PaymentModal from './PaymentModal';
 import { ManageUsdSubscription } from './CreemBilling';
-import { getCreemCatalog } from '../services/creemService';
+import { getCreemCatalog, type CreemOffer } from '../services/creemService';
 import { getBillingMarket, type BillingMarket } from '../services/billingMarket';
 
 const PricingModal: React.FC = () => {
@@ -16,18 +16,18 @@ const PricingModal: React.FC = () => {
   const [market, setMarket] = useState<BillingMarket | null>(null);
   const [error, setError] = useState(false);
   const [retry, setRetry] = useState(0);
-  const [usdEnabled, setUsdEnabled] = useState(false);
+  const [usdOffers, setUsdOffers] = useState<CreemOffer[]>([]);
   const [purchase, setPurchase] = useState<{ plan: 'pro' | 'elite'; amount: number; currency: 'CNY' | 'USD'; billingCycle: 'monthly' | 'yearly' } | null>(null);
   useEffect(() => {
     let alive = true;
     if (isPricingOpen) {
-      setMarket(null); setError(false); setUsdEnabled(false); setPurchase(null);
+      setMarket(null); setError(false); setUsdOffers([]); setPurchase(null);
       void getBillingMarket().then(async value => {
         if (!alive) return;
         setMarket(value);
         if (value.currency === 'USD') {
           const catalog = await getCreemCatalog();
-          if (alive) setUsdEnabled(catalog.enabled && ['pro', 'elite'].every(plan => ['monthly', 'yearly'].every(period => catalog.offers.some(o => o.plan === plan && o.cycle === period && o.amount === value.prices[plan][period]))));
+          if (alive) setUsdOffers(catalog.enabled ? catalog.offers.filter(o => o.currency === 'USD' && o.amount === value.prices[o.plan][o.cycle]) : []);
         }
       }).catch(() => { if (alive) setError(true); });
     }
@@ -53,11 +53,12 @@ const PricingModal: React.FC = () => {
         <div className="grid md:grid-cols-3 gap-6">{(['free','pro','elite'] as const).map(plan => {
           const amount = plan === 'free' ? 0 : market.prices[plan][cycle];
           const current = user.tier === plan;
-          const disabled = plan === 'free' || user.tier === 'elite' || (plan === 'pro' && user.tier === 'pro') || (market.currency === 'USD' && !usdEnabled);
+          const usdAvailable = usdOffers.some(o => o.plan === plan && o.cycle === cycle);
+          const disabled = plan === 'free' || user.tier === 'elite' || (plan === 'pro' && user.tier === 'pro') || (market.currency === 'USD' && !usdAvailable);
           return <section key={plan} className={`tg-module rounded-2xl bg-slate-900 p-7 border ${plan === 'pro' ? 'border-indigo-500' : 'border-slate-800'}`}><h3 className="text-2xl font-bold mb-5">{plan === 'free' ? 'Free' : plan === 'pro' ? 'Pro' : 'Elite'}</h3><p className="text-4xl font-bold">{sign}{amount}<span className="text-sm font-normal text-slate-400"> / {plan === 'free' || cycle === 'monthly' ? (cn ? '月' : 'month') : (cn ? '年' : 'year')}</span></p>
             <p className="text-sm text-slate-400 mt-3 min-h-10">{plan !== 'free' && cycle === 'yearly' ? (cn ? '一次收取全年费用；平均每月 ' : 'Charged annually; monthly equivalent ') + sign + (amount / 12).toFixed(2) : (plan === 'free' ? (cn ? '可持续免费使用' : 'Keep using the free plan') : '')}</p>
             <ul className="space-y-4 my-7 min-h-40">{features[plan].map(text => <li className="flex items-start gap-2 text-sm text-slate-300" key={text}><Check size={16} className="text-emerald-400 shrink-0 mt-0.5" />{text}</li>)}</ul>
-            <button disabled={disabled} onClick={() => plan !== 'free' && setPurchase({ plan, amount, currency: market.currency, billingCycle: cycle })} className="w-full rounded-xl py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-400">{current ? (cn ? '当前方案' : 'Current plan') : plan === 'free' ? (cn ? '免费版' : 'Free plan') : user.tier === 'elite' ? (cn ? '已有更高等级方案' : 'Higher tier active') : (market.currency === 'USD' && !usdEnabled) ? (cn ? '美元支付准备中' : 'USD checkout coming soon') : (cn ? '选择方案' : 'Choose plan')}</button>
+            <button disabled={disabled} onClick={() => plan !== 'free' && setPurchase({ plan, amount, currency: market.currency, billingCycle: cycle })} className="w-full rounded-xl py-3 bg-indigo-600 disabled:bg-slate-800 disabled:text-slate-400">{current ? (cn ? '当前方案' : 'Current plan') : plan === 'free' ? (cn ? '免费版' : 'Free plan') : user.tier === 'elite' ? (cn ? '已有更高等级方案' : 'Higher tier active') : (market.currency === 'USD' && !usdAvailable) ? (cn ? '此方案暂未开放' : 'This plan is not available yet') : (cn ? '选择方案' : 'Choose plan')}</button>
           </section>;
         })}</div>
         <p className="text-sm text-slate-400 mt-7 text-center">{cn ? 'AI 额度按 UTC 自然月重置，年付也按月发放，不结转。原有已购买权益按原方案保留。' : 'AI quotas reset each UTC calendar month, including annual plans, without rollover. Existing paid entitlements retain their original plan.'}</p>

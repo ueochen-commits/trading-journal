@@ -42,6 +42,24 @@ test('product must match server price, currency, cadence and environment; trials
   validateProduct(product,offer,product.id,'test');
   for(const patch of [{currency:'EUR'},{price:1},{billingPeriod:'every-year'},{mode:'prod'},{trialPeriodDays:7},{usagePrices:[{}]},{status:'archived'}])assert.throws(()=>validateProduct({...product,...patch},offer,product.id,'test'));
 });
+test('staged monthly launch excludes annual purchases before reservation or provider calls',async()=>{
+  const f=fixture();
+  const handlers=createBillingHandlers({env:{...env,CREEM_ENABLED_CYCLES:'monthly',CREEM_PRO_YEARLY_PRODUCT_ID:'annual_fixture'},provider:f.provider,repo:f.repo,authenticate:async()=>({id:'user-1',email_confirmed_at:'2026-01-01'})});
+  const catalog=await handlers.catalog(f.req());
+  assert.deepEqual(catalog.offers.map(o=>o.cycle),['monthly']);
+  await assert.rejects(handlers.checkout(f.req({plan:'pro',billingCycle:'yearly'})),/plan_unavailable/);
+  assert.equal(f.writes.length,0);
+  await handlers.checkout(f.req({plan:'pro',billingCycle:'monthly'}));
+  assert.equal(f.writes.filter(w=>w[0]==='create').length,1);
+});
+test('disabling all new purchase cycles leaves existing subscriptions manageable',async()=>{
+  const f=fixture();await f.handlers.webhook(f.webhook());f.attempt.checkout_id=f.checkout.id;
+  const handlers=createBillingHandlers({env:{...env,CREEM_ENABLED_CYCLES:''},provider:f.provider,repo:f.repo,authenticate:async()=>({id:'user-1',email_confirmed_at:'2026-01-01'}),now:()=>Date.parse('2030-01-01')});
+  assert.deepEqual((await handlers.catalog(f.req())).offers,[]);
+  await assert.rejects(handlers.checkout(f.req({plan:'pro',billingCycle:'monthly'})),/plan_unavailable/);
+  assert.equal((await handlers.status(f.req({attemptId}))).state,'active');
+  assert.match((await handlers.portal(f.req())).portalUrl,/creem\.io/);
+});
 test('raw bytes are signed and malformed or altered signatures cannot pass',async()=>{
   const raw=Buffer.from('{"x": 1}');const sig=createHmac('sha256','secret').update(raw).digest('hex');
   assert.equal(verifySignature(raw,sig,'secret'),true);

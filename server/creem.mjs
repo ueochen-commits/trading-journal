@@ -76,6 +76,8 @@ export async function rawRequest(req) {
 
 export function createBillingHandlers({ env, provider, repo, authenticate, now = () => Date.now() }) {
   const config = () => billingConfig(env);
+  // Limit new purchases during a staged launch without affecting existing billing.
+  const cycleEnabled = cycle => (env.CREEM_ENABLED_CYCLES ?? 'monthly,yearly').split(',').map(value => value.trim()).includes(cycle);
   const marketFor = req => { try { return billingMarket(req.headers, env); } catch { fail(503, 'payment_region_unavailable'); } };
   async function authenticated(req) {
     const token = req.headers.authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
@@ -112,7 +114,7 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
       if (marketFor(req).currency !== 'USD') return { enabled: false, mode: env.CREEM_MODE === 'test' ? 'test' : 'prod', offers: [] };
       const { mode, enabled } = config();
       if (!enabled) return { enabled: false, mode, offers: [] };
-      const offers = await Promise.all(Object.values(plans).filter(offer => env[offer.env]).map(async offer => {
+      const offers = await Promise.all(Object.values(plans).filter(offer => env[offer.env] && cycleEnabled(offer.cycle)).map(async offer => {
         const productId = env[offer.env];
         const product = await provider.products.get(productId);
         validateProduct(product, offer, productId, mode);
@@ -127,6 +129,7 @@ export function createBillingHandlers({ env, provider, repo, authenticate, now =
       if (!enabled) fail(503, 'billing_unavailable');
       const offer = plans[`${req.body?.plan}:${req.body?.billingCycle}`];
       if (!offer || !env[offer.env]) fail(400, 'invalid_plan');
+      if (!cycleEnabled(offer.cycle)) fail(503, 'plan_unavailable');
       const productId = env[offer.env];
       const product = await provider.products.get(productId); validateProduct(product, offer, productId, mode);
       // Database lock prevents simultaneous requests from opening duplicate subscriptions.
